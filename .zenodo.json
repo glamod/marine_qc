@@ -1,0 +1,21 @@
+{
+  "title": "marine_qc",
+  "description": "Description",
+  "creators": [
+    {
+      "name": "Lierhammer, Ludwig",
+      "affiliation": "Deutscher Wetterdienst, Hamburg, Germany",
+      "orcid": "0000-0002-7207-0003"
+    },
+    {
+      "name": "Kennedy, John",
+      "affiliation": "Independent consultant, France",
+      "orcid": "0000-0002-6841-7289"
+    }
+  ],
+  "keywords": [],
+  "license": "Apache-2.0",
+  "language": "eng",
+  "upload_type": "software",
+  "access_right": "open"
+}

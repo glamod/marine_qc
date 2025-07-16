@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions # See documentation for possible values
+    directory: / # Location of package manifests
+    schedule:
+      interval: daily
+      time: '12:00'
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: daily
+      time: '12:00'
+    groups:
+      actions:
+        patterns:
+          - "*"

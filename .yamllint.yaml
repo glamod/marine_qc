@@ -1,0 +1,11 @@
+---
+
+yaml-files:
+  - "*.yaml"
+
+rules:
+  document-start: disable
+  line-length:
+    max: 130
+    level: warning
+  truthy: disable
