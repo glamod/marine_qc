@@ -81,6 +81,21 @@ of the reports as keyword arguments::
 
 This will automatically extract the climatological values at the specified times and locations.
 
+Unit Conversions
+----------------
+
+The QC checks written using SI (and derived) units. Inputs can be converted when a QC function is called using the
+`converter_dict` keyword argument::
+
+  temperature_in_K(25.0, units={"value": "degC"})
+
+As an example.
+
+Running Multiple Checks
+-----------------------
+
+TBC
+
 QC of Individual Reports
 ------------------------
 
