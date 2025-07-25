@@ -237,3 +237,20 @@ find_repeated_values
 A sequence of reports is checked for values which are repeated many times. If more than a specified fraction of
 reports have the same value and the total number of reports of that value exceeds a specified threshold then
 all the flags for all reports with that value are set to 1, fail. The flags for all other reports are set to 0, pass.
+
+QC of Grouped Reports
+---------------------
+
+The final type of tests are those performed on a group of reports, potentially comprising reports from many platforms
+and platform types. The reports can cover large areas and multiple months. The tests currently include so-called
+"buddy" checks in which the values for each report are compared to those of their neighbours.
+
+do_mds_buddy_check
+==================
+
+dd.
+
+do_bayesian_buddy_check
+=======================
+
+dd.
