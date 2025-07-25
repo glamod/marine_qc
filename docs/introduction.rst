@@ -22,15 +22,15 @@ Surface Temperature Change from 1850: The Met Office Hadley Centre HadSST.4.0.0.
 of Geophysical Research: Atmospheres, 124. https://doi.org/10.1029/2018JD029867
 
 Willett, K. M., Dunn, R. J. H., Kennedy, J. J., and Berry, D. I.: Development of the HadISDH.marine
-humidity climate monitoring dataset, Earth Syst. Sci. Data, 12, 2853–2880,
+humidity climate monitoring dataset, Earth Syst. Sci. Data, 12, 2853-2880,
 https://doi.org/10.5194/essd-12-2853-2020, 2020.
 
 Xu, F., and A. Ignatov, 2014: In situ SST Quality Monitor (iQuam). J. Atmos. Oceanic Technol., 31,
-164–180, https://doi.org/10.1175/JTECH-D-13-00121.1.
+164-180, https://doi.org/10.1175/JTECH-D-13-00121.1.
 
 Atkinson, C. P., N. A. Rayner, J. Roberts-Jones, and R. O. Smith (2013), Assessing the quality of sea
 surface temperature observations from drifting buoys and ships on a platform-by-platform basis, J.
-Geophys. Res. Oceans, 118, 3507–3529,  https://doi.org/10.1002/jgrc.20257
+Geophys. Res. Oceans, 118, 3507-3529,  https://doi.org/10.1002/jgrc.20257
 
 QC Flags
 --------
@@ -43,6 +43,37 @@ flags:
 * 2 Untestable - the observation cannot be tested using this quality control check, usually because one or
   more pieces of information are missing. For example, a climatology check with a missing climatology value.
 * 3 Untested - the observation has not been tested for this quality control check
+
+Running the QC Checks
+---------------------
+
+The QC checks can be run simply. Each one takes one or more input values, which can be a float, list, 1-d numpy array
+or Pandas DataSeries, along with zero or more parameters.
+
+So, for example, one can run a hard limit check like so::
+
+
+  input_values = np.array([-15.0, 0.0, 20.0, 55.0])
+  result = do_hard_limit_check(input_values, [-10., 40.])
+
+Additionally, some checks use climatological averages which can be provided like the other
+inputs, or passed as a Climatology object. For example, the climatology check can be run like so::
+
+  input_ssts = np.array([15.0, 17.3, 21.3, 32.0])
+  climatological_averages = np.array([14.0, 15.8, 19.1, 20.3])
+  result = do_climatology_check(input_ssts, climatological_averages, 8.0)
+
+Alternatively, the climatological values can be specified using a Climatology and providing the datetime and location
+of the reports as keyword arguments::
+
+  input_ssts = np.array([15.0, 17.3, 21.3, 32.0])
+  latitudes = np.array([33.0, 28.0, 22.0, 15.0])
+  longitudes = np.array([-30.3, -29.9, -31.8, -31.7])
+  dates = np.array(['2003-01-01T02:00:00.00', '2003-01-01T08:00:00.00', '2003-01-01T14:00:00.00', '2003-01-01T20:00:00.00'])
+  climatological_averages = Climatology.open_netcdf_file('climatology_file.nc')
+  result = do_climatology_check(input_ssts, climatological_averages, 8.0, lat=latitude, lon=longitudes, date=dates)
+
+This will automatically extract the climatological values at the specified times and locations.
 
 QC of Individual Reports
 ------------------------
