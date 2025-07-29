@@ -266,9 +266,19 @@ and platform types. The reports can cover large areas and multiple months. The t
 do_mds_buddy_check
 ==================
 
-dd.
+The buddy check compares the observed value from each report to the average of that variable from other nearby
+reports (the buddies in the buddy check). Depending how many neighbours there are and how close they are, an
+adaptive multiplier is used. The difference between the observed value for the report and the "buddy" mean must be
+less than the multiplier times the standard deviation of the variable at that location taken from a climatology. If
+the difference is less the flag for that report is set to 0, pass otherwise it is set to 1, failed.
 
 do_bayesian_buddy_check
 =======================
 
-dd.
+The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The principle is the same -  a report is
+compared to the average of nearby reports - but the determination of whether it is too far away is based on an
+explicit estimate of the probability of gross error.
+
+My raw code:
+
+:math:`a^2 + b^2 = c^2`
