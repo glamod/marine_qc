@@ -27,6 +27,9 @@ Installation
 Installation using pip
 ----------------------
 
+This repository has not been release on pypi yet.
+-------------------------------------------------
+
 You can install the package directly from pip:
 
 .. code-block:: console
