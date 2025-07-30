@@ -157,8 +157,8 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
         :target: https://github.com/astral-sh/ruff
         :alt: Ruff
 
-.. |security| image:: https://bestpractices.coreinfrastructure.org/projects/./badge
-	      :target: https://bestpractices.coreinfrastructure.org/projects/
+.. |security| image:: https://bestpractices.coreinfrastructure.org/projects/10980/badge
+	      :target: https://bestpractices.coreinfrastructure.org/projects/10980
 	      :alt: OpenSSf Best Practices
 
 .. |status| image:: https://www.repostatus.org/badges/latest/concept.svg
