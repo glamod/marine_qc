@@ -42,16 +42,19 @@ from marine_qc.qc_sequential_reports import (
     find_saturated_runs,
 )
 
+
 def _get_parameters(dataset="", release="", deck="", trange=""):
     cache_dir = f".pytest_cache/marine_qc/{dataset}/{deck}"
     input_dir = f"icoads/{release}/{deck}"
     cdm_name = f"icoads_{release}_{deck}_{trange}_subset"
     return cache_dir, input_dir, cdm_name
-    
+
 
 @pytest.fixture(scope="session")
 def testdata():
-    cache_dir, input_dir, cdm_name = _get_parameters(dataset="ICOADS_R3.0.2T", release="r302", deck="d992", trange="2022-01-01")
+    cache_dir, input_dir, cdm_name = _get_parameters(
+        dataset="ICOADS_R3.0.2T", release="r302", deck="d992", trange="2022-01-01"
+    )
     tables = [
         "header",
         "observations-at",
@@ -150,7 +153,9 @@ def climdata_bayesian():
 
 @pytest.fixture(scope="session")
 def testdata_track():
-    cache_dir, input_dir, cdm_name = _get_parameters(dataset="ICOADS_R3.0.2T", release="r302", deck="PT2", trange="2016-04-11")
+    cache_dir, input_dir, cdm_name = _get_parameters(
+        dataset="ICOADS_R3.0.2T", release="r302", deck="PT2", trange="2016-04-11"
+    )
     tables = [
         "header",
         "observations-at",
