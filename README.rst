@@ -161,7 +161,7 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
 	      :target: https://bestpractices.coreinfrastructure.org/projects/
 	      :alt: OpenSSf Best Practices
 
-.. |status| image:: https://www.repostatus.org/badges/latest/active.svg
+.. |status| image:: https://www.repostatus.org/badges/latest/concept.svg
         :target: https://www.repostatus.org/#concept
         :alt: Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.
 
