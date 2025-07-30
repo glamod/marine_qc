@@ -31,7 +31,11 @@ classifiers = [
   "Programming Language :: Python :: 3.13"
 ]
 dynamic = ["version"]
-dependencies = ["cdm_reader_mapper"]
+dependencies = [
+  "cdm_reader_mapper",
+  "cf_xarray",
+  "xclim"
+]
 
 [project.optional-dependencies]
 dev = [

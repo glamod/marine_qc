@@ -1,1 +1,3 @@
 cdm_reader_mapper
+xclim
+cf_xarray
