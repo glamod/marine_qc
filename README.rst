@@ -133,8 +133,8 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
    	    :target: https://fair-software.eu
 	      :alt: FAIR-software
 
-.. |fossa| image:: https://app.fossa.com/api/projects/custom%2B41576%2Fgithub.com%2Fglamod%2Fmarine_qc.svg?type=shield
-        :target: https://app.fossa.com/projects/custom%2B41576%2Fgithub.com%2Fglamod%2Fmarine_qc?ref=badge_shield
+.. |fossa| image:: https://app.fossa.com/api/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc.svg?type=shield
+        :target: https://app.fossa.com/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc?ref=badge_shield
         :alt: FOSSA
 
 .. |license| image:: https://img.shields.io/github/license/glamod/marine_qc.svg
