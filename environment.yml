@@ -45,3 +45,4 @@ dependencies:
 
     #from pypi
     - pip:
+      cdm_reader_mapper
