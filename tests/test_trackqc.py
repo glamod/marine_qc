@@ -1805,7 +1805,7 @@ def sst_biased_noisy_check_vals(selector):
         (18, 9, 1.10, 1.0, 0.29, 3.0, 2, 4.0, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_record_two_bad_obs_missing_big_bgvar_bnc
         (19, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_good_data_bnc_19
         (20, 0, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_bad_input_parameter_bnc
-        # Mising on purpose - test is no longer relevant after refactoring
+        # Missing on purpose - test is no longer relevant after refactoring
         (22, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_invalid_ice_value_bnc
         (23, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_missing_ob_value_bnc
         (24, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_not_time_sorted_bnc

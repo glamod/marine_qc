@@ -38,7 +38,7 @@ from marine_qc.statistics import (
 def test_trimmed_mean(inarr, trim, expected):
     original_array = copy.deepcopy(inarr)
     assert trim_mean(inarr, trim) == expected
-    # This checks the array is not modifed by the function
+    # This checks the array is not modified by the function
     assert np.all(inarr == original_array)
 
 
@@ -52,7 +52,7 @@ def test_trimmed_mean(inarr, trim, expected):
 def test_trim_std(inarr, trimming, expected):
     original_array = copy.deepcopy(inarr)
     assert trim_std(inarr, trimming) == expected
-    # This checks the array is not modifed by the function
+    # This checks the array is not modified by the function
     assert np.all(inarr == original_array)
 
 
