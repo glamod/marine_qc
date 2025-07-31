@@ -11,4 +11,4 @@ Development Lead
 Co-Developers
 -------------
 
-* John J Kennedy <jjk8932@googlemail.com> `@jjk-code-otter <https://github.com/jjk-code-otter`_
+* John Kennedy <jjk8932@googlemail.com> `@jjk-code-otter <https://github.com/jjk-code-otter`_
