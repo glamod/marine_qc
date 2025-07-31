@@ -20,6 +20,13 @@ Marine Quality Control: ``marine_qc`` toolbox
 | Funding                    | |c3s|                                                          |
 +----------------------------+----------------------------------------------------------------+
 
+Introduction
+============
+
+The marine_qc toolbox provides a set of routines for the quality control of marine meteorological reports. Quality
+control (QC), in this case, is the process of identifying and flagging likely gross errors in the data. Some of the
+QC checks in the toolbox work on individual reports. Others work on groups of reports associated with a single ship
+or buoy, and others work on groups of reports from multiple ships or buoys.
 
 Installation
 ============
