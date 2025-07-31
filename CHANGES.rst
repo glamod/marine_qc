@@ -9,4 +9,4 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and J
 
 Announcements
 ^^^^^^^^^^^^^^
-* This marine QC repository is a copy of the results of https://github.com/glamod/glamod-marine-processing/pull/117. This repository replaces `glamod_marine_proccesing.qc_suite.modules` as an indepentend package. 
+* This marine QC repository is a copy of the results of https://github.com/glamod/glamod-marine-processing/pull/117. This repository replaces `glamod_marine_proccesing.qc_suite.modules` as an indepentend package.
