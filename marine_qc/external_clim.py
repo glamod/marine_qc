@@ -232,7 +232,10 @@ class Climatology:
         if not isinstance(valid_ntime, list):
             valid_ntime = [valid_ntime]
         self.ntime = len(data[self.time_axis])
-        assert self.ntime in valid_ntime, "weird shaped field"
+        if self.ntime not in valid_ntime:
+            raise ValueError(
+                f"Weird shaped field {self.ntime}. Use one of {valid_ntime}."
+            )
 
     @classmethod
     def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:

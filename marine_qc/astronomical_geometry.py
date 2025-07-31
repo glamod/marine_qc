@@ -372,11 +372,20 @@ def sunangle(
     for a range of values. The differences are larger if single precision values are used suggesting that this
     is not the most numerically robust scheme.
     """
-    assert 0 < day <= 366
-    assert 0 <= hour < 24
-    assert 0 <= minute < 60
-    assert 0 <= sec < 60
-    assert 90 >= lat >= -90
+    if not (0 < day <= 366):
+        raise ValueError(f"Invalid day: {day}. Must be between 1 and 366.")
+
+    if not (0 <= hour < 24):
+        raise ValueError(f"Invalid hour: {hour}. Must be between 0 and 23.")
+
+    if not (0 <= minute < 60):
+        raise ValueError(f"Invalid minute: {minute}. Must be between 0 and 59.")
+
+    if not (0 <= sec < 60):
+        raise ValueError(f"Invalid second: {sec}. Must be between 0 and 59.")
+
+    if not (-90 <= lat <= 90):
+        raise ValueError(f"Invalid latitude: {lat}. Must be between -90 and 90.")
 
     # Find number of whole years since end of 1979 (reference point)
     delyear = relative_year_number(year)
@@ -395,7 +404,10 @@ def sunangle(
     elevation = elevation / degrad  # Convert elevation to degrees
     declination = declination / degrad  # Convert declination to degrees
 
-    assert 180 >= elevation >= -180
+    if not (-180 <= elevation <= 180):
+        raise ValueError(
+            f"Invalid elevation: {elevation}. Must be between -180 and 180."
+        )
 
     rta = right_ascension / degrad
     sid = local_siderial_time / degrad

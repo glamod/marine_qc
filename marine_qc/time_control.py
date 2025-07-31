@@ -115,7 +115,8 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     tuple of int
         A tuple of two ints representing month and day of the first day of the pentad.
     """
-    assert 0 < p < 74, "p outside allowed range 1-73 " + str(p)
+    if not (0 < p < 74):
+        raise ValueError(f"Invalid p: {p}. Must be between 1 and 73")
     m = [
         1,
         1,
@@ -302,8 +303,8 @@ def which_pentad(month: int, day: int) -> int:
     pentad = int((day_in_year(month, day) - 1) / 5)
     pentad = pentad + 1
 
-    assert pentad >= 1
-    assert pentad <= 73
+    if not (1 <= pentad <= 73):
+        raise ValueError(f"Invalid pentad: {pentad}. Must be between 1 and 73.")
 
     return pentad
 
@@ -478,19 +479,22 @@ def dayinyear(year: int, month: int, day: int) -> int:
     int
         Day in year, between 1 and 366.
     """
-    assert 1 <= month <= 12
-    assert day >= 1
+    if not (1 <= month <= 12):
+        raise ValueError(f"Invalid month: {month}. Must be between 1 and 12.")
 
     month_lengths = get_month_lengths(year)
 
-    assert day <= month_lengths[month - 1], "Day out of range " + str(day)
+    day_max = month_lengths[month - 1]
+    if not (1 <= day <= day_max):
+        raise ValueError(f"Invalid day: {day}. Must be between 1 and {day_max}.")
 
-    result = day
     if month > 1:
-        result = result + sum(month_lengths[0 : month - 1])
+        day = day + sum(month_lengths[0 : month - 1])
 
-    assert 1 <= result <= 366
-    return result
+    if not (1 <= day <= 366):
+        raise ValueError(f"Invalid day in year: {day}. Must be between 1 and 366.")
+
+    return day
 
 
 def jul_day(year: int, month: int, day: int) -> int:
@@ -515,8 +519,10 @@ def jul_day(year: int, month: int, day: int) -> int:
     This is one of those routines that looks baffling but works. No one is sure exactly how. It gets
     written once and then remains untouched for centuries, mysteriously working.
     """
-    assert 1 <= month <= 12
-    assert 1 <= day <= 31
+    if not (1 <= month <= 12):
+        raise ValueError(f"Invalid month: {month}. Must be between 1 and 12.")
+    if not (1 <= day <= 31):
+        raise ValueError(f"Invalid day: {day}. Must be between 1 and 31.")
     a = (14 - month) // 12
     y = year + 4800 - a
     m = month + 12 * a - 3
@@ -565,7 +571,10 @@ def time_difference(
         if not isvalid(value):
             return np.nan
 
-    assert 0 <= hour1 < 24 and 0 <= hour2 < 24
+    if not (0 <= hour1 <= 24):
+        raise ValueError(f"Invalid hour1: {hour1}. Must be between 1 and 24.")
+    if not (0 <= hour2 <= 24):
+        raise ValueError(f"Invalid hour2: {hour2}. Must be between 1 and 24.")
 
     if (
         (year1 > year2)

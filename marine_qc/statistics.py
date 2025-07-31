@@ -170,8 +170,8 @@ def p_gross(
         )
     )
 
-    assert pgross >= 0.0, pgross
-    assert pgross <= 1.0, pgross
+    if not (0 <= pgross <= 1.0):
+        raise ValueError(f"Invalid pgross: {pgross}. Must between 0 and 1.")
 
     return pgross
 
