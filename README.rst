@@ -129,7 +129,7 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
 	      :alt: Coveralls
 
 .. |docs| image:: https://readthedocs.org/projects/marine_qc/badge/?version=latest
-        :target: https://marine-qc.readthedocs.io/en/latest/?version=latest
+	:target: https://marine-qc.readthedocs.io/en/latest/
         :alt: Documentation Status
 
 .. |fair-software| image:: https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F-green
