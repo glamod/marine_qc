@@ -44,7 +44,7 @@ dev = [
   "codespell ==2.4.1",
   "coverage >=7.5.0",
   "coveralls >=4.0.1",
-  "deptry ==0.23.0",
+  "deptry ==0.23.1",
   "distributed >=2.0",
   "flake8 >=7.1.1",
   "flake8-rst-docstrings >=0.3.0",
