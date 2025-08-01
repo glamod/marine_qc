@@ -278,7 +278,3 @@ do_bayesian_buddy_check
 The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The principle is the same -  a report is
 compared to the average of nearby reports - but the determination of whether it is too far away is based on an
 explicit estimate of the probability of gross error.
-
-My raw code:
-
-:math:`a^2 + b^2 = c^2`
