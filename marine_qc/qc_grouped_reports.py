@@ -69,10 +69,10 @@ def get_threshold_multiplier(
         raise ValueError(
             "Invalid minimum multiplier_value: {min(multiplier_values)}. Must be greater than zero."
         )
-    if min(nob_limits) != 0:
-        raise ValueError("nob_limit of less than zero given")
     if nob_limits[0] != 0:
         raise ValueError(f"Invalid first nob_limits: {nob_limits[0]}. Must be zero.")
+    if min(nob_limits) != 0:
+        raise ValueError("Invalid minimum nob_limit: {min(nob_limit)}. Must be zero.")
     if not is_monotonic(nob_limits):
         raise ValueError(
             "Invalid nob_limits: {nob_limits}. Must be in ascending order."
