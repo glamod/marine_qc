@@ -19,7 +19,7 @@ on:
       - synchronize
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   label:
