@@ -257,12 +257,12 @@ def test_eight_too_distant_neighbours(dummy_pentad_stdev, reps4):
 
 
 def test_nobs_limits_not_ascending():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         _ = get_threshold_multiplier(0, [10, 5, 0], [4, 3, 2])
 
 
 def test_lowest_nobs_limit_not_zero():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         _ = get_threshold_multiplier(1, [1, 5, 10], [4, 3, 2])
 
 

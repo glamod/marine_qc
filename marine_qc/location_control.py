@@ -25,8 +25,10 @@ def yindex_to_lat(yindex: int, res: float) -> float:
     ----
     In previous versions, ``res`` had the default value 1.0.
     """
-    assert yindex >= 0
-    assert yindex < 180 / res
+    if yindex < 0:
+        raise ValueError(f"Invalid yindex: {yindex}. Must be positive.")
+    if not (yindex < 180 / res):
+        raise ValueError(f"Invalid yindex: {yindex}. Must be less than {180 / res}.")
     return 90.0 - yindex * res - res / 2.0
 
 
@@ -119,8 +121,10 @@ def xindex_to_lon(xindex: int, res: float) -> float:
     ----
     In previous versions, ``res`` had the default value 1.0.
     """
-    assert xindex >= 0
-    assert xindex < 360 / res
+    if xindex < 0:
+        raise ValueError(f"Invalid xindex: {xindex}. Must be positive.")
+    if not (xindex < 360 / res):
+        raise ValueError(f"Invalid xindex: {xindex}. Must be less than {360 / res}.")
     return xindex * res - 180.0 + res / 2.0
 
 
@@ -285,8 +289,10 @@ def get_four_surrounding_points(
         A tuple of floats representing the longitudes of the leftmost and rightmost pairs of points,
         and the latitudes of the topmost and bottommost pairs of points.
     """
-    assert -90.0 <= lat <= 90.0
-    assert -180.0 <= lon <= 180.0
+    if not (-90.0 <= lat <= 90.0):
+        raise ValueError(f"Invalid latitude: {lat}. Must be between -90 and 90.")
+    if not (-180.0 <= lon <= 180.0):
+        raise ValueError(f"Invalid longitude: {lon}. Must be between -180 and 180.")
 
     x2_index = lon_to_xindex(lon + 0.5, res=res)
     x2 = xindex_to_lon(x2_index, res=res)

@@ -29,7 +29,8 @@ class Climatology:
         """
         self.field = infield
         self.n = self.field.shape[0]
-        assert self.n in [1, 73, 365], "weird shaped field"
+        if self.n not in [1, 73, 365]:
+            raise ValueError(f"Weird shaped field {self.n}. Use one of [1, 73, 365].")
         self.res = 180.0 / self.field.shape[1]
 
     @classmethod
@@ -54,9 +55,10 @@ class Climatology:
                 if lat in climatology.variables:
                     latitudes = climatology.variables[lat][:]
                     found_lat = True
-            assert found_lat, (
-                "no readable latitude information in NetCDF file: " + infile
-            )
+            if found_lat is False:
+                raise ValueError(
+                    f"No readable latitude information in NetCDF file: {infile}"
+                )
 
             lon_synonyms = ["lon", "lons", "long", "longs", "longitude", "longitudes"]
             found_lon = False
@@ -64,9 +66,10 @@ class Climatology:
                 if lon in climatology.variables:
                     longitudes = climatology.variables[lon][:]
                     found_lon = True
-            assert found_lon, (
-                "no readable longitude information in NetCDF file: " + infile
-            )
+            if found_lon is False:
+                raise ValueError(
+                    f"No readable longitude information in NetCDF file: {infile}"
+                )
 
             climatology.close()
 

@@ -17,9 +17,6 @@ repos:
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
       - id: debug-statements
-      - id: pretty-format-json
-        args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
-        exclude: '.ipynb'
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.2
     hooks:
@@ -53,22 +50,6 @@ repos:
     rev: 'v2.14'
     hooks:
       - id: vulture
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.9.1
-    hooks:
-      - id: nbqa-pyupgrade
-        args: [ '--py38-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.15.2' ]
-      - id: nbqa-black
-        additional_dependencies: [ 'black==23.12.1' ]
-      - id: nbqa-isort
-        additional_dependencies: [ 'isort==5.13.2' ]
-  - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.1
-    hooks:
-      - id: nbstripout
-        files: '.ipynb'
-        args: [ '--extra-keys', 'metadata.kernelspec' ]
   - repo: https://github.com/keewis/blackdoc
     rev: v0.3.9
     hooks:
@@ -98,5 +79,5 @@ ci:
   autoupdate_branch: ''
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
   autoupdate_schedule: quarterly
-  skip: [ nbstripout, toml-sort-fix ]
+  skip: [ toml-sort-fix ]
   submodules: false

@@ -221,32 +221,52 @@ class SpeedChecker:
 
     def valid_parameters(self) -> bool:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
-        valid = True
+        valid = False
 
-        try:
-            assert self.speed_limit >= 0, "speed_limit must be >= 0"
-            assert self.min_win_period >= 0, "min_win_period must be >= 0"
-            assert self.max_win_period >= 0, "max_win_period must be >= 0"
-            assert (
-                self.max_win_period >= self.min_win_period
-            ), "max_win_period must be >= min_win_period"
-        except AssertionError as error:
-            warnings.warn(UserWarning("invalid input parameter: " + str(error)))
-            valid = False
+        if not (self.speed_limit >= 0):
+            warnings.warn(
+                UserWarning(
+                    f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."
+                )
+            )
+        elif not (self.min_win_period >= 0):
+            warnings.warn(
+                UserWarning(
+                    f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."
+                )
+            )
+        elif not (self.min_win_period >= 0):
+            warnings.warn(
+                UserWarning(
+                    f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."
+                )
+            )
+        elif not (self.max_win_period >= self.min_win_period):
+            warnings.warn(
+                UserWarning(
+                    "max_win_period must be greater than or equal to min_win_period."
+                )
+            )
+        else:
+            valid = True
 
         return valid
 
     def valid_arrays(self) -> bool:
         """Check the input arrays are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert not any(np.isnan(self.lon)), "Nan(s) found in longitude"
-            assert not any(np.isnan(self.lat)), "Nan(s) found in latitude"
-            assert not any(np.isnan(self.hrs)), "Nan(s) found in time differences"
-            assert is_monotonic(self.hrs), "times are not sorted"
-        except AssertionError as error:
-            warnings.warn(UserWarning("problem with report values: " + str(error)))
-            valid = False
+        valid = False
+
+        if any(np.isnan(self.lon)):
+            warnings.warn(UserWarning("Nan(s) found in longitude."))
+        elif any(np.isnan(self.lat)):
+            warnings.warn(UserWarning("Nan(s) found in latitudes."))
+        elif any(np.isnan(self.hrs)):
+            warnings.warn(UserWarning("Nan(s) found in time differences."))
+        elif not is_monotonic(self.hrs):
+            warnings.warn(UserWarning("times are not sorted: {self.hrs}"))
+        else:
+            valid = True
+
         return valid
 
     def do_speed_check(self):
@@ -399,27 +419,39 @@ class NewSpeedChecker:
 
     def valid_parameters(self) -> bool:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert self.speed_limit >= 0, "speed_limit must be >= 0"
-            assert self.min_win_period >= 0, "min_win_period must be >= 0"
-        except AssertionError as error:
-            valid = False
-            warnings.warn(UserWarning(f"invalid input parameter: {error}"))
+        valid = False
+        if not (self.speed_limit >= 0):
+            warnings.warn(
+                UserWarning(
+                    f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."
+                )
+            )
+        elif not (self.min_win_period >= 0):
+            warnings.warn(
+                UserWarning(
+                    f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."
+                )
+            )
+        else:
+            valid = True
 
         return valid
 
     def valid_arrays(self) -> bool:
         """Check the input arrays are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert not any(np.isnan(self.lon)), "Nan(s) found in longitude"
-            assert not any(np.isnan(self.lat)), "Nan(s) found in latitude"
-            assert not any(np.isnan(self.hrs)), "Nan(s) found in time differences"
-            assert is_monotonic(self.hrs), "times are not sorted"
-        except AssertionError as error:
-            warnings.warn(UserWarning("problem with report values: " + str(error)))
-            valid = False
+        valid = False
+
+        if any(np.isnan(self.lon)):
+            warnings.warn(UserWarning("Nan(s) found in longitude."))
+        elif any(np.isnan(self.lat)):
+            warnings.warn(UserWarning("Nan(s) found in latitudes."))
+        elif any(np.isnan(self.hrs)):
+            warnings.warn(UserWarning("Nan(s) found in time differences."))
+        elif not is_monotonic(self.hrs):
+            warnings.warn(UserWarning("times are not sorted: {self.hrs}"))
+        else:
+            valid = True
+
         return valid
 
     def perform_iquam_track_check(self):
@@ -564,32 +596,55 @@ class AgroundChecker:
 
     def valid_parameters(self) -> bool:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert self.smooth_win >= 1, "smooth_win must be >= 1"
-            assert self.smooth_win % 2 != 0, "smooth_win must be an odd number"
-            assert self.min_win_period >= 1, "min_win_period must be >= 1"
-            if self.max_win_period is not None:
-                assert self.max_win_period >= 1, "max_win_period must be >= 1"
-                assert (
-                    self.max_win_period >= self.min_win_period
-                ), "max_win_period must be >= min_win_period"
-        except AssertionError as error:
-            warnings.warn(UserWarning("invalid input parameter: " + str(error)))
-            valid = False
+        valid = False
+        if self.smooth_win < 1:
+            warnings.warn(
+                UserWarning("Invalid smooth_win: {self.smooth_win}. Must be positive.")
+            )
+        elif self.smooth_win % 2 == 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid smooth_win: {self.smooth_win}. Must be an odd number."
+                )
+            )
+        elif self.min_win_period < 1:
+            warnings.warn(
+                UserWarning(
+                    f"Invalid min_win_period: {self.min_win_period}. Must be positive."
+                )
+            )
+        elif self.max_win_period is None:
+            valid = True
+        elif self.max_win_period < 1:
+            warnings.warn(
+                UserWarning(
+                    "Invalid max_win_period: {self.max_win_period}. Must be positive."
+                )
+            )
+        elif self.max_win_period < self.min_win_period:
+            warnings.warn(
+                "max_win_period must be greater than or equal to min_win_period."
+            )
+        else:
+            valid = True
+
         return valid
 
     def valid_arrays(self) -> bool:
         """Check the input arrays are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert not any(np.isnan(self.lon)), "Nan(s) found in longitude"
-            assert not any(np.isnan(self.lat)), "Nan(s) found in latitude"
-            assert not any(np.isnan(self.hrs)), "Nan(s) found in time differences"
-            assert is_monotonic(self.hrs), "times are not sorted"
-        except AssertionError as error:
-            warnings.warn(UserWarning("problem with report values: " + str(error)))
-            valid = False
+        valid = False
+
+        if any(np.isnan(self.lon)):
+            warnings.warn(UserWarning("Nan(s) found in longitude."))
+        elif any(np.isnan(self.lat)):
+            warnings.warn(UserWarning("Nan(s) found in latitudes."))
+        elif any(np.isnan(self.hrs)):
+            warnings.warn(UserWarning("Nan(s) found in time differences."))
+        elif not is_monotonic(self.hrs):
+            warnings.warn(UserWarning("times are not sorted: {self.hrs}"))
+        else:
+            valid = True
+
         return valid
 
     def smooth_arrays(self):
@@ -823,20 +878,65 @@ class SSTTailChecker:
 
     def valid_parameters(self):
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert self.long_win_len >= 1, "long_win_len must be >= 1"
-            assert self.long_win_len % 2 != 0, "long_win_len must be an odd number"
-            assert self.long_err_std_n >= 0, "long_err_std_n must be >= 0"
-            assert self.short_win_len >= 1, "short_win_len must be >= 1"
-            assert self.short_err_std_n >= 0, "short_err_std_n must be >= 0"
-            assert self.short_win_n_bad >= 1, "short_win_n_bad must be >= 1"
-            assert self.drif_inter >= 0, "drif_inter must be >= 0"
-            assert self.drif_intra >= 0, "drif_intra must be >= 0"
-            assert self.background_err_lim >= 0, "background_err_lim must be >= 0"
-        except AssertionError as error:
-            warnings.warn(UserWarning("invalid input parameter: " + str(error)))
-            valid = False
+        valid = False
+
+        if self.long_win_len < 1:
+            warnings.warn(
+                UserWarning(
+                    "Invalid long_win_len: {self.long_win_len}. Must be positive."
+                )
+            )
+        elif not (self.long_win_len % 2 != 0):
+            warnings.warn(
+                UserWarning(
+                    "Invalid long_win_len: {self.long_win_len}. Must be an odd number."
+                )
+            )
+        elif self.long_err_std_n < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid long_err_std_n: {self.long_err_std_n}. Must be zero or positive."
+                )
+            )
+        elif self.short_win_len < 1:
+            warnings.warn(
+                UserWarning(
+                    "Invalid short_win_len: {self.short_win_len}. Must be positive."
+                )
+            )
+        elif self.short_err_std_n < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid short_err_std_n: {self.short_err_std_n}. Must be zero or positive."
+                )
+            )
+        elif self.short_win_n_bad < 1:
+            warnings.warn(
+                UserWarning(
+                    "Invalid short_win_n_bad: {self.short_win_n_bad}. Must be positive."
+                )
+            )
+        elif self.drif_inter < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid drif_inter: {self.drif_inter}. Must be zero or positive."
+                )
+            )
+        elif self.drif_intra < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid drif_intra: {self.drif_intra}. Must be zero or positive."
+                )
+            )
+        elif self.background_err_lim < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid background_err_lim: {self.background_err_lim}. Must be zero or positive."
+                )
+            )
+        else:
+            valid = True
+
         return valid
 
     def do_sst_tail_check(self, start_tail: bool):
@@ -1051,7 +1151,8 @@ class SSTTailChecker:
         None
         """
         npass = last_pass_ind - first_pass_ind + 1
-        assert npass > 0, "short tail check: npass not > 0"
+        if npass <= 0:
+            raise ValueError(f"Invalid npass: {npass}. Must be positive.")
 
         # records shorter than short-window length aren't evaluated
         if npass < self.short_win_len:
@@ -1204,18 +1305,46 @@ class SSTBiasedNoisyChecker:
 
     def valid_parameters(self) -> bool:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
-        valid = True
-        try:
-            assert self.n_eval > 0, "n_eval must be > 0"
-            assert self.bias_lim >= 0, "bias_lim must be >= 0"
-            assert self.drif_intra >= 0, "drif_intra must be >= 0"
-            assert self.drif_inter >= 0, "drif_inter must be >= 0"
-            assert self.err_std_n >= 0, "err_std_n must be >= 0"
-            assert self.n_bad >= 1, "n_bad must be >= 1"
-            assert self.background_err_lim >= 0, "background_err_lim must be >= 0"
-        except AssertionError as error:
-            valid = False
-            warnings.warn(UserWarning(f"Invalid parameters {error}"))
+        valid = False
+        if self.n_eval < 1:
+            warnings.warn(
+                UserWarning("Invalid n_eval: {self.n_eval}. Must be positive.")
+            )
+        elif self.bias_lim < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid bias_lim: {self.bias_lim}. Must be zero or positive."
+                )
+            )
+        elif self.drif_inter < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid drif_inter: {self.drif_inter}. Must be zero or positive."
+                )
+            )
+        elif self.drif_intra < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid drif_intra: {self.drif_intra}. Must be zero or positive."
+                )
+            )
+        elif self.err_std_n < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid err_std_n: {self.err_std_n}. Must be zero or positive."
+                )
+            )
+        elif self.n_bad < 1:
+            warnings.warn(UserWarning("Invalid n_bad: {self.n_bad}. Must be positive."))
+        elif self.background_err_lim < 0:
+            warnings.warn(
+                UserWarning(
+                    "Invalid background_err_lim: {self.background_err_lim}. Must be zero or positive."
+                )
+            )
+        else:
+            valid = True
+
         return valid
 
     def get_qc_outcomes_bias(self):
@@ -1232,12 +1361,15 @@ class SSTBiasedNoisyChecker:
 
     def set_all_qc_outcomes_to(self, input_state):
         """Set all the QC outcomes to the specified input_state"""
-        assert input_state in [
+        if input_state not in [
             passed,
             failed,
             untested,
             untestable,
-        ], f"Unknown input_state {input_state}"
+        ]:
+            raise ValueError(
+                f"Invalid input_state: {input_state}. Must be one of [{passed}, {failed}, {untested}, {untestable}]."
+            )
         self.qc_outcomes_short[:] = input_state
         self.qc_outcomes_noise[:] = input_state
         self.qc_outcomes_bias[:] = input_state

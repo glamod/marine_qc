@@ -60,13 +60,23 @@ def get_threshold_multiplier(
     float
         the multiplier value
     """
-    assert len(nob_limits) == len(
-        multiplier_values
-    ), "length of input lists are different"
-    assert min(multiplier_values) > 0, "multiplier value less than zero"
-    assert min(nob_limits) == 0, "nob_limit of less than zero given"
-    assert nob_limits[0] == 0, "lowest nob_limit not equal to zero"
-    assert is_monotonic(nob_limits), "nob_limits not in ascending order"
+    if len(nob_limits) != len(multiplier_values):
+        raise ValueError(
+            f"Length mismatch: nob_limits has {len(nob_limits)}, but multiplier_values has{len(multiplier_values)}."
+        )
+
+    if min(multiplier_values) <= 0:
+        raise ValueError(
+            "Invalid minimum multiplier_value: {min(multiplier_values)}. Must be greater than zero."
+        )
+    if nob_limits[0] != 0:
+        raise ValueError(f"Invalid first nob_limits: {nob_limits[0]}. Must be zero.")
+    if min(nob_limits) != 0:
+        raise ValueError("Invalid minimum nob_limit: {min(nob_limit)}. Must be zero.")
+    if not is_monotonic(nob_limits):
+        raise ValueError(
+            "Invalid nob_limits: {nob_limits}. Must be in ascending order."
+        )
 
     multiplier = -1
     if total_nobs == 0:
@@ -76,7 +86,8 @@ def get_threshold_multiplier(
         if total_nobs > limit:
             multiplier = multiplier_values[i]
 
-    assert multiplier > 0, "output multiplier less than or equal to zero "
+    if multiplier <= 0:
+        raise ValueError("Invalid multiplier: {multiplier}. Must be positive.")
 
     return multiplier
 
@@ -153,9 +164,12 @@ class SuperObsGrid:
         yindex = mds_lat_to_yindex(lat, res=1.0)
         pindex = which_pentad(month, day) - 1
 
-        assert 0 <= xindex < 360, "bad lon" + str(lon)
-        assert 0 <= yindex < 180, "bad lat" + str(lat)
-        assert 0 <= pindex < 73, "bad pentad" + str(month) + str(day)
+        if not (0 <= xindex < 360):
+            raise ValueError(f"Invalid xindex: {xindex}. Must be between 0 and 360.")
+        if not (0 <= yindex < 180):
+            raise ValueError(f"Invalid yindex: {yindex}. Must be between 0 and 180.")
+        if not (0 <= pindex < 73):
+            raise ValueError(f"Invalid pindex: {pindex}. Must be between 0 and 72.")
 
         if anom is not None:
             self.grid[xindex, yindex, pindex] += anom
@@ -190,7 +204,10 @@ class SuperObsGrid:
         list[float]
             anomalies and numbers of observations in two lists
         """
-        assert len(search_radius) == 3, str(len(search_radius))
+        if len(search_radius) != 3:
+            raise ValueError(
+                f"Length mismatch (search_radius): {len(search_radius)}. Must be 3."
+            )
 
         radcon = np.pi / 180.0
 

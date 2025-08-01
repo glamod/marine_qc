@@ -780,11 +780,11 @@ def test_do_dpt_missing_value_clim_check(testdata, climdata, apply_func):
 
     expected = pd.Series(
         [
-            failed,  # This should be untesable since lat is not avaiable
+            failed,  # This should be untesable since lat is not available
             passed,
-            failed,  # This should be untesable since lat is not avaiable
+            failed,  # This should be untesable since lat is not available
             passed,
-            failed,  # This should be untesable since lat is not avaiable
+            failed,  # This should be untesable since lat is not available
             passed,
             passed,
             passed,

@@ -978,7 +978,10 @@ def find_multiple_rounded_values(
     * min_count = 20
     * threshold = 0.5
     """
-    assert 0.0 <= threshold <= 1.0
+    if not (0.0 <= threshold <= 1.0):
+        raise ValueError(
+            f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0."
+        )
 
     number_of_obs = len(value)
 
@@ -1053,7 +1056,10 @@ def find_repeated_values(
     * min_count = 20
     * threshold = 0.7
     """
-    assert 0.0 <= threshold <= 1.0
+    if not (0.0 <= threshold <= 1.0):
+        raise ValueError(
+            f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0."
+        )
 
     number_of_obs = len(value)
 
