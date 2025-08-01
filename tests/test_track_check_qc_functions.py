@@ -4,11 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from marine_qc.auxiliary import failed, passed
-from marine_qc.qc_sequential_reports import (
-    backward_discrepancy,
-    calculate_course_parameters,
-    calculate_speed_course_distance_time_difference,
+from marine_qc import (
     do_few_check,
     do_iquam_track_check,
     do_spike_check,
@@ -16,6 +12,12 @@ from marine_qc.qc_sequential_reports import (
     find_multiple_rounded_values,
     find_repeated_values,
     find_saturated_runs,
+)
+from marine_qc.auxiliary import failed, passed
+from marine_qc.qc_sequential_reports import (
+    backward_discrepancy,
+    calculate_course_parameters,
+    calculate_speed_course_distance_time_difference,
     forward_discrepancy,
 )
 

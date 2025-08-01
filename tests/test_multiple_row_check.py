@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from marine_qc import do_multiple_row_check
 from marine_qc.multiple_row_checks import (
     _get_function,
     _get_preprocessed_args,
     _get_requests_from_params,
     _is_func_param,
     _is_in_data,
-    do_multiple_row_check,
 )
 
 
