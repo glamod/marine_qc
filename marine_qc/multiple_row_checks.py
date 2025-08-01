@@ -215,8 +215,8 @@ def do_multiple_row_check(
         If `return_method` is not one of ["all", "passed", "failed"]
         If variable names listed in `qc_dict` or `preproc_dict` are not valid parameters of the QC function.
 
-    Notes
-    -----
+    Note
+    ----
     If a variable is pre-processed using `preproc_dict`, mark the variable name as "__preprocessed__" in `qc_dict`.
     E.g. `"climatology": "__preprocessed__"`.
 

@@ -345,8 +345,8 @@ class SuperObsGrid:
         -------
         None
 
-        Notes
-        -----
+        Note
+        ----
         The original default values for limits, sigma_m, and noise_scaling originally defaulted to:
         * limits = (2, 2, 4)
         * sigma_m = 1.0
@@ -520,8 +520,8 @@ def do_mds_buddy_check(
         1-dimensional array containing QC flags.
         1 if buddy check fails, 0 otherwise.
 
-    Notes
-    -----
+    Note
+    ----
     The limits, number_of_obs_thresholds, and multipliers parameters are rather complex. The buddy check basically
     looks within a lat-lon-time range specified by the first element in limits. If there are more than zero
     observations in the search range then a multiplier is chosen based on how many observations there are.
@@ -663,8 +663,8 @@ def do_bayesian_buddy_check(
         1-dimensional array containing passed, failed or untestable flags. Untestable flags will be set if there
         are no buddies in the specified limits.
 
-    Notes
-    -----
+    Note
+    ----
     In previous versions the default values for the parameters were
     * prior_probability_of_gross_error = 0.05
     * quantization_interval = 0.1

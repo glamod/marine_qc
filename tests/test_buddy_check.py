@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 import marine_qc.Climatology as clim
+from marine_qc import do_bayesian_buddy_check, do_mds_buddy_check
 from marine_qc.auxiliary import (
     failed,
     passed,
@@ -14,8 +15,6 @@ from marine_qc.auxiliary import (
 )
 from marine_qc.qc_grouped_reports import (
     SuperObsGrid,
-    do_bayesian_buddy_check,
-    do_mds_buddy_check,
     get_threshold_multiplier,
 )
 
