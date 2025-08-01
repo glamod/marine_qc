@@ -27,6 +27,9 @@ Installation
 Installation using pip
 ----------------------
 
+This repository has not been release on pypi yet.
+-------------------------------------------------
+
 You can install the package directly from pip:
 
 .. code-block:: console
@@ -126,15 +129,15 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
 	      :alt: Coveralls
 
 .. |docs| image:: https://readthedocs.org/projects/marine_qc/badge/?version=latest
-        :target: https://marine-qc.readthedocs.io/en/latest/?version=latest
+	:target: https://marine-qc.readthedocs.io/en/latest/
         :alt: Documentation Status
 
 .. |fair-software| image:: https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F-green
    	    :target: https://fair-software.eu
 	      :alt: FAIR-software
 
-.. |fossa| image:: https://app.fossa.com/api/projects/custom%2B41576%2Fgithub.com%2Fglamod%2Fmarine_qc.svg?type=shield
-        :target: https://app.fossa.com/projects/custom%2B41576%2Fgithub.com%2Fglamod%2Fmarine_qc?ref=badge_shield
+.. |fossa| image:: https://app.fossa.com/api/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc.svg?type=shield
+        :target: https://app.fossa.com/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc?ref=badge_shield
         :alt: FOSSA
 
 .. |license| image:: https://img.shields.io/github/license/glamod/marine_qc.svg
@@ -157,11 +160,11 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
         :target: https://github.com/astral-sh/ruff
         :alt: Ruff
 
-.. |security| image:: https://bestpractices.coreinfrastructure.org/projects/./badge
-	      :target: https://bestpractices.coreinfrastructure.org/projects/
+.. |security| image:: https://bestpractices.coreinfrastructure.org/projects/10980/badge
+	      :target: https://bestpractices.coreinfrastructure.org/projects/10980
 	      :alt: OpenSSf Best Practices
 
-.. |status| image:: https://www.repostatus.org/badges/latest/active.svg
+.. |status| image:: https://www.repostatus.org/badges/latest/concept.svg
         :target: https://www.repostatus.org/#concept
         :alt: Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.
 
