@@ -195,6 +195,13 @@ def test_xindex_to_lon(xindex, res, lon):
     assert xindex_to_lon(xindex, res) == lon
 
 
+def test_xindex_to_lon_raises():
+    with pytest.raises(ValueError):
+        xindex_to_lon(-1, 1)
+    with pytest.raises(ValueError):
+        xindex_to_lon(360, 1)
+
+
 @pytest.mark.parametrize(
     "q11, q12, q21, q22, expected",
     [
