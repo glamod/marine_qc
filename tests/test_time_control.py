@@ -36,6 +36,7 @@ def test_split_date(date, expected_year, expected_month, expected_day, expected_
     for key in expected:
         assert result[key] == expected[key]
 
+
 @pytest.mark.parametrize(
     "month, day",
     [
@@ -48,15 +49,16 @@ def test_split_date(date, expected_year, expected_month, expected_day, expected_
         (9, 31),
         (11, 31),
         (13, 31),
-    ]
+    ],
 )
 def test_valid_month_day_fails(month, day):
     assert not valid_month_day(month, day)
 
+
 def test_valid_month_day_all():
     month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    for m in range(1,13):
-        for d in range(1,month_lengths[m-1]+1):
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
             assert valid_month_day(m, d)
 
 
@@ -66,14 +68,7 @@ def test_pentad_to_mont():
         assert p == which_pentad(m, d)
 
 
-@pytest.mark.parametrize(
-    "pentad",
-    [
-        -1,
-        0,
-        74
-    ]
-)
+@pytest.mark.parametrize("pentad", [-1, 0, 74])
 def test_pentad_to_month_day_raises(pentad):
     with pytest.raises(ValueError):
         pentad_to_month_day(pentad)
@@ -151,7 +146,7 @@ def test_convert_date_to_hour(dates, expected):
         (2005, 2, 29),
         (2004, 2, 30),
         (2005, 4, 31),
-    ]
+    ],
 )
 def test_dayinyear_raises(year, month, day):
     with pytest.raises(ValueError):
@@ -183,7 +178,7 @@ def test_dayinyear_all():
         (2004, 1, 1, 2453006),
         (2004, 1, 2, 2453007),
         (-4713, 11, 25, 1),
-    ]
+    ],
 )
 def test_jul_day(year, month, day, expected):
     assert jul_day(year, month, day) == expected
@@ -193,14 +188,9 @@ def test_jul_day_raises():
     with pytest.raises(ValueError):
         jul_day(2005, 7, 32)
 
+
 def test_time_difference():
     with pytest.raises(ValueError):
-        time_difference(
-            2003, 1, 1, -1,
-            2003, 1, 1, 1
-        )
+        time_difference(2003, 1, 1, -1, 2003, 1, 1, 1)
     with pytest.raises(ValueError):
-        time_difference(
-            2003, 1, 1, 1,
-            2003, 1, 1, 25
-        )
+        time_difference(2003, 1, 1, 1, 2003, 1, 1, 25)
