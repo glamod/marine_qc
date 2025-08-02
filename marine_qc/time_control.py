@@ -269,6 +269,34 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     ]
     return m[p - 1], d[p - 1]
 
+def valid_month_day(month: int, day:int) -> bool:
+    """
+    Returns True if month and day combination are allowed, False otherwise. Assumes that Feb 29th is valid.
+
+    Parameters
+    ==========
+    month: int
+        Month to be tested
+    day: int
+        Day to be tested
+
+    Returns
+    =======
+    bool
+        True if month and day are a valid combination (e.g. 12th March) and False if not (e.g. 30th February)
+
+    Notes
+    =====
+    Assumes that February 29th is a valid date.
+    """
+    if month < 1 or month > 12:
+        return False
+    month_lengths = get_month_lengths(2004)
+    if day < 1 or day > month_lengths[month - 1]:
+        return False
+
+    return True
+
 
 def which_pentad(month: int, day: int) -> int:
     """Take month and day as inputs and return pentad in range 1-73.
@@ -295,16 +323,11 @@ def which_pentad(month: int, day: int) -> int:
     The calculation is rather simple. It just loops through the year and adds up days till it reaches
     the day we are interested in. February 29th is treated as though it were March 1st in a regular year.
     """
-    if not (12 >= month >= 1):
-        raise ValueError(f"Month {month} not in range 1-12")
-    if not (31 >= day >= 1):
-        raise ValueError(f"Day {day} not in range 1-31")
+    if not valid_month_day(month, day):
+        raise ValueError(f"Invalid month {month} - day {day} combination.")
 
     pentad = int((day_in_year(month, day) - 1) / 5)
     pentad = pentad + 1
-
-    if not (1 <= pentad <= 73):
-        raise ValueError(f"Invalid pentad: {pentad}. Must be between 1 and 73.")
 
     return pentad
 
@@ -332,11 +355,8 @@ def day_in_year(month: int, day: int) -> int:
     ValueError
         If month not in range 1-12 or day not in range 1-31
     """
-    if month < 1 or month > 12:
-        raise ValueError("Month not in range 1-12")
-    month_lengths = get_month_lengths(2004)
-    if day < 1 or day > month_lengths[month - 1]:
-        raise ValueError(f"Day not in range 1-{month_lengths[month - 1]}")
+    if not valid_month_day(month, day):
+        raise ValueError(f"Invalid month {month} - day {day} combination.")
 
     month_lengths = get_month_lengths(2003)
 
@@ -491,8 +511,7 @@ def dayinyear(year: int, month: int, day: int) -> int:
     if month > 1:
         day = day + sum(month_lengths[0 : month - 1])
 
-    if not (1 <= day <= 366):
-        raise ValueError(f"Invalid day in year: {day}. Must be between 1 and 366.")
+    assert 1 <= day <= 366
 
     return day
 
@@ -519,10 +538,9 @@ def jul_day(year: int, month: int, day: int) -> int:
     This is one of those routines that looks baffling but works. No one is sure exactly how. It gets
     written once and then remains untouched for centuries, mysteriously working.
     """
-    if not (1 <= month <= 12):
-        raise ValueError(f"Invalid month: {month}. Must be between 1 and 12.")
-    if not (1 <= day <= 31):
-        raise ValueError(f"Invalid day: {day}. Must be between 1 and 31.")
+    if not valid_month_day(month, day):
+        raise ValueError(f"Invalid month {month} - day {day} combination.")
+
     a = (14 - month) // 12
     y = year + 4800 - a
     m = month + 12 * a - 3
