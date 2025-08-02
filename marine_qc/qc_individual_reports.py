@@ -1,4 +1,9 @@
-"""Module containing main QC functions which could be applied on a DataBundle."""
+"""
+QC of individual reports
+========================
+
+Module containing main QC functions which could be applied on a DataBundle.
+"""
 
 from __future__ import annotations
 

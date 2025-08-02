@@ -1,4 +1,9 @@
-"""Module containing QC functions for track checking which could be applied on a DataBundle."""
+"""
+QC of sequential reports
+========================
+
+Module containing QC functions for track checking which could be applied on a DataBundle.
+"""
 
 from __future__ import annotations
 

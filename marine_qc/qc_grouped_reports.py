@@ -1,4 +1,9 @@
-"""Module containing QC functions for deck level QC checks which could be applied on a DataBundle."""
+"""
+QC of grouped reports
+=====================
+
+Module containing QC functions for deck level QC checks which could be applied on a DataBundle.
+"""
 
 from __future__ import annotations
 
