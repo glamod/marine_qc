@@ -29,6 +29,12 @@ def test_0_is_89point5(yindex, resolution, expected):
     assert yindex_to_lat(yindex, res=resolution) == expected
 
 
+def test_yindex_to_lat_raises():
+    with pytest.raises(ValueError):
+        yindex_to_lat(-1, 1)
+    with pytest.raises(ValueError):
+        yindex_to_lat(180, 1)
+
 @pytest.mark.parametrize(
     "lat, res, expected",
     [
