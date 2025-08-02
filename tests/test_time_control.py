@@ -1,20 +1,21 @@
-"""
-Test time control
-"""
-
 from __future__ import annotations
 
+import itertools
 from datetime import datetime
 
 import pytest  # noqa
 
 from marine_qc.time_control import (
     convert_date_to_hours,
+    valid_month_day,
     day_in_year,
     leap_year_correction,
     pentad_to_month_day,
     split_date,
     which_pentad,
+    dayinyear,
+    jul_day,
+    time_difference,
 )
 
 
@@ -35,11 +36,47 @@ def test_split_date(date, expected_year, expected_month, expected_day, expected_
     for key in expected:
         assert result[key] == expected[key]
 
+@pytest.mark.parametrize(
+    "month, day",
+    [
+        (1, 32),
+        (0, 1),
+        (1, 0),
+        (2, 30),
+        (4, 31),
+        (6, 31),
+        (9, 31),
+        (11, 31),
+        (13, 31),
+    ]
+)
+def test_valid_month_day_fails(month, day):
+    assert not valid_month_day(month, day)
+
+def test_valid_month_day_all():
+    month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    for m in range(1,13):
+        for d in range(1,month_lengths[m-1]+1):
+            assert valid_month_day(m, d)
+
 
 def test_pentad_to_mont():
     for p in range(1, 74):
         m, d = pentad_to_month_day(p)
         assert p == which_pentad(m, d)
+
+
+@pytest.mark.parametrize(
+    "pentad",
+    [
+        -1,
+        0,
+        74
+    ]
+)
+def test_pentad_to_month_day_raises(pentad):
+    with pytest.raises(ValueError):
+        pentad_to_month_day(pentad)
 
 
 @pytest.mark.parametrize(
@@ -103,3 +140,67 @@ def test_leap_year_correction():
 )
 def test_convert_date_to_hour(dates, expected):
     assert (convert_date_to_hours(dates) == expected).all()
+
+
+@pytest.mark.parametrize(
+    "year, month, day",
+    [
+        (2005, 1, 0),
+        (2005, 0, 1),
+        (2005, 1, 32),
+        (2005, 2, 29),
+        (2004, 2, 30),
+        (2005, 4, 31),
+    ]
+)
+def test_dayinyear_raises(year, month, day):
+    with pytest.raises(ValueError):
+        dayinyear(year, month, day)
+
+
+def test_dayinyear_all():
+    # First lets do non-leap years
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            assert dayinyear(2005, m, d) == count
+            count += 1
+
+    # First lets do non-leap years
+    month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            assert dayinyear(2004, m, d) == count
+            count += 1
+
+
+@pytest.mark.parametrize(
+    "year, month, day, expected",
+    [
+        (1850, 12, 3, 2397095),
+        (2004, 1, 1, 2453006),
+        (2004, 1, 2, 2453007),
+        (-4713, 11, 25, 1),
+    ]
+)
+def test_jul_day(year, month, day, expected):
+    assert jul_day(year, month, day) == expected
+
+
+def test_jul_day_raises():
+    with pytest.raises(ValueError):
+        jul_day(2005, 7, 32)
+
+def test_time_difference():
+    with pytest.raises(ValueError):
+        time_difference(
+            2003, 1, 1, -1,
+            2003, 1, 1, 1
+        )
+    with pytest.raises(ValueError):
+        time_difference(
+            2003, 1, 1, 1,
+            2003, 1, 1, 25
+        )
