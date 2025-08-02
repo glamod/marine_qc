@@ -29,6 +29,13 @@ def test_0_is_89point5(yindex, resolution, expected):
     assert yindex_to_lat(yindex, res=resolution) == expected
 
 
+def test_yindex_to_lat_raises():
+    with pytest.raises(ValueError):
+        yindex_to_lat(-1, 1)
+    with pytest.raises(ValueError):
+        yindex_to_lat(180, 1)
+
+
 @pytest.mark.parametrize(
     "lat, res, expected",
     [
@@ -187,6 +194,13 @@ def test_gridcentres():
 )
 def test_xindex_to_lon(xindex, res, lon):
     assert xindex_to_lon(xindex, res) == lon
+
+
+def test_xindex_to_lon_raises():
+    with pytest.raises(ValueError):
+        xindex_to_lon(-1, 1)
+    with pytest.raises(ValueError):
+        xindex_to_lon(360, 1)
 
 
 @pytest.mark.parametrize(
