@@ -35,6 +35,7 @@ def test_yindex_to_lat_raises():
     with pytest.raises(ValueError):
         yindex_to_lat(180, 1)
 
+
 @pytest.mark.parametrize(
     "lat, res, expected",
     [
