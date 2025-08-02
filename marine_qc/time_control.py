@@ -269,7 +269,8 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     ]
     return m[p - 1], d[p - 1]
 
-def valid_month_day(month: int, day:int) -> bool:
+
+def valid_month_day(month: int, day: int) -> bool:
     """
     Returns True if month and day combination are allowed, False otherwise. Assumes that Feb 29th is valid.
 
