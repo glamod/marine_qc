@@ -237,3 +237,15 @@ def test_fill_missing_values(q11, q12, q21, q22, expected):
 )
 def test_get_four_surrounding_points(lat, lon, max90, expected):
     assert get_four_surrounding_points(lat, lon, res=1.0, max90=max90) == expected
+
+
+def test_get_four_surrounding_points_raises():
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(-95.0, 0.0, 1)
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(0.0, -200.0, 1)
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(95.0, 0.0, 1)
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(0.0, 200.0, 1)
+
