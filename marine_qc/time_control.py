@@ -337,6 +337,8 @@ def which_pentad(month: int, day: int) -> int:
     pentad = int((day_in_year(month, day) - 1) / 5)
     pentad = pentad + 1
 
+    assert 1 <= pentad <= 73  # noqa: S101
+
     return pentad
 
 
@@ -357,9 +359,11 @@ def day_in_year(*args) -> int:
     if len(args) != 2 and len(args) != 3:
         raise SyntaxError(f"{len(args)} arguments given, but 2 or 3 required")
 
+    all_args = True
     if len(args) == 2:
         year = 2004
         month, day = args
+        all_args = False
     if len(args) == 3:
         year, month, day = args
 
@@ -368,7 +372,7 @@ def day_in_year(*args) -> int:
             f"Invalid year {year} - month {month} - day {day} combination."
         )
 
-    if len(args) == 2:
+    if not all_args:
         year = 2003
 
     month_lengths = get_month_lengths(year)
@@ -379,6 +383,10 @@ def day_in_year(*args) -> int:
         day_index = day_in_year(3, 1)
     else:
         day_index = np.sum(month_lengths[0 : month - 1]) + day
+
+    assert (all_args and (1 <= day_index <= 366)) or (
+        not all_args and (1 <= day_index <= 365)
+    )  # noqa: S101
 
     return day_index
 
