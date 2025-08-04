@@ -11,11 +11,7 @@ from .location_control import (
     mds_lat_to_yindex,
     mds_lon_to_xindex,
 )
-from .time_control import (
-    day_in_year,
-    get_month_lengths,
-    which_pentad
-)
+from .time_control import day_in_year, get_month_lengths, which_pentad
 
 
 class Climatology:
