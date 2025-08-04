@@ -2,6 +2,17 @@
 
 from __future__ import annotations
 
+from .buoy_tracking_qc import (
+    do_speed_check,
+    do_new_speed_check,
+    do_aground_check,
+    do_new_aground_check,
+    do_sst_start_tail_check,
+    do_sst_end_tail_check,
+    do_sst_biased_check,
+    do_sst_noisy_check,
+    do_sst_biased_noisy_short_check,
+)  # noqa
 from .multiple_row_checks import do_multiple_row_check  # noqa
 from .qc_grouped_reports import do_mds_buddy_check, do_bayesian_buddy_check  # noqa
 from .qc_individual_reports import (
@@ -28,5 +39,5 @@ from .qc_sequential_reports import (
 )  # noqa
 
 __author__ = """Ludwig Lierhammer"""
-__email__ = "ludwiglierhammer@dwd.de"
+__email__ = "ludwig.lierhammer@dwd.de"
 __version__ = "0.0.1"
