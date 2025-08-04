@@ -18,7 +18,7 @@ from xclim.core.units import convert_units_to
 from .auxiliary import ValueFloatType, generic_decorator, isvalid
 from .time_control import (
     convert_date,
-    day_in_year_combined,
+    day_in_year,
     get_month_lengths,
     which_pentad,
 )
@@ -367,7 +367,7 @@ class Climatology:
             return 0
         if self.ntime == 73:
             return which_pentad(month, day) - 1
-        return day_in_year_combined(month, day) - 1
+        return day_in_year(month, day) - 1
 
 
 @inspect_climatology("climatology")

@@ -334,13 +334,13 @@ def which_pentad(month: int, day: int) -> int:
     if not valid_month_day(month, day):
         raise ValueError(f"Invalid month {month} - day {day} combination.")
 
-    pentad = int((day_in_year_combined(month, day) - 1) / 5)
+    pentad = int((day_in_year(month, day) - 1) / 5)
     pentad = pentad + 1
 
     return pentad
 
 
-def day_in_year_combined(*args) -> int:
+def day_in_year(*args) -> int:
     """Get the day in year from 1 to 365 or 366.
 
     Parameters
@@ -376,7 +376,7 @@ def day_in_year_combined(*args) -> int:
     if month == 1:
         day_index = day
     elif len(args) == 2 and month == 2 and day == 29:
-        day_index = day_in_year_combined(3, 1)
+        day_index = day_in_year(3, 1)
     else:
         day_index = np.sum(month_lengths[0 : month - 1]) + day
 

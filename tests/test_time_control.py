@@ -9,7 +9,7 @@ from marine_qc.time_control import (
     valid_month_day,
     #    day_in_year,
     #    dayinyear,
-    day_in_year_combined,
+    day_in_year,
     leap_year_correction,
     pentad_to_month_day,
     split_date,
@@ -109,30 +109,30 @@ def test_which_pentad_raises_value_error():
 )
 def test_day_in_year_raises(args, expected_error):
     with pytest.raises(expected_error):
-        day_in_year_combined(*args)
+        day_in_year(*args)
 
 
 def test_day_in_year_leap_year():
-    assert day_in_year_combined(2, 29) == day_in_year_combined(3, 1)
+    assert day_in_year(2, 29) == day_in_year(3, 1)
 
     # Just test all days
     month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     count = 1
     for month in range(1, 13):
         for day in range(1, month_lengths[month - 1] + 1):
-            assert day_in_year_combined(month, day) == count
+            assert day_in_year(month, day) == count
             count += 1
 
 
 def test_day_in_year_leap_year_test():
     with pytest.raises(ValueError):
-        day_in_year_combined(13, 1)
+        day_in_year(13, 1)
     with pytest.raises(ValueError):
-        day_in_year_combined(0, 1)
+        day_in_year(0, 1)
     with pytest.raises(ValueError):
-        day_in_year_combined(2, 30)
+        day_in_year(2, 30)
     with pytest.raises(ValueError):
-        day_in_year_combined(2, 0)
+        day_in_year(2, 0)
 
 
 @pytest.mark.parametrize(
@@ -148,7 +148,7 @@ def test_day_in_year_leap_year_test():
 )
 def test_dayinyear_raises(year, month, day):
     with pytest.raises(ValueError):
-        day_in_year_combined(year, month, day)
+        day_in_year(year, month, day)
 
 
 def test_dayinyear_all():
@@ -157,7 +157,7 @@ def test_dayinyear_all():
     count = 1
     for m in range(1, 13):
         for d in range(1, month_lengths[m - 1] + 1):
-            assert day_in_year_combined(2005, m, d) == count
+            assert day_in_year(2005, m, d) == count
             count += 1
 
     # First lets do non-leap years
@@ -165,7 +165,7 @@ def test_dayinyear_all():
     count = 1
     for m in range(1, 13):
         for d in range(1, month_lengths[m - 1] + 1):
-            assert day_in_year_combined(2004, m, d) == count
+            assert day_in_year(2004, m, d) == count
             count += 1
 
 
