@@ -19,8 +19,6 @@ from marine_qc.qc_grouped_reports import (
     get_threshold_multiplier,
 )
 
-import marine_qc.location_control
-
 
 @pytest.fixture
 def reps():
