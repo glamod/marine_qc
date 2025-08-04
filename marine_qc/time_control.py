@@ -370,6 +370,39 @@ def day_in_year(month: int, day: int) -> int:
 
     return day_index
 
+def dayinyear(year: int, month: int, day: int) -> int:
+    """Calculate the day in year, running from 1 for Jan 1st to 365 (or 366) for Dec 31st.
+
+    Parameters
+    ----------
+    year: int
+        Year.
+    month: int
+        Month.
+    day: int
+        Day.
+
+    Returns
+    -------
+    int
+        Day in year, between 1 and 366.
+    """
+    if not (1 <= month <= 12):
+        raise ValueError(f"Invalid month: {month}. Must be between 1 and 12.")
+
+    month_lengths = get_month_lengths(year)
+
+    day_max = month_lengths[month - 1]
+    if not (1 <= day <= day_max):
+        raise ValueError(f"Invalid day: {day}. Must be between 1 and {day_max}.")
+
+    if month > 1:
+        day = day + sum(month_lengths[0 : month - 1])
+
+    assert 1 <= day <= 366
+
+    return day
+
 
 def relative_year_number(year: int, reference: int = 1979) -> int:
     """Get number of year relative to reference year (1979 by default).
@@ -483,38 +516,6 @@ def leap_year_correction(
     return time
 
 
-def dayinyear(year: int, month: int, day: int) -> int:
-    """Calculate the day in year, running from 1 for Jan 1st to 365 (or 366) for Dec 31st.
-
-    Parameters
-    ----------
-    year: int
-        Year.
-    month: int
-        Month.
-    day: int
-        Day.
-
-    Returns
-    -------
-    int
-        Day in year, between 1 and 366.
-    """
-    if not (1 <= month <= 12):
-        raise ValueError(f"Invalid month: {month}. Must be between 1 and 12.")
-
-    month_lengths = get_month_lengths(year)
-
-    day_max = month_lengths[month - 1]
-    if not (1 <= day <= day_max):
-        raise ValueError(f"Invalid day: {day}. Must be between 1 and {day_max}.")
-
-    if month > 1:
-        day = day + sum(month_lengths[0 : month - 1])
-
-    assert 1 <= day <= 366
-
-    return day
 
 
 def jul_day(year: int, month: int, day: int) -> int:
