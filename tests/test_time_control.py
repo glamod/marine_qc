@@ -54,16 +54,18 @@ def test_split_date(date, expected_year, expected_month, expected_day, expected_
 def test_valid_month_day_fails(month, day):
     assert not valid_month_day(month, day)
 
+
 @pytest.mark.parametrize(
     "args, expected_error",
     (
         [[2003], SyntaxError],
         [[2003, 3, 5, 1], SyntaxError],
-    )
+    ),
 )
 def test_valid_month_raises(args, expected_error):
     with pytest.raises(expected_error):
         valid_month_day(*args)
+
 
 def test_valid_month_day_all():
     month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
