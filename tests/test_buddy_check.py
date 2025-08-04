@@ -603,13 +603,13 @@ def test_add_one_maxes_limits_with_missing_stdevs(reps_, dummy_pentad_stdev_empt
     assert pytest.approx(sd, 0.0001) == 500
     assert mn == 0.0
 
+
 def test_add_single_observation_raises():
     g = SuperObsGrid()
     with pytest.raises(ValueError):
         g.add_single_observation(0.0, 500.0, 1, 1, 0.5)
     with pytest.raises(ValueError):
         g.add_single_observation(-100.0, 0.0, 1, 1, 0.5)
-
 
 
 def test_add_multiple(reps_, dummy_pentad_stdev_):
