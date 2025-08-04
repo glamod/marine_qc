@@ -275,19 +275,19 @@ def valid_month_day(month: int, day: int) -> bool:
     Returns True if month and day combination are allowed, False otherwise. Assumes that Feb 29th is valid.
 
     Parameters
-    ==========
+    ----------
     month: int
         Month to be tested
     day: int
         Day to be tested
 
     Returns
-    =======
+    -------
     bool
         True if month and day are a valid combination (e.g. 12th March) and False if not (e.g. 30th February)
 
     Notes
-    =====
+    -----
     Assumes that February 29th is a valid date.
     """
     if month < 1 or month > 12:
