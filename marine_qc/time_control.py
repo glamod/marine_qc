@@ -290,9 +290,11 @@ def valid_month_day(*args) -> bool:
     -----
     Assumes that February 29th is a valid date.
     """
+    if len(args) not in [2, 3]:
+        raise SyntaxError(f"{len(args)} arguments given, but 2 (month, day) or 3 (year, month, day) required")
 
+    year, month, day = (2004, 1, 1)
     if len(args) == 2:
-        year = 2004
         month, day = args
     if len(args) == 3:
         year, month, day = args
