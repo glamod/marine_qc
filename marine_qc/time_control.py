@@ -370,6 +370,7 @@ def day_in_year(month: int, day: int) -> int:
 
     return day_index
 
+
 def dayinyear(year: int, month: int, day: int) -> int:
     """Calculate the day in year, running from 1 for Jan 1st to 365 (or 366) for Dec 31st.
 
@@ -514,8 +515,6 @@ def leap_year_correction(
     if years_since_1980 < 0 and years_since_1980 != leap * 4.0:
         time = time - 1.0
     return time
-
-
 
 
 def jul_day(year: int, month: int, day: int) -> int:
