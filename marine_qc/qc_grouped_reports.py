@@ -168,9 +168,8 @@ class SuperObsGrid:
             raise ValueError(f"Invalid xindex: {xindex}. Must be between 0 and 360.")
         if not (0 <= yindex < 180):
             raise ValueError(f"Invalid yindex: {yindex}. Must be between 0 and 180.")
-        # pindex will be within this range or raise an Error from which pentad
-        # if not (0 <= pindex < 73):
-        #     raise ValueError(f"Invalid pindex: {pindex}. Must be between 0 and 72.")
+        if not (0 <= pindex < 73):
+            raise ValueError(f"Invalid pindex: {pindex}. Must be between 0 and 72.")
 
         if anom is not None:
             self.grid[xindex, yindex, pindex] += anom
