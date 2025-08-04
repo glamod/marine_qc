@@ -11,7 +11,11 @@ from .location_control import (
     mds_lat_to_yindex,
     mds_lon_to_xindex,
 )
-from .time_control import day_in_year, get_month_lengths, which_pentad
+from .time_control import (
+    day_in_year_combined,
+    get_month_lengths,
+    which_pentad
+)
 
 
 class Climatology:
@@ -112,7 +116,7 @@ class Climatology:
         if self.n == 73:
             tindex = which_pentad(month, day) - 1
         if self.n == 365:
-            tindex = day_in_year(month, day) - 1
+            tindex = day_in_year_combined(month, day) - 1
 
         return tindex
 

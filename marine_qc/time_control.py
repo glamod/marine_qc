@@ -270,7 +270,7 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     return m[p - 1], d[p - 1]
 
 
-def valid_month_day(month: int, day: int) -> bool:
+def valid_month_day(*args) -> bool:
     """
     Returns True if month and day combination are allowed, False otherwise. Assumes that Feb 29th is valid.
 
@@ -290,9 +290,16 @@ def valid_month_day(month: int, day: int) -> bool:
     -----
     Assumes that February 29th is a valid date.
     """
+
+    if len(args) == 2:
+        year = 2004
+        month, day = args
+    if len(args) == 3:
+        year, month, day = args
+
     if month < 1 or month > 12:
         return False
-    month_lengths = get_month_lengths(2004)
+    month_lengths = get_month_lengths(year)
     if day < 1 or day > month_lengths[month - 1]:
         return False
 
@@ -327,81 +334,53 @@ def which_pentad(month: int, day: int) -> int:
     if not valid_month_day(month, day):
         raise ValueError(f"Invalid month {month} - day {day} combination.")
 
-    pentad = int((day_in_year(month, day) - 1) / 5)
+    pentad = int((day_in_year_combined(month, day) - 1) / 5)
     pentad = pentad + 1
 
     return pentad
 
 
-def day_in_year(month: int, day: int) -> int:
-    """
-    Find the day number of a particular day from Jan 1st which is 1 to Dec 31st which is 365.
-
-    29 February is treated as 1 March
+def day_in_year_combined(*args) -> int:
+    """Get the day in year from 1 to 365 or 366.
 
     Parameters
     ----------
-    month : int
-        Month to be processed
-    day : int
-        Day in the month
+    args: int
+        Two or three integer arguments specifying either month and day, or year, month and day.
 
     Returns
     -------
     int
-        Day number in year 1-365
-
-    Raises
-    ------
-    ValueError
-        If month not in range 1-12 or day not in range 1-31
+        Day in year. If year is not specified then the year is treated as a non-leap year and
+        29 February returns the same value as 1 March.
     """
-    if not valid_month_day(month, day):
-        raise ValueError(f"Invalid month {month} - day {day} combination.")
+    if len(args) != 2 and len(args) != 3:
+        raise SyntaxError(f"{len(args)} arguments given, but 2 or 3 required")
 
-    month_lengths = get_month_lengths(2003)
+    if len(args) == 2:
+        year = 2004
+        month, day = args
+    if len(args) == 3:
+        year, month, day = args
+
+    if not valid_month_day(year, month, day):
+        raise ValueError(
+            f"Invalid year {year} - month {month} - day {day} combination."
+        )
+
+    if len(args) == 2:
+        year = 2003
+
+    month_lengths = get_month_lengths(year)
 
     if month == 1:
         day_index = day
-    elif month == 2 and day == 29:
-        day_index = day_in_year(3, 1)
+    elif len(args) == 2 and month == 2 and day == 29:
+        day_index = day_in_year_combined(3, 1)
     else:
         day_index = np.sum(month_lengths[0 : month - 1]) + day
 
     return day_index
-
-def dayinyear(year: int, month: int, day: int) -> int:
-    """Calculate the day in year, running from 1 for Jan 1st to 365 (or 366) for Dec 31st.
-
-    Parameters
-    ----------
-    year: int
-        Year.
-    month: int
-        Month.
-    day: int
-        Day.
-
-    Returns
-    -------
-    int
-        Day in year, between 1 and 366.
-    """
-    if not (1 <= month <= 12):
-        raise ValueError(f"Invalid month: {month}. Must be between 1 and 12.")
-
-    month_lengths = get_month_lengths(year)
-
-    day_max = month_lengths[month - 1]
-    if not (1 <= day <= day_max):
-        raise ValueError(f"Invalid day: {day}. Must be between 1 and {day_max}.")
-
-    if month > 1:
-        day = day + sum(month_lengths[0 : month - 1])
-
-    assert 1 <= day <= 366
-
-    return day
 
 
 def relative_year_number(year: int, reference: int = 1979) -> int:
@@ -514,8 +493,6 @@ def leap_year_correction(
     if years_since_1980 < 0 and years_since_1980 != leap * 4.0:
         time = time - 1.0
     return time
-
-
 
 
 def jul_day(year: int, month: int, day: int) -> int:

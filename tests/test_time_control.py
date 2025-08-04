@@ -7,12 +7,13 @@ import pytest  # noqa
 from marine_qc.time_control import (
     convert_date_to_hours,
     valid_month_day,
-    day_in_year,
+    #    day_in_year,
+    #    dayinyear,
+    day_in_year_combined,
     leap_year_correction,
     pentad_to_month_day,
     split_date,
     which_pentad,
-    dayinyear,
     jul_day,
     time_difference,
 )
@@ -96,27 +97,76 @@ def test_which_pentad_raises_value_error():
         which_pentad(1, 41)
 
 
+@pytest.mark.parametrize(
+    "args, expected_error",
+    [
+        ([2003], SyntaxError),
+        ([2003, 1, 31, 5], SyntaxError),
+        ([1, 32], ValueError),
+        ([2, 30], ValueError),
+        ([2003, 2, 29], ValueError),
+    ],
+)
+def test_day_in_year_raises(args, expected_error):
+    with pytest.raises(expected_error):
+        day_in_year_combined(*args)
+
+
 def test_day_in_year_leap_year():
-    assert day_in_year(2, 29) == day_in_year(3, 1)
+    assert day_in_year_combined(2, 29) == day_in_year_combined(3, 1)
 
     # Just test all days
     month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     count = 1
     for month in range(1, 13):
         for day in range(1, month_lengths[month - 1] + 1):
-            assert day_in_year(month, day) == count
+            assert day_in_year_combined(month, day) == count
             count += 1
 
 
 def test_day_in_year_leap_year_test():
     with pytest.raises(ValueError):
-        day_in_year(13, 1)
+        day_in_year_combined(13, 1)
     with pytest.raises(ValueError):
-        day_in_year(0, 1)
+        day_in_year_combined(0, 1)
     with pytest.raises(ValueError):
-        day_in_year(2, 30)
+        day_in_year_combined(2, 30)
     with pytest.raises(ValueError):
-        day_in_year(2, 0)
+        day_in_year_combined(2, 0)
+
+
+@pytest.mark.parametrize(
+    "year, month, day",
+    [
+        (2005, 1, 0),
+        (2005, 0, 1),
+        (2005, 1, 32),
+        (2005, 2, 29),
+        (2004, 2, 30),
+        (2005, 4, 31),
+    ],
+)
+def test_dayinyear_raises(year, month, day):
+    with pytest.raises(ValueError):
+        day_in_year_combined(year, month, day)
+
+
+def test_dayinyear_all():
+    # First lets do non-leap years
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            assert day_in_year_combined(2005, m, d) == count
+            count += 1
+
+    # First lets do non-leap years
+    month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            assert day_in_year_combined(2004, m, d) == count
+            count += 1
 
 
 def test_leap_year_correction():
@@ -134,40 +184,6 @@ def test_leap_year_correction():
 )
 def test_convert_date_to_hour(dates, expected):
     assert (convert_date_to_hours(dates) == expected).all()
-
-
-@pytest.mark.parametrize(
-    "year, month, day",
-    [
-        (2005, 1, 0),
-        (2005, 0, 1),
-        (2005, 1, 32),
-        (2005, 2, 29),
-        (2004, 2, 30),
-        (2005, 4, 31),
-    ],
-)
-def test_dayinyear_raises(year, month, day):
-    with pytest.raises(ValueError):
-        dayinyear(year, month, day)
-
-
-def test_dayinyear_all():
-    # First lets do non-leap years
-    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    count = 1
-    for m in range(1, 13):
-        for d in range(1, month_lengths[m - 1] + 1):
-            assert dayinyear(2005, m, d) == count
-            count += 1
-
-    # First lets do non-leap years
-    month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    count = 1
-    for m in range(1, 13):
-        for d in range(1, month_lengths[m - 1] + 1):
-            assert dayinyear(2004, m, d) == count
-            count += 1
 
 
 @pytest.mark.parametrize(
