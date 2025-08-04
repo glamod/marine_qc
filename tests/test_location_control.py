@@ -248,4 +248,3 @@ def test_get_four_surrounding_points_raises():
         get_four_surrounding_points(95.0, 0.0, 1)
     with pytest.raises(ValueError):
         get_four_surrounding_points(0.0, 200.0, 1)
-
