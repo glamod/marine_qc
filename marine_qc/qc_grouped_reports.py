@@ -72,7 +72,7 @@ def get_threshold_multiplier(
     if nob_limits[0] != 0:
         raise ValueError(f"Invalid first nob_limits: {nob_limits[0]}. Must be zero.")
     if min(nob_limits) != 0:
-        raise ValueError("Invalid minimum nob_limit: {min(nob_limit)}. Must be zero.")
+        raise ValueError(f"Invalid minimum nob_limit: {min(nob_limits)}. Must be zero.")
     if not is_monotonic(nob_limits):
         raise ValueError(
             "Invalid nob_limits: {nob_limits}. Must be in ascending order."
@@ -87,7 +87,7 @@ def get_threshold_multiplier(
             multiplier = multiplier_values[i]
 
     if multiplier <= 0:
-        raise ValueError("Invalid multiplier: {multiplier}. Must be positive.")
+        raise ValueError(f"Invalid multiplier: {multiplier}. Must be positive.")
 
     return multiplier
 
@@ -168,8 +168,9 @@ class SuperObsGrid:
             raise ValueError(f"Invalid xindex: {xindex}. Must be between 0 and 360.")
         if not (0 <= yindex < 180):
             raise ValueError(f"Invalid yindex: {yindex}. Must be between 0 and 180.")
-        if not (0 <= pindex < 73):
-            raise ValueError(f"Invalid pindex: {pindex}. Must be between 0 and 72.")
+        # pindex will be within this range or raise an Error from which pentad
+        # if not (0 <= pindex < 73):
+        #     raise ValueError(f"Invalid pindex: {pindex}. Must be between 0 and 72.")
 
         if anom is not None:
             self.grid[xindex, yindex, pindex] += anom

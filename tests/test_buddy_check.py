@@ -19,6 +19,8 @@ from marine_qc.qc_grouped_reports import (
     get_threshold_multiplier,
 )
 
+import marine_qc.location_control
+
 
 @pytest.fixture
 def reps():
@@ -275,6 +277,32 @@ def test_simple():
             assert multiplier == 3.0
         else:
             assert multiplier == 2.0
+
+
+def test_get_threshold_multipliers_different_len_arrays_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 5, 10], [1, 2, 3, 4])
+
+
+def test_get_threshold_multipliers_zero_multiplier_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 5, 10], [0, 2, 3])
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 5, 10], [-1, 2, 3])
+
+
+def test_get_threshold_multiplier_nob_limits_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [1, 2, 3], [3, 6, 9])
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, -2, 3], [3, 6, 9])
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 4, 2], [3, 6, 9])
+
+
+def test_get_threshold_multiplier_negative_nobs_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(-1, [0, 5, 10], [1, 5, 10])
 
 
 @pytest.fixture
@@ -574,6 +602,14 @@ def test_add_one_maxes_limits_with_missing_stdevs(reps_, dummy_pentad_stdev_empt
 
     assert pytest.approx(sd, 0.0001) == 500
     assert mn == 0.0
+
+def test_add_single_observation_raises():
+    g = SuperObsGrid()
+    with pytest.raises(ValueError):
+        g.add_single_observation(0.0, 500.0, 1, 1, 0.5)
+    with pytest.raises(ValueError):
+        g.add_single_observation(-100.0, 0.0, 1, 1, 0.5)
+
 
 
 def test_add_multiple(reps_, dummy_pentad_stdev_):
