@@ -11,5 +11,3 @@ Spherical geometry functions
    spherical_geometry.intermediate_point
    spherical_geometry.lat_lon_from_course_and_distance
    spherical_geometry.sphere_distance
-   
-   

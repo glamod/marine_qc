@@ -3,9 +3,9 @@
 Grouped report class
 --------------------
 
-.. autosummary:: 
+.. autosummary::
    :toctree: generated/
-   
+
    qc_grouped_reports.SuperObsGrid
    qc_grouped_reports.SuperObsGrid.add_multiple_observations
    qc_grouped_reports.SuperObsGrid.add_single_observation

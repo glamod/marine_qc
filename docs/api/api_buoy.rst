@@ -5,12 +5,12 @@ Buoy tracking classes
 
 .. autosummary::
    :toctree: generated/
-   
+
    buoy_tracking_qc.SpeedChecker
    buoy_tracking_qc.SpeedChecker.do_speed_check
    buoy_tracking_qc.SpeedChecker.get_qc_outcomes
    buoy_tracking_qc.SpeedChecker.valid_arrays
-   buoy_tracking_qc.SpeedChecker.valid_parameters   
+   buoy_tracking_qc.SpeedChecker.valid_parameters
    buoy_tracking_qc.NewSpeedChecker
    buoy_tracking_qc.NewSpeedChecker.do_new_speed_check
    buoy_tracking_qc.NewSpeedChecker.get_qc_outcomes
@@ -34,7 +34,7 @@ Buoy tracking classes
    buoy_tracking_qc.SSTBiasedNoisyChecker.get_qc_outcomes_short
    buoy_tracking_qc.SSTBiasedNoisyChecker.set_all_qc_outcomes_to
    buoy_tracking_qc.SSTBiasedNoisyChecker.valid_parameters
-      
+
 
 Buoy tracking functions
 -----------------------

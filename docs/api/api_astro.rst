@@ -14,7 +14,7 @@ Astrononomical geometry functions
    astronomical_geometry.mean_earth_anomaly
    astronomical_geometry.sunangle
    astronomical_geometry.sin_of_elevation
-   astronomical_geometry.sun_azimuth   
+   astronomical_geometry.sun_azimuth
    astronomical_geometry.sun_ascension
    astronomical_geometry.sun_declination
    astronomical_geometry.sun_hour_angle
@@ -22,4 +22,3 @@ Astrononomical geometry functions
    astronomical_geometry.sun_position
    astronomical_geometry.to_local_siderial_time
    astronomical_geometry.to_siderial_time
-   

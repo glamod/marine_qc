@@ -20,5 +20,3 @@ Time control functions
    time_control.time_in_whole_days
    time_control.pentad_to_month_day
    time_control.which_pentad
-   
-   

@@ -15,4 +15,3 @@ Location functions
    location_control.mds_lon_to_xindex
    location_control.xindex_to_lon
    location_control.yindex_to_lat
-   

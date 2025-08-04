@@ -5,14 +5,14 @@
 
 .. autoclass:: SuperObsGrid
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~SuperObsGrid.__init__
       ~SuperObsGrid.add_multiple_observations
       ~SuperObsGrid.add_single_observation
@@ -22,9 +22,3 @@
       ~SuperObsGrid.get_neighbour_anomalies
       ~SuperObsGrid.get_new_buddy_limits
       ~SuperObsGrid.take_average
-   
-   
-
-   
-   
-   
