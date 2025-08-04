@@ -1,4 +1,9 @@
-"""Marine QC tracking module."""
+"""
+Buoy tracking QC module
+=======================
+
+Module containing QC functions for sequential reports from a single drifting buoy.
+"""
 
 # noqa: S101
 
@@ -331,7 +336,7 @@ class NewSpeedChecker:
     path may have been followed). Positional errors introduced by lon/lat 'jitter' and data precision
     can be of order several km's. Reports must be separated by a suitably long period of time (the 'min_win_period')
     to minimise the effect of these errors when calculating speed e.g. for reports separated by 9 hours
-    errors of order 10 cm/s would result which are a few percent of fast ocean current speed. Conversley,
+    errors of order 10 cm/s would result which are a few percent of fast ocean current speed. Conversely,
     the period of time chosen should not be too long so as to resolve short-lived burst of speed on
     manouvering ships. Larger positional errors may also trigger the check.
 

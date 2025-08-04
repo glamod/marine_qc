@@ -168,7 +168,7 @@ do_supersaturation_check
 
 Check whether the dewpoint temperature is greater than the air temperature. If the dew point is greater than the
 air temperature then the conditions are supersaturated and the flag is set to 1, fail. If the dewpoint is less than
-or equal to the air temperature then the flag is set to 0, pass. If either of the inputs is numerically invalide then
+or equal to the air temperature then the flag is set to 0, pass. If either of the inputs is numerically invalid then
 the flag is set to 2, untestable.
 
 do_sst_freeze_check
@@ -278,3 +278,58 @@ do_bayesian_buddy_check
 The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The principle is the same -  a report is
 compared to the average of nearby reports - but the determination of whether it is too far away is based on an
 explicit estimate of the probability of gross error.
+
+Tracking QC
+-----------
+
+There are additional routines that are intended for the QC of measurements of sea surface temperature
+from drifting buoys specifically. These checks are based on Atkinson et al. 2013.
+
+Atkinson, C. P., N. A. Rayner, J. Roberts-Jones, and R. O. Smith (2013), Assessing the quality of sea
+surface temperature observations from drifting buoys and ships on a platform-by-platform basis, J.
+Geophys. Res. Oceans, 118, 3507–3529, https://doi.org/10.1002/jgrc.20257
+
+do_speed_check
+==============
+
+The speed check aims to flag reports from drifting buoys that have been picked up by a ship (and are
+therefore likely to be out of the water). Reports are flagged if the mean velocity over a specified period
+is above a threshold (2.5 m/s) and the reports cover a period of time longer than a specified minimum.
+
+do_new_speed_check
+==================
+
+The new speed check behaves similarly to the speed check, but observations are prescreened using the
+IQUAM track check. Speed is assessed over the shortest available period that exceeds the specified
+minimum window period. To avoid problems with the discretization of time and location variables (for
+example, latitude and longitude are often given to the nearest tenth of a degree), which can lead to large
+apparent speeds, a minimum increment can be specified.
+
+do_aground_check
+================
+
+The aground check aims to flag reports from drifting buoys that have fetched up on land. A drifter is
+deemed aground when, after a minimum specified period of time, the distance between reports is less than
+a specified 'tolerance'. Sometimes a drifting buoy will return to the sea, so a maximum period is also
+specified to avoid missing short lived groundings.
+
+do_new_aground_check
+====================
+
+The new aground check is the same as the aground check but there is no upper window limit.
+
+do_sst_start_tail_check
+=======================
+
+do_sst_end_tail_check
+=====================
+
+do_sst_biased_check
+===================
+
+do_sst_noisy_check
+==================
+
+do_sst_biased_noisy_short_check
+===============================
+

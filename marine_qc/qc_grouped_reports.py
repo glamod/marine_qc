@@ -2,7 +2,7 @@
 QC of grouped reports
 =====================
 
-Module containing QC functions for deck level QC checks which could be applied on a DataBundle.
+Module containing QC functions for quality control of grouped marine reports.
 """
 
 from __future__ import annotations
