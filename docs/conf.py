@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.abspath("."))
 
 import marine_qc  # noqa
 
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -246,6 +247,7 @@ warnings.filterwarnings("ignore")
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
+    "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "python": ("https://docs.python.org/3/", None),
 }
