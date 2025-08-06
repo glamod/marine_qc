@@ -186,7 +186,9 @@ def reps4():
     return reps
 
 
-def test_eight_near_neighbours_missing_stdev_defaults_to_one(dummy_pentad_stdev_empty, reps):
+def test_eight_near_neighbours_missing_stdev_defaults_to_one(
+    dummy_pentad_stdev_empty, reps
+):
     g = SuperObsGrid()
     g.add_multiple_observations(
         reps["LAT"], reps["LON"], reps["DATE"], reps["SST"] - reps["SST_CLIM"]
