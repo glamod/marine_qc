@@ -468,9 +468,6 @@ def do_climatology_check(
     if maximum_anomaly is None or maximum_anomaly <= 0:
         return format_return_type(result, value)
 
-    if standard_deviation is None:
-        standard_deviation = np.full(value.shape, 1.0)
-
     if standard_deviation_limits is None:
         standard_deviation_limits = (0, np.inf)
     elif standard_deviation_limits[1] <= standard_deviation_limits[0]:
