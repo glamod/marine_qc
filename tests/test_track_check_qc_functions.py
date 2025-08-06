@@ -6,9 +6,6 @@ import pytest
 
 from marine_qc.auxiliary import failed, passed
 from marine_qc.qc_sequential_reports import (
-    backward_discrepancy,
-    calculate_course_parameters,
-    calculate_speed_course_distance_time_difference,
     do_few_check,
     do_iquam_track_check,
     do_spike_check,
@@ -17,6 +14,10 @@ from marine_qc.qc_sequential_reports import (
     find_repeated_values,
     find_saturated_runs,
     forward_discrepancy,
+    backward_discrepancy,
+    calculate_course_parameters,
+    calculate_speed_course_distance_time_difference,
+    calculate_midpoint,
 )
 
 
@@ -129,6 +130,37 @@ def test_calculate_course_parameters(ship_frame):
     assert course == 0.0
     assert pytest.approx(timediff, 0.0000001) == 1.0
 
+
+def test_do_track_check_very_few_obs(ship_frame):
+    ship_frame = ship_frame.loc[[0,1]]
+    trk = do_track_check(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        vsi=ship_frame.vsi,
+        dsi=ship_frame.dsi,
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    for i in range(len(trk)):
+        assert trk[i] == passed
+
+def test_do_track_check_no_obs(ship_frame):
+    ship_frame = ship_frame.loc[[]]
+    trk = do_track_check(
+        lat=[],
+        lon=[],
+        date=[],
+        vsi=[],
+        dsi=[],
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    assert len(trk) == 0
 
 def test_do_track_check_passed(ship_frame):
     trk = do_track_check(
@@ -326,6 +358,24 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
             assert pytest.approx(timediff[i], 0.0000001) == 1.0
         else:
             assert np.isnan(speed[i])
+
+def test_calculate_speed_course_distance_time_difference_one_ob(ship_frame):
+    ship_frame = ship_frame.loc[[0]]
+    speed, distance, course, timediff = calculate_speed_course_distance_time_difference(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+    )
+
+    assert len(speed) == 1
+    assert len(distance) == 1
+    assert len(course) == 1
+    assert len(timediff) == 1
+
+    assert np.isnan(speed[0])
+    assert np.isnan(distance[0])
+    assert np.isnan(course[0])
+    assert np.isnan(timediff[0])
 
 
 @pytest.fixture
@@ -635,3 +685,21 @@ def test_do_iquam_track_check_drifter_speed_limit(iquam_drifter):
             assert iquam_track[i] == failed
         else:
             assert iquam_track[i] == passed
+
+
+@pytest.mark.parametrize(
+    "lats, lons, timediffs, expected",
+    [
+        ([0,1,2], [0,0,0], [1,1,1], [np.nan, 0.0, np.nan]),
+        ([0,0,0], [0,0,0], [0,0,0], [np.nan, 0.0, np.nan]),
+        ([0,0,0], [0,0,0], [None,None,None], [np.nan, 0.0, np.nan]),
+    ]
+)
+def test_calculate_midpoint(lats, lons, timediffs, expected):
+    result = calculate_midpoint(
+        np.array(lats),
+        np.array(lons),
+        np.array(timediffs)
+    )
+    expected = np.array(expected)
+    assert np.array_equal(result, expected, equal_nan=True)
