@@ -641,6 +641,7 @@ def test_find_repeated_values(repeated_data, almost_repeated_data):
     for i in range(len(repeated)):
         assert repeated[i] == passed
 
+
 def test_find_repeated_values_raises(repeated_data):
     with pytest.raises(ValueError):
         find_repeated_values(repeated_data["at"], 20, 1.1)
@@ -696,9 +697,9 @@ def iquam_ship():
 
 def test_do_iquam_track_check_no_obs():
     iquam_track_check = do_iquam_track_check(
-        lat = np.array([]),
-        lon = np.array([]),
-        date = np.array([]),
+        lat=np.array([]),
+        lon=np.array([]),
+        date=np.array([]),
         speed_limit=15.0,
         delta_d=1.11,
         delta_t=0.01,
