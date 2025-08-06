@@ -9,8 +9,6 @@ import numpy as np
 from marine_qc.time_control import (
     convert_date_to_hours,
     valid_month_day,
-    #    day_in_year,
-    #    dayinyear,
     day_in_year,
     leap_year_correction,
     pentad_to_month_day,
@@ -85,26 +83,16 @@ def test_split_date_exceptions():
     ],
 )
 def test_valid_month_day_fails(month, day):
-    assert not valid_month_day(month, day)
+    assert not valid_month_day(month=month, day=day)
 
 
-@pytest.mark.parametrize(
-    "args, expected_error",
-    (
-        [[2003], SyntaxError],
-        [[2003, 3, 5, 1], SyntaxError],
-    ),
-)
-def test_valid_month_raises(args, expected_error):
-    with pytest.raises(expected_error):
-        valid_month_day(*args)
 
 
 def test_valid_month_day_all():
     month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     for m in range(1, 13):
         for d in range(1, month_lengths[m - 1] + 1):
-            assert valid_month_day(m, d)
+            assert valid_month_day(month=m, day=d)
 
 
 def test_pentad_to_month():
@@ -143,41 +131,39 @@ def test_which_pentad_raises_value_error():
 
 
 @pytest.mark.parametrize(
-    "args, expected_error",
+    "year, month, day, expected_error",
     [
-        ([2003], SyntaxError),
-        ([2003, 1, 31, 5], SyntaxError),
-        ([1, 32], ValueError),
-        ([2, 30], ValueError),
-        ([2003, 2, 29], ValueError),
+        (None, 1, 32, ValueError),
+        (None, 2, 30, ValueError),
+        (2003, 2, 29, ValueError),
     ],
 )
-def test_day_in_year_raises(args, expected_error):
+def test_day_in_year_raises(year, month, day, expected_error):
     with pytest.raises(expected_error):
-        day_in_year(*args)
+        day_in_year(year, month, day)
 
 
 def test_day_in_year_leap_year():
-    assert day_in_year(2, 29) == day_in_year(3, 1)
+    assert day_in_year(month=2, day=29) == day_in_year(month=3, day=1)
 
     # Just test all days
     month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     count = 1
     for month in range(1, 13):
         for day in range(1, month_lengths[month - 1] + 1):
-            assert day_in_year(month, day) == count
+            assert day_in_year(month=month, day=day) == count
             count += 1
 
 
 def test_day_in_year_leap_year_test():
     with pytest.raises(ValueError):
-        day_in_year(13, 1)
+        day_in_year(month=13, day=1)
     with pytest.raises(ValueError):
-        day_in_year(0, 1)
+        day_in_year(month=0, day=1)
     with pytest.raises(ValueError):
-        day_in_year(2, 30)
+        day_in_year(month=2, day=30)
     with pytest.raises(ValueError):
-        day_in_year(2, 0)
+        day_in_year(month=2, day=0)
 
 
 @pytest.mark.parametrize(

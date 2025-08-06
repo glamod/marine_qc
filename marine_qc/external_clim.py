@@ -367,7 +367,7 @@ class Climatology:
             return 0
         if self.ntime == 73:
             return which_pentad(month, day) - 1
-        return day_in_year(month, day) - 1
+        return day_in_year(month=month, day=day) - 1
 
 
 @inspect_climatology("climatology")

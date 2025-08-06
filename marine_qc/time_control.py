@@ -270,36 +270,32 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     return m[p - 1], d[p - 1]
 
 
-def valid_month_day(*args) -> bool:
+def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
     """
     Returns True if month and day combination are allowed, False otherwise. Assumes that Feb 29th is valid.
 
     Parameters
     ----------
-    month: int
+    year: int, optional, default: None
+        Year to be tested
+        If none, set year to default leap year
+    month: int, default: 1
         Month to be tested
-    day: int
+    day: int, default: 1
         Day to be tested
 
     Returns
     -------
     bool
-        True if month and day are a valid combination (e.g. 12th March) and False if not (e.g. 30th February)
+        True if month and day (or year month and day) are a valid combination (e.g. 12th March) and False if not
+        (e.g. 30th February)
 
     Notes
     -----
     Assumes that February 29th is a valid date.
     """
-    if len(args) not in [2, 3]:
-        raise SyntaxError(
-            f"{len(args)} arguments given, but 2 (month, day) or 3 (year, month, day) required"
-        )
-
-    year, month, day = (2004, 1, 1)
-    if len(args) == 2:
-        month, day = args
-    if len(args) == 3:
-        year, month, day = args
+    if year is None:
+        year = 2004
 
     if month < 1 or month > 12:
         return False
@@ -335,10 +331,10 @@ def which_pentad(month: int, day: int) -> int:
     The calculation is rather simple. It just loops through the year and adds up days till it reaches
     the day we are interested in. February 29th is treated as though it were March 1st in a regular year.
     """
-    if not valid_month_day(month, day):
+    if not valid_month_day(month=month, day=day):
         raise ValueError(f"Invalid month {month} - day {day} combination.")
 
-    pentad = int((day_in_year(month, day) - 1) / 5)
+    pentad = int((day_in_year(month=month, day=day) - 1) / 5)
     pentad = pentad + 1
 
     assert 1 <= pentad <= 73  # noqa: S101
@@ -346,13 +342,18 @@ def which_pentad(month: int, day: int) -> int:
     return pentad
 
 
-def day_in_year(*args) -> int:
+def day_in_year(year: int = None, month: int = 1, day: int = 1) -> int:
     """Get the day in year from 1 to 365 or 366.
 
     Parameters
     ----------
-    args: int
-        Two or three integer arguments specifying either month and day, or year, month and day.
+    year: int, optional, default: None
+        Year to be tested
+        If none, set year to default leap year
+    month: int, default: 1
+        Month to be tested
+    day: int, default: 1
+        Day to be tested
 
     Returns
     -------
@@ -360,36 +361,31 @@ def day_in_year(*args) -> int:
         Day in year. If year is not specified then the year is treated as a non-leap year and
         29 February returns the same value as 1 March.
     """
-    if len(args) != 2 and len(args) != 3:
-        raise SyntaxError(f"{len(args)} arguments given, but 2 or 3 required")
 
-    all_args = True
-    if len(args) == 2:
+    year_not_specified = False
+    if year is None:
         year = 2004
-        month, day = args
-        all_args = False
-    if len(args) == 3:
-        year, month, day = args
+        year_not_specified = True
 
-    if not valid_month_day(year, month, day):
+    if not valid_month_day(year=year, month=month, day=day):
         raise ValueError(
             f"Invalid year {year} - month {month} - day {day} combination."
         )
 
-    if not all_args:
+    if year_not_specified:
         year = 2003
 
     month_lengths = get_month_lengths(year)
 
     if month == 1:
         day_index = day
-    elif len(args) == 2 and month == 2 and day == 29:
-        day_index = day_in_year(3, 1)
+    elif year_not_specified and month == 2 and day == 29:
+        day_index = day_in_year(month=3, day=1)
     else:
         day_index = np.sum(month_lengths[0 : month - 1]) + day
 
-    assert (all_args and (1 <= day_index <= 366)) or (
-        not all_args and (1 <= day_index <= 365)
+    assert (not year_not_specified and (1 <= day_index <= 366)) or (
+        year_not_specified and (1 <= day_index <= 365)
     )  # noqa: S101
 
     return day_index
@@ -529,7 +525,7 @@ def jul_day(year: int, month: int, day: int) -> int:
     This is one of those routines that looks baffling but works. No one is sure exactly how. It gets
     written once and then remains untouched for centuries, mysteriously working.
     """
-    if not valid_month_day(month, day):
+    if not valid_month_day(month=month, day=day):
         raise ValueError(f"Invalid month {month} - day {day} combination.")
 
     a = (14 - month) // 12
