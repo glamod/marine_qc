@@ -87,6 +87,7 @@ def test_do_spike_check(ship_frame, buoy_frame):
             else:
                 assert row == passed
 
+
 def test_do_spike_check_missing_ob(ship_frame):
     ship_frame.loc[[0], "sst"] = np.nan
     result = do_spike_check(
