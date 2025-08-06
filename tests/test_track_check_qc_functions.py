@@ -87,6 +87,25 @@ def test_do_spike_check(ship_frame, buoy_frame):
             else:
                 assert row == passed
 
+def test_do_spike_check_missing_ob(ship_frame):
+    ship_frame.loc[[0], "sst"] = np.nan
+    result = do_spike_check(
+        value=ship_frame.sst,
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        max_gradient_space=0.5,
+        max_gradient_time=1.0,
+        delta_t=ship_frame.attrs["delta_t"],
+        n_neighbours=5,
+    )
+    for i in range(30):
+        row = result[i]
+        if i == 15:
+            assert row == failed
+        else:
+            assert row == passed
+
 
 @pytest.mark.parametrize("key", ["sst", "lat", "lon", "date"])
 def test_do_spike_check_raises(ship_frame, key):
