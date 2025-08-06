@@ -4,6 +4,8 @@ from datetime import datetime
 
 import pytest  # noqa
 
+import numpy as np
+
 from marine_qc.time_control import (
     convert_date_to_hours,
     valid_month_day,
@@ -35,6 +37,37 @@ def test_split_date(date, expected_year, expected_month, expected_day, expected_
     }
     for key in expected:
         assert result[key] == expected[key]
+
+
+class pseudo_datetime:
+
+    def __init__(self, attributes):
+        self.attribs = attributes
+        for a in attributes:
+            if a != "minute" and a != "second":
+                self.__setattr__(a, 5.0)
+            else:
+                self.__setattr__(a, 0.0)
+
+    def __getattr__(self, item):
+        if item in self.attribs:
+            return self.__getattr__(item)
+        else:
+            raise AttributeError
+
+def test_split_date_exceptions():
+
+    for v in ["year", "month", "day", "hour"]:
+        list_of_variables = ['year', 'month', 'day', 'hour', 'minute', 'second']
+        list_of_variables.remove(v)
+        psd = pseudo_datetime(list_of_variables)
+        result = split_date(psd)
+        for key in result:
+            if key == v:
+                assert np.isnan(result[key])
+            else:
+                assert result[key] == 5.0
+
 
 
 @pytest.mark.parametrize(
@@ -221,3 +254,8 @@ def test_time_difference():
         time_difference(2003, 1, 1, -1, 2003, 1, 1, 1)
     with pytest.raises(ValueError):
         time_difference(2003, 1, 1, 1, 2003, 1, 1, 25)
+
+    assert np.isnan(time_difference(
+        2003, 1, 1, 1,
+        2003, None, 1, 2)
+    )
