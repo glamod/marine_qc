@@ -86,8 +86,6 @@ def test_valid_month_day_fails(month, day):
     assert not valid_month_day(month=month, day=day)
 
 
-
-
 def test_valid_month_day_all():
     month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     for m in range(1, 13):
