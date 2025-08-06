@@ -55,10 +55,11 @@ class pseudo_datetime:
         else:
             raise AttributeError
 
+
 def test_split_date_exceptions():
 
     for v in ["year", "month", "day", "hour"]:
-        list_of_variables = ['year', 'month', 'day', 'hour', 'minute', 'second']
+        list_of_variables = ["year", "month", "day", "hour", "minute", "second"]
         list_of_variables.remove(v)
         psd = pseudo_datetime(list_of_variables)
         result = split_date(psd)
@@ -67,7 +68,6 @@ def test_split_date_exceptions():
                 assert np.isnan(result[key])
             else:
                 assert result[key] == 5.0
-
 
 
 @pytest.mark.parametrize(
@@ -255,7 +255,4 @@ def test_time_difference():
     with pytest.raises(ValueError):
         time_difference(2003, 1, 1, 1, 2003, 1, 1, 25)
 
-    assert np.isnan(time_difference(
-        2003, 1, 1, 1,
-        2003, None, 1, 2)
-    )
+    assert np.isnan(time_difference(2003, 1, 1, 1, 2003, None, 1, 2))
