@@ -971,13 +971,13 @@ class SSTTailChecker:
         self.end_tail_ind = nrep  # keeps track of index where end tail starts
 
         # do long tail check - records shorter than long-window length aren't evaluated
-        if not (nrep < self.long_win_len):
+        if nrep >= self.long_win_len:
             # run forwards then backwards over timeseries
             self._do_long_tail_check(forward=True)
             self._do_long_tail_check(forward=False)
 
         # do short tail check on records that pass long tail check - whole record already failed long tail check
-        if not (self.start_tail_ind >= self.end_tail_ind):
+        if self.start_tail_ind < self.end_tail_ind:
             first_pass_ind = (
                 self.start_tail_ind + 1
             )  # first index passing long tail check

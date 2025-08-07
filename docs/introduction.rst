@@ -283,7 +283,8 @@ Tracking QC
 -----------
 
 There are additional routines that are intended for the QC of measurements of sea surface temperature
-from drifting buoys specifically. These checks are based on Atkinson et al. 2013.
+from drifting buoys specifically. These checks are based on Atkinson et al. 2013. The checks are designed to be
+run on whole drifting buoy records from when a drifter is first deployed to when it ceases to report.
 
 Atkinson, C. P., N. A. Rayner, J. Roberts-Jones, and R. O. Smith (2013), Assessing the quality of sea
 surface temperature observations from drifting buoys and ships on a platform-by-platform basis, J.
@@ -321,8 +322,32 @@ The new aground check is the same as the aground check but there is no upper win
 do_sst_start_tail_check
 =======================
 
+The tail checks (see also the end tail check) aim to flag reports at the start (or end) of a record that are
+biased or noisy based on comparisons with a spatially complete background or reference SST field. There are two steps
+identifying longer and shorter-lived tails of low quality reports at the ends of the record. Biased and noisy
+reports are detected using a moving window.
+
+The long-tail check is first and uses as 120 report window (the lengths of windows and multipliers are user defined,
+here we give the original default values). The mean and standard deviation of the difference
+between the reported sea-surface temperature and the background value are calculated. If the mean difference is
+more than 3 times the means background standard deviation, the reports in the window are flagged
+as biased. If the standard deviation of the differences is more than 3 times the root mean square
+of the background standard deviations. The window is moved along the sequence of reports until a set of reports
+passes the test.
+
+The short-tail check uses a 30 report window (again, these parameters are user-defined) and if one or more of
+report-background differences exceeds 9 times the the standard deviation of the background standard deviation for
+that report, the whole window fails the QC. The window is moved along the sequence of reports until a set of reports
+passes the test.
+
+The combination of the longer, more sensitive test and the shorter, less sensitive test helps to detect a wider range
+of tail behaviours.
+
 do_sst_end_tail_check
 =====================
+
+The end tail check works in the same way as the start tail check, but runs through the reports in reverse
+time order.
 
 do_sst_biased_check
 ===================
