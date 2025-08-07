@@ -319,8 +319,8 @@ do_new_aground_check
 
 The new aground check is the same as the aground check but there is no upper window limit.
 
-do_sst_start_tail_check
-=======================
+do_sst_start_tail_check and do_sst_end_tail_check
+=================================================
 
 The tail checks (see also the end tail check) aim to flag reports at the start (or end) of a record that are
 biased or noisy based on comparisons with a spatially complete background or reference SST field. There are two steps
@@ -343,17 +343,22 @@ passes the test.
 The combination of the longer, more sensitive test and the shorter, less sensitive test helps to detect a wider range
 of tail behaviours.
 
-do_sst_end_tail_check
-=====================
-
 The end tail check works in the same way as the start tail check, but runs through the reports in reverse
 time order.
 
-do_sst_biased_check
-===================
+do_sst_biased_check, do_sst_noisy_check, and do_sst_biased_noisy_short_check
+============================================================================
 
-do_sst_noisy_check
-==================
+This group of checks flags reports from drifters that are persistently biased or noisy. The biased and noisy checks
+are only applied to drifting buoys which made more than 30 reports.
 
-do_sst_biased_noisy_short_check
-===============================
+For the bias check, if the mean bias relative to the background is larger than the bias limit then the reports are
+flagged 1, failed. Otherwise they pass
+
+For the noise check, if the standard deviation of the report-background differences is larger than the mean
+background standard deviation added in quadrature to the specified uncertainty in the drifting buoy SST reports.
+
+For the short record check (fewer than 30 reports), the whole record is flagged as failed (1) if more than a
+specified number of reports have a report-background difference larger than 3 times the combined standard deviation.
+The combined standard deviation is the square root of the sum of squared contributions from the background
+uncertainty, inter-drifter uncertainty and intra-drifter uncertainty. Otherwise the reports are flagged as passes (0).
