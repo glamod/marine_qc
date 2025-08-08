@@ -200,6 +200,126 @@ do_track_check
 The track check uses the location and datetime information from the reports as well as the ship speed and direction
 information, if available, to determine if any of the reported locations and times are likely to be erroneous.
 
+detailed description
+++++++++++++++++++++
+
+The aim of the track check algorithm is to identify from a set of observations sharing a common, non-generic
+ID, which of those observations have misreported locations. It does this by comparing consecutive observations
+with each other and comparing reported speeds and directions with actual speeds and directions.
+
+Variables used in track check
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following variables are used in the track check
+
+Difference from estimated position going forwards
+"""""""""""""""""""""""""""""""""""""""""""""""""
+
+:math:`D_{forward}` The expected position of the observation at t+1 is calculated by taking the reported speed (VS in ICOADS)
+and reported direction (DS in ICOADS) at time t and calculating an increment of latitude and longitude
+consistent with half the time difference between t and t+1. A second increment is calculated using the
+reported speed and reported direction at time t+1. Again, the increment is that which would be expected in
+half the time between the two observations. The two increments are then combined to get an estimate of where
+the observation at time t+1 is expected to be.
+
+The distance between the estimated and expected position is calculated and assigned to time t+1.
+
+Difference from estimated position going backwards
+""""""""""""""""""""""""""""""""""""""""""""""""""
+
+:math:`D_{back}` The same test as was just described was performed on the reversed list of observations. i.e. running
+backwards in time.
+
+Difference from estimated position based on interpolating between alternate positions
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+:math:`D_{mid}` The position at time t is estimated based on the latitudes and longitude reported at time t-1 and time t+1.
+The estimated position is assumed to be a fraction f along this line where
+
+:math:`f=\frac{T(t)-T(t-1)}{T(t+1)-T(t-1)}`
+
+Again, the distance between the estimated and the reported positions is calculated and assigned to time t.
+
+Calculating speed limits
+""""""""""""""""""""""""
+
+:math:`V_{max}` The modal speed, :math:`V_{mode}`, estimated from all consecutive pairs of observations is calculated. The
+speeds
+are binned into 3 knot bins and the bin with the most observations in is the modal speed. The speed
+limit :math:`V_{max}` is the higher of :math:`8.50\,\mathrm{\mathrm{knots}}` or :math:`1.25*V_{mode}`.
+
+Estimate the course of the ship
+"""""""""""""""""""""""""""""""
+
+:math:`C_{est}` The course of the ship at t is estimated based on the position at t-1 and t assuming a great-circle course
+between the two points.
+
+The individual checks
+^^^^^^^^^^^^^^^^^^^^^
+
+speed check
+"""""""""""
+
+Set the speed check total to zero and the speed check flag to pass.
+
+If the speed estimated from the positions at t-1 and t exceeds :math:`V_{max}` and the speed estimated from the positions at time t-2 and t exceeds :math:`V_{max}`. Then add one to the speed check total.
+
+If the speed estimated from the positions at t and t+1 exceeds :math:`V_{max}` and the speed estimated from the positions at t and t+2 exceeds :math:`V_{max}`, add two to the speed check total.
+
+If the speed estimated from the positions at t-1 and t exceeds :math:`V_{max}` and the speed estimated from the positions at t and t+1 exceeds :math:`V_{max}`, add three to the speed check total.
+
+If the speed check total is greater than zero, set speed check flag to fail.
+
+Distance from estimated location check
+""""""""""""""""""""""""""""""""""""""
+
+Set the distance check flag to pass
+
+Calculate the distance
+
+:math:`D_{max}=\left(T(t)-T(t-1)\right)\left(V(t)+V(t-1)\right)/2`
+
+If both :math:`D_{forward}` and :math:`D_{back}` exceed :math:`D_{max}` then set the distance check flag to fail.
+
+Direction consistency check
+"""""""""""""""""""""""""""
+
+Set the direction consistency flag to pass
+
+if the :math:`C_{est}` differs from the reported bearing at t-1 or t by more than :math:`60^{\circ}`, set the
+direction consistency flag to fail.
+
+Speed consistency check
+"""""""""""""""""""""""
+
+Set the speed continuity flag to pass
+
+If the speed estimated based on the locations at t-1 and t differs from the reported speed at t by more than
+10 knots and differs from the reported speed at t-1 by more than 10 knots, set the speed consistency flag to
+fail.
+
+Extreme speed check
+"""""""""""""""""""
+
+Set the extreme speed check flag to pass.
+
+If the speed estimated from the locations at t-1 and t exceeds 40 knots, set the extreme speed
+check flag to fail.
+
+Mid point check
+"""""""""""""""
+
+Set the midpoint check flag to pass.
+
+If :math:`D_{mid}` is greater than 150 nm set the midpoint check flag to fail.
+
+The combined track check
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+An observation fails track check if an observation fails the midpoint check, the speed check and at least
+one of the other checks (extreme speed, direction consistency, speed consistency, distance from estimated
+location).
+
 do_few_check
 ============
 
@@ -266,11 +386,35 @@ and platform types. The reports can cover large areas and multiple months. The t
 do_mds_buddy_check
 ==================
 
-The buddy check compares the observed value from each report to the average of that variable from other nearby
-reports (the buddies in the buddy check). Depending how many neighbours there are and how close they are, an
-adaptive multiplier is used. The difference between the observed value for the report and the "buddy" mean must be
-less than the multiplier times the standard deviation of the variable at that location taken from a climatology. If
-the difference is less the flag for that report is set to 0, pass otherwise it is set to 1, failed.
+The buddy check compares the observed value from each report expressed as an anomaly to the average of that variable
+from other nearby reports (the buddies in the buddy check, also converted to anomalies). Depending how many neighbours
+there are and how close they are, an adaptive multiplier is used. The difference between the observed value for the
+report and the "buddy" mean must be less than the multiplier times the standard deviation of the variable at that
+location taken from a climatology. If the difference is less the flag for that report is set to 0, pass otherwise it
+is set to 1, failed.
+
+The buddy check compares an observation to its neighbours in order to determine whether it is grossly in error.
+The basic method is as follows.
+
+* Read in all the input reports.
+* Grid all the accepted reports at 1x1xpentad resolution by taking means of anomalies of all the obs in each grid-box.
+* Get the input standard deviation for each 1x1xpentad (call this :math:`\sigma`).
+* For each grid-box calculate an acceptable range of data (call this :math:`R`) as follows:
+
+  * Identify all other grid boxes within :math:`\pm2` pentads and  a distance equal to :math:`1^{\circ}` at the equator. The angular range is :math:`1/\cos\left(lat\right)` (Step 1)
+  * Find the arithmetic mean of those grid box values (call this ), and the total number of obs in those grid boxes (call this :math:`n`).
+
+    * If :math:`n>100:\ R=\mu\pm2.5\sigma` (for DPT :math:`4.0\sigma`)
+    * If :math:`15<n<100:\ R=\mu\pm3.0\sigma` (for DPT 4.5)
+    * If :math:`5<n<15:\ R=\mu\pm3.5\sigma` (for DPT 5.0)
+    * If :math:`0<n<5:\ R=\mu\pm4.0\sigma` (for DPT 5.5)
+    * If :math:`n = 0` Try again using grid boxes within :math:`\pm2` pentads and :math:`\pm2` degrees at the equator.
+    * If :math:`n>0\ R=\mu\pm4.0\sigma` (for DPT 5:5).
+    * If :math:`n` still :math:`=0`; Go back to step 1 but expand the time separation to 4 pentads.
+    * If :math:`n` still :math:`=0` using :math:`\pm4` pentads and :math:`\pm2` degrees :math:`R` is infinite (I.e. all obs in this grid-box will pass buddy QC)
+
+* Compare the anomaly for each observation to R for the 1x1xpentad grid box that contains the observation.
+* If the range of R covers the observation anomaly, set the buddy check flag to 0. Otherwise, it has failed and the buddy flag is set to 1.
 
 do_bayesian_buddy_check
 =======================
@@ -278,6 +422,72 @@ do_bayesian_buddy_check
 The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The principle is the same -  a report is
 compared to the average of nearby reports - but the determination of whether it is too far away is based on an
 explicit estimate of the probability of gross error.
+
+Theoretical basis
++++++++++++++++++
+
+The probability that an observation is grossly in error :math:`P(E)`, given a particular value :math:`O` is
+
+:math:`P(E|O)=\frac{P(O|E)P(E)}{P(O|E)P(E)+P(O|N)(1-P(E))}`
+
+where :math:`P(O|N)` is the probability of getting the observed value, :math:`O`, given that the error in the value is normal,
+i.e. roughly gaussian with a reasonable mean and standard deviation. This is similar to the approach taken by the
+IQUAM background check. However, we will deviate from their method in order to derive a method that is
+independent of the satellite reference field that they used and which can therefore be applied at all times. In
+this case we will also deal with the quantization of the data (which are typically integer multiples
+of :math:`0.1^{\circ}\mathrm{C}` or :math:`1^{\circ}\mathrm{C})` and the fact that a range limit has already been applied
+to the data.
+
+It is assumed that the data have already been passed through a basic climatology check which has rejected values
+of O outside the range :math:`R_{low}` to :math:`R_{high}` so that all values fall within an interval of
+:math:`R=R_{high}-R_{low}`.
+
+Furthermore, we assume that the data are quantized i.e, they only take values that are integer multiples of some
+particular number :math:`Q` which will usually be :math:`0.1^{\circ}\mathrm{C}`.
+
+Gross errors are assumed to fall uniformly within the allowed range such that the probability of getting a
+particular observation given a particular gross error is
+
+:math:`P(O|E)=\frac{1}{1+\frac{R}{Q}}`
+
+i.e. the reciprocal of the number of possible quantized values in the interval R.
+
+The probability :math:`P(O|N)` will be a normal distribution with a specified mean, :math:`\mu` , and
+standard deviation, :math:`\sigma`.
+The mean might be zero if this is a climatology check (in some regions we might be able to do considerably better
+than the standard :math:`\pm8^{\circ}\mathrm{C})` with the standard deviation corresponding to the climatological standard
+deviation. For a background check, the mean would be the background estimate and the standard deviation its
+uncertainty, augmented by the expected measurement uncertainty. For a buddy check, the mean would be the buddy
+average and the standard deviation would be the uncertainty in that average combined (again) with the expected
+measurement uncertainty of the observation to be tested.
+
+Regardless, the probability will be
+
+:math:`P(O|N)=\frac{\int_{L_{low}}^{L_{high}}\frac{1}{\sigma\sqrt{2\pi}}\exp\left(-\frac{\left(x-\mu\right)^{2}}{2\sigma^{2}}\right)dx}{\int_{R_{low}-\frac{Q}{2}}^{R_{high}+\frac{Q}{2}}\frac{1}{\sigma\sqrt{2\pi}}\exp\left(-\frac{\left(x-\mu\right)^{2}}{2\sigma^{2}}\right)dx}`
+
+where
+
+:math:`L_{high}=\min\left[o+\frac{Q}{2},\ R_{high}+\frac{Q}{2}\right]`
+
+and
+
+:math:`L_{low}=\max\left[o-\frac{Q}{2},\ R_{low}-\frac{Q}{2}\right]`
+
+The integral in the top half of the fraction is the integral of the pdf between the observed value
+:math:`\pm\frac{Q}{2}` which is to say over the range of actual temperatures that would round to the observed
+value (unless we are close to the range limits) and the integral in the bottom half is the integral of the pdf
+across the entire allowed range to normalise the probability particularly for those cases where the observation
+is within a few :math:`\sigma` of the limit.
+
+This can be rewritten in terms of error functions as
+
+:math:`P(O|N)=\frac{erf\left(\frac{L_{high}-\mu}{\sigma\sqrt{2}}\right)-erf\left(\frac{L_{low}-\mu}{\sigma\sqrt{2}}\right)}{erf\left(\frac{R_{high}+\frac{Q}{2}-\mu}{\sigma\sqrt{2}}\right)-erf\left(\frac{R_{low}-\frac{Q}{2}-\mu}{\sigma\sqrt{2}}\right)}`
+
+The remaining term is :math:`P(E)`, the prior probability of gross error which ought to be whatever you think the
+prevailing probability of gross error is or, if you have more specific information, like you know the ship is
+unreliable, then use that instead.
+
+Combining all these terms gives a monstrously ugly formula which isn't worth writing out here.
 
 Tracking QC
 -----------
