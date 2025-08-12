@@ -2,8 +2,8 @@
 
 .. marine_qc documentation master file
 
-Marine ``cdm_reader_mapper`` toolbox documentation
---------------------------------------------------
+``Marine Quality Control`` documentation
+----------------------------------------
 
 Need some Documentation!
 
