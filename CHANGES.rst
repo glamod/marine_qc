@@ -22,4 +22,6 @@ Internal changes
 * Split some try statements into single if statements giving warnings (:pull:`7`)
 * Fixing some typos in docstrings and comments (:pull:`7`)
 * Improved unit test coverage (:pull:`9`)
+* combine `time_control.day_in_year` and `time_control.dayinyear` to `time_control.day_in_year` (:pull:`9`)
+* new function `time_control.valid_month_day` to validate month and day information (:pul:`9`)
 * extract daytime check from `do_day_check` and `do_night_check` (:pull:`21`)
