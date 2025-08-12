@@ -22,6 +22,7 @@ from .qc_individual_reports import (
     do_day_check,
     do_missing_value_check,
     do_missing_value_clim_check,
+    do_night_check,
     do_hard_limit_check,
     do_climatology_check,
     do_supersaturation_check,
