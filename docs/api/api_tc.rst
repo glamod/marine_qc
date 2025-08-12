@@ -9,7 +9,6 @@ Time control functions
    time_control.convert_date_to_hours
    time_control.convert_time_in_hours
    time_control.day_in_year
-   time_control.dayinyear
    time_control.get_month_lengths
    time_control.jul_day
    time_control.leap_year
