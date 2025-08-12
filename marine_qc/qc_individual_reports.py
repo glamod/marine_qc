@@ -326,6 +326,10 @@ def do_day_check(
     In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
+    
+    See Also
+    --------
+    do_night_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.    
     """
     return _do_daytime_check(
         date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day"
