@@ -16,6 +16,7 @@ from .qc_individual_reports import (  # noqa
     do_hard_limit_check,
     do_missing_value_check,
     do_missing_value_clim_check,
+    do_night_check,
     do_position_check,
     do_sst_freeze_check,
     do_supersaturation_check,

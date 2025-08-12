@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from marine_qc.auxiliary import failed, passed
 from marine_qc import (
     do_few_check,
     do_iquam_track_check,
@@ -19,6 +20,10 @@ from marine_qc.qc_sequential_reports import (
     calculate_course_parameters,
     calculate_speed_course_distance_time_difference,
     forward_discrepancy,
+    backward_discrepancy,
+    calculate_course_parameters,
+    calculate_speed_course_distance_time_difference,
+    calculate_midpoint,
 )
 
 
@@ -89,6 +94,26 @@ def test_do_spike_check(ship_frame, buoy_frame):
                 assert row == passed
 
 
+def test_do_spike_check_missing_ob(ship_frame):
+    ship_frame.loc[[0], "sst"] = np.nan
+    result = do_spike_check(
+        value=ship_frame.sst,
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        max_gradient_space=0.5,
+        max_gradient_time=1.0,
+        delta_t=ship_frame.attrs["delta_t"],
+        n_neighbours=5,
+    )
+    for i in range(30):
+        row = result[i]
+        if i == 15:
+            assert row == failed
+        else:
+            assert row == passed
+
+
 @pytest.mark.parametrize("key", ["sst", "lat", "lon", "date"])
 def test_do_spike_check_raises(ship_frame, key):
     series = ship_frame[key]
@@ -130,6 +155,39 @@ def test_calculate_course_parameters(ship_frame):
     assert pytest.approx(distance, 0.00001) == 11.119508064776555
     assert course == 0.0
     assert pytest.approx(timediff, 0.0000001) == 1.0
+
+
+def test_do_track_check_very_few_obs(ship_frame):
+    ship_frame = ship_frame.loc[[0, 1]]
+    trk = do_track_check(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        vsi=ship_frame.vsi,
+        dsi=ship_frame.dsi,
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    for i in range(len(trk)):
+        assert trk[i] == passed
+
+
+def test_do_track_check_no_obs(ship_frame):
+    ship_frame = ship_frame.loc[[]]
+    trk = do_track_check(
+        lat=[],
+        lon=[],
+        date=[],
+        vsi=[],
+        dsi=[],
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    assert len(trk) == 0
 
 
 def test_do_track_check_passed(ship_frame):
@@ -294,6 +352,11 @@ def test_do_track_check_raises(ship_frame, key):
         )
 
 
+def test_do_few_check_no_obs():
+    few = do_few_check(value=np.array([]))
+    assert len(few) == 0
+
+
 def test_do_few_check_passed(ship_frame):
     few = do_few_check(
         value=ship_frame["lat"],
@@ -328,6 +391,25 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
             assert pytest.approx(timediff[i], 0.0000001) == 1.0
         else:
             assert np.isnan(speed[i])
+
+
+def test_calculate_speed_course_distance_time_difference_one_ob(ship_frame):
+    ship_frame = ship_frame.loc[[0]]
+    speed, distance, course, timediff = calculate_speed_course_distance_time_difference(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+    )
+
+    assert len(speed) == 1
+    assert len(distance) == 1
+    assert len(course) == 1
+    assert len(timediff) == 1
+
+    assert np.isnan(speed[0])
+    assert np.isnan(distance[0])
+    assert np.isnan(course[0])
+    assert np.isnan(timediff[0])
 
 
 @pytest.fixture
@@ -508,6 +590,29 @@ def test_find_multiple_rounded_values(rounded_data, unrounded_data):
         assert rounded[i] == failed
 
 
+def test_find_multiple_rounded_values_no_obs():
+    rounded = find_multiple_rounded_values(np.array([]), 20, 0.8)
+    assert len(rounded) == 0
+
+
+def test_find_multiple_rounded_values_too_few_obs():
+    # All values are rounded in this example, but while there are fewer than the min_count (20) everything will pass
+    for i in range(1, 50):
+        values = np.arange(i)
+        rounded = find_multiple_rounded_values(values, 20, 0.5)
+        if i <= 20:
+            assert np.all(rounded == passed)
+        else:
+            assert np.all(rounded == failed)
+
+
+def test_find_multiple_rounded_values_raises(rounded_data):
+    with pytest.raises(ValueError):
+        find_multiple_rounded_values(rounded_data["at"], 20, 1.5)
+    with pytest.raises(ValueError):
+        find_multiple_rounded_values(rounded_data["at"], 20, -1.5)
+
+
 @pytest.fixture
 def repeated_data():
     lat = [-5.0 + i * 0.1 for i in range(50)]
@@ -544,6 +649,29 @@ def test_find_repeated_values(repeated_data, almost_repeated_data):
         assert repeated[i] == passed
 
 
+def test_find_repeated_values_raises(repeated_data):
+    with pytest.raises(ValueError):
+        find_repeated_values(repeated_data["at"], 20, 1.1)
+    with pytest.raises(ValueError):
+        find_repeated_values(repeated_data["at"], 20, -0.1)
+
+
+def test_find_repeated_values_no_obs():
+    result = find_repeated_values(np.array([]), 20, 0.7)
+    assert len(result) == 0
+
+
+def test_find_repeated_values_too_few_obs():
+    # All values are rounded in this example, but while there are fewer than the min_count (20) everything will pass
+    for i in range(1, 50):
+        values = np.array([1.0] * i)
+        rounded = find_repeated_values(values, 20, 0.5)
+        if i <= 20:
+            assert np.all(rounded == passed)
+        else:
+            assert np.all(rounded == failed)
+
+
 def iquam_frame(in_pt):
     pt = [in_pt for _ in range(30)]
     lat = [-5.0 + i * 0.1 for i in range(30)]
@@ -572,6 +700,19 @@ def iquam_drifter():
 @pytest.fixture
 def iquam_ship():
     return iquam_frame(1)
+
+
+def test_do_iquam_track_check_no_obs():
+    iquam_track_check = do_iquam_track_check(
+        lat=np.array([]),
+        lon=np.array([]),
+        date=np.array([]),
+        speed_limit=15.0,
+        delta_d=1.11,
+        delta_t=0.01,
+        n_neighbours=5,
+    )
+    assert len(iquam_track_check) == 0
 
 
 def test_do_iquam_track_check_drifter(iquam_drifter):
@@ -637,3 +778,17 @@ def test_do_iquam_track_check_drifter_speed_limit(iquam_drifter):
             assert iquam_track[i] == failed
         else:
             assert iquam_track[i] == passed
+
+
+@pytest.mark.parametrize(
+    "lats, lons, timediffs, expected",
+    [
+        ([0, 1, 2], [0, 0, 0], [1, 1, 1], [np.nan, 0.0, np.nan]),
+        ([0, 0, 0], [0, 0, 0], [0, 0, 0], [np.nan, 0.0, np.nan]),
+        ([0, 0, 0], [0, 0, 0], [None, None, None], [np.nan, 0.0, np.nan]),
+    ],
+)
+def test_calculate_midpoint(lats, lons, timediffs, expected):
+    result = calculate_midpoint(np.array(lats), np.array(lons), np.array(timediffs))
+    expected = np.array(expected)
+    assert np.array_equal(result, expected, equal_nan=True)

@@ -821,7 +821,7 @@ def do_few_check(
 
     # no obs in, no qc outcomes out
     if number_of_obs == 0:
-        return [passed] * number_of_obs
+        return [failed] * number_of_obs
 
     # fewer than three obs - set the fewsome flag
     if number_of_obs < 3:

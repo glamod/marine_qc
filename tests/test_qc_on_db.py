@@ -15,6 +15,7 @@ from marine_qc import (
     do_hard_limit_check,
     do_missing_value_check,
     do_missing_value_clim_check,
+    do_night_check,
     do_position_check,
     do_sst_freeze_check,
     do_supersaturation_check,
@@ -317,6 +318,28 @@ def test_do_day_check(testdata, apply_func):
             lon=db_["longitude"],
         )
     expected = pd.Series([untestable] + [failed] * 12)  # observations are at night
+    pd.testing.assert_series_equal(results, expected)
+
+
+@pytest.mark.parametrize("apply_func", [False, True])
+def test_do_night_check(testdata, apply_func):
+    db_ = testdata["header"].copy()
+    if apply_func is True:
+        results = db_.apply(
+            lambda row: do_night_check(
+                date=row["report_timestamp"],
+                lat=row["latitude"],
+                lon=row["longitude"],
+            ),
+            axis=1,
+        )
+    else:
+        results = do_night_check(
+            date=db_["report_timestamp"],
+            lat=db_["latitude"],
+            lon=db_["longitude"],
+        )
+    expected = pd.Series([untestable] + [passed] * 12)  # observations are at night
     pd.testing.assert_series_equal(results, expected)
 
 
