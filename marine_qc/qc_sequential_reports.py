@@ -83,8 +83,8 @@ def do_spike_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Notes
-    -----
+    Note
+    ----
     In previous versions, default values for the parameters were:
     * max_gradient_space: float = 0.5
     * max_gradient_time: float = 1.0
@@ -658,8 +658,8 @@ def do_track_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Notes
-    -----
+    Note
+    ----
     If number of observations is less than three, the track check always passes.
 
     In previous versions, the default values of the parameters were:
@@ -887,8 +887,8 @@ def find_saturated_runs(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Notes
-    -----
+    Note
+    ----
     In previous version, default values for the parameters were:
     * min_time_threshold =  48.0
     * shortest_run = 4
@@ -972,8 +972,8 @@ def find_multiple_rounded_values(
       - Returns array/sequence/Series of 1s if the value is a whole number.
       - Returns array/sequence/Series of 0s otherwise.
 
-    Notes
-    -----
+    Note
+    ----
     Previous versions had default values for the parameters of
     * min_count = 20
     * threshold = 0.5
@@ -1050,8 +1050,8 @@ def find_repeated_values(
       - Returns array/sequence/Series of 1s if the value is repeated.
       - Returns array/sequence/Series of 0s otherwise.
 
-    Notes
-    -----
+    Note
+    ----
     Previous versions had default values for the parameters of
     * min_count = 20
     * threshold = 0.7
@@ -1149,8 +1149,8 @@ def do_iquam_track_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Notes
-    -----
+    Note
+    ----
     Previous versions had default values for the parameters of
     * speed_limit = 60.0 for ships and 15.0 for drifting buoys
     * delta_d = 1.11

@@ -84,3 +84,6 @@ To create a conda environment including **marine_qc**'s dependencies and and dev
     $ conda env create -n my_qc_env python=3.12 --file=environment.yml
     $ conda activate my_qc_env
     (my_qc_env) $ python -m pip install -e --no-deps .
+
+.. include:: ../README.rst
+    :start-after: hyperlinks

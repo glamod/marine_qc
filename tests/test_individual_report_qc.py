@@ -5,14 +5,7 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from marine_qc.auxiliary import (
-    convert_to,
-    failed,
-    isvalid,
-    passed,
-    untestable,
-)
-from marine_qc.qc_individual_reports import (
+from marine_qc import (
     do_climatology_check,
     do_date_check,
     do_day_check,
@@ -25,8 +18,15 @@ from marine_qc.qc_individual_reports import (
     do_supersaturation_check,
     do_time_check,
     do_wind_consistency_check,
-    value_check,
 )
+from marine_qc.auxiliary import (
+    convert_to,
+    failed,
+    isvalid,
+    passed,
+    untestable,
+)
+from marine_qc.qc_individual_reports import value_check
 
 
 @pytest.mark.parametrize(
