@@ -403,6 +403,8 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable:
             return result
         sort_indices = np.argsort(original_call[sortby])
         inverse_indices = np.argsort(sort_indices)
+        if len(result) == 0:
+            return result
         return result[inverse_indices]
 
     return generic_decorator(pre_handler=pre_handler, post_handler=post_handler)

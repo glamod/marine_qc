@@ -5,34 +5,22 @@ import pytest  # noqa
 from cdm_reader_mapper import DataBundle, read_tables
 from cdm_reader_mapper.common.getting_files import load_file
 
-from marine_qc.auxiliary import (
-    failed,
-    passed,
-    untestable,
-    untested,
-)
-from marine_qc.external_clim import Climatology
-from marine_qc.multiple_row_checks import (
+from marine_qc import (
     do_multiple_row_check,
-)
-from marine_qc.qc_grouped_reports import (
     do_bayesian_buddy_check,
     do_mds_buddy_check,
-)
-from marine_qc.qc_individual_reports import (
     do_climatology_check,
     do_date_check,
     do_day_check,
     do_hard_limit_check,
     do_missing_value_check,
     do_missing_value_clim_check,
+    do_night_check,
     do_position_check,
     do_sst_freeze_check,
     do_supersaturation_check,
     do_time_check,
     do_wind_consistency_check,
-)
-from marine_qc.qc_sequential_reports import (
     do_few_check,
     do_iquam_track_check,
     do_spike_check,
@@ -41,6 +29,13 @@ from marine_qc.qc_sequential_reports import (
     find_repeated_values,
     find_saturated_runs,
 )
+from marine_qc.auxiliary import (
+    failed,
+    passed,
+    untestable,
+    untested,
+)
+from marine_qc.external_clim import Climatology
 
 
 def _get_parameters(dataset="", release="", deck="", trange=""):
@@ -323,6 +318,28 @@ def test_do_day_check(testdata, apply_func):
             lon=db_["longitude"],
         )
     expected = pd.Series([untestable] + [failed] * 12)  # observations are at night
+    pd.testing.assert_series_equal(results, expected)
+
+
+@pytest.mark.parametrize("apply_func", [False, True])
+def test_do_night_check(testdata, apply_func):
+    db_ = testdata["header"].copy()
+    if apply_func is True:
+        results = db_.apply(
+            lambda row: do_night_check(
+                date=row["report_timestamp"],
+                lat=row["latitude"],
+                lon=row["longitude"],
+            ),
+            axis=1,
+        )
+    else:
+        results = do_night_check(
+            date=db_["report_timestamp"],
+            lat=db_["latitude"],
+            lon=db_["longitude"],
+        )
+    expected = pd.Series([untestable] + [passed] * 12)  # observations are at night
     pd.testing.assert_series_equal(results, expected)
 
 
