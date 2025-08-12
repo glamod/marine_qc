@@ -361,7 +361,6 @@ def day_in_year(year: int = None, month: int = 1, day: int = 1) -> int:
         Day in year. If year is not specified then the year is treated as a non-leap year and
         29 February returns the same value as 1 March.
     """
-
     year_not_specified = False
     if year is None:
         year = 2004
@@ -384,9 +383,9 @@ def day_in_year(year: int = None, month: int = 1, day: int = 1) -> int:
     else:
         day_index = np.sum(month_lengths[0 : month - 1]) + day
 
-    assert (not year_not_specified and (1 <= day_index <= 366)) or (
+    assert (not year_not_specified and (1 <= day_index <= 366)) or (  # noqa: S101
         year_not_specified and (1 <= day_index <= 365)
-    )  # noqa: S101
+    )
 
     return day_index
 
