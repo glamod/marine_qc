@@ -400,96 +400,25 @@ def test_do_sst_missing_value_check(sst, expected):
     assert do_missing_value_check(sst) == expected
 
 
+# fmt: off
 @pytest.mark.parametrize(
     "value, climate_normal, standard_deviation, stdev_limits, limit, lowbar, expected",
     [
         (8.0, 0.0, "default", None, 8.0, None, passed),  # pass at limit
-        (
-            9.0,
-            0.0,
-            "default",
-            None,
-            8.0,
-            None,
-            failed,
-        ),  # fail with anomaly exceeding limit
-        (
-            0.0,
-            9.0,
-            "default",
-            None,
-            8.0,
-            None,
-            failed,
-        ),  # fail with same anomaly but negative
+        (9.0, 0.0, "default", None, 8.0, None, failed),  # fail with anomaly exceeding limit
+        (0.0, 9.0, "default", None, 8.0, None, failed),  # fail with same anomaly but negative
         (9.0, 0.0, "default", None, 11.0, None, passed),  # pass with higher limit
         (0.0, 9.0, "default", None, 11.0, None, passed),  # same with negative anomaly
-        (
-            None,
-            0.0,
-            "default",
-            None,
-            8.0,
-            None,
-            untestable,
-        ),  # untestable with Nones as inputs
-        (
-            9.0,
-            None,
-            "default",
-            None,
-            8.0,
-            None,
-            untestable,
-        ),  # untestable with Nones as inputs
-        (
-            9.0,
-            0.0,
-            "default",
-            None,
-            None,
-            None,
-            untestable,
-        ),  # untestable with Nones as inputs
+        (None, 0.0, "default", None, 8.0, None, untestable),  # untestable with Nones as inputs
+        (9.0, None, "default", None, 8.0, None, untestable),  # untestable with Nones as inputs
+        (9.0, 0.0, "default", None, None, None, untestable),  # untestable with Nones as inputs
         (None, 0.0, 1.0, None, 3.0, 0.5, untestable),  # check None returns untestable
         (1.0, None, 1.0, None, 3.0, 0.5, untestable),
         (1.0, 0.0, None, None, 3.0, 0.5, untestable),
-        (
-            1.0,
-            0.0,
-            2.0,
-            None,
-            3.0,
-            0.1,
-            passed,
-        ),  # Check simple pass 1.0 anomaly with 6.0 limits
-        (
-            7.0,
-            0.0,
-            2.0,
-            None,
-            3.0,
-            0.1,
-            failed,
-        ),  # Check fail with 7.0 anomaly and 6.0 limits
-        (
-            0.4,
-            0.0,
-            0.1,
-            None,
-            3.0,
-            0.5,
-            passed,
-        ),  # Anomaly outside std limits but < lowbar
-        (
-            0.4,
-            0.0,
-            0.1,
-            None,
-            -3.0,
-            0.5,
-            untestable,
-        ),  # Anomaly outside std limits but < lowbar
+        (1.0, 0.0, 2.0, None, 3.0, 0.1, passed),  # Check simple pass 1.0 anomaly with 6.0 limits
+        (7.0, 0.0, 2.0, None, 3.0, 0.1, failed),  # Check fail with 7.0 anomaly and 6.0 limits
+        (0.4, 0.0, 0.1, None, 3.0, 0.5, passed),  # Anomaly outside std limits but < lowbar
+        (0.4, 0.0, 0.1, None, -3.0, 0.5, untestable),  # Anomaly outside std limits but < lowbar
         (None, 0.0, 0.5, [0.0, 1.0], 5.0, None, untestable),  # untestable with None
         (2.0, None, 0.5, [0.0, 1.0], 5.0, None, untestable),  # untestable with None
         (2.0, 0.0, None, [0.0, 1.0], 5.0, None, untestable),  # untestable with None
@@ -497,24 +426,8 @@ def test_do_sst_missing_value_check(sst, expected):
         (2.0, 0.0, 0.5, [0.0, 1.0], 3.0, None, failed),  # simple fail
         (3.0, 0.0, 1.5, [0.0, 1.0], 2.0, None, failed),  # fail with limited stdev
         (1.0, 0.0, 0.1, [0.5, 1.0], 5.0, None, passed),  # pass with limited stdev
-        (
-            1.0,
-            0.0,
-            0.5,
-            [1.0, 0.0],
-            5.0,
-            None,
-            untestable,
-        ),  # untestable with limited stdev
-        (
-            1.0,
-            0.0,
-            0.5,
-            [0.0, 1.0],
-            -1,
-            None,
-            untestable,
-        ),  # untestable with limited stdev
+        (1.0, 0.0, 0.5, [1.0, 0.0], 5.0, None, untestable),  # untestable with limited stdev
+        (1.0, 0.0, 0.5, [0.0, 1.0], -1, None, untestable),  # untestable with limited stdev
         (5.6, 2.2, "default", None, 10.0, None, passed),
         (None, 2.2, "default", None, 10.0, None, untestable),
         (np.nan, 2.2, "default", None, 10.0, None, untestable),
@@ -540,6 +453,7 @@ def test_climatology_check(
         )
         == expected
     )
+# fmt: on
 
 
 def _test_climatology_plus_stdev_check_raises():
@@ -561,6 +475,7 @@ def _test_climatology_plus_stdev_check_raises():
         (np.nan, [-10.0, 10.0], untestable),
         (56, [-100, 100], passed),
         (156, [-100, 100], failed),
+        (56, [100, -100], untestable),
     ],
 )
 def test_do_hard_limit_check(value, limits, expected):
@@ -594,6 +509,8 @@ def test_do_supersaturation_check_array():
         (-15.0, 0.0, -1.8, 2.0, failed),
         (-2.0, 0.0, -2.0, 2.0, passed),
         (-2.0, 0.5, -1.8, 2.0, passed),
+        (-1.7, "default", -1.8, "default", passed),
+        (-2.0, "default", -1.8, "default", failed),
         (-5.0, 0.5, -1.8, 2.0, failed),
         (0.0, None, -1.8, 2.0, untestable),
         (0.0, 0.0, None, 2.0, untestable),

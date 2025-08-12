@@ -112,7 +112,7 @@ class Climatology:
         if self.n == 73:
             tindex = which_pentad(month, day) - 1
         if self.n == 365:
-            tindex = day_in_year(month, day) - 1
+            tindex = day_in_year(month=month, day=day) - 1
 
         return tindex
 

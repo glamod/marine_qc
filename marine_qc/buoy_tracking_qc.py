@@ -16,7 +16,7 @@ from .auxiliary import failed, isvalid, passed, untestable, untested
 from .qc_sequential_reports import do_iquam_track_check, inspect_arrays
 from .spherical_geometry import sphere_distance
 from .statistics import trim_mean, trim_std
-from .time_control import convert_date_to_hours, dayinyear
+from .time_control import convert_date_to_hours, day_in_year
 
 """
 The trackqc module contains a set of functions for performing the tracking QC
@@ -106,7 +106,7 @@ def track_day_test(
     daytime = False
 
     year2 = year
-    day2 = dayinyear(year, month, day)
+    day2 = day_in_year(year, month, day)
     hour2 = math.floor(hour)
     minute2 = (hour - math.floor(hour)) * 60.0
     lat2 = lat

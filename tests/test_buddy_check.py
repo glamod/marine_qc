@@ -186,6 +186,26 @@ def reps4():
     return reps
 
 
+def test_eight_near_neighbours_missing_stdev_defaults_to_one(
+    dummy_pentad_stdev_empty, reps
+):
+    g = SuperObsGrid()
+    g.add_multiple_observations(
+        reps["LAT"], reps["LON"], reps["DATE"], reps["SST"] - reps["SST_CLIM"]
+    )
+    g.get_buddy_limits_with_parameters(
+        dummy_pentad_stdev_empty,
+        [[1, 1, 2], [2, 2, 2], [1, 1, 4], [2, 2, 4]],
+        [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]],
+        [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]],
+    )
+    mn = g.get_buddy_mean(0.5, 20.5, 1, 1)
+    sd = g.get_buddy_stdev(0.5, 20.5, 1, 1)
+
+    assert mn == 1.5
+    assert sd == 3.5 * 1.0
+
+
 def test_eight_near_neighbours(dummy_pentad_stdev, reps):
     g = SuperObsGrid()
     g.add_multiple_observations(
@@ -275,6 +295,32 @@ def test_simple():
             assert multiplier == 3.0
         else:
             assert multiplier == 2.0
+
+
+def test_get_threshold_multipliers_different_len_arrays_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 5, 10], [1, 2, 3, 4])
+
+
+def test_get_threshold_multipliers_zero_multiplier_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 5, 10], [0, 2, 3])
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 5, 10], [-1, 2, 3])
+
+
+def test_get_threshold_multiplier_nob_limits_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [1, 2, 3], [3, 6, 9])
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, -2, 3], [3, 6, 9])
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(50, [0, 4, 2], [3, 6, 9])
+
+
+def test_get_threshold_multiplier_negative_nobs_raises():
+    with pytest.raises(ValueError):
+        get_threshold_multiplier(-1, [0, 5, 10], [1, 5, 10])
 
 
 @pytest.fixture
@@ -499,7 +545,7 @@ def dummy_pentad_stdev_():
     return clim.Climatology(np.full([73, 180, 360], 1.0))
 
 
-def test_neighbours(reps2_):
+def test_get_neighbour_anomalies(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
         reps2_["LAT"], reps2_["LON"], reps2_["DATE"], reps2_["SST"] - reps2_["SST_CLIM"]
@@ -514,6 +560,16 @@ def test_neighbours(reps2_):
 
     assert temp_nobs[0] == 1
     assert temp_nobs[1] == 1
+
+
+def test_get_neighbour_anomalies_raises(reps2_):
+    g = SuperObsGrid()
+    g.add_multiple_observations(
+        reps2_["LAT"], reps2_["LON"], reps2_["DATE"], reps2_["SST"] - reps2_["SST_CLIM"]
+    )
+
+    with pytest.raises(ValueError):
+        _temp_anom, _temp_nobs = g.get_neighbour_anomalies([2, 2], 180, 89, 0)
 
 
 def test_add_one_maxes_limits(reps_, dummy_pentad_stdev_):
@@ -574,6 +630,14 @@ def test_add_one_maxes_limits_with_missing_stdevs(reps_, dummy_pentad_stdev_empt
 
     assert pytest.approx(sd, 0.0001) == 500
     assert mn == 0.0
+
+
+def test_add_single_observation_raises():
+    g = SuperObsGrid()
+    with pytest.raises(ValueError):
+        g.add_single_observation(0.0, 500.0, 1, 1, 0.5)
+    with pytest.raises(ValueError):
+        g.add_single_observation(-100.0, 0.0, 1, 1, 0.5)
 
 
 def test_add_multiple(reps_, dummy_pentad_stdev_):

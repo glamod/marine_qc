@@ -21,7 +21,7 @@ from .auxiliary import (
     untestable,
 )
 from .external_clim import ClimFloatType, inspect_climatology
-from .time_control import convert_date, dayinyear, get_month_lengths
+from .time_control import convert_date, day_in_year, get_month_lengths
 
 
 @post_format_return_type(["value"])
@@ -231,7 +231,7 @@ def _do_daytime_check(
         d_ = int(day[i])
         h_ = hour[i]
         y2 = y_
-        d2 = dayinyear(y_, m_, d_)
+        d2 = day_in_year(y_, m_, d_)
         h2 = math.floor(h_)
         m2 = (h_ - h2) * 60.0
 
@@ -243,7 +243,7 @@ def _do_daytime_check(
             d2 = d2 - 1
             if d2 <= 0:
                 y2 = y2 - 1
-                d2 = dayinyear(y2, 12, 31)
+                d2 = day_in_year(y2, 12, 31)
 
         lat2 = lat_
         lon2 = lon_
@@ -563,9 +563,6 @@ def do_climatology_check(
 
     if maximum_anomaly is None or maximum_anomaly <= 0:
         return format_return_type(result, value)
-
-    if standard_deviation is None:
-        standard_deviation = np.full(value.shape, 1.0)
 
     if standard_deviation_limits is None:
         standard_deviation_limits = (0, np.inf)

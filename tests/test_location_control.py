@@ -29,6 +29,13 @@ def test_0_is_89point5(yindex, resolution, expected):
     assert yindex_to_lat(yindex, res=resolution) == expected
 
 
+def test_yindex_to_lat_raises():
+    with pytest.raises(ValueError):
+        yindex_to_lat(-1, 1)
+    with pytest.raises(ValueError):
+        yindex_to_lat(180, 1)
+
+
 @pytest.mark.parametrize(
     "lat, res, expected",
     [
@@ -189,6 +196,13 @@ def test_xindex_to_lon(xindex, res, lon):
     assert xindex_to_lon(xindex, res) == lon
 
 
+def test_xindex_to_lon_raises():
+    with pytest.raises(ValueError):
+        xindex_to_lon(-1, 1)
+    with pytest.raises(ValueError):
+        xindex_to_lon(360, 1)
+
+
 @pytest.mark.parametrize(
     "q11, q12, q21, q22, expected",
     [
@@ -223,3 +237,14 @@ def test_fill_missing_values(q11, q12, q21, q22, expected):
 )
 def test_get_four_surrounding_points(lat, lon, max90, expected):
     assert get_four_surrounding_points(lat, lon, res=1.0, max90=max90) == expected
+
+
+def test_get_four_surrounding_points_raises():
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(-95.0, 0.0, 1)
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(0.0, -200.0, 1)
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(95.0, 0.0, 1)
+    with pytest.raises(ValueError):
+        get_four_surrounding_points(0.0, 200.0, 1)
