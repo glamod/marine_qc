@@ -48,6 +48,7 @@ class pseudo_datetime:
                 self.__setattr__(a, 0.0)
 
     def __getattr__(self, item):
+        """Get attribute by item name."""
         if item in self.attribs:
             return self.__getattr__(item)
         else:
