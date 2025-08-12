@@ -569,7 +569,7 @@ def test_get_neighbour_anomalies_raises(reps2_):
     )
 
     with pytest.raises(ValueError):
-        temp_anom, temp_nobs = g.get_neighbour_anomalies([2, 2], 180, 89, 0)
+        _temp_anom, _temp_nobs = g.get_neighbour_anomalies([2, 2], 180, 89, 0)
 
 
 def test_add_one_maxes_limits(reps_, dummy_pentad_stdev_):
