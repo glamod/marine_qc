@@ -5,7 +5,7 @@ Changelog
 
 0.0.1 (unreleased)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John F Kennedy (:user:`jjk-code-otter`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John J Kennedy (:user:`jjk-code-otter`)
 
 Announcements
 ^^^^^^^^^^^^^
@@ -17,3 +17,4 @@ Internal changes
 * Replace assert statements with if statement raising error messages (:pull:`7`)
 * Split some try statements into single if statements giving warnings (:pull:`7`)
 * Fixing some typos in docstrings and comments (:pull:`7`)
+* Improved unit test coverage (:pull:`9`)
