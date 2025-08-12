@@ -191,6 +191,80 @@ def do_time_check(
     return result
 
 
+def _do_daytime_check(
+    date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode
+):
+    if mode not in ["day", "night"]:
+        raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
+
+    p_check = do_position_check(lat, lon)
+    p_check = np.atleast_1d(p_check)  # type: np.ndarray
+    d_check = do_date_check(year=year, month=month, day=day)
+    d_check = np.atleast_1d(d_check)  # type: np.ndarray
+    t_check = do_time_check(hour=hour)
+    t_check = np.atleast_1d(t_check)  # type: np.ndarray
+
+    result = np.full(year.shape, untestable, dtype=int)  # type: np.ndarray
+
+    if mode == "day":
+        _failed = failed
+        _passed = passed
+    else:
+        _failed = passed
+        _passed = failed
+
+    for i in range(len(year)):
+        if failed in [p_check[i], d_check[i], t_check[i]]:
+            result[i] = failed
+            continue
+        if (
+            (p_check[i] == untestable)
+            or (d_check[i] == untestable)
+            or (t_check[i] == untestable)
+        ):
+            continue
+
+        lat_ = lat[i]
+        lon_ = lon[i]
+        y_ = int(year[i])
+        m_ = int(month[i])
+        d_ = int(day[i])
+        h_ = hour[i]
+        y2 = y_
+        d2 = dayinyear(y_, m_, d_)
+        h2 = math.floor(h_)
+        m2 = (h_ - h2) * 60.0
+
+        # go back one hour and test if the sun was above the horizon
+        if time_since_sun_above_horizon is not None:
+            h2 = h2 - time_since_sun_above_horizon
+        if h2 < 0:
+            h2 = h2 + 24.0
+            d2 = d2 - 1
+            if d2 <= 0:
+                y2 = y2 - 1
+                d2 = dayinyear(y2, 12, 31)
+
+        lat2 = lat_
+        lon2 = lon_
+        if lat_ == 0:
+            lat2 = 0.0001
+        if lon_ == 0:
+            lon2 = 0.0001
+
+        _azimuth, elevation, _rta, _hra, _sid, _dec = sunangle(
+            y2, d2, h2, m2, 0, 0, 0, lat2, lon2
+        )
+
+        if elevation > 0:
+            result[i] = _passed
+            continue
+
+        result[i] = _failed
+
+    return result
+
+
 @post_format_return_type(["date", "year"])
 @convert_date(["year", "month", "day", "hour"])
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
@@ -253,66 +327,88 @@ def do_day_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
-    p_check = do_position_check(lat, lon)
-    p_check = np.atleast_1d(p_check)  # type: np.ndarray
-    d_check = do_date_check(year=year, month=month, day=day)
-    d_check = np.atleast_1d(d_check)  # type: np.ndarray
-    t_check = do_time_check(hour=hour)
-    t_check = np.atleast_1d(t_check)  # type: np.ndarray
+    return _do_daytime_check(
+        date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day"
+    )
 
-    result = np.full(year.shape, untestable, dtype=int)  # type: np.ndarray
 
-    for i in range(len(year)):
-        if failed in [p_check[i], d_check[i], t_check[i]]:
+@post_format_return_type(["date", "year"])
+@convert_date(["year", "month", "day", "hour"])
+@inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
+@convert_units(lat="degrees", lon="degrees")
+def do_night_check(
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
+    hour: ValueFloatType = None,
+    lat: ValueFloatType = None,
+    lon: ValueFloatType = None,
+    time_since_sun_above_horizon: float | None = None,
+) -> ValueIntType:
+    """Determine if the sun was below the horizon an hour ago based on date, time, and position.
 
-            result[i] = failed
-            continue
-        if (
-            (p_check[i] == untestable)
-            or (d_check[i] == untestable)
-            or (t_check[i] == untestable)
-        ):
-            continue
+    This "night" test is used to classify Marine Air Temperature (MAT) measurements as either
+    Night MAT (NMAT) or Day MAT, accounting for solar heating biases. It calculates the sun's
+    elevation using the `sunangle` function, offset by the specified time since sun above horizon.
 
-        lat_ = lat[i]
-        lon_ = lon[i]
-        y_ = int(year[i])
-        m_ = int(month[i])
-        d_ = int(day[i])
-        h_ = hour[i]
-        y2 = y_
-        d2 = dayinyear(y_, m_, d_)
-        h2 = math.floor(h_)
-        m2 = (h_ - h2) * 60.0
+    Parameters
+    ----------
+    date: datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+        Date(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+        Year(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+        Month(s) of observation (1-12).
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+        Day(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+        Hour(s) of observation (minutes as decimal).
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude() of observation in degree.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    time_since_sun_above_horizon : float
+        Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
+        to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
 
-        # go back one hour and test if the sun was above the horizon
-        if time_since_sun_above_horizon is not None:
-            h2 = h2 - time_since_sun_above_horizon
-        if h2 < 0:
-            h2 = h2 + 24.0
-            d2 = d2 - 1
-            if d2 <= 0:
-                y2 = y2 - 1
-                d2 = dayinyear(y2, 12, 31)
+    Returns
+    -------
+    Same type as input, but with integer values
+        - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
+          returns 2.
+        - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
+          returns 1 or if it is day (sun above horizon an hour ago).
+        - Returns 0 if it is night (sun below horizon an hour ago).
 
-        lat2 = lat_
-        lon2 = lon_
-        if lat_ == 0:
-            lat2 = 0.0001
-        if lon_ == 0:
-            lon2 = 0.0001
+    Note
+    ----
+    In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
+    definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
+    than one hour after sunset and up to one hour after sunrise.
 
-        _azimuth, elevation, _rta, _hra, _sid, _dec = sunangle(
-            y2, d2, h2, m2, 0, 0, 0, lat2, lon2
-        )
-
-        if elevation > 0:
-            result[i] = passed
-            continue
-
-        result[i] = failed
-
-    return result
+    See Also
+    --------
+    do_day_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
+    """
+    return _do_daytime_check(
+        date,
+        year,
+        month,
+        day,
+        hour,
+        lat,
+        lon,
+        time_since_sun_above_horizon,
+        mode="night",
+    )
 
 
 def do_missing_value_check(value: ValueFloatType) -> ValueIntType:

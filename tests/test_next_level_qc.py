@@ -19,6 +19,7 @@ from marine_qc.qc_individual_reports import (
     do_hard_limit_check,
     do_missing_value_check,
     do_missing_value_clim_check,
+    do_night_check,
     do_position_check,
     do_sst_freeze_check,
     do_supersaturation_check,
@@ -252,6 +253,119 @@ def test_do_day_check(year, month, day, hour, latitude, longitude, time, expecte
     latitude = convert_to(latitude, "degrees", "rad")
     units = {"lat": "rad"}
     result = do_day_check(
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        lat=latitude,
+        lon=longitude,
+        time_since_sun_above_horizon=time,
+        units=units,
+    )
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "year, month, day, hour, latitude, longitude, time, expected",
+    [
+        (
+            2015,
+            10,
+            15,
+            7.8000,
+            50.7365,
+            -3.5344,
+            1.0,
+            failed,
+        ),  # Known values from direct observation (day); should trigger fail
+        (
+            2018,
+            9,
+            25,
+            11.5000,
+            50.7365,
+            -3.5344,
+            1.0,
+            failed,
+        ),  # Known values from direct observation (day); should trigger fail
+        (
+            2015,
+            10,
+            15,
+            7.5000,
+            50.7365,
+            -3.5344,
+            1.0,
+            passed,
+        ),  # Known values from direct observation (night); should trigger pass
+        (
+            2025,
+            4,
+            17,
+            16.04,
+            49.160383,
+            5.383146,
+            1.0,
+            failed,
+        ),  # Known values from direct observation: should trigger fail
+        (
+            2015,
+            0,
+            15,
+            7.5000,
+            50.7365,
+            -3.5344,
+            1.0,
+            failed,
+        ),  # bad month value should trigger fail
+        (
+            2015,
+            10,
+            0,
+            7.5000,
+            50.7365,
+            -3.5344,
+            1.0,
+            failed,
+        ),  # bad day value should trigger fail
+        (
+            2015,
+            10,
+            15,
+            -7.5000,
+            50.7365,
+            -3.5344,
+            1.0,
+            failed,
+        ),  # bad hour value should trigger fail
+        (
+            2015,
+            1,
+            1,
+            0.5,
+            0.0,
+            0.0,
+            1,
+            passed,
+        ),  # 0 lat 0 lon near midnight should trigger pass
+        (2015, 1, 1, None, 0.0, 0.0, 1, untestable),  # missing hour should trigger fail
+    ],
+)
+def test_do_night_check(year, month, day, hour, latitude, longitude, time, expected):
+    result = do_night_check(
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        lat=latitude,
+        lon=longitude,
+        time_since_sun_above_horizon=time,
+    )
+    assert result == expected
+
+    latitude = convert_to(latitude, "degrees", "rad")
+    units = {"lat": "rad"}
+    result = do_night_check(
         year=year,
         month=month,
         day=day,
