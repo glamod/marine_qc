@@ -2196,7 +2196,7 @@ def do_sst_biased_noisy_short_check(
     Note
     ----
     In previous versions, default values for the parameters were:
-    
+
     * n_eval = 30
     * bias_lim = 1.10
     * drif_intra = 1.0
