@@ -1,5 +1,5 @@
 #
-# cdm_reader_mapper documentation build configuration file
+# marine_qc documentation build configuration file
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("."))
 
 import marine_qc  # noqa
+
 
 # -- General configuration ------------------------------------------------
 
@@ -90,7 +91,7 @@ source_suffix = {".rst": "restructuredtext"}
 # The master toctree document.
 master_doc = "index"
 
-remove_from_toctrees = ["generated/*"]
+remove_from_toctrees = ["generated/*", "api/generated/*"]
 
 # General information about the project.
 project = "marine_qc"
@@ -246,6 +247,7 @@ warnings.filterwarnings("ignore")
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
+    "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "python": ("https://docs.python.org/3/", None),
 }
