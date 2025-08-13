@@ -85,16 +85,12 @@ Unit Conversions
 ----------------
 
 The QC checks written using SI (and derived) units. Inputs can be converted when a QC function is called using the
-`converter_dict` keyword argument::
+`units` keyword argument::
 
   temperature_in_K(25.0, units={"value": "degC"})
 
 As an example.
 
-Running Multiple Checks
------------------------
-
-TBC
 
 QC of Individual Reports
 ------------------------
@@ -187,6 +183,112 @@ Compares the wind speed and wind direction to check for consistency. If the wind
 be set to zero also. If the wind speed is greater than zero then the wind directions should not equal zero. If either
 of these constraints is violated then the flag is set to 1, fail, otherwise it is set to 0. If either of the inputs
 is numerically valid then the flag is set to 2, untestable.
+
+Running Multiple Individual Report Checks
+-----------------------
+
+Multiple indvidual report checks can be run simultaneously using the `do_multiple_row_check` function. Aside from the
+input dataframe, two additional arguments can be specified: `qc_dict` and `preproc_dict`. The `qc_dict` is a
+dictionary that specifies the names of the qc function to be run, the variables used as input and the values of the
+arguments. The `preproc_dict` is a dictionary that specifies any pre-processing functions such as a function to
+extract the climatological values corresponding to the input reports.
+
+Currently, the following QC checks can be used:
+
+* do_climatology_check,
+* do_date_check,
+* do_day_check,
+* do_hard_limit_check,
+* do_missing_value_check,
+* do_missing_value_clim_check,
+* do_night_check,
+* do_position_check,
+* do_sst_freeze_check,
+* do_supersaturation_check,
+* do_time_check,
+* do_wind_consistency_check
+
+And the following preprocessing functions:
+
+* get_climatological_value
+
+.. code-block:: python
+
+    result = do_multiple_row_check(data, qc_dict, preproc_dict)
+
+An example `qc_dict` for a hard limit test:
+
+.. code-block:: python
+
+    qc_dict = {
+        "hard_limit_check": {
+            "func": "do_hard_limit_check",
+            "names": "ATEMP",
+            "arguments": {"limits": [193.15, 338.15]},
+        }
+    }
+
+An example `qc_dict` for a climatology test. Variable "climatology" was previously defined:
+
+.. code-block:: python
+
+    qc_dict = {
+        "climatology_check": {
+            "func": "do_climatology_check",
+            "names": {
+                "value": "observation_value",
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "date_time",
+            },
+            "arguments": {
+                "climatology": climatology,
+                "maximum_anomaly": 10.0,  # K
+            },
+        },
+    }
+
+An example `preproc_dict` for extracting a climatological value:
+
+.. code-block:: python
+
+    preproc_dict = {
+        "func": "get_climatological_value",
+        "names": {
+            "lat": "latitude",
+            "lon": "longitude",
+            "date": "date_time",
+        },
+        "inputs": climatology,
+    }
+
+Make use of both dictionaries:
+
+.. code-block:: python
+
+    preproc_dict = {
+        "func": "get_climatological_value",
+        "names": {
+            "lat": "latitude",
+            "lon": "longitude",
+            "date": "date_time",
+        },
+        "inputs": climatology,
+    }
+
+    qc_dict = {
+        "climatology_check": {
+            "func": "do_climatology_check",
+            "names": {
+                "value": "observation_value",
+            },
+            "arguments": {
+                "climatology": "__preprocessed__",
+                "maximum_anomaly": 10.0,  # K
+            },
+        },
+    }
+
 
 QC of Sequential Reports
 ------------------------
