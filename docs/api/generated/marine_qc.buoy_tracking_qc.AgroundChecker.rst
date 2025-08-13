@@ -5,27 +5,29 @@
 
 .. autoclass:: AgroundChecker
 
-
+   
    .. automethod:: __init__
 
-
+   
    .. rubric:: Methods
 
    .. autosummary::
-
+   
       ~AgroundChecker.__init__
       ~AgroundChecker.do_aground_check
       ~AgroundChecker.get_qc_outcomes
       ~AgroundChecker.smooth_arrays
       ~AgroundChecker.valid_arrays
       ~AgroundChecker.valid_parameters
+   
+   
 
-
-
-
-
+   
+   
    .. rubric:: Attributes
 
    .. autosummary::
-
+   
       ~AgroundChecker.tolerance
+   
+   

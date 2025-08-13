@@ -83,9 +83,6 @@ The QC checks written using SI (and derived) units. Inputs can be converted when
 
   temperature_in_K(25.0, units={"value": "degC"})
 
-As an example.
-
-
 QC of Individual Reports
 ------------------------
 
@@ -96,11 +93,15 @@ valid as well as more complex checks involving comparison to climatologies.
 :func:`.do_position_check`
 ==========================
 
+Tests whether the latitiude-longitude position of the report is valid.
+
 Checks whether the latitude is in the range -90 to 90 degrees and that the longitude is in the range -180 to 360
 degrees.
 
 :func:`.do_date_check`
 ======================
+
+Tests whether the date of the report is valid.
 
 Checks whether the date specified either as a Datetime object or by year, month, and day, is a valid date. If any
 component of the input is numerically invalid (Nan, None or similar) then the flag is set to 2, i.e. untestable
@@ -108,11 +109,15 @@ component of the input is numerically invalid (Nan, None or similar) then the fl
 :func:`.do_time_check`
 ======================
 
+Tests whether the time of the report is valid.
+
 Checks that the time of the report is valid. If the input Datetime or hour is not numerically valid (Nan, None, or the
 like) then the flag is set to 2, i.e. untestable.
 
 :func:`.do_day_check`
 =====================
+
+Tests whether the report was during the day.
 
 Checks whether an observation was made during the day (flag set to 1, fail) or night (flag set to 0, pass). The
 definition of day is between a specified amount of time after sunrise and the same amount of time after sunset. If
@@ -121,11 +126,15 @@ any of the inputs are numerically invalid, the flag is set to 2, untestable.
 :func:`.do_missing_value_check`
 ===============================
 
+Tests that the value is present.
+
 Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 1, fail,
 otherwise it is set to 0, pass.
 
 :func:`.do_missing_value_clim_check`
 ====================================
+
+Tests whether there is a valid climatological value at the report location.
 
 Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
 value is valid, the flag is set to 0, pass otherwise it is set to 1, fail.
@@ -133,11 +142,15 @@ value is valid, the flag is set to 0, pass otherwise it is set to 1, fail.
 :func:`.do_hard_limit_check`
 ============================
 
+Tests whether the value of report is within a specified range
+
 Checks whether a value is between specified limits or not. If the value is between the specified upper and lower limits
 or equal to either one then the flag is set to 0, pass, otherwise the flag is set to 1, fail.
 
 :func:`.do_climatology_check`
 =============================
+
+Tests whether the value of a report is within an acceptable range around the climatological mean.
 
 Checks whether a value from a report is close (in some sense) to the climatological average at that location. "Close"
 can be defined using four parameters:
@@ -156,6 +169,8 @@ These allow for a great deal of flexibility in the check depending what informat
 :func:`.do_supersaturation_check`
 =================================
 
+Tests whether a report represents supersaturated conditions.
+
 Check whether the dewpoint temperature is greater than the air temperature. If the dew point is greater than the
 air temperature then the conditions are supersaturated and the flag is set to 1, fail. If the dewpoint is less than
 or equal to the air temperature then the flag is set to 0, pass. If either of the inputs is numerically invalid then
@@ -163,6 +178,8 @@ the flag is set to 2, untestable.
 
 :func:`.do_sst_freeze_check`
 ============================
+
+Tests whether the sea-surface temperature is above freezing.
 
 Check whether the sea-surface temperature is above a specified freezing point (generally sea water freezes at -1.8C).
 There are optional inputs, which allow you to specify an observational uncertainty and a multiplier. If these are not
@@ -172,6 +189,8 @@ inputs is numerically invalid (Nan, None or something of that kind) then the fla
 
 :func:`.do_wind_consistency_check`
 ==================================
+
+Tests that wind speed and direction are consistent.
 
 Compares the wind speed and wind direction to check for consistency. If the windspeed is zero, the direction should
 be set to zero also. If the wind speed is greater than zero then the wind directions should not equal zero. If either
@@ -295,6 +314,8 @@ compare values at different times and locations to assess data quality.
 :func:`.do_track_check`
 =======================
 
+Tests that the locations of a series of reports form a plausible ship track.
+
 The track check uses the location and datetime information from the reports as well as the ship speed and direction
 information, if available, to determine if any of the reported locations and times are likely to be erroneous.
 
@@ -303,11 +324,16 @@ For a detailed description see :doc:`track_check`
 :func:`.do_few_check`
 =====================
 
+Tests whether there are more than a few reports associated with a ship. Ships making few reports are typically
+unreliable.
+
 If there are three or fewer reports then the flags for all reports are set to 1, fail. If there are four or more,
 the flags are all set to 0, pass.
 
 :func:`.do_iquam_track_check`
 =============================
+
+Tests that the locations of a series of reports form a plausible ship track.
 
 The IQUAM track check is based on the track check implemented by NOAA's IQUAM system. It verifies that consecutive
 locations of a platform are consistent with the times of the report, assuming that the platform can't move faster
@@ -321,6 +347,8 @@ Details are in the `IQUAM paper`_.
 
 :func:`.do_spike_check`
 =======================
+
+Tests that a sequence of values has unlikely "spikes" in it.
 
 The spike checks looks for large changes in input value between reports. It is based on the spike check implemented
 by NOAA's IQUAM system. It uses the locations and datetimes of the reports to calculate space and time gradients
@@ -336,6 +364,8 @@ Details are in the `IQUAM paper`_.
 :func:`.find_saturated_runs`
 ============================
 
+Tests whether there are implausibly long runs of reports with super-saturated conditions.
+
 A sequence of reports is checked for runs where conditions are saturated i.e. the reported air temperature and dewpoint
 temperature are the same. This can happen when the reservoir of water for the wetbulb thermometer dries out, or loses
 contact with the thermometer bulb. If a run of saturated reports is longer than a specified number of reports and
@@ -345,12 +375,16 @@ reports are flagged as 0, pass.
 :func:`.find_multiple_rounded_values`
 =====================================
 
+Tests whether there are large numbers of rounded values in a sequence of reports.
+
 A sequence of reports is checked for values which are given to a whole number. If more than a specified fraction of
 observations are given to a whole number and the total number of whole numbers exceeds a specified threshold then
 all the flags for all the rounded numbers are set to 1, fail. The flags for all other reports are set to 0, pass.
 
 :func:`.find_repeated_values`
 =============================
+
+Tests whether there are implausibly large number of repeated values in a sequence of reports.
 
 A sequence of reports is checked for values which are repeated many times. If more than a specified fraction of
 reports have the same value and the total number of reports of that value exceeds a specified threshold then
@@ -366,6 +400,8 @@ and platform types. The reports can cover large areas and multiple months. The t
 :func:`.do_mds_buddy_check`
 ===========================
 
+Tests that each observation is reasonably close to the average of its near neighbours in time and space.
+
 The buddy check compares the observed value from each report expressed as an anomaly to the average of that variable
 from other nearby reports (the buddies in the buddy check, also converted to anomalies). Depending how many neighbours
 there are and how close they are, an adaptive multiplier is used. The difference between the observed value for the
@@ -377,6 +413,8 @@ For a detailed description see :doc:`buddy_check`
 
 :func:`.do_bayesian_buddy_check`
 ================================
+
+Tests that each observation is reasonably close to the average of its near neighbours in time and space.
 
 The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The principle is the same -  a report is
 compared to the average of nearby reports - but the determination of whether it is too far away is based on an
@@ -399,12 +437,16 @@ Geophys. Res. Oceans, 118, 3507–3529, https://doi.org/10.1002/jgrc.20257
 :func:`.do_speed_check`
 =======================
 
+Tests that speeds inferred from a sequence of reports are not implausible for a drifting buoy.
+
 The speed check aims to flag reports from drifting buoys that have been picked up by a ship (and are
 therefore likely to be out of the water). Reports are flagged if the mean velocity over a specified period
 is above a threshold (2.5 m/s) and the reports cover a period of time longer than a specified minimum.
 
 :func:`.do_new_speed_check`
 ===========================
+
+Tests that speeds inferred from a sequence of reports are not implausible for a drifting buoy
 
 The new speed check behaves similarly to the speed check, but observations are prescreened using the
 IQUAM track check. Speed is assessed over the shortest available period that exceeds the specified
@@ -415,6 +457,8 @@ apparent speeds, a minimum increment can be specified.
 :func:`.do_aground_check`
 =========================
 
+Tests whether reports from a drifting buoy suggest it has run aground and stopped moving.
+
 The aground check aims to flag reports from drifting buoys that have fetched up on land. A drifter is
 deemed aground when, after a minimum specified period of time, the distance between reports is less than
 a specified 'tolerance'. Sometimes a drifting buoy will return to the sea, so a maximum period is also
@@ -423,10 +467,14 @@ specified to avoid missing short lived groundings.
 :func:`.do_new_aground_check`
 =============================
 
+Tests whether reports from a drifting buoy suggest it has run aground and stopped moving.
+
 The new aground check is the same as the aground check but there is no upper window limit.
 
 :func:`.do_sst_start_tail_check` and :func:`.do_sst_end_tail_check`
 ===================================================================
+
+Tests for strange behaviour (bias or noise) at the start or end of a sequence of reports from a drifting buoy.
 
 The tail checks (see also the end tail check) aim to flag reports at the start (or end) of a record that are
 biased or noisy based on comparisons with a spatially complete background or reference SST field. There are two steps
@@ -452,8 +500,11 @@ of tail behaviours.
 The end tail check works in the same way as the start tail check, but runs through the reports in reverse
 time order.
 
-:func:`.do_sst_biased_check`, :func:`.do_sst_noisy_check`, and :func:`.`do_sst_biased_noisy_short_check`
+:func:`.do_sst_biased_check`, :func:`.do_sst_noisy_check`, and :func:`.do_sst_biased_noisy_short_check`
 ========================================================================================================
+
+Tests for sequences of reports from a drifting buoy that are biased or noisy with a version that works on shorter
+records.
 
 This group of checks flags reports from drifters that are persistently biased or noisy. The biased and noisy checks
 are only applied to drifting buoys which made more than 30 reports.

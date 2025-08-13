@@ -1585,6 +1585,7 @@ def do_speed_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * speed_limit = 2.5
     * min_win_period = 0.8
     * max_win_perido = 1.8
@@ -1642,10 +1643,12 @@ def do_new_speed_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * speed_limit = 3.0
     * min_win_period = 0.375
 
     And, for the IQUAM-specific parameters:
+
     * ship_speed_limit = 60.0
     * delta_d = 1.11
     * delta_t = 0.01
@@ -1704,6 +1707,7 @@ def do_aground_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * smooth_win = 41
     * min_win_period = 8
     * max_win_period = 10
@@ -1748,6 +1752,7 @@ def do_new_aground_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * smooth_win = 41
     * min_win_period = 8
     """
@@ -1822,6 +1827,7 @@ def do_sst_start_tail_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * long_win_len = 121
     * long_err_std_n = 3.0
     * short_win_len = 30
@@ -1918,6 +1924,7 @@ def do_sst_end_tail_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * long_win_len = 121
     * long_err_std_n = 3.0
     * short_win_len = 30
@@ -2009,6 +2016,7 @@ def do_sst_biased_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * n_eval = 30
     * bias_lim = 1.10
     * drif_intra = 1.0
@@ -2098,6 +2106,7 @@ def do_sst_noisy_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * n_eval = 30
     * bias_lim = 1.10
     * drif_intra = 1.0
@@ -2187,6 +2196,7 @@ def do_sst_biased_noisy_short_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+    
     * n_eval = 30
     * bias_lim = 1.10
     * drif_intra = 1.0

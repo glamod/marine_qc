@@ -5,16 +5,22 @@
 
 .. autoclass:: SpeedChecker
 
-
+   
    .. automethod:: __init__
 
-
+   
    .. rubric:: Methods
 
    .. autosummary::
-
+   
       ~SpeedChecker.__init__
       ~SpeedChecker.do_speed_check
       ~SpeedChecker.get_qc_outcomes
       ~SpeedChecker.valid_arrays
       ~SpeedChecker.valid_parameters
+   
+   
+
+   
+   
+   
