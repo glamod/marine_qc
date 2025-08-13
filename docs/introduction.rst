@@ -1,16 +1,10 @@
 .. marine QC documentation master file
 
-------------
-Introduction
-------------
+-----------
+Basic Guide
+-----------
 
-This Python package provides a set of tools for quality control (QC) of marine meteorological reports. Marine
-meteorological reports typically comprise latitude, longitude, time, and date as well as one or more
-marine meteorological variables often including, but not limited to sea-surface temperature, air temperature,
-dew point temperature, sea level pressure, wind speed and wind direction. Quality control is the process of
-identifying and flagging reports and variables within reports that are likely to be in gross error. It is
-important to note that QC checks do not (and cannot) identify all incorrect reports and they can also identify
-good reports as being erroneous.
+.. include:: ./description.rst
 
 The `MarineQC` package comprises quality control tests of three kinds:
 
@@ -99,51 +93,51 @@ The tests in `qc_individual_reports.py` work on individual marine reports, eithe
 change the outcome). These include simple checks of whether the location, time and date of the observation are
 valid as well as more complex checks involving comparison to climatologies.
 
-do_position_check
-=================
+:func:`.do_position_check`
+==========================
 
 Checks whether the latitude is in the range -90 to 90 degrees and that the longitude is in the range -180 to 360
 degrees.
 
-do_date_check
-=============
+:func:`.do_date_check`
+======================
 
 Checks whether the date specified either as a Datetime object or by year, month, and day, is a valid date. If any
 component of the input is numerically invalid (Nan, None or similar) then the flag is set to 2, i.e. untestable
 
-do_time_check
-=============
+:func:`.do_time_check`
+======================
 
 Checks that the time of the report is valid. If the input Datetime or hour is not numerically valid (Nan, None, or the
 like) then the flag is set to 2, i.e. untestable.
 
-do_day_check
-============
+:func:`.do_day_check`
+=====================
 
 Checks whether an observation was made during the day (flag set to 1, fail) or night (flag set to 0, pass). The
 definition of day is between a specified amount of time after sunrise and the same amount of time after sunset. If
 any of the inputs are numerically invalid, the flag is set to 2, untestable.
 
-do_missing_value_check
-======================
+:func:`.do_missing_value_check`
+===============================
 
 Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 1, fail,
 otherwise it is set to 0, pass.
 
-do_missing_value_clim_check
-===========================
+:func:`.do_missing_value_clim_check`
+====================================
 
 Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
 value is valid, the flag is set to 0, pass otherwise it is set to 1, fail.
 
-do_hard_limit_check
-===================
+:func:`.do_hard_limit_check`
+============================
 
 Checks whether a value is between specified limits or not. If the value is between the specified upper and lower limits
 or equal to either one then the flag is set to 0, pass, otherwise the flag is set to 1, fail.
 
-do_climatology_check
-====================
+:func:`.do_climatology_check`
+=============================
 
 Checks whether a value from a report is close (in some sense) to the climatological average at that location. "Close"
 can be defined using four parameters:
@@ -159,16 +153,16 @@ can be defined using four parameters:
 
 These allow for a great deal of flexibility in the check depending what information is available.
 
-do_supersaturation_check
-========================
+:func:`.do_supersaturation_check`
+=================================
 
 Check whether the dewpoint temperature is greater than the air temperature. If the dew point is greater than the
 air temperature then the conditions are supersaturated and the flag is set to 1, fail. If the dewpoint is less than
 or equal to the air temperature then the flag is set to 0, pass. If either of the inputs is numerically invalid then
 the flag is set to 2, untestable.
 
-do_sst_freeze_check
-===================
+:func:`.do_sst_freeze_check`
+============================
 
 Check whether the sea-surface temperature is above a specified freezing point (generally sea water freezes at -1.8C).
 There are optional inputs, which allow you to specify an observational uncertainty and a multiplier. If these are not
@@ -176,8 +170,8 @@ supplied then the uncertainty is set to zero. If the sea-surface temperature is 
 uncertainty below the freezing point then the flag is set to 1, fail, otherwise it is set to 0, pass. If any of the
 inputs is numerically invalid (Nan, None or something of that kind) then the flag is set to 2, untestable.
 
-do_wind_consistency_check
-=========================
+:func:`.do_wind_consistency_check`
+==================================
 
 Compares the wind speed and wind direction to check for consistency. If the windspeed is zero, the direction should
 be set to zero also. If the wind speed is greater than zero then the wind directions should not equal zero. If either
@@ -185,9 +179,9 @@ of these constraints is violated then the flag is set to 1, fail, otherwise it i
 is numerically valid then the flag is set to 2, untestable.
 
 Running Multiple Individual Report Checks
------------------------
+-----------------------------------------
 
-Multiple indvidual report checks can be run simultaneously using the `do_multiple_row_check` function. Aside from the
+Multiple indvidual report checks can be run simultaneously using the :func:`.do_multiple_row_check` function. Aside from the
 input dataframe, two additional arguments can be specified: `qc_dict` and `preproc_dict`. The `qc_dict` is a
 dictionary that specifies the names of the qc function to be run, the variables used as input and the values of the
 arguments. The `preproc_dict` is a dictionary that specifies any pre-processing functions such as a function to
@@ -195,22 +189,24 @@ extract the climatological values corresponding to the input reports.
 
 Currently, the following QC checks can be used:
 
-* do_climatology_check,
-* do_date_check,
-* do_day_check,
-* do_hard_limit_check,
-* do_missing_value_check,
-* do_missing_value_clim_check,
-* do_night_check,
-* do_position_check,
-* do_sst_freeze_check,
-* do_supersaturation_check,
-* do_time_check,
-* do_wind_consistency_check
+* :func:`.do_climatology_check`,
+* :func:`.do_date_check`,
+* :func:`.do_day_check`,
+* :func:`.do_hard_limit_check`,
+* :func:`.do_missing_value_check`,
+* :func:`.do_missing_value_clim_check`,
+* :func:`.do_night_check`,
+* :func:`.do_position_check`,
+* :func:`.do_sst_freeze_check`,
+* :func:`.do_supersaturation_check`,
+* :func:`.do_time_check`,
+* :func:`.do_wind_consistency_check`
 
 And the following preprocessing functions:
 
-* get_climatological_value
+* :func:`.get_climatological_value`
+
+The function is called like so:
 
 .. code-block:: python
 
@@ -296,22 +292,22 @@ QC of Sequential Reports
 Some test work on sequences of reports from a single ship, drifter or other platform. They include tests that
 compare values at different times and locations to assess data quality.
 
-do_track_check
-==============
+:func:`.do_track_check`
+=======================
 
 The track check uses the location and datetime information from the reports as well as the ship speed and direction
 information, if available, to determine if any of the reported locations and times are likely to be erroneous.
 
 For a detailed description see :doc:`track_check`
 
-do_few_check
-============
+:func:`.do_few_check`
+=====================
 
 If there are three or fewer reports then the flags for all reports are set to 1, fail. If there are four or more,
 the flags are all set to 0, pass.
 
-do_iquam_track_check
-====================
+:func:`.do_iquam_track_check`
+=============================
 
 The IQUAM track check is based on the track check implemented by NOAA's IQUAM system. It verifies that consecutive
 locations of a platform are consistent with the times of the report, assuming that the platform can't move faster
@@ -323,8 +319,8 @@ Details are in the `IQUAM paper`_.
 
 .. _IQUAM paper: https://doi.org/10.1175/JTECH-D-13-00121.1
 
-do_spike_check
-==============
+:func:`.do_spike_check`
+=======================
 
 The spike checks looks for large changes in input value between reports. It is based on the spike check implemented
 by NOAA's IQUAM system. It uses the locations and datetimes of the reports to calculate space and time gradients
@@ -337,8 +333,8 @@ Details are in the `IQUAM paper`_.
 
 .. _IQUAM paper: https://doi.org/10.1175/JTECH-D-13-00121.1
 
-find_saturated_runs
-===================
+:func:`.find_saturated_runs`
+============================
 
 A sequence of reports is checked for runs where conditions are saturated i.e. the reported air temperature and dewpoint
 temperature are the same. This can happen when the reservoir of water for the wetbulb thermometer dries out, or loses
@@ -346,15 +342,15 @@ contact with the thermometer bulb. If a run of saturated reports is longer than 
 cover a period longer than a specified threshold then the run of saturated values is flagged as 1 (fail) otherwise the
 reports are flagged as 0, pass.
 
-find_multiple_rounded_values
-============================
+:func:`.find_multiple_rounded_values`
+=====================================
 
 A sequence of reports is checked for values which are given to a whole number. If more than a specified fraction of
 observations are given to a whole number and the total number of whole numbers exceeds a specified threshold then
 all the flags for all the rounded numbers are set to 1, fail. The flags for all other reports are set to 0, pass.
 
-find_repeated_values
-====================
+:func:`.find_repeated_values`
+=============================
 
 A sequence of reports is checked for values which are repeated many times. If more than a specified fraction of
 reports have the same value and the total number of reports of that value exceeds a specified threshold then
@@ -367,8 +363,8 @@ The final type of tests are those performed on a group of reports, potentially c
 and platform types. The reports can cover large areas and multiple months. The tests currently include so-called
 "buddy" checks in which the values for each report are compared to those of their neighbours.
 
-do_mds_buddy_check
-==================
+:func:`.do_mds_buddy_check`
+===========================
 
 The buddy check compares the observed value from each report expressed as an anomaly to the average of that variable
 from other nearby reports (the buddies in the buddy check, also converted to anomalies). Depending how many neighbours
@@ -379,8 +375,8 @@ is set to 1, failed.
 
 For a detailed description see :doc:`buddy_check`
 
-do_bayesian_buddy_check
-=======================
+:func:`.do_bayesian_buddy_check`
+================================
 
 The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The principle is the same -  a report is
 compared to the average of nearby reports - but the determination of whether it is too far away is based on an
@@ -400,15 +396,15 @@ Atkinson, C. P., N. A. Rayner, J. Roberts-Jones, and R. O. Smith (2013), Assessi
 surface temperature observations from drifting buoys and ships on a platform-by-platform basis, J.
 Geophys. Res. Oceans, 118, 3507–3529, https://doi.org/10.1002/jgrc.20257
 
-do_speed_check
-==============
+:func:`.do_speed_check`
+=======================
 
 The speed check aims to flag reports from drifting buoys that have been picked up by a ship (and are
 therefore likely to be out of the water). Reports are flagged if the mean velocity over a specified period
 is above a threshold (2.5 m/s) and the reports cover a period of time longer than a specified minimum.
 
-do_new_speed_check
-==================
+:func:`.do_new_speed_check`
+===========================
 
 The new speed check behaves similarly to the speed check, but observations are prescreened using the
 IQUAM track check. Speed is assessed over the shortest available period that exceeds the specified
@@ -416,21 +412,21 @@ minimum window period. To avoid problems with the discretization of time and loc
 example, latitude and longitude are often given to the nearest tenth of a degree), which can lead to large
 apparent speeds, a minimum increment can be specified.
 
-do_aground_check
-================
+:func:`.do_aground_check`
+=========================
 
 The aground check aims to flag reports from drifting buoys that have fetched up on land. A drifter is
 deemed aground when, after a minimum specified period of time, the distance between reports is less than
 a specified 'tolerance'. Sometimes a drifting buoy will return to the sea, so a maximum period is also
 specified to avoid missing short lived groundings.
 
-do_new_aground_check
-====================
+:func:`.do_new_aground_check`
+=============================
 
 The new aground check is the same as the aground check but there is no upper window limit.
 
-do_sst_start_tail_check and do_sst_end_tail_check
-=================================================
+:func:`.do_sst_start_tail_check` and :func:`.do_sst_end_tail_check`
+===================================================================
 
 The tail checks (see also the end tail check) aim to flag reports at the start (or end) of a record that are
 biased or noisy based on comparisons with a spatially complete background or reference SST field. There are two steps
@@ -456,8 +452,8 @@ of tail behaviours.
 The end tail check works in the same way as the start tail check, but runs through the reports in reverse
 time order.
 
-do_sst_biased_check, do_sst_noisy_check, and do_sst_biased_noisy_short_check
-============================================================================
+:func:`.do_sst_biased_check`, :func:`.do_sst_noisy_check`, and :func:`.`do_sst_biased_noisy_short_check`
+========================================================================================================
 
 This group of checks flags reports from drifters that are persistently biased or noisy. The biased and noisy checks
 are only applied to drifting buoys which made more than 30 reports.

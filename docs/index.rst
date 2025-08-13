@@ -13,8 +13,8 @@ Need some Documentation!
    :caption: Contents:
 
    About <readme>
-   introduction
    tool-set-up
+   introduction
    contributing
    authors
    api
