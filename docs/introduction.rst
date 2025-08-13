@@ -200,7 +200,7 @@ is numerically valid then the flag is set to 2, untestable.
 Running Multiple Individual Report Checks
 -----------------------------------------
 
-Multiple indvidual report checks can be run simultaneously using the :func:`.do_multiple_row_check` function. Aside from the
+Multiple individual report checks can be run simultaneously using the :func:`.do_multiple_row_check` function. Aside from the
 input dataframe, two additional arguments can be specified: `qc_dict` and `preproc_dict`. The `qc_dict` is a
 dictionary that specifies the names of the qc function to be run, the variables used as input and the values of the
 arguments. The `preproc_dict` is a dictionary that specifies any pre-processing functions such as a function to
