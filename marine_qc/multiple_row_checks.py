@@ -181,7 +181,7 @@ def do_multiple_row_check(
         Hashable input data.
     qc_dict : dict, optional
         Nested QC dictionary.
-        Keys represent arbitrary names of the check.
+        Keys represent arbitrary user-specified names for the checks.
         The values are dictionaries which contain the keys "func" (name of the QC function),
         "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
         if necessary, "arguments" (the corresponding keyword arguments).

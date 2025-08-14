@@ -16,6 +16,12 @@
 
 .. _tarball: https://github.com/glamod/mdf_reader/tarball/master
 
+.. _HadSST4: https://www.metoffice.gov.uk/hadobs/hadsst4/
+
+.. _HadISDH: https://www.metoffice.gov.uk/hadobs/hadisdh/
+
+.. _HadNMAT2: https://www.metoffice.gov.uk/hadobs/hadnmat2/
+
 .. |logo_c3s| image:: _static/images/logo_c3s-392x154.png
         :width: 25%
         :target: https://climate.copernicus.eu/

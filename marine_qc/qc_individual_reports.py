@@ -58,7 +58,7 @@ def value_check(value: ValueFloatType) -> ValueIntType:
 def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
     """
     Perform the positional QC check on the report. Simple check to make sure that the latitude and longitude are
-    within the bounds specified by the ICOADS documentation. Latitude is between -90 and 90. Longitude is between
+    within specified bounds: latitude is between -90 and 90. Longitude is between
     -180 and 360
 
     Parameters
@@ -67,7 +67,7 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
-        Longitude() of observation in degree.
+        Longitude() of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
@@ -284,11 +284,13 @@ def do_day_check(
     lon: ValueFloatType = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
-    """Determine if the sun was above the horizon an hour ago based on date, time, and position.
+    """Determine if the sun was above the horizon a specified time before the report (`time_since_sub_above_horizon`)
+    based on date, time, and position.
 
     This "day" test is used to classify Marine Air Temperature (MAT) measurements as either
-    Night MAT (NMAT) or Day MAT, accounting for solar heating biases. It calculates the sun's
-    elevation using the `sunangle` function, offset by the specified time since sun above horizon.
+    Night MAT (NMAT) or Day MAT, accounting for solar heating biases and a potential lag between sun rise and the
+    onset of significant warming. It calculates the sun's elevation using the `sunangle` function, offset by the
+    specified `time_since_sun_above_horizon`.
 
     Parameters
     ----------
@@ -355,11 +357,13 @@ def do_night_check(
     lon: ValueFloatType = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
-    """Determine if the sun was below the horizon an hour ago based on date, time, and position.
+    """Determine if the sun was below the horizon a specified time before the report (`time_since_sub_above_horizon`)
+    based on date, time, and position.
 
     This "night" test is used to classify Marine Air Temperature (MAT) measurements as either
-    Night MAT (NMAT) or Day MAT, accounting for solar heating biases. It calculates the sun's
-    elevation using the `sunangle` function, offset by the specified time since sun above horizon.
+    Night MAT (NMAT) or Day MAT, accounting for solar heating biases and a potential lag between sun rise and the
+    onset of significant warming. It calculates the sun's elevation using the `sunangle` function, offset by the
+    specified `time_since_sun_above_horizon`.
 
     Parameters
     ----------
@@ -444,7 +448,7 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
 
     Parameters
     ----------
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or Climatology
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :class:`.Climatology`
         The input climatological value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -456,7 +460,7 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
 
     Note
     ----
-    If `climatology` is a Climatology object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
+    If `climatology` is a :class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
     arguments to extract the relevant climatological value.
     """
     return value_check(climatology)
@@ -531,7 +535,7 @@ def do_climatology_check(
     value: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         Value(s) to be compared to climatology.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or Climatology
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :class:`.Climatology`
         The climatological average(s) to which the values(s) will be compared.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     maximum_anomaly: float
@@ -558,8 +562,8 @@ def do_climatology_check(
 
     Note
     ----
-    If either `climatology` or `standard_deviation` is a Climatology object, pass `lon` and `lat` and `date`, or
-    `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
+    If either `climatology` or `standard_deviation` is a :class:`.Climatology` object, pass `lon` and `lat` and
+    `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
     if climatology.ndim == 0:
         climatology = np.full_like(value, climatology)  # type: np.ndarray
@@ -658,16 +662,18 @@ def do_sst_freeze_check(
     freeze_check_n_sigma: float | None = "default",
     sst_uncertainty: float | None = "default",
 ) -> ValueIntType:
-    """Compare an input SST to see if it is above freezing.
+    """Check input sea-surface temperature(s) to see if it is above freezing.
 
     This is a simple freezing point check made slightly more complex. We want to check if a
     measurement of SST is above freezing, but there are two problems. First, the freezing point
     can vary from place to place depending on the salinity of the water. Second, there is uncertainty
-    in SST measurements. If we place a hard cut-off at -1.8, then we are likely to bias the average
+    in SST measurements. If we place a hard cut-off at -1.8C, then we are likely to bias the average
     of many measurements too high when they are near the freezing point - observational error will
     push the measurements randomly higher and lower, and this test will trim out the lower tail, thus
     biasing the result. The inclusion of an SST uncertainty parameter *might* mitigate that, and we allow
-    that possibility here.
+    that possibility here. Note also that many ships make sea-surface temperature measurements to the nearest
+    whole degree, which in the case of water at or close to freezing would round to -2C and would fail a naive
+    test.
 
     Parameters
     ----------
@@ -733,7 +739,9 @@ def do_wind_consistency_check(
     wind_speed: ValueFloatType, wind_direction: ValueFloatType
 ) -> ValueIntType:
     """
-    Test to compare windspeed to winddirection.
+    Test to compare windspeed to winddirection to check if they are consistent. Zero windspeed should correspond
+    to no particular direction (variable) and wind speeds above a threshold should correspond to a particular
+    direction.
 
     Parameters
     ----------
