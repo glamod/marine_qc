@@ -13,9 +13,7 @@ import cf_xarray  # noqa
 import numpy as np
 import pandas as pd
 import xarray as xr
-from concurrent.futures import ThreadPoolExecutor
 from joblib import Parallel, delayed
-from multiprocessing import Pool
 from numpy import ndarray
 from xclim.core.units import convert_units_to
 
@@ -27,6 +25,7 @@ from .time_control import (
     which_pentad,
 )
 
+
 def _format_output(result, lat):
     if np.isscalar(lat):
         return result[0]
@@ -34,14 +33,9 @@ def _format_output(result, lat):
         return pd.Series(result, index=lat.index)
     return result
 
-def select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
-    sel = da_slice.sel(
-        {
-            lat_axis: lat_arr[i],
-            lon_axis: lon_arr[i]
-        },
-        method="nearest"
-    )
+
+def _select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
+    sel = da_slice.sel({lat_axis: lat_arr[i], lon_axis: lon_arr[i]}, method="nearest")
     return i, float(sel.values)
 
 
@@ -325,14 +319,14 @@ class Climatology:
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
-        lat_arr = np.where(lat_arr == None, np.nan, lat_arr).astype(float)
+        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
-        lon_arr = np.where(lon_arr == None, np.nan, lon_arr).astype(float)
+        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
         month_arr = np.atleast_1d(month)  # type: np.ndarray
-        month_arr = np.where(month_arr == None, np.nan, month_arr).astype(float)
+        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.atleast_1d(day)  # type: np.ndarray
-        day_arr = np.where(day_arr == None, np.nan, day_arr).astype(float)
+        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
         ml = get_month_lengths(2004)
@@ -356,16 +350,20 @@ class Climatology:
             grouped[tindex].append(i)
 
         data = self.data.load()
-        
+
         for tindex, indices in grouped.items():
             da_slice = data.isel({self.time_axis: tindex})
 
-            results = Parallel(n_jobs=-1)(delayed(select_point)(i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis) for i in indices)
+            results = Parallel(n_jobs=-1)(
+                delayed(_select_point)(
+                    i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis
+                )
+                for i in indices
+            )
             for idx, value in results:
-                  result[idx] = value
+                result[idx] = value
 
         return _format_output(result, lat)
-
 
     def get_tindex(self, month: int, day: int) -> int:
         """Get the time index of the input month and day.
