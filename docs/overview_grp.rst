@@ -38,5 +38,3 @@ compared to the average of nearby reports - but the determination of whether it 
 explicit estimate of the probability of gross error.
 
 For a detailed description see :doc:`bayesian_buddy_check`
-
-

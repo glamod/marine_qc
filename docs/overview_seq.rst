@@ -91,4 +91,3 @@ Tests whether there are implausibly large number of repeated values in a sequenc
 A sequence of reports is checked for values which are repeated many times. If more than a specified fraction of
 reports have the same value and the total number of reports of that value exceeds a specified threshold then
 all the flags for all reports with that value are set to 1, fail. The flags for all other reports are set to 0, pass.
-
