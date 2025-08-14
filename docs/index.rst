@@ -30,7 +30,7 @@ About
 
 :License: |license|
 
-|logo_c3s| |logo_NOC| |logo_ICOADS| |logo_copernicus|
+|logo_c3s| |logo_NOC| |logo_DWD| |logo_copernicus|
 
 .. include:: hyperlinks.rst
 

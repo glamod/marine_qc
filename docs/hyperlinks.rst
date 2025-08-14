@@ -24,10 +24,10 @@
         :width: 25%
         :target: https://www.copernicus.eu/en
 
-.. |logo_ICOADS| image:: _static/images/icoadsLogo.png
-        :width: 20%
-        :target: https://icoads.noaa.gov/
-
-.. |logo_NOC| image:: _static/images/LOGO_2024_-_NOC_1_COLOUR.png
+.. |logo_NOC| image:: _static/images/LOGO_2024_NOC_1_COLOUR.png
         :width: 10%
         :target: https://noc.ac.uk/
+
+.. |logo_DWD| image:: _static/images/logo_DWD_RGB.png
+        :width: 35%
+        :target: https://www.dwd.de/
