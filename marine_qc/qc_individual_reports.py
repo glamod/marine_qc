@@ -448,7 +448,7 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
 
     Parameters
     ----------
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The input climatological value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -460,7 +460,7 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
 
     Note
     ----
-    If `climatology` is a :class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
+    If `climatology` is a :py:class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
     arguments to extract the relevant climatological value.
     """
     return value_check(climatology)
@@ -535,7 +535,7 @@ def do_climatology_check(
     value: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         Value(s) to be compared to climatology.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) to which the values(s) will be compared.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     maximum_anomaly: float
@@ -562,7 +562,7 @@ def do_climatology_check(
 
     Note
     ----
-    If either `climatology` or `standard_deviation` is a :class:`.Climatology` object, pass `lon` and `lat` and
+    If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
     `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
     if climatology.ndim == 0:
