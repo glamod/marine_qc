@@ -5,7 +5,7 @@ Changelog
 
 0.0.1 (unreleased)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John J Kennedy (:user:`jjk-code-otter`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John Kennedy (:user:`jjk-code-otter`)
 
 Announcements
 ^^^^^^^^^^^^^
