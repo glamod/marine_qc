@@ -8,12 +8,21 @@
       "orcid": "0000-0002-7207-0003"
     },
     {
-      "name": "Kennedy, John",
+      "name": "Kennedy, John J",
       "affiliation": "Independent consultant, France",
       "orcid": "0000-0002-6841-7289"
+    },
+    {
+      "name": "Leiding, Tina",
+      "affiliation": "Deutscher Wetterdienst, Hamburg, Germany"
+    },
+    {
+      "name": "Andersson, Axel",
+      "affiliation": "Deutscher Wetterdienst, Hamburg, Germany",
+      "orcid": "0000-0002-6956-0298"
     }
   ],
-  "keywords": [],
+  "keywords": ["quality control", "observations", "ship", "buoys", "climatology", "climate change"],
   "license": "Apache-2.0",
   "language": "eng",
   "upload_type": "software",
