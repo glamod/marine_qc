@@ -153,8 +153,10 @@ def is_monotonic(inarr: Sequence[float]) -> bool:
 
 
 class SpeedChecker:
-    """Check to see whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
-    precision positions. A flag 'drf_spd' is set for each input report: flag=1 for reports deemed picked up,
+    """Class used to carry out :func:`.do_speed_check`
+
+    The check identifies whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
+    precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
     else flag=0.
 
     A drifter is deemed picked up if it is moving faster than might be expected for a fast ocean current
@@ -325,8 +327,10 @@ class SpeedChecker:
 
 
 class NewSpeedChecker:
-    """Check to see whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
-    precision positions. A flag 'drf_spd' is set for each input report: flag=1 for reports deemed picked up,
+    """Class used to carry out :func:`.do_new_speed_check`
+
+    Check to see whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
+    precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
     else flag=0.
 
     A drifter is deemed picked up if it is moving faster than might be expected for a fast ocean current
@@ -355,10 +359,10 @@ class NewSpeedChecker:
 
     The class has the following class attributes which can be modified using the set_parameters method.
 
-    iquam_parameters: Parameter dictionary for Voyage.iquam_track_check() function.
-    speed_limit: maximum allowable speed for an in situ drifting buoy (metres per second)
-    min_win_period: minimum period of time in days over which position is assessed for speed estimates (see
-    description)
+    * iquam_parameters: Parameter dictionary for Voyage.iquam_track_check() function.
+    * speed_limit: maximum allowable speed for an in situ drifting buoy (metres per second)
+    * min_win_period: minimum period of time in days over which position is assessed for speed estimates (see
+      description)
     """
 
     def __init__(
@@ -460,8 +464,8 @@ class NewSpeedChecker:
         return valid
 
     def perform_iquam_track_check(self):
-        """Perform iQuam track check as if a ship a deep copy of reps is made so metadata can be safely modified
-        ahead of iQuam check an array of qc flags (iquam_track_ship) is the result
+        """Perform iQuam track check as if reports are from a ship. A deep copy of reps is made so metadata can be
+        safely modified ahead of iQuam check an array of qc flags (iquam_track_ship) is the result
         """
         self.iquam_track_ship = do_iquam_track_check(
             self.lat,
@@ -519,9 +523,10 @@ class NewSpeedChecker:
 
 
 class AgroundChecker:
-    """
+    """Class used to carry out :func:`.do_aground_check`
+
     Check to see whether a drifter has run aground based on 1/100th degree precision positions.
-    A flag 'drf_agr' is set for each input report: flag=1 for reports deemed aground, else flag=0.
+    A flag is set for each input report: flag=1 for reports deemed aground, else flag=0.
 
     Positional errors introduced by lon/lat 'jitter' and data precision can be of order several km's.
     Longitude and latitude timeseries are smoothed prior to assessment to reduce position 'jitter'.
@@ -540,11 +545,11 @@ class AgroundChecker:
     available within this range. If a drifter is deemed aground and subsequently starts moving (e.g. if a drifter
     has moved very slowly for a prolonged period) incorrectly flagged reports will be reinstated.
 
-    smooth_win: length of window (odd number) in datapoints used for smoothing lon/lat
-    min_win_period: minimum period of time in days over which position is assessed for no movement (see description)
-    max_win_period: maximum period of time in days over which position is assessed for no movement (this should be
-    greater than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
-    up to 2-days in sampling).
+    * smooth_win: length of window (odd number) in datapoints used for smoothing lon/lat
+    * min_win_period: minimum period of time in days over which position is assessed for no movement (see description)
+    * max_win_period: maximum period of time in days over which position is assessed for no movement (this should be
+      greater than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
+      up to 2-days in sampling).
     """
 
     # displacement resulting from 1/100th deg 'position-jitter' at the equator (km)
@@ -744,8 +749,10 @@ class AgroundChecker:
 
 
 class SSTTailChecker:
-    """Check to see whether there is erroneous sea surface temperature data at the beginning or end of a drifter record
-    (referred to as 'tails'). The flags 'drf_tail1' and 'drf_tail2' are set for each input report: flag=1 for reports
+    """Class used to carry out :func:`.do_sst_start_tail_check` and :func:`.do_sst_end_tail_check`.
+
+    Check to see whether there is erroneous sea surface temperature data at the beginning or end of a drifter record
+    (referred to as 'tails'). Flags are set for each input report: flag=1 for reports
     with erroneous data, else flag=0, 'drf_tail1' is used for bad data at the beginning of a record, 'drf_tail2' is
     used for bad data at the end of a record.
 
@@ -1200,7 +1207,10 @@ class SSTTailChecker:
 
 
 class SSTBiasedNoisyChecker:
-    """Check to see whether a drifter sea surface temperature record is unacceptably biased or noisy as a whole.
+    """Class used to perform the :func:`.do_sst_biased_check`,
+    :func:`.do_sst_noisy_check`, and :func:`.do_sst_biased_noisy_short_check`.
+
+    Check to see whether a drifter sea surface temperature record is unacceptably biased or noisy as a whole.
 
     The check makes an assessment of the quality of data in a drifting buoy record by comparing to a background
     reference field. If the record is found to be unacceptably biased or noisy relative to the background all

@@ -57,13 +57,13 @@ So, for example, one can run a hard limit check like so::
   result = do_hard_limit_check(input_values, [-10., 40.])
 
 Additionally, some checks use climatological averages which can be provided like the other
-inputs, or passed as a Climatology object. For example, the climatology check can be run like so::
+inputs, or passed as a :class:`.Climatology` object. For example, the climatology check can be run like so::
 
   input_ssts = np.array([15.0, 17.3, 21.3, 32.0])
   climatological_averages = np.array([14.0, 15.8, 19.1, 20.3])
   result = do_climatology_check(input_ssts, climatological_averages, 8.0)
 
-Alternatively, the climatological values can be specified using a Climatology and providing the datetime and location
+Alternatively, the climatological values can be specified using a :class:`.Climatology` and providing the datetime and location
 of the reports as keyword arguments::
 
   input_ssts = np.array([15.0, 17.3, 21.3, 32.0])
