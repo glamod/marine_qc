@@ -82,4 +82,3 @@ The QC checks written using SI (and derived) units. Inputs can be converted when
 `units` keyword argument::
 
   temperature_in_K(25.0, units={"value": "degC"})
-
