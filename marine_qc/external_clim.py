@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import warnings
+from collections import defaultdict
 from collections.abc import Callable
 from datetime import datetime
 from typing import Literal, Sequence, TypeAlias
@@ -12,6 +13,9 @@ import cf_xarray  # noqa
 import numpy as np
 import pandas as pd
 import xarray as xr
+from concurrent.futures import ThreadPoolExecutor
+from joblib import Parallel, delayed
+from multiprocessing import Pool
 from numpy import ndarray
 from xclim.core.units import convert_units_to
 
@@ -22,6 +26,23 @@ from .time_control import (
     get_month_lengths,
     which_pentad,
 )
+
+def _format_output(result, lat):
+    if np.isscalar(lat):
+        return result[0]
+    if isinstance(lat, pd.Series):
+        return pd.Series(result, index=lat.index)
+    return result
+
+def select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
+    sel = da_slice.sel(
+        {
+            lat_axis: lat_arr[i],
+            lon_axis: lon_arr[i]
+        },
+        method="nearest"
+    )
+    return i, float(sel.values)
 
 
 def inspect_climatology(
@@ -304,49 +325,47 @@ class Climatology:
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
+        lat_arr = np.where(lat_arr == None, np.nan, lat_arr).astype(float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
+        lon_arr = np.where(lon_arr == None, np.nan, lon_arr).astype(float)
         month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.where(month_arr == None, np.nan, month_arr).astype(float)
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.atleast_1d(day)  # type: np.ndarray
-        valid_indices = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
-        result = np.full(lat_arr.shape, None, dtype=float)  # type: np.ndarray
+        day_arr = np.where(day_arr == None, np.nan, day_arr).astype(float)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        if isinstance(valid_indices, (bool, np.bool)):
-            valid_indices = [valid_indices]
+        ml = get_month_lengths(2004)
+        month_lengths = np.array([ml[m - 1] if 1 <= m <= 12 else 0 for m in month_arr])
 
-        for i in range(np.size(result)):
-            if not valid_indices[i]:
-                continue
+        valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
+        valid &= (month_arr >= 1) & (month_arr <= 12)
+        valid &= (day_arr >= 1) & (day_arr <= month_lengths)
+        valid &= (lat_arr >= -180) & (lat_arr <= 180)
+        valid &= (lon_arr >= -90) & (lon_arr <= 90)
 
-            mon_i = int(month_arr[i])
-            ml = get_month_lengths(2004)
-            day_i = int(day_arr[i])
-            lat_i = lat_arr[i]
-            lon_i = lon_arr[i]
-            if (
-                mon_i < 1
-                or mon_i > 12
-                or day_i < 1
-                or day_i > ml[mon_i - 1]
-                or lat_i < -180
-                or lat_i > 180
-                or lon_i < -90
-                or lon_i > 90
-            ):
-                continue
+        result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
 
-            tindex = self.get_tindex(mon_i, day_i)
-            data = self.data.isel(**{self.time_axis: tindex})
-            data = data.sel(**{self.lat_axis: lat_i}, method="nearest")
-            data = data.sel(**{self.lon_axis: lon_i}, method="nearest")
-            result[i] = data.values
+        valid_idx = np.where(valid)[0]
+        if len(valid_idx) == 0:
+            return _format_output(result, lat)
 
-        if np.isscalar(lat):
-            return result[0]
+        grouped = defaultdict(list)
+        for i in valid_idx:
+            tindex = self.get_tindex(month_arr[i], day_arr[i])
+            grouped[tindex].append(i)
 
-        if isinstance(lat, pd.Series):
-            return pd.Series(result, index=lat.index)
+        data = self.data.load()
+        
+        for tindex, indices in grouped.items():
+            da_slice = data.isel({self.time_axis: tindex})
 
-        return result
+            results = Parallel(n_jobs=-1)(delayed(select_point)(i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis) for i in indices)
+            for idx, value in results:
+                  result[idx] = value
+
+        return _format_output(result, lat)
+
 
     def get_tindex(self, month: int, day: int) -> int:
         """Get the time index of the input month and day.
