@@ -27,6 +27,7 @@ from .time_control import (
     which_pentad,
 )
 
+
 def _format_output(result, lat):
     if np.isscalar(lat):
         return result[0]
@@ -34,14 +35,9 @@ def _format_output(result, lat):
         return pd.Series(result, index=lat.index)
     return result
 
+
 def select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
-    sel = da_slice.sel(
-        {
-            lat_axis: lat_arr[i],
-            lon_axis: lon_arr[i]
-        },
-        method="nearest"
-    )
+    sel = da_slice.sel({lat_axis: lat_arr[i], lon_axis: lon_arr[i]}, method="nearest")
     return i, float(sel.values)
 
 
@@ -356,16 +352,20 @@ class Climatology:
             grouped[tindex].append(i)
 
         data = self.data.load()
-        
+
         for tindex, indices in grouped.items():
             da_slice = data.isel({self.time_axis: tindex})
 
-            results = Parallel(n_jobs=-1)(delayed(select_point)(i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis) for i in indices)
+            results = Parallel(n_jobs=-1)(
+                delayed(select_point)(
+                    i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis
+                )
+                for i in indices
+            )
             for idx, value in results:
-                  result[idx] = value
+                result[idx] = value
 
         return _format_output(result, lat)
-
 
     def get_tindex(self, month: int, day: int) -> int:
         """Get the time index of the input month and day.
