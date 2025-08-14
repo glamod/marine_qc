@@ -14,7 +14,7 @@ Announcements
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * ``do_night_check``: reverse ``do_day_check`` (:pull:`21`)
-* Added documentation
+* Added documentation (:issue:`4`, :pull:`11`, :pull:`12`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
