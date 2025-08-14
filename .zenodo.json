@@ -8,7 +8,7 @@
       "orcid": "0000-0002-7207-0003"
     },
     {
-      "name": "Kennedy, John J",
+      "name": "Kennedy, John",
       "affiliation": "Independent consultant, France",
       "orcid": "0000-0002-6841-7289"
     },
@@ -22,7 +22,7 @@
       "orcid": "0000-0002-6956-0298"
     }
   ],
-  "keywords": ["quality control", "observations", "ship", "buoys", "climatology", "climate change"],
+  "keywords": ["quality control", "observations", "ship", "buoys", "climatology", "marine climatology", "climate change"],
   "license": "Apache-2.0",
   "language": "eng",
   "upload_type": "software",
