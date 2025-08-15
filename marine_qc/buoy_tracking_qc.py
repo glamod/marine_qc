@@ -153,7 +153,7 @@ def is_monotonic(inarr: Sequence[float]) -> bool:
 
 
 class SpeedChecker:
-    """Class used to carry out :func:`.do_speed_check`
+    """Class used to carry out :py:func:`.do_speed_check`
 
     The check identifies whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
     precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
@@ -327,7 +327,7 @@ class SpeedChecker:
 
 
 class NewSpeedChecker:
-    """Class used to carry out :func:`.do_new_speed_check`
+    """Class used to carry out :py:func:`.do_new_speed_check`
 
     Check to see whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
     precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
@@ -523,7 +523,7 @@ class NewSpeedChecker:
 
 
 class AgroundChecker:
-    """Class used to carry out :func:`.do_aground_check`
+    """Class used to carry out :py:func:`.do_aground_check`
 
     Check to see whether a drifter has run aground based on 1/100th degree precision positions.
     A flag is set for each input report: flag=1 for reports deemed aground, else flag=0.
@@ -749,7 +749,7 @@ class AgroundChecker:
 
 
 class SSTTailChecker:
-    """Class used to carry out :func:`.do_sst_start_tail_check` and :func:`.do_sst_end_tail_check`.
+    """Class used to carry out :py:func:`.do_sst_start_tail_check` and :py:func:`.do_sst_end_tail_check`.
 
     Check to see whether there is erroneous sea surface temperature data at the beginning or end of a drifter record
     (referred to as 'tails'). Flags are set for each input report: flag=1 for reports
@@ -1207,8 +1207,8 @@ class SSTTailChecker:
 
 
 class SSTBiasedNoisyChecker:
-    """Class used to perform the :func:`.do_sst_biased_check`,
-    :func:`.do_sst_noisy_check`, and :func:`.do_sst_biased_noisy_short_check`.
+    """Class used to perform the :py:func:`.do_sst_biased_check`,
+    :py:func:`.do_sst_noisy_check`, and :py:func:`.do_sst_biased_noisy_short_check`.
 
     Check to see whether a drifter sea surface temperature record is unacceptably biased or noisy as a whole.
 

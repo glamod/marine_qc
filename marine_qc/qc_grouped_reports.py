@@ -258,8 +258,8 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        pentad_stdev : :class:`.Climatology`
-            :class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
+        pentad_stdev : :py:class:`.Climatology`
+            :py:class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
 
         limits : list[list[int]]
             list of the limits
@@ -326,15 +326,15 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        stdev1 : :class:`.Climatology`
+        stdev1 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between target
             gridcell and complete neighbour average (grid area to neighbourhood difference)
 
-        stdev2 : :class:`.Climatology`
+        stdev2 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between a single
             observation and the target gridcell average (point to grid area difference)
 
-        stdev3 : :class:`.Climatology`
+        stdev3 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between random
             neighbour gridcell and full neighbour average (uncertainty in neighbour average)
 
@@ -502,11 +502,11 @@ def do_mds_buddy_check(
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
 
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) used to calculate anomalies.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
-    standard_deviation : :class:`.Climatology`
+    standard_deviation : :py:class:`.Climatology`
         Field of standard deviations of 1x1xpentad standard deviations
 
     limits : list[list]
@@ -630,19 +630,19 @@ def do_bayesian_buddy_check(
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
 
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) used to calculate anomalies.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
-    stdev1 : :class:`.Climatology`
+    stdev1 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         target gridcell and complete neighbour average (grid area to neighbourhood difference)
 
-    stdev2 : :class:`.Climatology`
+    stdev2 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         a single observation and the target gridcell average (point to grid area difference)
 
-    stdev3 : :class:`.Climatology`
+    stdev3 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         random neighbour gridcell and full neighbour average (uncertainty in neighbour average)
 
