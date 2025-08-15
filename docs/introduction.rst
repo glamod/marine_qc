@@ -82,3 +82,111 @@ The QC checks written using SI (and derived) units. Inputs can be converted when
 `units` keyword argument::
 
   temperature_in_K(25.0, units={"value": "degC"})
+
+Running Multiple Individual Report Checks
+-----------------------------------------
+
+Multiple individual report checks can be run simultaneously using the :func:`.do_multiple_row_check` function. Aside from the
+input dataframe, two additional arguments can be specified: `qc_dict` and `preproc_dict`. The `qc_dict` is a
+dictionary that specifies the names of the qc function to be run, the variables used as input and the values of the
+arguments. The `preproc_dict` is a dictionary that specifies any pre-processing functions such as a function to
+extract the climatological values corresponding to the input reports.
+
+Currently, the following QC checks can be used:
+
+* :func:`.do_climatology_check`,
+* :func:`.do_date_check`,
+* :func:`.do_day_check`,
+* :func:`.do_hard_limit_check`,
+* :func:`.do_missing_value_check`,
+* :func:`.do_missing_value_clim_check`,
+* :func:`.do_night_check`,
+* :func:`.do_position_check`,
+* :func:`.do_sst_freeze_check`,
+* :func:`.do_supersaturation_check`,
+* :func:`.do_time_check`,
+* :func:`.do_wind_consistency_check`
+
+And the following preprocessing functions:
+
+* :func:`.get_climatological_value`
+
+The function is called like so:
+
+.. code-block:: python
+
+    result = do_multiple_row_check(data, qc_dict, preproc_dict)
+
+An example `qc_dict` for a hard limit test:
+
+.. code-block:: python
+
+    qc_dict = {
+        "hard_limit_check": {
+            "func": "do_hard_limit_check",
+            "names": "ATEMP",
+            "arguments": {"limits": [193.15, 338.15]},
+        }
+    }
+
+An example `qc_dict` for a climatology test. Variable "climatology" was previously defined:
+
+.. code-block:: python
+
+    qc_dict = {
+        "climatology_check": {
+            "func": "do_climatology_check",
+            "names": {
+                "value": "observation_value",
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "date_time",
+            },
+            "arguments": {
+                "climatology": climatology,
+                "maximum_anomaly": 10.0,  # K
+            },
+        },
+    }
+
+An example `preproc_dict` for extracting a climatological value:
+
+.. code-block:: python
+
+    preproc_dict = {
+        "func": "get_climatological_value",
+        "names": {
+            "lat": "latitude",
+            "lon": "longitude",
+            "date": "date_time",
+        },
+        "inputs": climatology,
+    }
+
+Make use of both dictionaries:
+
+.. code-block:: python
+
+    preproc_dict = {
+        "func": "get_climatological_value",
+        "names": {
+            "lat": "latitude",
+            "lon": "longitude",
+            "date": "date_time",
+        },
+        "inputs": climatology,
+    }
+
+    qc_dict = {
+        "climatology_check": {
+            "func": "do_climatology_check",
+            "names": {
+                "value": "observation_value",
+            },
+            "arguments": {
+                "climatology": "__preprocessed__",
+                "maximum_anomaly": 10.0,  # K
+            },
+        },
+    }
+
