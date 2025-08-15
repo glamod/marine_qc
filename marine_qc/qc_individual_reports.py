@@ -138,7 +138,9 @@ def do_date_check(
 
     unique_years = np.unique(year_valid)
     month_length_map = {y: get_month_lengths(y) for y in unique_years}
-    max_days = np.array([month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid)])
+    max_days = np.array(
+        [month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid)]
+    )
 
     day_ok = (day_valid >= 1) & (day_valid <= max_days)
 
@@ -149,7 +151,6 @@ def do_date_check(
     result[valid] = result_valid
 
     return result
-
 
 
 @post_format_return_type(["date", "hour"])
@@ -208,14 +209,18 @@ def _do_daytime_check(
     else:
         _failed = passed
         _passed = failed
-        
+
     failed_mask = (p_check == failed) | (d_check == failed) | (t_check == failed)
     result[failed_mask] = failed
-    
-    valid_mask = (~failed_mask) & \
-                 (p_check != untestable) & (d_check != untestable) & (t_check != untestable)
+
+    valid_mask = (
+        (~failed_mask)
+        & (p_check != untestable)
+        & (d_check != untestable)
+        & (t_check != untestable)
+    )
     valid_indices = np.where(valid_mask)[0]
-    
+
     if len(valid_indices) == 0:
         return result  # nothing to process
 
@@ -227,7 +232,9 @@ def _do_daytime_check(
     hour_valid = hour[valid_indices]
 
     y2 = year_valid.copy()
-    d2 = np.array([day_in_year(y, m, d) for y, m, d in zip(year_valid, month_valid, day_valid)])
+    d2 = np.array(
+        [day_in_year(y, m, d) for y, m, d in zip(year_valid, month_valid, day_valid)]
+    )
     h2 = np.floor(hour_valid)
     m2 = (hour_valid - h2) * 60.0
 
@@ -238,13 +245,17 @@ def _do_daytime_check(
     h2[underflow] += 24
     d2[underflow] -= 1
     y2[underflow] = np.where(d2[underflow] <= 0, y2[underflow] - 1, y2[underflow])
-    d2[underflow] = np.where(d2[underflow] <= 0, day_in_year(y2[underflow], 12, 31), d2[underflow])
+    d2[underflow] = np.where(
+        d2[underflow] <= 0, day_in_year(y2[underflow], 12, 31), d2[underflow]
+    )
 
     lat2 = np.where(lat_valid == 0, 0.0001, lat_valid)
     lon2 = np.where(lon_valid == 0, 0.0001, lon_valid)
 
     # Vectorized sunangle call: wrap original sunangle with np.vectorize
-    vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float, float, float])
+    vectorized_sunangle = np.vectorize(
+        sunangle, otypes=[float, float, float, float, float, float]
+    )
 
     azimuths, elevations, rtas, hras, sids, decs = vectorized_sunangle(
         y2,
