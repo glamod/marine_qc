@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 
 from .astronomical_geometry import sunangle
@@ -22,6 +20,11 @@ from .auxiliary import (
 )
 from .external_clim import ClimFloatType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
+
+vectorized_day_in_year = np.vectorize(day_in_year)
+vectorized_sunangle = np.vectorize(
+    sunangle, otypes=[float, float, float, float, float, float]
+)
 
 
 @post_format_return_type(["value"])
@@ -219,54 +222,47 @@ def _do_daytime_check(
         & (d_check != untestable)
         & (t_check != untestable)
     )
+    if not np.any(valid_mask):
+        return result
+
     valid_indices = np.where(valid_mask)[0]
 
-    if len(valid_indices) == 0:
-        return result  # nothing to process
-
-    lat_valid = lat[valid_indices]
-    lon_valid = lon[valid_indices]
     year_valid = year[valid_indices].astype(int)
     month_valid = month[valid_indices].astype(int)
     day_valid = day[valid_indices].astype(int)
     hour_valid = hour[valid_indices]
 
-    y2 = year_valid.copy()
-    d2 = np.array(
-        [day_in_year(y, m, d) for y, m, d in zip(year_valid, month_valid, day_valid)]
-    )
-    h2 = np.floor(hour_valid)
-    m2 = (hour_valid - h2) * 60.0
+    doy = vectorized_day_in_year(year_valid, month_valid, day_valid)
+    hour_whole = np.floor(hour_valid)
+    minute_valid = (hour_valid - hour_whole) * 60.0
 
     if time_since_sun_above_horizon is not None:
-        h2 -= time_since_sun_above_horizon
+        hour_whole -= time_since_sun_above_horizon
 
-    underflow = h2 < 0
-    h2[underflow] += 24
-    d2[underflow] -= 1
-    y2[underflow] = np.where(d2[underflow] <= 0, y2[underflow] - 1, y2[underflow])
-    d2[underflow] = np.where(
-        d2[underflow] <= 0, day_in_year(y2[underflow], 12, 31), d2[underflow]
-    )
+    lat_fixed = lat[valid_indices]
+    lat_fixed[lat_fixed == 0] = 0.0001
+    lon_fixed = lon[valid_indices]
+    lon_fixed[lon_fixed == 0] = 0.0001
 
-    lat2 = np.where(lat_valid == 0, 0.0001, lat_valid)
-    lon2 = np.where(lon_valid == 0, 0.0001, lon_valid)
+    underflow = hour_whole < 0
+    hour_whole[underflow] += 24
+    doy[underflow] -= 1
 
-    # Vectorized sunangle call: wrap original sunangle with np.vectorize
-    vectorized_sunangle = np.vectorize(
-        sunangle, otypes=[float, float, float, float, float, float]
-    )
+    fix_indices = underflow & (doy <= 0)
+    if np.any(fix_indices):
+        year_valid[fix_indices] -= 1
+        doy[fix_indices] = vectorized_day_in_year(year_valid[fix_indices], 12, 31)
 
-    azimuths, elevations, rtas, hras, sids, decs = vectorized_sunangle(
-        y2,
-        d2.astype(int),
-        h2.astype(int),
-        m2,
-        np.zeros_like(m2),
-        np.zeros_like(m2),
-        np.zeros_like(m2),
-        lat2,
-        lon2,
+    _azimuths, elevations, _rtas, _hras, _sids, _decs = vectorized_sunangle(
+        year_valid,
+        doy.astype(int),
+        hour_whole.astype(int),
+        minute_valid,
+        0,
+        0,
+        0,
+        lat_fixed,
+        lon_fixed,
     )
 
     # Assign results in one go
