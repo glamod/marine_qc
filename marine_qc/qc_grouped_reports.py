@@ -1,4 +1,9 @@
-"""Module containing QC functions for deck level QC checks which could be applied on a DataBundle."""
+"""
+QC of grouped reports
+=====================
+
+Module containing QC functions for quality control of grouped marine reports.
+"""
 
 from __future__ import annotations
 
@@ -110,7 +115,8 @@ class SuperObsGrid:
         dates: SequenceDatetimeType,
         values: SequenceFloatType,
     ) -> None:
-        """Add a series of observations to the grid and take the grid average
+        """Add a series of observations to the grid and take the grid average. The observations should be
+        anomalies.
 
         Parameters
         ----------
@@ -252,8 +258,8 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        pentad_stdev : Climatology
-            Climatology object containing the 3-dimensional latitude array containing the standard deviations.
+        pentad_stdev : :py:class:`.Climatology`
+            :py:class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
 
         limits : list[list[int]]
             list of the limits
@@ -320,15 +326,15 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        stdev1 : np.ndarray
+        stdev1 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between target
             gridcell and complete neighbour average (grid area to neighbourhood difference)
 
-        stdev2 : np.ndarray
+        stdev2 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between a single
             observation and the target gridcell average (point to grid area difference)
 
-        stdev3 : np.ndarray
+        stdev3 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between random
             neighbour gridcell and full neighbour average (uncertainty in neighbour average)
 
@@ -348,6 +354,7 @@ class SuperObsGrid:
         Note
         ----
         The original default values for limits, sigma_m, and noise_scaling originally defaulted to:
+
         * limits = (2, 2, 4)
         * sigma_m = 1.0
         * noise_scaling = 3.0
@@ -495,11 +502,11 @@ def do_mds_buddy_check(
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
 
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or Climatology
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) used to calculate anomalies.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
-    standard_deviation : Climatology
+    standard_deviation : :py:class:`.Climatology`
         Field of standard deviations of 1x1xpentad standard deviations
 
     limits : list[list]
@@ -533,6 +540,12 @@ def do_mds_buddy_check(
     multiplier in the appropriate list (say [4, 3.5, 3.0, 2.5]). If the difference between an observation and the
     buddy mean is greater than the multiplier times the standard deviation at that point then it fails the buddy
     check. So, if there were 10 observations then the multiplier would be 3.5.
+
+    Previous versions had default values for the parameters of:
+
+    * limits = [[1, 1, 2], [2, 2, 2], [1, 1, 4], [2, 2, 4]]
+    * number_of_obs_thresholds = [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]]
+    * multipliers = [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]]
     """
     anoms = value - climatology
 
@@ -617,19 +630,19 @@ def do_bayesian_buddy_check(
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
 
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or Climatology
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) used to calculate anomalies.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
-    stdev1 : Climatology
+    stdev1 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         target gridcell and complete neighbour average (grid area to neighbourhood difference)
 
-    stdev2 : Climatology
+    stdev2 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         a single observation and the target gridcell average (point to grid area difference)
 
-    stdev3 : Climatology
+    stdev3 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         random neighbour gridcell and full neighbour average (uncertainty in neighbour average)
 
@@ -665,13 +678,15 @@ def do_bayesian_buddy_check(
 
     Note
     ----
-    In previous versions the default values for the parameters were
+    In previous versions the default values for the parameters were:
+
     * prior_probability_of_gross_error = 0.05
     * quantization_interval = 0.1
     * limits = [2, 2, 4]
     * noise_scaling = 3.0
     * one_sigma_measurement_uncertainty = 1.0
     * maximum_anomaly = 8.0
+    * fail_probability = 0.3
     """
     anoms = value - climatology
 

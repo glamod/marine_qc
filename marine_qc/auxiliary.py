@@ -135,26 +135,39 @@ def format_return_type(result_array: np.ndarray, *input_values: Any) -> Any:
 def convert_to(
     value: float | None | Sequence[float | None], source_units: str, target_units: str
 ):
-    """Convert a float with source units into target units.
+    """Convert a float or sequence from source units to target units.
 
     Parameters
     ----------
     value: float or None or array-like of float or None
         A single float value, None, or a sequence (e.g., list, tuple, array-like)
-        containing floats and/or None values. `None` values will be ignored or passed
-        through unchanged.
+        containing floats and/or None values. `None` values are passed through unchanged.
     source_units: str
-        The units of the input value(s) (e.g., 'degC', 'm/s').
+        The unit(s) of the input value(s), e.g., 'degC', 'km/h'.
     target_units: str
-        The units to convert to (e.g., 'K', 'km/h').
+        The unit(s) to convert to, e.g., 'K', 'm/s'.
         If set to "unknown", the value(s) will be converted to the base SI units
-        of the source_units (e.g., 'degC' ? 'kelvin', 'km' ? 'meter').
+        of the source_units, e.g., 'degC' to 'kelvin', 'km/h' to 'meter/s'.
 
     Returns
     -------
     float or None or array-like of float or None
-        Converted value(s) with the same structure as input,
-        where floats are converted and None values are preserved.
+        The converted value(s), preserving the input structure (scalar, list, tuple, array).
+        None values remain unchanged.
+
+    Examples
+    --------
+    >>> convert_to(100, "degC", "K")
+    373.15
+
+    >>> convert_to([0, 100], "degC", "K")
+    [273.15, 373.15]
+
+    >>> convert_to([None, 100], "degC", "K")
+    [None, 373.15]
+
+    >>> convert_to(5, "km", "unknown")  # Converts to base unit 'meter'
+    5000.0
     """
 
     def _convert_to(value):
@@ -412,41 +425,59 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable:
 
 def convert_units(**units_by_name) -> Callable:
     """
-    Create a decorator to automatically convert units of specified function parameters.
+    Decorator to automatically convert specified function arguments to desired units.
 
-    This decorator uses a `converter_dict` keyword argument to specify which parameters
-    should be converted, along with their source and target units. Before the decorated
-    function runs, the specified parameters are converted using the `convert_to` function.
+    This is useful when a function expects inputs in standard units but users might
+    provide them in different units. The decorator converts these inputs before
+    executing the function.
 
     Parameters
     ----------
-    None
+    units_by_name : dict
+        Mapping of argument names to their *target* units.
+        If a target unit is set to "unknown", it will be automatically resolved to the
+        base SI unit of the corresponding source unit
+        (e.g., "degC" to "kelvin", "km/h" to "m/s").
 
     Returns
     -------
     Callable
-        A decorator function that, when applied to another function, automatically
-        converts the units of specified parameters according to the provided
-        `converter_dict`.
+        A decorator that preprocesses and converts specified parameters.
 
     Notes
     -----
-    - The decorator expects the decorated function to be called with a keyword argument
-      `converter_dict`, which is a dictionary mapping parameter names (str) to tuples
-      of `(source_units: str, target_units: str)`.
-    - Parameters not present in the function arguments or with a value of None are
-      skipped.
-    - Uses the `convert_to` function to perform the actual unit conversion.
+    - The decorated function must be called with a `units` keyword argument, either:
+        - A dictionary mapping argument names to their source units, or
+        - A single unit string applied to all arguments.
+    - Parameters not listed in `units_by_name` will not be converted.
+    - If a parameter is missing or None, it is skipped.
+    - If a target unit is set to "unknown", the value is converted to its base SI unit.
 
     Examples
     --------
-    >>> @convert_units()
-    ... def temperature_in_K(temp):
-    ...     print(f"Temperature in Kelvin: {temp}")
+    >>> @convert_units(temperature="K")
+    ... def func_single(temperature):
+    ...     print(f"Temperature: {temperature:.2f} K")
     ...
 
-    >>> temperature_in_K(25.0, converter_dict={"temp": ("degC", "K")})
-    Temperature in Kelvin: 298.15
+    >>> func_single(25.0, units={"temperature": "degC"})
+    Temperature: 298.15 K
+
+    >>> @convert_units(speed="m/s", altitude="m")
+    ... def func_multiple(speed, altitude):
+    ...     print(f"Speed: {speed:.1f} m/s, Altitude: {altitude:.0f} m")
+    ...
+
+    >>> func_multiple(72.0, 0.5, units={"speed": "km/h", "altitude": "km"})
+    Speed: 20.0 m/s, Altitude: 500 m
+
+    >>> @convert_units(distance="unknown")
+    ... def func_base(distance):
+    ...     print(f"Distance in SI units: {distance} m")
+    ...
+
+    >>> func_base(1.2, units={"distance": "km"})
+    Distance in SI units: 1200.0 m
     """
 
     def pre_handler(arguments: dict, **meta_kwargs):
