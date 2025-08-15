@@ -1,4 +1,9 @@
-"""Module containing QC functions for track checking which could be applied on a DataBundle."""
+"""
+QC of sequential reports
+========================
+
+Module containing QC functions for track checking which could be applied on a DataBundle.
+"""
 
 from __future__ import annotations
 
@@ -36,7 +41,7 @@ def do_spike_check(
     delta_t: float,
     n_neighbours: int,
 ) -> SequenceIntType:
-    """Perform IQUAM like spike check.
+    """Perform IQUAM-like spike check.
 
     Parameters
     ----------
@@ -86,6 +91,7 @@ def do_spike_check(
     Note
     ----
     In previous versions, default values for the parameters were:
+
     * max_gradient_space: float = 0.5
     * max_gradient_time: float = 1.0
     * delta_t: float = 2.0
@@ -663,6 +669,7 @@ def do_track_check(
     If number of observations is less than three, the track check always passes.
 
     In previous versions, the default values of the parameters were:
+
     * max_direction_change = 60.0
     * max_speed_change = 10.0
     * max_absolute_speed =  40.0
@@ -890,6 +897,7 @@ def find_saturated_runs(
     Note
     ----
     In previous version, default values for the parameters were:
+
     * min_time_threshold =  48.0
     * shortest_run = 4
     """
@@ -974,7 +982,8 @@ def find_multiple_rounded_values(
 
     Note
     ----
-    Previous versions had default values for the parameters of
+    Previous versions had default values for the parameters of:
+
     * min_count = 20
     * threshold = 0.5
     """
@@ -1052,7 +1061,8 @@ def find_repeated_values(
 
     Note
     ----
-    Previous versions had default values for the parameters of
+    Previous versions had default values for the parameters of:
+
     * min_count = 20
     * threshold = 0.7
     """
@@ -1151,7 +1161,8 @@ def do_iquam_track_check(
 
     Note
     ----
-    Previous versions had default values for the parameters of
+    Previous versions had default values for the parameters of:
+
     * speed_limit = 60.0 for ships and 15.0 for drifting buoys
     * delta_d = 1.11
     * delta_t = 0.01
