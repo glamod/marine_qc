@@ -10,10 +10,12 @@ from marine_qc.time_control import (
     convert_date_to_hours,
     valid_month_day,
     day_in_year,
+    day_in_year_array,
     leap_year_correction,
     pentad_to_month_day,
     split_date,
     which_pentad,
+    which_pentad_array,
     jul_day,
     time_difference,
 )
@@ -197,6 +199,56 @@ def test_dayinyear_all():
         for d in range(1, month_lengths[m - 1] + 1):
             assert day_in_year(2004, m, d) == count
             count += 1
+
+def test_dayinyear_array_all():
+    # First lets do non-leap years
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    months = []
+    days = []
+    day_number = []
+
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            months.append(m)
+            days.append(d)
+            day_number.append(count)
+
+            count += 1
+
+    months = np.array(months)
+    days = np.array(days)
+    day_number = np.array(day_number)
+
+    result = day_in_year_array(months, days)
+
+    assert np.all(result == day_number)
+
+def test_which_pentad_array_all():
+    # First lets do non-leap years
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    months = []
+    days = []
+    day_number = []
+
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            months.append(m)
+            days.append(d)
+            day_number.append(count)
+
+            count += 1
+
+    months = np.array(months)
+    days = np.array(days)
+    pentad_number = ((np.array(day_number) - 1)/ 5).astype(int) + 1
+
+    result = which_pentad_array(months, days)
+
+    assert np.all(result == pentad_number)
 
 
 def test_leap_year_correction():

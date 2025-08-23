@@ -306,6 +306,19 @@ def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
     return True
 
 
+def which_pentad_array(month, day):
+    pentad = ((day_in_year_array(month=month, day=day) - 1) / 5).astype(int)
+    pentad = pentad + 1
+    return pentad
+
+def day_in_year_array(month, day):
+    cumulative_month_lengths = np.array([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334])
+    day_number = cumulative_month_lengths[month-1] + day
+    return day_number
+
+
+
+
 def which_pentad(month: int, day: int) -> int:
     """Take month and day as inputs and return pentad in range 1-73.
 

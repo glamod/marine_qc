@@ -21,8 +21,10 @@ from .auxiliary import ValueFloatType, generic_decorator, isvalid
 from .time_control import (
     convert_date,
     day_in_year,
+    day_in_year_array,
     get_month_lengths,
     which_pentad,
+    which_pentad_array,
 )
 
 
@@ -306,19 +308,16 @@ class Climatology:
         valid &= (lat_arr >= -180) & (lat_arr <= 180)
         valid &= (lon_arr >= -90) & (lon_arr <= 90)
 
-        lat_indices = self.get_y_index(lat_arr, self.lat_axis)
-        lon_indices = self.get_x_index(lon_arr, self.lon_axis)
-        time_indices = self.get_t_index(month, day, self.ntime)
+        lat_indices = Climatology.get_y_index(lat_arr, self.data.coords[self.lat_axis].data)
+        lon_indices = Climatology.get_x_index(lon_arr, self.data.coords[self.lon_axis].data)
+        time_indices = Climatology.get_t_index(month, day, self.ntime) - 1
 
-        values = self.data.data[time_indices, lon_indices, lat_indices]
+        values = self.data.values[time_indices, lat_indices, lon_indices]
 
         return values
 
     @staticmethod
     def get_y_index(lat_arr, lat_axis):
-
-        n_points = len(lat_arr)
-        y_index = np.zeros((n_points))
 
         lat_axis_0 = lat_axis[0]
         lat_axis_delta = lat_axis[1] - lat_axis[0]
@@ -343,9 +342,6 @@ class Climatology:
     @staticmethod
     def get_x_index(lon_arr, lon_axis):
 
-        n_points = len(lon_arr)
-        x_index = np.zeros((n_points))
-
         lon_axis_0 = lon_axis[0]
         lon_axis_delta = lon_axis[1] - lon_axis[0]
 
@@ -366,7 +362,8 @@ class Climatology:
 
         return x_index
 
-    def get_t_index(self, month, day, ntime):
+    @staticmethod
+    def get_t_index(month, day, ntime):
 
         n_points = len(month)
         t_index = np.zeros((n_points))
@@ -374,9 +371,9 @@ class Climatology:
         if ntime == 1:
             return t_index
         elif ntime == 73:
-            return which_pentad(month, day)
+            return which_pentad_array(month, day)
         elif ntime == 365:
-            return day_in_year(month=month, day=day)
+            return day_in_year_array(month=month, day=day)
 
         return t_index
 
