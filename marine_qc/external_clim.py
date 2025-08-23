@@ -285,6 +285,87 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
+    def get_value_fast(self, lat, lon, date = None, month = None , day = None):
+        lat_arr = np.atleast_1d(lat)  # type: np.ndarray
+        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
+        lon_arr = np.atleast_1d(lon)  # type: np.ndarray
+        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
+        month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+        day_arr = np.atleast_1d(day)  # type: np.ndarray
+        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
+
+        ml = get_month_lengths(2004)
+        month_lengths = np.array([ml[m - 1] if 1 <= m <= 12 else 0 for m in month_arr])
+
+        valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
+        valid &= (month_arr >= 1) & (month_arr <= 12)
+        valid &= (day_arr >= 1) & (day_arr <= month_lengths)
+        valid &= (lat_arr >= -180) & (lat_arr <= 180)
+        valid &= (lon_arr >= -90) & (lon_arr <= 90)
+
+        lat_indices = self.get_y_index(lat_arr, self.lat_axis)
+        lon_indices = self.get_x_index(lon_arr, self.lon_axis)
+        time_indices = self.get_t_index(month, day, self.ntime)
+
+        values = self.data.data[time_indices, lon_indices, lat_indices]
+
+        return values
+
+    @staticmethod
+    def get_y_index(lat_arr, lat_axis):
+
+        n_points = len(lat_arr)
+        y_index = np.zeros((n_points))
+
+        lat_axis_0 = lat_axis[0]
+        lat_axis_delta = lat_axis[1] - lat_axis[0]
+
+        # Need to know if grid cells are defined by centres or by lower edges...
+        if lat_axis_0 not in [-90.0, 90.0]:
+            if lat_axis_0 == -90 + lat_axis_delta/2.:
+                lat_axis_0 = -90.
+            elif lat_axis_0 == 90 + lat_axis_delta/2.:
+                lat_axis_0 = 90.
+            else:
+                raise RuntimeError(
+                    f"I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)"
+                )
+
+        y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
+
+        return y_index
+
+    @staticmethod
+    def get_x_index(lon_arr, lon_axis):
+
+        n_points = len(lon_arr)
+        x_index = np.zeros((n_points))
+
+        lon_axis_0 = lon_axis[0]
+        lon_axis_delta = lon_axis[1] - lon_axis[0]
+
+        x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
+
+        return x_index
+
+    def get_t_index(self, month, day, ntime):
+
+        n_points = len(month)
+        t_index = np.zeros((n_points))
+
+        if ntime == 1:
+            return t_index
+        elif ntime == 73:
+            return which_pentad(month, day)
+        elif ntime == 365:
+            return day_in_year(month=month, day=day)
+
+        return t_index
+
+
     @convert_date(["month", "day"])
     def get_value(
         self,

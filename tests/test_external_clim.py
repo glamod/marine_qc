@@ -145,3 +145,27 @@ def test_inspect_climatology_raise(external_at):
 def test_inspect_climatology_warns(external_at):
     with pytest.warns(UserWarning):
         _inspect_climatology(external_at, lat=53.5)
+
+@pytest.mark.parametrize(
+    "lats, lat0, delta, expected",
+    [
+        ([-89.9, 89.9], -90, 1, [0, 179]),
+        ([-89.9, 89.9], -89.5, 1, [0, 179]),
+        ([-89.9, 89.9], 90, -1, [179, 0]),
+        ([-89.9, 89.9], 89.5, -1, [179, 0]),
+        ([-89.9, 89.9], 90, -5, [35, 0]),
+        ([-89.9, 89.9], 87.5, -5, [35, 0]),
+        ([-89.9, 89.9], -90, 5, [0, 35]),
+        ([-89.9, 89.9], -87.5, 5, [0, 35]),
+    ]
+)
+def test_get_y_index(lats, lat0, delta, expected):
+
+    n_lat_axis = int(180 / abs(delta))
+    lat_axis = np.arange((n_lat_axis)) * delta + lat0
+    lats = np.array(lats)
+    expected = np.array(expected)
+
+    result = Climatology.get_y_index(lats, lat_axis)
+
+    assert np.all(expected == result)
