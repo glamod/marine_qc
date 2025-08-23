@@ -311,12 +311,13 @@ def which_pentad_array(month, day):
     pentad = pentad + 1
     return pentad
 
+
 def day_in_year_array(month, day):
-    cumulative_month_lengths = np.array([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334])
-    day_number = cumulative_month_lengths[month-1] + day
+    cumulative_month_lengths = np.array(
+        [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
+    )
+    day_number = cumulative_month_lengths[month - 1] + day
     return day_number
-
-
 
 
 def which_pentad(month: int, day: int) -> int:

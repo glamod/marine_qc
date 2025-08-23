@@ -163,7 +163,7 @@ def test_inspect_climatology_warns(external_at):
 def test_get_y_index(lats, lat0, delta, expected):
 
     n_lat_axis = int(180 / abs(delta))
-    lat_axis = np.arange((n_lat_axis)) * delta + lat0
+    lat_axis = np.arange(n_lat_axis) * delta + lat0
     lats = np.array(lats)
     expected = np.array(expected)
 
@@ -196,7 +196,7 @@ def test_get_y_index(lats, lat0, delta, expected):
 def test_get_x_index(lats, lat0, delta, expected):
 
     n_lat_axis = int(360 / abs(delta))
-    lat_axis = np.arange((n_lat_axis)) * delta + lat0
+    lat_axis = np.arange(n_lat_axis) * delta + lat0
     lats = np.array(lats)
     expected = np.array(expected)
 
@@ -219,7 +219,7 @@ def test_get_t_index():
     assert np.all(result == np.array([1, 7, 13, 19, 26, 32, 38, 45, 51, 57, 64, 70]))
 
     result = Climatology.get_t_index(month, day, 1)
-    assert np.all(result == np.zeros((len(result))))
+    assert np.all(result == np.zeros(len(result)))
 
 
 def test_get_value_fast(external_at):

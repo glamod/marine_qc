@@ -200,6 +200,7 @@ def test_dayinyear_all():
             assert day_in_year(2004, m, d) == count
             count += 1
 
+
 def test_dayinyear_array_all():
     # First lets do non-leap years
     month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -225,6 +226,7 @@ def test_dayinyear_array_all():
 
     assert np.all(result == day_number)
 
+
 def test_which_pentad_array_all():
     # First lets do non-leap years
     month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -244,7 +246,7 @@ def test_which_pentad_array_all():
 
     months = np.array(months)
     days = np.array(days)
-    pentad_number = ((np.array(day_number) - 1)/ 5).astype(int) + 1
+    pentad_number = ((np.array(day_number) - 1) / 5).astype(int) + 1
 
     result = which_pentad_array(months, days)
 
