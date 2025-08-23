@@ -290,11 +290,14 @@ class Climatology:
     def get_value_fast(self, lat, lon, date = None, month = None , day = None):
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
+
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
+
         month_arr = np.atleast_1d(month)  # type: np.ndarray
         month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+
         day_arr = np.atleast_1d(day)  # type: np.ndarray
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
@@ -305,8 +308,8 @@ class Climatology:
         valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
         valid &= (month_arr >= 1) & (month_arr <= 12)
         valid &= (day_arr >= 1) & (day_arr <= month_lengths)
-        valid &= (lat_arr >= -180) & (lat_arr <= 180)
-        valid &= (lon_arr >= -90) & (lon_arr <= 90)
+        valid &= (lon_arr >= -180) & (lon_arr <= 180)
+        valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
         lat_indices = Climatology.get_y_index(lat_arr, self.data.coords[self.lat_axis].data)
         lon_indices = Climatology.get_x_index(lon_arr, self.data.coords[self.lon_axis].data)
@@ -428,8 +431,8 @@ class Climatology:
         valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
         valid &= (month_arr >= 1) & (month_arr <= 12)
         valid &= (day_arr >= 1) & (day_arr <= month_lengths)
-        valid &= (lat_arr >= -180) & (lat_arr <= 180)
-        valid &= (lon_arr >= -90) & (lon_arr <= 90)
+        valid &= (lon_arr >= -180) & (lon_arr <= 180)
+        valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
         result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
 
