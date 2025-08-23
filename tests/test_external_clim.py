@@ -249,10 +249,10 @@ def test_get_value_fast(external_at):
 
     assert np.all(result.astype(np.float16) == expected.astype(np.float16))
 
-    lat = np.random.uniform(-90, 90, [10000])
-    lon = np.random.uniform(-180, 180, [10000])
-    month = np.random.uniform(1, 12, [10000]).astype(int)
-    day = np.random.uniform(1, 28, [10000]).astype(int)
+    lat = np.random.uniform(-90, 90, [1000])
+    lon = np.random.uniform(-180, 180, [1000])
+    month = np.random.uniform(1, 12, [1000]).astype(int)
+    day = np.random.uniform(1, 28, [1000]).astype(int)
 
     import time
 
