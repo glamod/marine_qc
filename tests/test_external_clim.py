@@ -169,3 +169,27 @@ def test_get_y_index(lats, lat0, delta, expected):
     result = Climatology.get_y_index(lats, lat_axis)
 
     assert np.all(expected == result)
+
+@pytest.mark.parametrize(
+    "lats, lat0, delta, expected",
+    [
+        ([-179.9, 179.9], -180, 1, [0, 359]),
+        ([-179.9, 179.9], -179.5, 1, [0, 359]),
+        ([-179.9, 179.9], 180, -1, [359, 0]),
+        ([-179.9, 179.9], 179.5, -1, [359, 0]),
+        ([-179.9, 179.9], 180, -5, [71, 0]),
+        ([-179.9, 179.9], 177.5, -5, [71, 0]),
+        ([-179.9, 179.9], -180, 5, [0, 71]),
+        ([-179.9, 179.9], -177.5, 5, [0, 71]),
+    ]
+)
+def test_get_x_index(lats, lat0, delta, expected):
+
+    n_lat_axis = int(180 / abs(delta))
+    lat_axis = np.arange((n_lat_axis)) * delta + lat0
+    lats = np.array(lats)
+    expected = np.array(expected)
+
+    result = Climatology.get_x_index(lats, lat_axis)
+
+    assert np.all(expected == result)

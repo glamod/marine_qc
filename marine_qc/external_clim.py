@@ -347,6 +347,17 @@ class Climatology:
         lon_axis_0 = lon_axis[0]
         lon_axis_delta = lon_axis[1] - lon_axis[0]
 
+        # Need to know if grid cells are defined by centres or by lower edges...
+        if lon_axis_0 not in [-180.0, 180.0]:
+            if lon_axis_0 == -180 + lon_axis_delta/2.:
+                lon_axis_0 = -180.
+            elif lon_axis_0 == 180 + lon_axis_delta/2.:
+                lon_axis_0 = 180.
+            else:
+                raise RuntimeError(
+                    f"I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)"
+                )
+
         x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
 
         return x_index
