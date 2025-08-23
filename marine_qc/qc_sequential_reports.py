@@ -118,7 +118,7 @@ def do_spike_check(
                 continue
 
             distance = sg.sphere_distance(lat[t1], lon[t1], lat[t2], lon[t2])
-            delta = pd.Timestamp(date[t2]) - pd.Timestamp(date[t2])
+            delta = pd.Timestamp(date[t2]) - pd.Timestamp(date[t1])
             time_diff = abs(delta.days * 24 + delta.seconds / 3600.0)
             val_change = abs(value[t2] - value[t1])
 

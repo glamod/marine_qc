@@ -505,8 +505,9 @@ def do_hard_limit_check(
     valid_indices = isvalid(value)
 
     cond_passed = np.full(value.shape, True, dtype=bool)  # type: np.ndarray
-    cond_passed[valid_indices] = (limits[0] <= value[valid_indices]) & (
-        value[valid_indices] <= limits[1]
+    cond_passed[valid_indices] = (
+        (limits[0] <= value[valid_indices]) &
+        (value[valid_indices] <= limits[1])
     )
 
     result[valid_indices & cond_passed] = passed
