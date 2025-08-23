@@ -287,7 +287,7 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
-    def get_value_fast(self, lat, lon, date = None, month = None , day = None):
+    def get_value_fast(self, lat, lon, date=None, month=None, day=None):
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
@@ -311,8 +311,12 @@ class Climatology:
         valid &= (lon_arr >= -180) & (lon_arr <= 180)
         valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
-        lat_indices = Climatology.get_y_index(lat_arr, self.data.coords[self.lat_axis].data)
-        lon_indices = Climatology.get_x_index(lon_arr, self.data.coords[self.lon_axis].data)
+        lat_indices = Climatology.get_y_index(
+            lat_arr, self.data.coords[self.lat_axis].data
+        )
+        lon_indices = Climatology.get_x_index(
+            lon_arr, self.data.coords[self.lon_axis].data
+        )
         time_indices = Climatology.get_t_index(month, day, self.ntime) - 1
 
         values = self.data.values[time_indices, lat_indices, lon_indices]
@@ -327,10 +331,10 @@ class Climatology:
 
         # Need to know if grid cells are defined by centres or by lower edges...
         if lat_axis_0 not in [-90.0, 90.0]:
-            if lat_axis_0 == -90 + lat_axis_delta/2.:
-                lat_axis_0 = -90.
-            elif lat_axis_0 == 90 + lat_axis_delta/2.:
-                lat_axis_0 = 90.
+            if lat_axis_0 == -90 + lat_axis_delta / 2.0:
+                lat_axis_0 = -90.0
+            elif lat_axis_0 == 90 + lat_axis_delta / 2.0:
+                lat_axis_0 = 90.0
             else:
                 raise RuntimeError(
                     f"I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)"
@@ -338,7 +342,7 @@ class Climatology:
 
         y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
 
-        y_index[y_index >= len(lat_axis)] = len(lat_axis)-1
+        y_index[y_index >= len(lat_axis)] = len(lat_axis) - 1
 
         return y_index
 
@@ -350,10 +354,10 @@ class Climatology:
 
         # Need to know if grid cells are defined by centres or by lower edges...
         if lon_axis_0 not in [-180.0, 180.0]:
-            if lon_axis_0 == -180 + lon_axis_delta/2.:
-                lon_axis_0 = -180.
-            elif lon_axis_0 == 180 + lon_axis_delta/2.:
-                lon_axis_0 = 180.
+            if lon_axis_0 == -180 + lon_axis_delta / 2.0:
+                lon_axis_0 = -180.0
+            elif lon_axis_0 == 180 + lon_axis_delta / 2.0:
+                lon_axis_0 = 180.0
             else:
                 raise RuntimeError(
                     f"I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)"
@@ -369,7 +373,7 @@ class Climatology:
     def get_t_index(month, day, ntime):
 
         n_points = len(month)
-        t_index = np.zeros((n_points))
+        t_index = np.zeros(n_points)
 
         if ntime == 1:
             return t_index
@@ -379,7 +383,6 @@ class Climatology:
             return day_in_year_array(month=month, day=day)
 
         return t_index
-
 
     @convert_date(["month", "day"])
     def get_value(
