@@ -336,6 +336,8 @@ class Climatology:
 
         y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
 
+        y_index[y_index >= len(lat_axis)] = len(lat_axis)-1
+
         return y_index
 
     @staticmethod
@@ -359,6 +361,8 @@ class Climatology:
                 )
 
         x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
+
+        x_index[x_index >= len(lon_axis)] = len(lon_axis) - 1
 
         return x_index
 
