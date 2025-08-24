@@ -33,8 +33,9 @@ def time_differences_array(times2, times1):
     """Return time differences in hours"""
     times1 = pd.to_datetime(times1).values
     times2 = pd.to_datetime(times2).values
-    time_difference = (times2 - times1)/(1e9*60*60)
-    return time_difference
+    time_difference = (times2 - times1) / (1e9 * 60 * 60)
+    return time_difference.astype(float)
+
 
 def sphere_distance_array(lat1, lon1, lat2, lon2):
     """Return distances in kilometres"""
@@ -64,6 +65,31 @@ def sphere_distance_array(lat1, lon1, lat2, lon2):
 
     return np.arctan2(top_bit, bottom_bit) * earths_radius
 
+
+def calculate_speed_course_distance_time_difference_array(
+    lat, lon, date, alternating=False
+):
+
+    if alternating:
+        distance = sphere_distance_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        timediff = time_differences_array(np.roll(date, -1), np.roll(date, 1))
+        distance[0] = np.nan
+        distance[-1] = np.nan
+        timediff[0] = np.nan
+        timediff[-1] = np.nan
+    else:
+        distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        timediff = time_differences_array(date, np.roll(date, 1))
+        distance[0] = np.nan
+        timediff[0] = np.nan
+
+    speed = distance / timediff
+
+    course = None
+
+    return speed, distance, course, timediff
 
 
 @post_format_return_type(["value"])

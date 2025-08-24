@@ -18,6 +18,7 @@ from marine_qc.qc_sequential_reports import (
     backward_discrepancy,
     calculate_course_parameters,
     calculate_speed_course_distance_time_difference,
+    calculate_speed_course_distance_time_difference_array,
     forward_discrepancy,
     calculate_midpoint,
     time_differences_array,
@@ -329,6 +330,23 @@ def test_calc_alternate_speeds(ship_frame):
         assert pytest.approx(distance[i], abs=0.0001) == 22.23902
         assert pytest.approx(timediff[i], abs=0.0001) == 2.0
 
+def test_calc_alternate_speeds_array_version(ship_frame):
+    speed, distance, course, timediff = calculate_speed_course_distance_time_difference_array(
+        ship_frame.lat, ship_frame.lon, ship_frame.date, alternating=True
+    )
+
+    for i in range(1, len(speed) - 1):
+        # Reports are spaced by 1 hour and each hour the ship goes 0.1 degrees of latitude which is 11.11951 km
+        # So with alternating reports, the speed is 11.11951 km/hour, the course is due north (0/360) the distance
+        # between alternate reports is twice the hourly distance 22.23902 and the time difference is 2 hours
+        assert pytest.approx(speed[i], abs=0.0001) == 11.11951
+        # assert (
+        #     pytest.approx(course[i], abs=0.0001) == 0.0
+        #     or pytest.approx(course[i], abs=0.0001) == 360.0
+        # )
+        assert pytest.approx(distance[i], abs=0.0001) == 22.23902
+        assert pytest.approx(timediff[i], abs=0.0001) == 2.0
+
 
 @pytest.mark.parametrize("key", ["lat", "lon", "date", "vsi", "dsi"])
 def test_do_track_check_raises(ship_frame, key):
@@ -386,6 +404,26 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
                 pytest.approx(course[i], 0.00001) == 0
                 or pytest.approx(course[i], 0.00001) == 360.0
             )
+            assert pytest.approx(timediff[i], 0.0000001) == 1.0
+        else:
+            assert np.isnan(speed[i])
+
+
+def test_calculate_speed_course_distance_time_difference_array_version(ship_frame):
+    speed, distance, course, timediff = calculate_speed_course_distance_time_difference_array(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+    )
+    numobs = len(speed)
+    for i in range(numobs):
+        if i > 0:
+            assert pytest.approx(speed[i], 0.00001) == 11.119508064776555
+            assert pytest.approx(distance[i], 0.00001) == 11.119508064776555
+            # assert (
+            #     pytest.approx(course[i], 0.00001) == 0
+            #     or pytest.approx(course[i], 0.00001) == 360.0
+            # )
             assert pytest.approx(timediff[i], 0.0000001) == 1.0
         else:
             assert np.isnan(speed[i])
