@@ -20,6 +20,8 @@ from marine_qc.qc_sequential_reports import (
     calculate_speed_course_distance_time_difference,
     forward_discrepancy,
     calculate_midpoint,
+    time_differences_array,
+    sphere_distance_array,
 )
 
 
@@ -809,3 +811,34 @@ def test_calculate_midpoint(lats, lons, timediffs, expected):
     result = calculate_midpoint(np.array(lats), np.array(lons), np.array(timediffs))
     expected = np.array(expected)
     assert np.array_equal(result, expected, equal_nan=True)
+
+
+def test_time_differences_array():
+    dates = pd.date_range(start="1850-01-01", freq="1h", periods=11)
+    in1 = dates[0:10]
+    in2 = dates[1:11]
+    result = time_differences_array(in2, in1)
+    assert np.all(result == 1)
+
+
+def test_sphere_distance_array():
+    lat1 = np.arange(-90.0, 90.0, 1.0)
+    lat2 = np.arange(-89.0, 91.0, 1.0)
+    lon1 = np.zeros(len(lat1))
+    lon2 = np.zeros(len(lat2))
+
+    result = sphere_distance_array(lat1, lon1, lat2, lon2)
+    assert np.allclose(result, 6371.0088 * np.pi / 180.0)
+
+
+def test_sphere_distance_array_works_with_nans():
+    lat1 = np.arange(-90.0, 90.0, 1.0)
+    lat2 = np.arange(-89.0, 91.0, 1.0)
+    lon1 = np.zeros(len(lat1))
+    lon2 = np.zeros(len(lat2))
+    lat1[0] = np.nan
+
+    result = sphere_distance_array(lat1, lon1, lat2, lon2)
+    expected = np.zeros(len(lat1)) + 6371.0088 * np.pi / 180.0
+    expected[0] = np.nan
+    assert np.allclose(result, expected, equal_nan=True)

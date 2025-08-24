@@ -28,6 +28,44 @@ from .auxiliary import (
 )
 
 
+@inspect_arrays(["times2", "times1"])
+def time_differences_array(times2, times1):
+    """Return time differences in hours"""
+    times1 = pd.to_datetime(times1).values
+    times2 = pd.to_datetime(times2).values
+    time_difference = (times2 - times1)/(1e9*60*60)
+    return time_difference
+
+def sphere_distance_array(lat1, lon1, lat2, lon2):
+    """Return distances in kilometres"""
+    earths_radius = 6371.0088
+    radians_per_degree = np.pi / 180.0
+
+    # convert degrees to radians
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    lat2 = lat2 * radians_per_degree
+    lon2 = lon2 * radians_per_degree
+
+    delta_lambda = abs(lon1 - lon2)
+    bit1 = np.cos(lat2) * np.sin(delta_lambda)
+    bit1 = bit1 * bit1
+    bit2 = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(
+        delta_lambda
+    )
+    bit2 = bit2 * bit2
+
+    top_bit = bit1 + bit2
+    top_bit = np.sqrt(top_bit)
+
+    bottom_bit = np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(
+        delta_lambda
+    )
+
+    return np.arctan2(top_bit, bottom_bit) * earths_radius
+
+
+
 @post_format_return_type(["value"])
 @inspect_arrays(["value", "lat", "lon", "date"], sortby="date")
 @convert_units(lat="degrees", lon="degrees")
