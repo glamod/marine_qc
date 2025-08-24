@@ -330,9 +330,12 @@ def test_calc_alternate_speeds(ship_frame):
         assert pytest.approx(distance[i], abs=0.0001) == 22.23902
         assert pytest.approx(timediff[i], abs=0.0001) == 2.0
 
+
 def test_calc_alternate_speeds_array_version(ship_frame):
-    speed, distance, course, timediff = calculate_speed_course_distance_time_difference_array(
-        ship_frame.lat, ship_frame.lon, ship_frame.date, alternating=True
+    speed, distance, course, timediff = (
+        calculate_speed_course_distance_time_difference_array(
+            ship_frame.lat, ship_frame.lon, ship_frame.date, alternating=True
+        )
     )
 
     for i in range(1, len(speed) - 1):
@@ -410,10 +413,12 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
 
 
 def test_calculate_speed_course_distance_time_difference_array_version(ship_frame):
-    speed, distance, course, timediff = calculate_speed_course_distance_time_difference_array(
-        lat=ship_frame.lat,
-        lon=ship_frame.lon,
-        date=ship_frame.date,
+    speed, distance, course, timediff = (
+        calculate_speed_course_distance_time_difference_array(
+            lat=ship_frame.lat,
+            lon=ship_frame.lon,
+            date=ship_frame.date,
+        )
     )
     numobs = len(speed)
     for i in range(numobs):
