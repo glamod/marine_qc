@@ -33,8 +33,9 @@ def time_differences_array(times2, times1):
     """Return time differences in hours"""
     times1 = pd.to_datetime(times1).values
     times2 = pd.to_datetime(times2).values
-    time_difference = (times2 - times1)/(1e9*60*60)
+    time_difference = (times2 - times1) / (1e9 * 60 * 60)
     return time_difference
+
 
 def sphere_distance_array(lat1, lon1, lat2, lon2):
     """Return distances in kilometres"""
@@ -63,7 +64,6 @@ def sphere_distance_array(lat1, lon1, lat2, lon2):
     )
 
     return np.arctan2(top_bit, bottom_bit) * earths_radius
-
 
 
 @post_format_return_type(["value"])
