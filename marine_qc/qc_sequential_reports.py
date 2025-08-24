@@ -999,32 +999,16 @@ def find_multiple_rounded_values(
 
     rounded = np.asarray([passed] * number_of_obs)  # type: np.ndarray
 
-    valcount = {}
-    allcount = 0
-
-    for i in range(number_of_obs):
-        v = value[i]
-        if isvalid(v):
-            allcount += 1
-            if str(v) in valcount:
-                valcount[str(v)].append(i)
-            else:
-                valcount[str(v)] = [i]
-
+    valid_indices = isvalid(value)
+    allcount = np.count_nonzero(valid_indices)
     if allcount <= min_count:
         return rounded
 
-    wholenums = 0
-    for key, indices in valcount.items():
-        if float(key).is_integer():
-            wholenums = wholenums + len(indices)
-
-    if float(wholenums) / float(allcount) < threshold:
-        return rounded
-
-    for key, indices in valcount.items():
-        if float(key).is_integer():
-            rounded[indices] = failed
+    # Find rounded values by checking where value mod 1 equals zero and set to failed if they exceed threshold
+    rounded_values = np.equal(np.mod(value[valid_indices], 1), 0)
+    cutoff = allcount * threshold
+    if np.count_nonzero(rounded_values) > cutoff:
+        rounded[valid_indices[rounded_values]] = failed
 
     return rounded
 
