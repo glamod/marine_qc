@@ -633,14 +633,32 @@ def almost_repeated_data():
     df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "id": id})
     return df
 
+@pytest.fixture
+def almost_repeated_data_with_nan():
+    lat = [-5.0 + i * 0.1 for i in range(50)]
+    lon = [0 for _ in range(50)]
+    at = [22.3 for i in range(19)]
+    at.append(np.nan)
+    for i in range(20, 50):
+        at.append(22.5 + (i - 20) * 0.3)
+    id = ["GOODTHING" for _ in range(50)]
+    date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "id": id})
+    return df
 
-def test_find_repeated_values(repeated_data, almost_repeated_data):
+
+def test_find_repeated_values(repeated_data, almost_repeated_data, almost_repeated_data_with_nan):
     repeated = find_repeated_values(repeated_data["at"], 20, 0.7)
     for i in range(len(repeated) - 1):
         assert repeated[i] == failed
     assert repeated[49] == passed
 
     repeated = find_repeated_values(almost_repeated_data["at"], 20, 0.7)
+    for i in range(len(repeated)):
+        assert repeated[i] == passed
+
+    # np.nan counts as a pass
+    repeated = find_repeated_values(almost_repeated_data_with_nan["at"], 20, 0.7)
     for i in range(len(repeated)):
         assert repeated[i] == passed
 
