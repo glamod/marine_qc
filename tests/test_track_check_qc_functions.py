@@ -19,6 +19,7 @@ from marine_qc.qc_sequential_reports import (
     calculate_course_parameters,
     calculate_speed_course_distance_time_difference,
     calculate_speed_course_distance_time_difference_array,
+    lat_lon_from_course_and_distance_array,
     course_between_points_array,
     forward_discrepancy,
     calculate_midpoint,
@@ -912,3 +913,21 @@ def test_course_between_point_array():
     # or, inverted, west
     result = course_between_points_array(lat2, lon2, lat1, lon1)
     assert np.all(result == -90.0)
+
+
+def test_lat_lon_from_course_and_distance_array_version():
+
+    earths_radius = 6371.0088
+    npiearth = np.pi * earths_radius
+
+    lat = np.array([0.0, -90.0, -90.0, 0.0, 0.0])
+    lon = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+    tc = np.array([0.0, 0.0, 4.7, 90.0, 45.0])
+    d = np.array([0.0, npiearth, npiearth, 2 * npiearth, npiearth])
+
+    expected_lat = np.array([0.0, 90.0, 90.0, 0.0, 0.0])
+    expected_lon = np.array([0.0, 0.0, 90.0, 0.0, -180.0])
+    result_lat, result_lon = lat_lon_from_course_and_distance_array(lat, lon, tc, d)
+
+    assert np.allclose(result_lat, expected_lat)
+    assert np.allclose(result_lon, expected_lon)
