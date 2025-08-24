@@ -633,6 +633,7 @@ def almost_repeated_data():
     df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "id": id})
     return df
 
+
 @pytest.fixture
 def almost_repeated_data_with_nan():
     lat = [-5.0 + i * 0.1 for i in range(50)]
@@ -647,7 +648,9 @@ def almost_repeated_data_with_nan():
     return df
 
 
-def test_find_repeated_values(repeated_data, almost_repeated_data, almost_repeated_data_with_nan):
+def test_find_repeated_values(
+    repeated_data, almost_repeated_data, almost_repeated_data_with_nan
+):
     repeated = find_repeated_values(repeated_data["at"], 20, 0.7)
     for i in range(len(repeated) - 1):
         assert repeated[i] == failed
