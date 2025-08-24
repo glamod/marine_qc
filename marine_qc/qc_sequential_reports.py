@@ -1008,7 +1008,7 @@ def find_multiple_rounded_values(
     rounded_values = np.equal(np.mod(value[valid_indices], 1), 0)
     cutoff = allcount * threshold
     if np.count_nonzero(rounded_values) > cutoff:
-        rounded[valid_indices[rounded_values]] = failed
+        rounded[valid_indices & rounded_values] = failed
 
     return rounded
 
