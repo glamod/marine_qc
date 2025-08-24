@@ -1068,11 +1068,17 @@ def find_repeated_values(
     if allcount <= min_count:
         return rep
 
-    unique_values, unique_inverse, counts = np.unique(value[valid_indices],return_inverse=True, return_counts=True)
+    unique_values, unique_inverse, counts = np.unique(
+        value[valid_indices], return_inverse=True, return_counts=True
+    )
     cutoff = threshold * allcount  # Calculate the cutoff
     exceedances = counts > cutoff  # Find the unique values that exceed the cutoff
-    exceedances = np.where(exceedances, failed, passed)  # replace True/False with failed and passed
-    pass_fail = exceedances[unique_inverse]  # Rebuild array using the pass/fails in place of unique values
+    exceedances = np.where(
+        exceedances, failed, passed
+    )  # replace True/False with failed and passed
+    pass_fail = exceedances[
+        unique_inverse
+    ]  # Rebuild array using the pass/fails in place of unique values
     rep[valid_indices] = pass_fail  # Put the passes and fails back into
 
     return rep
