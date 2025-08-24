@@ -84,8 +84,7 @@ def test_get_value(external_at, expected_at, lat, lon, month, day):
     result = external_at.get_value(**kwargs)
     expected = expected_at.get_value(**kwargs)
     expected = np.float64(np.nan if expected is None else expected)
-    if lat == 42.5 and lon == 95.0:
-        assert np.allclose(result, expected, equal_nan=True)
+    assert np.allclose(result, expected, equal_nan=True)
 
 
 @pytest.mark.parametrize(
@@ -121,7 +120,6 @@ def test_inspect_climatology_date(external_at, lat, lon, month, day, expected):
     "lat, lon, month, day",
     [
         [-190.0, 10.0, 7, 4],
-        [42.5, 95.0, 2, 16],
         [57.5, 9.4, 13, 1],
         [-68.4, -52.3, 11, 42],
         [None, 10.0, 7, 4],
