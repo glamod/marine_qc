@@ -19,6 +19,7 @@ from marine_qc.qc_sequential_reports import (
     calculate_course_parameters,
     calculate_speed_course_distance_time_difference,
     calculate_speed_course_distance_time_difference_array,
+    course_between_points_array,
     forward_discrepancy,
     calculate_midpoint,
     time_differences_array,
@@ -340,10 +341,10 @@ def test_calc_alternate_speeds_array_version(ship_frame):
         # So with alternating reports, the speed is 11.11951 km/hour, the course is due north (0/360) the distance
         # between alternate reports is twice the hourly distance 22.23902 and the time difference is 2 hours
         assert pytest.approx(speed[i], abs=0.0001) == 11.11951
-        # assert (
-        #     pytest.approx(course[i], abs=0.0001) == 0.0
-        #     or pytest.approx(course[i], abs=0.0001) == 360.0
-        # )
+        assert (
+            pytest.approx(course[i], abs=0.0001) == 0.0
+            or pytest.approx(course[i], abs=0.0001) == 360.0
+        )
         assert pytest.approx(distance[i], abs=0.0001) == 22.23902
         assert pytest.approx(timediff[i], abs=0.0001) == 2.0
 
@@ -420,10 +421,10 @@ def test_calculate_speed_course_distance_time_difference_array_version(ship_fram
         if i > 0:
             assert pytest.approx(speed[i], 0.00001) == 11.119508064776555
             assert pytest.approx(distance[i], 0.00001) == 11.119508064776555
-            # assert (
-            #     pytest.approx(course[i], 0.00001) == 0
-            #     or pytest.approx(course[i], 0.00001) == 360.0
-            # )
+            assert (
+                pytest.approx(course[i], 0.00001) == 0
+                or pytest.approx(course[i], 0.00001) == 360.0
+            )
             assert pytest.approx(timediff[i], 0.0000001) == 1.0
         else:
             assert np.isnan(speed[i])
@@ -880,3 +881,29 @@ def test_sphere_distance_array_works_with_nans():
     expected = np.zeros(len(lat1)) + 6371.0088 * np.pi / 180.0
     expected[0] = np.nan
     assert np.allclose(result, expected, equal_nan=True)
+
+
+def test_course_between_point_array():
+    lat1 = np.arange(-90.0, 90.0, 1.0)
+    lat2 = np.arange(-89.0, 91.0, 1.0)
+    lon1 = np.zeros(len(lat1))
+    lon2 = np.zeros(len(lat2))
+
+    # heading due north
+    result = course_between_points_array(lat1, lon1, lat2, lon2)
+    assert np.all(result == 0.0)
+    # or, inverted, south
+    result = course_between_points_array(lat2, lon2, lat1, lon1)
+    assert np.all(result == 180.0)
+
+    lon1 = np.arange(-180.0, 180.0, 1.0)
+    lon2 = np.arange(-179.0, 181.0, 1.0)
+    lat1 = np.zeros(len(lon1))
+    lat2 = np.zeros(len(lon2))
+
+    # heading east
+    result = course_between_points_array(lat1, lon1, lat2, lon2)
+    assert np.all(result == 90.0)
+    # or, inverted, west
+    result = course_between_points_array(lat2, lon2, lat1, lon1)
+    assert np.all(result == -90.0)

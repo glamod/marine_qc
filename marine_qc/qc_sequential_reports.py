@@ -11,6 +11,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pyproj
 
 from . import spherical_geometry as sg
 from . import time_control
@@ -38,7 +39,7 @@ def time_differences_array(times2, times1):
 
 
 def sphere_distance_array(lat1, lon1, lat2, lon2):
-    """Return distances in kilometres"""
+    """Return distances in kilometres between points on the globe"""
     earths_radius = 6371.0088
     radians_per_degree = np.pi / 180.0
 
@@ -66,6 +67,13 @@ def sphere_distance_array(lat1, lon1, lat2, lon2):
     return np.arctan2(top_bit, bottom_bit) * earths_radius
 
 
+def course_between_points_array(lat1, lon1, lat2, lon2):
+    """Calculate courses between two sets of points using arrays and pyproj"""
+    geodesic = pyproj.Geod(ellps="WGS84")
+    fwd_azimuth, back_azimuth, distance = geodesic.inv(lon1, lat1, lon2, lat2)
+    return fwd_azimuth
+
+
 def calculate_speed_course_distance_time_difference_array(
     lat, lon, date, alternating=False
 ):
@@ -75,19 +83,24 @@ def calculate_speed_course_distance_time_difference_array(
             np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
         )
         timediff = time_differences_array(np.roll(date, -1), np.roll(date, 1))
+        course = course_between_points_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
         distance[0] = np.nan
         distance[-1] = np.nan
         timediff[0] = np.nan
         timediff[-1] = np.nan
+        course[0] = np.nan
+        course[-1] = np.nan
     else:
         distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
         timediff = time_differences_array(date, np.roll(date, 1))
+        course = course_between_points_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
         distance[0] = np.nan
         timediff[0] = np.nan
+        course[0] = np.nan
 
     speed = distance / timediff
-
-    course = None
 
     return speed, distance, course, timediff
 
