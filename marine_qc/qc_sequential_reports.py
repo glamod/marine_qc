@@ -86,6 +86,7 @@ def calculate_speed_course_distance_time_difference_array(
         course = course_between_points_array(
             np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
         )
+        # Alternating estimates are unavailable for the first and last elements
         distance[0] = np.nan
         distance[-1] = np.nan
         timediff[0] = np.nan
@@ -96,6 +97,7 @@ def calculate_speed_course_distance_time_difference_array(
         distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
         timediff = time_differences_array(date, np.roll(date, 1))
         course = course_between_points_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        # With the regular first differences, we don't have anything for the first element
         distance[0] = np.nan
         timediff[0] = np.nan
         course[0] = np.nan
