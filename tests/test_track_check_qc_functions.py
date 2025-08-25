@@ -301,6 +301,7 @@ def test_backward_discrepancy(ship_frame):
         assert pytest.approx(result[i], abs=0.00001) == 0.0
     assert np.isnan(result[-1])
 
+
 def test_backward_discrepancy_array_version(ship_frame):
     result = backward_discrepancy_array(
         vsi=ship_frame["vsi"],
