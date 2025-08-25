@@ -142,11 +142,7 @@ def forward_discrepancy_array(
 
     timediff = time_differences_array(date, np.roll(date, 1))
     lat1, lon1 = increment_position_array(
-        np.roll(lat, 1),
-        np.roll(lon, 1),
-        np.roll(vsi, 1),
-        dsi,
-        timediff
+        np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff
     )
 
     lat2, lon2 = increment_position_array(lat, lon, vsi, dsi, timediff)
@@ -166,7 +162,7 @@ def forward_discrepancy_array(
 
 def increment_position_array(alat1, alon1, avs, ads, timediff):
     """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
-        increments of latitude and longitude which correspond to half the time difference.
+    increments of latitude and longitude which correspond to half the time difference.
     """
     distance = avs * timediff / 2.0
     lat, lon = lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
