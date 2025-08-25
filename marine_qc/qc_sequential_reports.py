@@ -11,6 +11,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pyproj
 
 from . import spherical_geometry as sg
 from . import time_control
@@ -26,6 +27,184 @@ from .auxiliary import (
     passed,
     post_format_return_type,
 )
+
+
+@inspect_arrays(["times2", "times1"])
+def time_differences_array(times2, times1):
+    """Return time differences in hours"""
+    times1 = pd.to_datetime(times1).values
+    times2 = pd.to_datetime(times2).values
+    time_difference = (times2 - times1) / (1e9 * 60 * 60)
+    return time_difference.astype(float)
+
+
+def sphere_distance_array(lat1, lon1, lat2, lon2):
+    """Return distances in kilometres between points on the globe"""
+    earths_radius = 6371.0088
+    radians_per_degree = np.pi / 180.0
+
+    # convert degrees to radians
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    lat2 = lat2 * radians_per_degree
+    lon2 = lon2 * radians_per_degree
+
+    delta_lambda = abs(lon1 - lon2)
+    bit1 = np.cos(lat2) * np.sin(delta_lambda)
+    bit1 = bit1 * bit1
+    bit2 = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(
+        delta_lambda
+    )
+    bit2 = bit2 * bit2
+
+    top_bit = bit1 + bit2
+    top_bit = np.sqrt(top_bit)
+
+    bottom_bit = np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(
+        delta_lambda
+    )
+
+    return np.arctan2(top_bit, bottom_bit) * earths_radius
+
+
+def course_between_points_array(lat1, lon1, lat2, lon2):
+    """Calculate courses between two sets of points using arrays and pyproj"""
+    geodesic = pyproj.Geod(ellps="WGS84")
+    fwd_azimuth, back_azimuth, distance = geodesic.inv(lon1, lat1, lon2, lat2)
+    return fwd_azimuth
+
+
+def calculate_speed_course_distance_time_difference_array(
+    lat, lon, date, alternating=False
+):
+
+    if alternating:
+        distance = sphere_distance_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        timediff = time_differences_array(np.roll(date, -1), np.roll(date, 1))
+        course = course_between_points_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        # Alternating estimates are unavailable for the first and last elements
+        distance[0] = np.nan
+        distance[-1] = np.nan
+        timediff[0] = np.nan
+        timediff[-1] = np.nan
+        course[0] = np.nan
+        course[-1] = np.nan
+    else:
+        distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        timediff = time_differences_array(date, np.roll(date, 1))
+        course = course_between_points_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        # With the regular first differences, we don't have anything for the first element
+        distance[0] = np.nan
+        timediff[0] = np.nan
+        course[0] = np.nan
+
+    speed = distance / timediff
+
+    return speed, distance, course, timediff
+
+
+def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
+    radians_per_degree = np.pi / 180.0
+    earths_radius = 6371.0088
+
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    tcr = tc * radians_per_degree
+
+    dr = d / earths_radius
+
+    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
+    dlon = np.arctan2(
+        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
+    )
+    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
+
+    lat = lat / radians_per_degree
+    lon = lon / radians_per_degree
+
+    return lat, lon
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def forward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """"""
+
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat1, lon1 = increment_position_array(
+        np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff
+    )
+
+    lat2, lon2 = increment_position_array(lat, lon, vsi, dsi, timediff)
+
+    updated_latitude = np.roll(lat, 1) + lat1 + lat2
+    updated_longitude = np.roll(lon, 1) + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        lat, lon, updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[0] = np.nan
+
+    return distance_from_est_location
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def backward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """"""
+
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat2, lon2 = increment_position_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(vsi, 1),
+        np.roll(dsi, 1) - 180,
+        timediff,
+    )
+
+    lat1, lon1 = increment_position_array(lat, lon, vsi, dsi - 180, timediff)
+
+    updated_latitude = lat + lat1 + lat2
+    updated_longitude = lon + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        np.roll(lat, 1), np.roll(lon, 1), updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[-1] = np.nan
+
+    return distance_from_est_location
+
+
+def increment_position_array(alat1, alon1, avs, ads, timediff):
+    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+    increments of latitude and longitude which correspond to half the time difference.
+    """
+    distance = avs * timediff / 2.0
+    lat, lon = lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
+    lat = lat - alat1
+    lon = lon - alon1
+
+    return lat, lon
 
 
 @post_format_return_type(["value"])
@@ -118,7 +297,7 @@ def do_spike_check(
                 continue
 
             distance = sg.sphere_distance(lat[t1], lon[t1], lat[t2], lon[t2])
-            delta = pd.Timestamp(date[t2]) - pd.Timestamp(date[t2])
+            delta = pd.Timestamp(date[t2]) - pd.Timestamp(date[t1])
             time_diff = abs(delta.days * 24 + delta.seconds / 3600.0)
             val_change = abs(value[t2] - value[t1])
 
@@ -999,32 +1178,16 @@ def find_multiple_rounded_values(
 
     rounded = np.asarray([passed] * number_of_obs)  # type: np.ndarray
 
-    valcount = {}
-    allcount = 0
-
-    for i in range(number_of_obs):
-        v = value[i]
-        if isvalid(v):
-            allcount += 1
-            if str(v) in valcount:
-                valcount[str(v)].append(i)
-            else:
-                valcount[str(v)] = [i]
-
+    valid_indices = isvalid(value)
+    allcount = np.count_nonzero(valid_indices)
     if allcount <= min_count:
         return rounded
 
-    wholenums = 0
-    for key, indices in valcount.items():
-        if float(key).is_integer():
-            wholenums = wholenums + len(indices)
-
-    if float(wholenums) / float(allcount) < threshold:
-        return rounded
-
-    for key, indices in valcount.items():
-        if float(key).is_integer():
-            rounded[indices] = failed
+    # Find rounded values by checking where value mod 1 equals zero and set to failed if they exceed threshold
+    rounded_values = np.equal(np.mod(value[valid_indices], 1), 0)
+    cutoff = allcount * threshold
+    if np.count_nonzero(rounded_values) > cutoff:
+        rounded[valid_indices & rounded_values] = failed
 
     return rounded
 
@@ -1078,24 +1241,24 @@ def find_repeated_values(
 
     rep = np.asarray([passed] * number_of_obs)  # type: np.ndarray
 
-    valcount = {}
-    allcount = 0
+    valid_indices = isvalid(value)
 
-    for i in range(number_of_obs):
-        v = value[i]
-        if isvalid(v):
-            allcount += 1
-            if str(v) in valcount:
-                valcount[str(v)].append(i)
-            else:
-                valcount[str(v)] = [i]
-
+    allcount = np.count_nonzero(valid_indices)
     if allcount <= min_count:
         return rep
 
-    for _, indices in valcount.items():
-        if float(len(indices)) / float(allcount) > threshold:
-            rep[indices] = failed
+    unique_values, unique_inverse, counts = np.unique(
+        value[valid_indices], return_inverse=True, return_counts=True
+    )
+    cutoff = threshold * allcount  # Calculate the cutoff
+    exceedances = counts > cutoff  # Find the unique values that exceed the cutoff
+    exceedances = np.where(
+        exceedances, failed, passed
+    )  # replace True/False with failed and passed
+    pass_fail = exceedances[
+        unique_inverse
+    ]  # Rebuild array using the pass/fails in place of unique values
+    rep[valid_indices] = pass_fail  # Put the passes and fails back into
 
     return rep
 

@@ -18,8 +18,15 @@ from marine_qc.qc_sequential_reports import (
     backward_discrepancy,
     calculate_course_parameters,
     calculate_speed_course_distance_time_difference,
+    calculate_speed_course_distance_time_difference_array,
+    lat_lon_from_course_and_distance_array,
+    course_between_points_array,
+    forward_discrepancy_array,
+    backward_discrepancy_array,
     forward_discrepancy,
     calculate_midpoint,
+    time_differences_array,
+    sphere_distance_array,
 )
 
 
@@ -295,8 +302,34 @@ def test_backward_discrepancy(ship_frame):
     assert np.isnan(result[-1])
 
 
+def test_backward_discrepancy_array_version(ship_frame):
+    result = backward_discrepancy_array(
+        vsi=ship_frame["vsi"],
+        dsi=ship_frame["dsi"],
+        lat=ship_frame["lat"],
+        lon=ship_frame["lon"],
+        date=ship_frame["date"],
+    )
+    for i in range(len(result) - 1):
+        assert pytest.approx(result[i], abs=0.0001) == 0.0
+    assert np.isnan(result[-1])
+
+
 def test_forward_discrepancy(ship_frame):
     result = forward_discrepancy(
+        vsi=ship_frame["vsi"],
+        dsi=ship_frame["dsi"],
+        lat=ship_frame["lat"],
+        lon=ship_frame["lon"],
+        date=ship_frame["date"],
+    )
+    for i in range(1, len(result)):
+        assert pytest.approx(result[i], abs=0.00001) == 0.0
+    assert np.isnan(result[0])
+
+
+def test_forward_discrepancy_array_version(ship_frame):
+    result = forward_discrepancy_array(
         vsi=ship_frame["vsi"],
         dsi=ship_frame["dsi"],
         lat=ship_frame["lat"],
@@ -314,6 +347,26 @@ def test_calc_alternate_speeds(ship_frame):
     )
     # for column in ['alt_speed', 'alt_course', 'alt_distance', 'alt_time_diff']:
     #     assert column in result
+
+    for i in range(1, len(speed) - 1):
+        # Reports are spaced by 1 hour and each hour the ship goes 0.1 degrees of latitude which is 11.11951 km
+        # So with alternating reports, the speed is 11.11951 km/hour, the course is due north (0/360) the distance
+        # between alternate reports is twice the hourly distance 22.23902 and the time difference is 2 hours
+        assert pytest.approx(speed[i], abs=0.0001) == 11.11951
+        assert (
+            pytest.approx(course[i], abs=0.0001) == 0.0
+            or pytest.approx(course[i], abs=0.0001) == 360.0
+        )
+        assert pytest.approx(distance[i], abs=0.0001) == 22.23902
+        assert pytest.approx(timediff[i], abs=0.0001) == 2.0
+
+
+def test_calc_alternate_speeds_array_version(ship_frame):
+    speed, distance, course, timediff = (
+        calculate_speed_course_distance_time_difference_array(
+            ship_frame.lat, ship_frame.lon, ship_frame.date, alternating=True
+        )
+    )
 
     for i in range(1, len(speed) - 1):
         # Reports are spaced by 1 hour and each hour the ship goes 0.1 degrees of latitude which is 11.11951 km
@@ -374,6 +427,28 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
         lat=ship_frame.lat,
         lon=ship_frame.lon,
         date=ship_frame.date,
+    )
+    numobs = len(speed)
+    for i in range(numobs):
+        if i > 0:
+            assert pytest.approx(speed[i], 0.00001) == 11.119508064776555
+            assert pytest.approx(distance[i], 0.00001) == 11.119508064776555
+            assert (
+                pytest.approx(course[i], 0.00001) == 0
+                or pytest.approx(course[i], 0.00001) == 360.0
+            )
+            assert pytest.approx(timediff[i], 0.0000001) == 1.0
+        else:
+            assert np.isnan(speed[i])
+
+
+def test_calculate_speed_course_distance_time_difference_array_version(ship_frame):
+    speed, distance, course, timediff = (
+        calculate_speed_course_distance_time_difference_array(
+            lat=ship_frame.lat,
+            lon=ship_frame.lon,
+            date=ship_frame.date,
+        )
     )
     numobs = len(speed)
     for i in range(numobs):
@@ -634,13 +709,34 @@ def almost_repeated_data():
     return df
 
 
-def test_find_repeated_values(repeated_data, almost_repeated_data):
+@pytest.fixture
+def almost_repeated_data_with_nan():
+    lat = [-5.0 + i * 0.1 for i in range(50)]
+    lon = [0 for _ in range(50)]
+    at = [22.3 for i in range(19)]
+    at.append(np.nan)
+    for i in range(20, 50):
+        at.append(22.5 + (i - 20) * 0.3)
+    id = ["GOODTHING" for _ in range(50)]
+    date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "id": id})
+    return df
+
+
+def test_find_repeated_values(
+    repeated_data, almost_repeated_data, almost_repeated_data_with_nan
+):
     repeated = find_repeated_values(repeated_data["at"], 20, 0.7)
     for i in range(len(repeated) - 1):
         assert repeated[i] == failed
     assert repeated[49] == passed
 
     repeated = find_repeated_values(almost_repeated_data["at"], 20, 0.7)
+    for i in range(len(repeated)):
+        assert repeated[i] == passed
+
+    # np.nan counts as a pass
+    repeated = find_repeated_values(almost_repeated_data_with_nan["at"], 20, 0.7)
     for i in range(len(repeated)):
         assert repeated[i] == passed
 
@@ -788,3 +884,78 @@ def test_calculate_midpoint(lats, lons, timediffs, expected):
     result = calculate_midpoint(np.array(lats), np.array(lons), np.array(timediffs))
     expected = np.array(expected)
     assert np.array_equal(result, expected, equal_nan=True)
+
+
+def test_time_differences_array():
+    dates = pd.date_range(start="1850-01-01", freq="1h", periods=11)
+    in1 = dates[0:10]
+    in2 = dates[1:11]
+    result = time_differences_array(in2, in1)
+    assert np.all(result == 1)
+
+
+def test_sphere_distance_array():
+    lat1 = np.arange(-90.0, 90.0, 1.0)
+    lat2 = np.arange(-89.0, 91.0, 1.0)
+    lon1 = np.zeros(len(lat1))
+    lon2 = np.zeros(len(lat2))
+
+    result = sphere_distance_array(lat1, lon1, lat2, lon2)
+    assert np.allclose(result, 6371.0088 * np.pi / 180.0)
+
+
+def test_sphere_distance_array_works_with_nans():
+    lat1 = np.arange(-90.0, 90.0, 1.0)
+    lat2 = np.arange(-89.0, 91.0, 1.0)
+    lon1 = np.zeros(len(lat1))
+    lon2 = np.zeros(len(lat2))
+    lat1[0] = np.nan
+
+    result = sphere_distance_array(lat1, lon1, lat2, lon2)
+    expected = np.zeros(len(lat1)) + 6371.0088 * np.pi / 180.0
+    expected[0] = np.nan
+    assert np.allclose(result, expected, equal_nan=True)
+
+
+def test_course_between_point_array():
+    lat1 = np.arange(-90.0, 90.0, 1.0)
+    lat2 = np.arange(-89.0, 91.0, 1.0)
+    lon1 = np.zeros(len(lat1))
+    lon2 = np.zeros(len(lat2))
+
+    # heading due north
+    result = course_between_points_array(lat1, lon1, lat2, lon2)
+    assert np.all(result == 0.0)
+    # or, inverted, south
+    result = course_between_points_array(lat2, lon2, lat1, lon1)
+    assert np.all(result == 180.0)
+
+    lon1 = np.arange(-180.0, 180.0, 1.0)
+    lon2 = np.arange(-179.0, 181.0, 1.0)
+    lat1 = np.zeros(len(lon1))
+    lat2 = np.zeros(len(lon2))
+
+    # heading east
+    result = course_between_points_array(lat1, lon1, lat2, lon2)
+    assert np.all(result == 90.0)
+    # or, inverted, west
+    result = course_between_points_array(lat2, lon2, lat1, lon1)
+    assert np.all(result == -90.0)
+
+
+def test_lat_lon_from_course_and_distance_array_version():
+
+    earths_radius = 6371.0088
+    npiearth = np.pi * earths_radius
+
+    lat = np.array([0.0, -90.0, -90.0, 0.0, 0.0])
+    lon = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+    tc = np.array([0.0, 0.0, 4.7, 90.0, 45.0])
+    d = np.array([0.0, npiearth, npiearth, 2 * npiearth, npiearth])
+
+    expected_lat = np.array([0.0, 90.0, 90.0, 0.0, 0.0])
+    expected_lon = np.array([0.0, 0.0, 90.0, 0.0, -180.0])
+    result_lat, result_lon = lat_lon_from_course_and_distance_array(lat, lon, tc, d)
+
+    assert np.allclose(result_lat, expected_lat)
+    assert np.allclose(result_lon, expected_lon)

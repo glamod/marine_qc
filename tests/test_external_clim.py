@@ -120,7 +120,6 @@ def test_inspect_climatology_date(external_at, lat, lon, month, day, expected):
     "lat, lon, month, day",
     [
         [-190.0, 10.0, 7, 4],
-        [42.5, 95.0, 2, 16],
         [57.5, 9.4, 13, 1],
         [-68.4, -52.3, 11, 42],
         [None, 10.0, 7, 4],
@@ -145,3 +144,106 @@ def test_inspect_climatology_raise(external_at):
 def test_inspect_climatology_warns(external_at):
     with pytest.warns(UserWarning):
         _inspect_climatology(external_at, lat=53.5)
+
+
+@pytest.mark.parametrize(
+    "lats, lat0, delta, expected",
+    [
+        ([-89.9, 89.9], -90, 1, [0, 179]),
+        ([-89.9, 89.9], -89.5, 1, [0, 179]),
+        ([-89.9, 89.9], 90, -1, [179, 0]),
+        ([-89.9, 89.9], 89.5, -1, [179, 0]),
+        ([-89.9, 89.9], 90, -5, [35, 0]),
+        ([-89.9, 89.9], 87.5, -5, [35, 0]),
+        ([-89.9, 89.9], -90, 5, [0, 35]),
+        ([-89.9, 89.9], -87.5, 5, [0, 35]),
+    ],
+)
+def test_get_y_index(lats, lat0, delta, expected):
+
+    n_lat_axis = int(180 / abs(delta))
+    lat_axis = np.arange(n_lat_axis) * delta + lat0
+    lats = np.array(lats)
+    expected = np.array(expected)
+
+    result = Climatology.get_y_index(lats, lat_axis)
+
+    assert np.all(expected == result)
+
+
+@pytest.mark.parametrize(
+    "lats, lat0, delta, expected",
+    [
+        ([-179.9, 179.9], -180, 1, [0, 359]),
+        ([-179.9, 179.9], -179.5, 1, [0, 359]),
+        ([-179.9, 179.9], 180, -1, [359, 0]),
+        ([-179.9, 179.9], 179.5, -1, [359, 0]),
+        ([-179.9, 179.9], 180, -5, [71, 0]),
+        ([-179.9, 179.9], 177.5, -5, [71, 0]),
+        ([-179.9, 179.9], -180, 5, [0, 71]),
+        ([-179.9, 179.9], -177.5, 5, [0, 71]),
+        ([-180, 180], -180, 1, [0, 359]),
+        ([-180, 180], -179.5, 1, [0, 359]),
+        ([-180, 180], 180, -1, [359, 0]),
+        ([-180, 180], 179.5, -1, [359, 0]),
+        ([-180, 180], 180, -5, [71, 0]),
+        ([-180, 180], 177.5, -5, [71, 0]),
+        ([-180, 180], -180, 5, [0, 71]),
+        ([-180, 180], -177.5, 5, [0, 71]),
+    ],
+)
+def test_get_x_index(lats, lat0, delta, expected):
+
+    n_lat_axis = int(360 / abs(delta))
+    lat_axis = np.arange(n_lat_axis) * delta + lat0
+    lats = np.array(lats)
+    expected = np.array(expected)
+
+    result = Climatology.get_x_index(lats, lat_axis)
+
+    assert np.all(expected == result)
+
+
+def test_get_t_index():
+
+    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+
+    result = Climatology.get_t_index(month, day, 365)
+    assert np.all(
+        result == np.array([2, 34, 63, 95, 126, 158, 189, 221, 253, 284, 316, 347])
+    )
+
+    result = Climatology.get_t_index(month, day, 73)
+    assert np.all(result == np.array([1, 7, 13, 19, 26, 32, 38, 45, 51, 57, 64, 70]))
+
+    result = Climatology.get_t_index(month, day, 1)
+    assert np.all(result == np.zeros(len(result)))
+
+
+def test_get_value_fast(external_at):
+
+    lat = np.arange(12) * 15 - 90.0 + 0.1
+    lon = np.arange(12) * 30 - 180.0 + 0.1
+    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+
+    result = external_at.get_value_fast(lat, lon, month=month, day=day)
+    expected = np.array(
+        [
+            -24.606144,
+            -1.6097184,
+            3.8155653,
+            12.610888,
+            17.65739,
+            25.619099,
+            24.483362,
+            30.759687,
+            27.863735,
+            6.997858,
+            -19.355358,
+            -25.576801,
+        ]
+    )
+
+    assert np.all(result.astype(np.float16) == expected.astype(np.float16))

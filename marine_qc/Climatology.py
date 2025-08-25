@@ -210,11 +210,11 @@ class Climatology:
             return None
         if lat is None:
             return
-        if lat < -180 or lat > 180:
+        if lat < -90 or lat > 90:
             return
         if lon is None:
             return
-        if lon < -80 or lon > 90:
+        if lon < -180 or lon > 180:
             return
 
         yindex = lat_to_yindex(lat, self.res)
