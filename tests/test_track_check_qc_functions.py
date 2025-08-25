@@ -21,6 +21,7 @@ from marine_qc.qc_sequential_reports import (
     calculate_speed_course_distance_time_difference_array,
     lat_lon_from_course_and_distance_array,
     course_between_points_array,
+    forward_discrepancy_array,
     forward_discrepancy,
     calculate_midpoint,
     time_differences_array,
@@ -302,6 +303,18 @@ def test_backward_discrepancy(ship_frame):
 
 def test_forward_discrepancy(ship_frame):
     result = forward_discrepancy(
+        vsi=ship_frame["vsi"],
+        dsi=ship_frame["dsi"],
+        lat=ship_frame["lat"],
+        lon=ship_frame["lon"],
+        date=ship_frame["date"],
+    )
+    for i in range(1, len(result)):
+        assert pytest.approx(result[i], abs=0.00001) == 0.0
+    assert np.isnan(result[0])
+
+def test_forward_discrepancy_array_version(ship_frame):
+    result = forward_discrepancy_array(
         vsi=ship_frame["vsi"],
         dsi=ship_frame["dsi"],
         lat=ship_frame["lat"],

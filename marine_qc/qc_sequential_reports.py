@@ -129,6 +129,53 @@ def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
     return lat, lon
 
 
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def forward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """"""
+
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat1, lon1 = increment_position_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(vsi, 1),
+        dsi,
+        timediff
+    )
+
+    lat2, lon2 = increment_position_array(lat, lon, vsi, dsi, timediff)
+
+    updated_latitude = np.roll(lat, 1) + lat1 + lat2
+    updated_longitude = np.roll(lon, 1) + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        lat, lon, updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[0] = np.nan
+
+    return distance_from_est_location
+
+
+def increment_position_array(alat1, alon1, avs, ads, timediff):
+    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+        increments of latitude and longitude which correspond to half the time difference.
+    """
+    distance = avs * timediff / 2.0
+    lat, lon = lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
+    lat = lat - alat1
+    lon = lon - alon1
+
+    return lat, lon
+
+
 @post_format_return_type(["value"])
 @inspect_arrays(["value", "lat", "lon", "date"], sortby="date")
 @convert_units(lat="degrees", lon="degrees")
