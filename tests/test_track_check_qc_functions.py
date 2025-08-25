@@ -326,6 +326,7 @@ def test_forward_discrepancy(ship_frame):
         assert pytest.approx(result[i], abs=0.00001) == 0.0
     assert np.isnan(result[0])
 
+
 def test_forward_discrepancy_array_version(ship_frame):
     result = forward_discrepancy_array(
         vsi=ship_frame["vsi"],
