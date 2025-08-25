@@ -163,6 +163,43 @@ def forward_discrepancy_array(
 
     return distance_from_est_location
 
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def backward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """"""
+
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat2, lon2 = increment_position_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(vsi, 1),
+        np.roll(dsi, 1) - 180,
+        timediff
+    )
+
+    lat1, lon1 = increment_position_array(lat, lon, vsi, dsi- 180, timediff)
+
+    updated_latitude = lat + lat1 + lat2
+    updated_longitude = lon + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        updated_latitude,
+        updated_longitude
+    )
+
+    distance_from_est_location[-1] = np.nan
+
+    return distance_from_est_location
+
 
 def increment_position_array(alat1, alon1, avs, ads, timediff):
     """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
