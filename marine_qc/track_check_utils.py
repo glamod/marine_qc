@@ -213,7 +213,7 @@ def direction_continuity(
 
 
 def speed_continuity_array(vsi, speeds, max_speed_change=10.0):
-    result = np.zeros((len(vsi)))
+    result = np.zeros(len(vsi))
     vsi_previous = np.roll(vsi, 1)
     selection1 = abs(vsi - speeds) > max_speed_change
     selection2 = abs(vsi_previous - speeds) > max_speed_change

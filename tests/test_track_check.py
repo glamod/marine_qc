@@ -162,14 +162,14 @@ def test_speed_continuity(vsi, vsi_previous, speeds, expected):
     assert speed_continuity(vsi, vsi_previous, speeds) == expected
 
 
-
 def test_speed_continuity_array():
     vsi = np.array([12, 12, 12, 12])
-    speeds = np.array([12, 12+10.01, 12+9.9, np.nan])
+    speeds = np.array([12, 12 + 10.01, 12 + 9.9, np.nan])
     expected = np.array([0, 10, 0, 0])
 
-    result  = speed_continuity_array(vsi, speeds)
+    result = speed_continuity_array(vsi, speeds)
     assert np.all(result == expected)
+
 
 @pytest.mark.parametrize(
     "vsi, vsi_previous, time_differences, fwd_diff_from_estimated, rev_diff_from_estimated, expected",
