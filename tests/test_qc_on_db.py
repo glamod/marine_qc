@@ -1347,6 +1347,7 @@ def test_do_track_check(testdata_track):
     expected.iloc[48] = 1
     pd.testing.assert_series_equal(results, expected, check_names=False)
 
+
 def test_do_track_check_array(testdata_track):
     db_ = testdata_track.copy()
     db_.data.loc[2, ("header", "latitude")] = -23.0

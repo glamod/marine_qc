@@ -1092,18 +1092,28 @@ def do_track_check_array(
 
     # compare reported speeds and positions if we have them
     forward_diff_from_estimated = forward_discrepancy_array(
-        lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi,
+        lat=lat,
+        lon=lon,
+        date=date,
+        vsi=vsi,
+        dsi=dsi,
     )
     reverse_diff_from_estimated = backward_discrepancy_array(
-        lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi,
+        lat=lat,
+        lon=lon,
+        date=date,
+        vsi=vsi,
+        dsi=dsi,
     )
 
     midpoint_diff_from_estimated = calculate_midpoint_array(
-        lat=lat, lon=lon, timediff=timediff,
+        lat=lat,
+        lon=lon,
+        timediff=timediff,
     )
 
-    thisqc_a = np.zeros((number_of_obs))
-    thisqc_b = np.zeros((number_of_obs))
+    thisqc_a = np.zeros(number_of_obs)
+    thisqc_b = np.zeros(number_of_obs)
 
     speed_alt_previous = np.roll(speed_alt, 1)
     speed_alt_next = np.roll(speed_alt, -1)
@@ -1138,14 +1148,15 @@ def do_track_check_array(
     thisqc_b[speed > max_absolute_speed] = thisqc_b[speed > max_absolute_speed] + 10.0
 
     fails = (
-            (midpoint_diff_from_estimated > max_midpoint_discrepancy) &
-            (thisqc_a > 0) &
-            (thisqc_b > 0)
+        (midpoint_diff_from_estimated > max_midpoint_discrepancy)
+        & (thisqc_a > 0)
+        & (thisqc_b > 0)
     )
 
     trk = np.where(fails, failed, passed)
 
     return trk
+
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])

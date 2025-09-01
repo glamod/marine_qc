@@ -36,12 +36,12 @@ from marine_qc.qc_sequential_reports import (
 def generic_frame(in_pt):
     pt = [in_pt for _ in range(30)]
     lat = [-5.0 + i * 0.1 for i in range(30)]
-    lon = [0. for _ in range(30)]
-    sst = [22. for _ in range(30)]
+    lon = [0.0 for _ in range(30)]
+    sst = [22.0 for _ in range(30)]
     sst[15] = 33
 
     vsi = [11.11951 for _ in range(30)]  # km/h
-    dsi = [0. for _ in range(30)]
+    dsi = [0.0 for _ in range(30)]
     dck = [193 for _ in range(30)]
 
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(pt))
@@ -292,8 +292,6 @@ def test_do_track_check_testdata():
     np.testing.assert_array_equal(results, expected)
 
 
-
-
 def test_do_track_check_array_very_few_obs(ship_frame):
     ship_frame = ship_frame.loc[[0, 1]]
     trk = do_track_check_array(
@@ -421,9 +419,6 @@ def test_do_track_check_array_testdata():
         passed,
     ]
     np.testing.assert_array_equal(results, expected)
-
-
-
 
 
 def test_backward_discrepancy(ship_frame):
