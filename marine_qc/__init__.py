@@ -32,6 +32,7 @@ from .qc_individual_reports import (
 from .qc_sequential_reports import (
     do_spike_check,
     do_track_check,
+    do_track_check_array,
     do_few_check,
     find_saturated_runs,
     find_multiple_rounded_values,

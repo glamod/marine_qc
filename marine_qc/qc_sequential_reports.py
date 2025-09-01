@@ -136,6 +136,7 @@ def calculate_speed_course_distance_time_difference_array(
         course[0] = np.nan
 
     speed = distance / timediff
+    speed[timediff == 0.0] = 0.0
 
     return speed, distance, course, timediff
 
@@ -1041,6 +1042,110 @@ def do_track_check(
 
     return trk
 
+
+@post_format_return_type(["vsi"])
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def do_track_check_array(
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    max_direction_change: float,
+    max_speed_change: float,
+    max_absolute_speed: float,
+    max_midpoint_discrepancy: float,
+) -> SequenceIntType:
+    number_of_obs = len(lat)
+
+    # no obs in, no qc outcomes out
+    if number_of_obs == 0:
+        return np.asarray([])
+
+    # fewer than three obs - set the fewsome flag
+    if number_of_obs < 3:
+        return np.asarray([passed] * number_of_obs)
+
+    # work out speeds and distances between alternating points
+    speed_alt, _distance_alt, _course_alt, _timediff_alt = (
+        calculate_speed_course_distance_time_difference_array(
+            lat=lat,
+            lon=lon,
+            date=date,
+            alternating=True,
+        )
+    )
+    speed, _distance, course, timediff = (
+        calculate_speed_course_distance_time_difference_array(
+            lat=lat,
+            lon=lon,
+            date=date,
+        )
+    )
+
+    # what are the mean and mode speeds?
+    modal_speed = tc.modal_speed(speed)
+
+    # set speed limits based on modal speed
+    amax, _amaxx, _amin = tc.set_speed_limits(modal_speed)
+
+    # compare reported speeds and positions if we have them
+    forward_diff_from_estimated = forward_discrepancy_array(
+        lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi,
+    )
+    reverse_diff_from_estimated = backward_discrepancy_array(
+        lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi,
+    )
+
+    midpoint_diff_from_estimated = calculate_midpoint_array(
+        lat=lat, lon=lon, timediff=timediff,
+    )
+
+    thisqc_a = np.zeros((number_of_obs))
+    thisqc_b = np.zeros((number_of_obs))
+
+    speed_alt_previous = np.roll(speed_alt, 1)
+    speed_alt_next = np.roll(speed_alt, -1)
+    speed_next = np.roll(speed, -1)
+
+    selection1 = speed > amax
+    selection2 = speed_alt_previous > amax
+    selection_a = np.logical_and(selection1, selection2)
+
+    selection1 = speed_next > amax
+    selection2 = speed_alt_next > amax
+    selection_b = np.logical_and(selection1, selection2)
+
+    selection1 = speed > amax
+    selection2 = speed_next > amax
+    selection_c = np.logical_and(selection1, selection2)
+
+    thisqc_a[selection_c] = thisqc_a[selection_c] + 3.00
+    thisqc_a[selection_b] = thisqc_a[selection_b] + 2.00
+    thisqc_a[selection_a] = thisqc_a[selection_a] + 1.00
+
+    # Quality-control by examining the distance
+    # between the calculated and reported second position.
+    thisqc_b += tc.check_distance_from_estimate_array(
+        vsi, timediff, forward_diff_from_estimated, reverse_diff_from_estimated
+    )
+    # Check for continuity of direction
+    thisqc_b += tc.direction_continuity_array(dsi, course, max_direction_change)
+    # Check for continuity of speed.
+    thisqc_b += tc.speed_continuity_array(vsi, speed, max_speed_change)
+
+    thisqc_b[speed > max_absolute_speed] = thisqc_b[speed > max_absolute_speed] + 10.0
+
+    fails = (
+            (midpoint_diff_from_estimated > max_midpoint_discrepancy) &
+            (thisqc_a > 0) &
+            (thisqc_b > 0)
+    )
+
+    trk = np.where(fails, failed, passed)
+
+    return trk
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])

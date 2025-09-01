@@ -25,6 +25,7 @@ from marine_qc import (
     do_iquam_track_check,
     do_spike_check,
     do_track_check,
+    do_track_check_array,
     find_multiple_rounded_values,
     find_repeated_values,
     find_saturated_runs,
@@ -1326,6 +1327,38 @@ def test_do_track_check(testdata_track):
     )
     results = groups.apply(
         lambda track: do_track_check(
+            vsi=track[("header", "station_speed")],
+            dsi=track[("header", "station_course")],
+            lat=track[("header", "latitude")],
+            lon=track[("header", "longitude")],
+            date=track[("header", "report_timestamp")],
+            max_direction_change=60.0,
+            max_speed_change=10.0,
+            max_absolute_speed=40.0,
+            max_midpoint_discrepancy=150.0,
+        ),
+        include_groups=False,
+    ).squeeze()
+
+    expected = pd.Series([passed] * len(results))
+    expected.iloc[2] = 1
+    expected.iloc[12] = 1
+    expected.iloc[24] = 1
+    expected.iloc[48] = 1
+    pd.testing.assert_series_equal(results, expected, check_names=False)
+
+def test_do_track_check_array(testdata_track):
+    db_ = testdata_track.copy()
+    db_.data.loc[2, ("header", "latitude")] = -23.0
+    db_.data.loc[12, ("header", "latitude")] = -23.0
+    db_.data.loc[24, ("header", "latitude")] = -23.0
+    db_.data.loc[48, ("header", "latitude")] = -23.0
+
+    groups = db_.groupby(
+        [("header", "primary_station_id")], group_keys=False, sort=False
+    )
+    results = groups.apply(
+        lambda track: do_track_check_array(
             vsi=track[("header", "station_speed")],
             dsi=track[("header", "station_course")],
             lat=track[("header", "latitude")],

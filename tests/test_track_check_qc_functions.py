@@ -29,18 +29,19 @@ from marine_qc.qc_sequential_reports import (
     time_differences_array,
     sphere_distance_array,
     intermediate_point_array,
+    do_track_check_array,
 )
 
 
 def generic_frame(in_pt):
     pt = [in_pt for _ in range(30)]
     lat = [-5.0 + i * 0.1 for i in range(30)]
-    lon = [0 for _ in range(30)]
-    sst = [22 for _ in range(30)]
+    lon = [0. for _ in range(30)]
+    sst = [22. for _ in range(30)]
     sst[15] = 33
 
     vsi = [11.11951 for _ in range(30)]  # km/h
-    dsi = [0 for _ in range(30)]
+    dsi = [0. for _ in range(30)]
     dck = [193 for _ in range(30)]
 
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(pt))
@@ -289,6 +290,140 @@ def test_do_track_check_testdata():
         passed,
     ]
     np.testing.assert_array_equal(results, expected)
+
+
+
+
+def test_do_track_check_array_very_few_obs(ship_frame):
+    ship_frame = ship_frame.loc[[0, 1]]
+    trk = do_track_check_array(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        vsi=ship_frame.vsi,
+        dsi=ship_frame.dsi,
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    for i in range(len(trk)):
+        assert trk[i] == passed
+
+
+def test_do_track_check_array_no_obs(ship_frame):
+    ship_frame = ship_frame.loc[[]]
+    trk = do_track_check_array(
+        lat=[],
+        lon=[],
+        date=[],
+        vsi=[],
+        dsi=[],
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    assert len(trk) == 0
+
+
+def test_do_track_check_array_passed(ship_frame):
+    trk = do_track_check_array(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        vsi=ship_frame.vsi,
+        dsi=ship_frame.dsi,
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    for i in range(len(trk)):
+        assert trk[i] == passed
+
+
+def test_do_track_check_array_mixed(ship_frame):
+    lon = ship_frame.lon.array
+    lon[15] = 30.0
+    ship_frame["lon"] = lon
+    trk = do_track_check_array(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
+        vsi=ship_frame.vsi,
+        dsi=ship_frame.dsi,
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    for i in range(len(trk)):
+        if i == 15:
+            assert trk[i] == failed
+        else:
+            assert trk[i] == passed
+
+
+def test_do_track_check_array_testdata():
+    vsi = [np.nan] * 10
+    dsi = [np.nan] * 10
+    lat = [46.53, 46.31, 46.09, 45.87, 45.88, 46.53, 46.31, 46.09, 45.87, 45.88]
+    lon = [
+        -13.17,
+        -12.99,
+        -12.81,
+        -12.62,
+        -12.57,
+        -13.17,
+        -12.99,
+        -12.81,
+        -12.62,
+        -12.57,
+    ]
+    date = np.array(
+        [
+            "1873-01-01T01:00:00.000000000",
+            "1873-01-01T05:00:00.000000000",
+            "1873-01-01T09:00:00.000000000",
+            "1873-01-01T13:00:00.000000000",
+            "1873-01-01T17:00:00.000000000",
+            "1875-01-01T01:00:00.000000000",
+            "1875-01-01T05:00:00.000000000",
+            "1875-01-01T09:00:00.000000000",
+            "1875-01-01T13:00:00.000000000",
+            "1875-01-01T17:00:00.000000000",
+        ]
+    )
+    date = pd.to_datetime(date).tolist()
+
+    results = do_track_check_array(
+        vsi=vsi,
+        dsi=dsi,
+        lat=lat,
+        lon=lon,
+        date=date,
+        max_direction_change=60.0,
+        max_speed_change=10.0,
+        max_absolute_speed=40.0,
+        max_midpoint_discrepancy=150.0,
+    )
+    expected = [
+        passed,
+        passed,
+        passed,
+        passed,
+        passed,
+        passed,
+        passed,
+        passed,
+        passed,
+        passed,
+    ]
+    np.testing.assert_array_equal(results, expected)
+
+
+
 
 
 def test_backward_discrepancy(ship_frame):

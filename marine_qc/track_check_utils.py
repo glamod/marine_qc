@@ -256,7 +256,9 @@ def speed_continuity(
     return result
 
 
-def check_distance_from_estimate_array(vsi, time_differences, fwd_diff_from_estimated, rev_diff_from_estimated):
+def check_distance_from_estimate_array(
+    vsi, time_differences, fwd_diff_from_estimated, rev_diff_from_estimated
+):
 
     vsi_previous = np.roll(vsi, 1)
     vsi_previous[0] = np.nan
