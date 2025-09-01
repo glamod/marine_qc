@@ -256,6 +256,25 @@ def speed_continuity(
     return result
 
 
+def check_distance_from_estimate_array(vsi, time_differences, fwd_diff_from_estimated, rev_diff_from_estimated):
+
+    vsi_previous = np.roll(vsi, 1)
+    vsi_previous[0] = np.nan
+
+    alwdis = time_differences * ((vsi + vsi_previous) / 2.0)
+
+    selection = fwd_diff_from_estimated > alwdis
+    selection = np.logical_and(selection, rev_diff_from_estimated > alwdis)
+    selection = np.logical_and(selection, vsi > 0)
+    selection = np.logical_and(selection, vsi_previous > 0)
+    selection = np.logical_and(selection, time_differences > 0)
+
+    result = np.zeros((len(vsi)))
+    result[selection] = 10.0
+
+    return result
+
+
 def check_distance_from_estimate(
     vsi: float,
     vsi_previous: float,

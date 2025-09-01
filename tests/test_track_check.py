@@ -7,6 +7,7 @@ import marine_qc.spherical_geometry as sg
 from marine_qc.auxiliary import convert_to
 from marine_qc.track_check_utils import (
     check_distance_from_estimate,
+    check_distance_from_estimate_array,
     direction_continuity,
     direction_continuity_array,
     increment_position,
@@ -198,3 +199,16 @@ def test_check_distance_from_estimate(
         rev_diff_from_estimated,
     )
     assert result == expected
+
+
+def test_check_distance_from_estimate_array():
+    vsi = np.array([np.nan, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0])
+    time_differences = np.array([5.0, 5.0, np.nan, 5.0, 5.0, 5.0, 1.0])
+    fwd_diff = np.array([5.0, 5.0, 5.0, np.nan, 5.0, 5.0, 20.0])
+    rev_diff = np.array([5.0, 5.0, 5.0, 5.0, np.nan, 5.0, 20.0])
+
+    expected = np.array([0, 0, 0, 0, 0, 0, 10])
+
+    result = check_distance_from_estimate_array(vsi, time_differences, fwd_diff, rev_diff)
+
+    assert np.all(result == expected)
