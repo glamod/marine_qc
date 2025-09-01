@@ -138,9 +138,7 @@ def increment_position(
     return lat, lon
 
 
-def direction_continuity_array(
-    dsi, ship_directions, max_direction_change=60.0
-):
+def direction_continuity_array(dsi, ship_directions, max_direction_change=60.0):
 
     allowed_list = [0, 45, 90, 135, 180, 225, 270, 315, 360]
 
@@ -158,7 +156,7 @@ def direction_continuity_array(
 
     result = np.zeros((len(dsi)))
     result[np.logical_and(selection1, selection2)] = 10.0
-    result[np.logical_and(selection3 , selection4)] = 10.0
+    result[np.logical_and(selection3, selection4)] = 10.0
 
     return result
 
@@ -211,6 +209,15 @@ def direction_continuity(
     ):
         result = 10.0
 
+    return result
+
+
+def speed_continuity_array(vsi, speeds, max_speed_change=10.0):
+    result = np.zeros((len(vsi)))
+    vsi_previous = np.roll(vsi, 1)
+    selection1 = abs(vsi - speeds) > max_speed_change
+    selection2 = abs(vsi_previous - speeds) > max_speed_change
+    result[np.logical_and(selection1, selection2)] = 10.0
     return result
 
 
