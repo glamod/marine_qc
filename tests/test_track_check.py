@@ -209,6 +209,8 @@ def test_check_distance_from_estimate_array():
 
     expected = np.array([0, 0, 0, 0, 0, 0, 10])
 
-    result = check_distance_from_estimate_array(vsi, time_differences, fwd_diff, rev_diff)
+    result = check_distance_from_estimate_array(
+        vsi, time_differences, fwd_diff, rev_diff
+    )
 
     assert np.all(result == expected)
