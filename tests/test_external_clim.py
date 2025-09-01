@@ -114,6 +114,10 @@ def _get_value(external, lat, lon, month, day, expected):
       }
       result = external.get_value(**kwargs)
       assert np.allclose(result, expected, equal_nan=True)
+      
+def _get_value_fast(external, lat, lon, month, day, expected):        
+    result = external.get_value_fast(lat, lon, month=month, day=day)
+    assert np.allclose(result, expected, equal_nan=True)
 
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
@@ -352,14 +356,11 @@ def test_get_t_index():
     assert np.all(result == np.zeros(len(result)))
 
 
-def test_get_value_fast(external_at, expected_at):
-
+def test_get_value_fast_at(external_at):
     lat = np.arange(12) * 15 - 90.0 + 0.1
     lon = np.arange(12) * 30 - 180.0 + 0.1
     month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
     day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-        
-    result = external_at.get_value_fast(lat, lon, month=month, day=day)
     expected = np.array(
         [
             -24.606144,
@@ -376,4 +377,97 @@ def test_get_value_fast(external_at, expected_at):
             -25.576801,
         ]
     )
-    assert np.all(result.astype(np.float16) == expected.astype(np.float16))
+    _get_value_fast(external_at, lat, lon, month, day, expected)
+
+
+def test_get_value_fast_dpt(external_dpt):
+    lat = np.arange(12) * 15 - 90.0 + 0.1
+    lon = np.arange(12) * 30 - 180.0 + 0.1
+    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+    expected = np.array(
+        [
+            -27.990265,
+            -3.525132,
+            1.3157192,
+            9.453145,
+            13.400107,
+            20.802454,
+            20.59039,
+            17.97907,
+            -1.6715549,
+            -3.3224113,
+            -22.183725,
+            -28.067549,
+        ]
+    )
+    _get_value_fast(external_dpt, lat, lon, month, day, expected)
+    
+def test_get_value_fast_slp(external_slp):
+    lat = np.arange(12) * 15 - 90.0 + 0.1
+    lon = np.arange(12) * 30 - 180.0 + 0.1
+    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+    expected = np.array(
+        [
+            994.6687,
+            986.797,
+            990.4024,
+            1014.28455,
+            1014.8676,
+            1016.58136,
+            1014.6026,
+            1007.42126,
+            1005.2642,
+            1021.6543,
+            1021.2122,
+            1017.6197,
+        ]
+    )
+    _get_value_fast(external_slp, lat, lon, month, day, expected)
+    
+def test_get_value_fast_sst(external_sst):
+    lat = np.arange(12) * 15 - 90.0 + 0.1
+    lon = np.arange(12) * 30 - 180.0 + 0.1
+    month = np.ones(12, dtype=int)
+    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+    expected = np.array(
+        [
+            np.nan,
+            271.75177,
+            277.03308,
+            285.70743,
+            np.nan,
+            300.02383,
+            300.77612,
+            np.nan,
+            np.nan,
+            np.nan,
+            np.nan,
+            271.35,
+        ]
+    )
+    _get_value_fast(external_sst, lat, lon, month, day, expected) 
+    
+def test_get_value_fast_sst2(external_sst2):
+    lat = np.arange(12) * 15 - 90.0 + 0.1
+    lon = np.arange(12) * 30 - 180.0 + 0.1
+    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+    expected = np.array(
+        [
+            np.nan,
+            -1.1828293,
+            4.2954683,
+            12.715132,
+            np.nan,
+            26.310646,
+            25.364834,
+            np.nan,
+            np.nan,
+            np.nan,
+            np.nan,
+            -1.8,
+        ]
+    )
+    _get_value_fast(external_sst2, lat, lon, month, day, expected)         
