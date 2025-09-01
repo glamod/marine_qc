@@ -25,31 +25,31 @@ def external_clim():
             "metoffice_qc/external_files/AT_pentad_climatology.nc",
             **kwargs,
         )
-    }    
+    }
     clim_dict["DPT"] = {
         "mean": load_file(
             "metoffice_qc/external_files/DPT_pentad_climatology.nc",
             **kwargs,
         )
-    }  
+    }
     clim_dict["SLP"] = {
         "mean": load_file(
             "metoffice_qc/external_files/SLP_pentad_climatology.nc",
             **kwargs,
         )
-    }        
+    }
     clim_dict["SST"] = {
         "mean": load_file(
             "metoffice_qc/external_files/SST_daily_climatology_january.nc",
             **kwargs,
         )
-    }    
+    }
     clim_dict["SST2"] = {
         "mean": load_file(
             "metoffice_qc/external_files/HadSST2_pentad_climatology.nc",
             **kwargs,
         )
-    }         
+    }
     return clim_dict
 
 
@@ -61,15 +61,15 @@ def external_at(external_clim):
         time_axis="pentad_time",
     )
 
-    
+
 @pytest.fixture(scope="session")
 def external_dpt(external_clim):
     return Climatology.open_netcdf_file(
         external_clim["DPT"]["mean"],
         "dpt",
         time_axis="pentad_time",
-    )  
-       
+    )
+
 
 @pytest.fixture(scope="session")
 def external_slp(external_clim):
@@ -84,10 +84,10 @@ def external_sst(external_clim):
     return Climatology.open_netcdf_file(
         external_clim["SST"]["mean"],
         "sst",
-        valid_ntime=31,        
+        valid_ntime=31,
     )
-    
-    
+
+
 @pytest.fixture(scope="session")
 def external_sst2(external_clim):
     return Climatology.open_netcdf_file(
@@ -105,36 +105,39 @@ def _inspect_climatology(climatology, **kwargs):
 def _inspect_climatology2(climatology, **kwargs):
     return climatology
 
+
 def _get_value(external, lat, lon, month, day, expected):
-      kwargs = {
+    kwargs = {
         "lat": lat,
         "lon": lon,
         "month": month,
         "day": day,
-      }
-      result = external.get_value(**kwargs)
-      assert np.allclose(result, expected, equal_nan=True)
-      
-def _get_value_fast(external, lat, lon, month, day, expected):        
+    }
+    result = external.get_value(**kwargs)
+    assert np.allclose(result, expected, equal_nan=True)
+
+
+def _get_value_fast(external, lat, lon, month, day, expected):
     result = external.get_value_fast(lat, lon, month=month, day=day)
     assert np.allclose(result, expected, equal_nan=True)
+
 
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
     [
-          [53.5, 10.0, 7, 4, 17.317652],
-          [42.5, 1.4, 2, 16, 3.7523544],
-          [57.5, 9.4, 6, 1, 13.330604],
-          [-68.4, -52.3, 11, 21, -4.2039094],
-          [-190.0, 10.0, 7, 4, np.nan],
-          [42.5, 95.0, 2, 16, -6.6292677],
-          [57.5, 9.4, 13, 1, np.nan],
-          [-68.4, -52.3, 11, 42, np.nan],
-          [None, 10.0, 7, 4, np.nan],
-          [42.5, None, 2, 16, np.nan],
-          [57.5, 9.4, None, 1, np.nan],
-          [-68.4, -52.3, 11, None, np.nan],
-    ]     
+        [53.5, 10.0, 7, 4, 17.317652],
+        [42.5, 1.4, 2, 16, 3.7523544],
+        [57.5, 9.4, 6, 1, 13.330604],
+        [-68.4, -52.3, 11, 21, -4.2039094],
+        [-190.0, 10.0, 7, 4, np.nan],
+        [42.5, 95.0, 2, 16, -6.6292677],
+        [57.5, 9.4, 13, 1, np.nan],
+        [-68.4, -52.3, 11, 42, np.nan],
+        [None, 10.0, 7, 4, np.nan],
+        [42.5, None, 2, 16, np.nan],
+        [57.5, 9.4, None, 1, np.nan],
+        [-68.4, -52.3, 11, None, np.nan],
+    ],
 )
 def test_get_value_with_external_at(external_at, lat, lon, month, day, expected):
     _get_value(external_at, lat, lon, month, day, expected)
@@ -143,19 +146,19 @@ def test_get_value_with_external_at(external_at, lat, lon, month, day, expected)
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
     [
-          [53.5, 10.0, 7, 4, 12.243161],
-          [42.5, 1.4, 2, 16, -0.2412281],
-          [57.5, 9.4, 6, 1, 9.056429],
-          [-68.4, -52.3, 11, 21, -6.0470867],
-          [-190.0, 10.0, 7, 4, np.nan],
-          [42.5, 95.0, 2, 16, -17.384878],
-          [57.5, 9.4, 13, 1, np.nan],
-          [-68.4, -52.3, 11, 42, np.nan],
-          [None, 10.0, 7, 4, np.nan],
-          [42.5, None, 2, 16, np.nan],
-          [57.5, 9.4, None, 1, np.nan],
-          [-68.4, -52.3, 11, None, np.nan],
-    ]     
+        [53.5, 10.0, 7, 4, 12.243161],
+        [42.5, 1.4, 2, 16, -0.2412281],
+        [57.5, 9.4, 6, 1, 9.056429],
+        [-68.4, -52.3, 11, 21, -6.0470867],
+        [-190.0, 10.0, 7, 4, np.nan],
+        [42.5, 95.0, 2, 16, -17.384878],
+        [57.5, 9.4, 13, 1, np.nan],
+        [-68.4, -52.3, 11, 42, np.nan],
+        [None, 10.0, 7, 4, np.nan],
+        [42.5, None, 2, 16, np.nan],
+        [57.5, 9.4, None, 1, np.nan],
+        [-68.4, -52.3, 11, None, np.nan],
+    ],
 )
 def test_get_value_with_external_dpt(external_dpt, lat, lon, month, day, expected):
     _get_value(external_dpt, lat, lon, month, day, expected)
@@ -164,62 +167,64 @@ def test_get_value_with_external_dpt(external_dpt, lat, lon, month, day, expecte
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
     [
-          [53.5, 10.0, 7, 4, 1015.102783],
-          [42.5, 1.4, 2, 16, 1017.175170],
-          [57.5, 9.4, 6, 1, 1014.887268],
-          [-68.4, -52.3, 11, 21, 982.609802],
-          [-190.0, 10.0, 7, 4, np.nan],
-          [42.5, 95.0, 2, 16, 1029.125366],
-          [57.5, 9.4, 13, 1, np.nan],
-          [-68.4, -52.3, 11, 42, np.nan],
-          [None, 10.0, 7, 4, np.nan],
-          [42.5, None, 2, 16, np.nan],
-          [57.5, 9.4, None, 1, np.nan],
-          [-68.4, -52.3, 11, None, np.nan],
-    ]     
+        [53.5, 10.0, 7, 4, 1015.102783],
+        [42.5, 1.4, 2, 16, 1017.175170],
+        [57.5, 9.4, 6, 1, 1014.887268],
+        [-68.4, -52.3, 11, 21, 982.609802],
+        [-190.0, 10.0, 7, 4, np.nan],
+        [42.5, 95.0, 2, 16, 1029.125366],
+        [57.5, 9.4, 13, 1, np.nan],
+        [-68.4, -52.3, 11, 42, np.nan],
+        [None, 10.0, 7, 4, np.nan],
+        [42.5, None, 2, 16, np.nan],
+        [57.5, 9.4, None, 1, np.nan],
+        [-68.4, -52.3, 11, None, np.nan],
+    ],
 )
 def test_get_value_with_external_slp(external_slp, lat, lon, month, day, expected):
     _get_value(external_slp, lat, lon, month, day, expected)
 
+
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
     [
-          [53.5, 10.0, 1, 4, np.nan],
-          [42.5, 1.4, 1, 16, np.nan],
-          [57.5, 9.4, 1, 1, 278.65952],
-          [-68.4, -52.3, 1, 21, 271.35],
-          [-190.0, 10.0, 7, 4, np.nan],
-          [42.5, 95.0, 1, 16, np.nan],
-          [57.5, 9.4, 13, 1, np.nan],
-          [-68.4, -52.3, 11, 42, np.nan],
-          [None, 10.0, 7, 4, np.nan],
-          [42.5, None, 2, 16, np.nan],
-          [57.5, 9.4, None, 1, np.nan],
-          [-68.4, -52.3, 11, None, np.nan],
-    ]     
+        [53.5, 10.0, 1, 4, np.nan],
+        [42.5, 1.4, 1, 16, np.nan],
+        [57.5, 9.4, 1, 1, 278.65952],
+        [-68.4, -52.3, 1, 21, 271.35],
+        [-190.0, 10.0, 7, 4, np.nan],
+        [42.5, 95.0, 1, 16, np.nan],
+        [57.5, 9.4, 13, 1, np.nan],
+        [-68.4, -52.3, 11, 42, np.nan],
+        [None, 10.0, 7, 4, np.nan],
+        [42.5, None, 2, 16, np.nan],
+        [57.5, 9.4, None, 1, np.nan],
+        [-68.4, -52.3, 11, None, np.nan],
+    ],
 )
 def test_get_value_with_external_sst(external_sst, lat, lon, month, day, expected):
     _get_value(external_sst, lat, lon, month, day, expected)
-    
+
+
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
     [
-          [53.5, 10.0, 7, 4, np.nan],
-          [42.5, 1.4, 2, 16, np.nan],
-          [57.5, 9.4, 6, 1, 11.798330],
-          [-68.4, -52.3, 11, 21, -1.799999],
-          [-190.0, 10.0, 7, 4, np.nan],
-          [42.5, 95.0, 2, 16, np.nan],
-          [57.5, 9.4, 13, 1, np.nan],
-          [-68.4, -52.3, 11, 42, np.nan],
-          [None, 10.0, 7, 4, np.nan],
-          [42.5, None, 2, 16, np.nan],
-          [57.5, 9.4, None, 1, np.nan],
-          [-68.4, -52.3, 11, None, np.nan],
-    ]     
+        [53.5, 10.0, 7, 4, np.nan],
+        [42.5, 1.4, 2, 16, np.nan],
+        [57.5, 9.4, 6, 1, 11.798330],
+        [-68.4, -52.3, 11, 21, -1.799999],
+        [-190.0, 10.0, 7, 4, np.nan],
+        [42.5, 95.0, 2, 16, np.nan],
+        [57.5, 9.4, 13, 1, np.nan],
+        [-68.4, -52.3, 11, 42, np.nan],
+        [None, 10.0, 7, 4, np.nan],
+        [42.5, None, 2, 16, np.nan],
+        [57.5, 9.4, None, 1, np.nan],
+        [-68.4, -52.3, 11, None, np.nan],
+    ],
 )
 def test_get_value_with_external_sst2(external_sst2, lat, lon, month, day, expected):
-    _get_value(external_sst2, lat, lon, month, day, expected)  
+    _get_value(external_sst2, lat, lon, month, day, expected)
 
 
 @pytest.mark.parametrize(
@@ -402,7 +407,8 @@ def test_get_value_fast_dpt(external_dpt):
         ]
     )
     _get_value_fast(external_dpt, lat, lon, month, day, expected)
-    
+
+
 def test_get_value_fast_slp(external_slp):
     lat = np.arange(12) * 15 - 90.0 + 0.1
     lon = np.arange(12) * 30 - 180.0 + 0.1
@@ -425,7 +431,8 @@ def test_get_value_fast_slp(external_slp):
         ]
     )
     _get_value_fast(external_slp, lat, lon, month, day, expected)
-    
+
+
 def test_get_value_fast_sst(external_sst):
     lat = np.arange(12) * 15 - 90.0 + 0.1
     lon = np.arange(12) * 30 - 180.0 + 0.1
@@ -447,8 +454,9 @@ def test_get_value_fast_sst(external_sst):
             271.35,
         ]
     )
-    _get_value_fast(external_sst, lat, lon, month, day, expected) 
-    
+    _get_value_fast(external_sst, lat, lon, month, day, expected)
+
+
 def test_get_value_fast_sst2(external_sst2):
     lat = np.arange(12) * 15 - 90.0 + 0.1
     lon = np.arange(12) * 30 - 180.0 + 0.1
@@ -470,4 +478,4 @@ def test_get_value_fast_sst2(external_sst2):
             -1.8,
         ]
     )
-    _get_value_fast(external_sst2, lat, lon, month, day, expected)         
+    _get_value_fast(external_sst2, lat, lon, month, day, expected)
