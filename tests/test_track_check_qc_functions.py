@@ -25,8 +25,10 @@ from marine_qc.qc_sequential_reports import (
     backward_discrepancy_array,
     forward_discrepancy,
     calculate_midpoint,
+    calculate_midpoint_array,
     time_differences_array,
     sphere_distance_array,
+    intermediate_point_array,
 )
 
 
@@ -885,6 +887,19 @@ def test_calculate_midpoint(lats, lons, timediffs, expected):
     expected = np.array(expected)
     assert np.array_equal(result, expected, equal_nan=True)
 
+@pytest.mark.parametrize(
+    "lats, lons, timediffs, expected",
+    [
+        ([0, 1, 2], [0, 0, 0], [1, 1, 1], [np.nan, 0.0, np.nan]),
+        ([0, 0, 0], [0, 0, 0], [0, 0, 0], [np.nan, 0.0, np.nan]),
+        ([0, 0, 0], [0, 0, 0], [np.nan, np.nan, np.nan], [np.nan, 0.0, np.nan]),
+    ],
+)
+def test_calculate_midpoint_array(lats, lons, timediffs, expected):
+    result = calculate_midpoint_array(np.array(lats), np.array(lons), np.array(timediffs))
+    expected = np.array(expected)
+    assert np.array_equal(result, expected, equal_nan=True)
+
 
 def test_time_differences_array():
     dates = pd.date_range(start="1850-01-01", freq="1h", periods=11)
@@ -915,6 +930,24 @@ def test_sphere_distance_array_works_with_nans():
     expected = np.zeros(len(lat1)) + 6371.0088 * np.pi / 180.0
     expected[0] = np.nan
     assert np.allclose(result, expected, equal_nan=True)
+
+
+def test_intermediate_point_array():
+
+    # 1. equator_is_halfway_from_pole_to_pole
+    # 2. 5deg_is_one_72th_of_equator
+    # 3. any_fraction_of_no_move_is_nothing
+    lat1 = np.array([-89.0, 0.0, 10.0])
+    lon1 = np.array([0.0, 0.0, 152.0])
+    lat2 = np.array([89, 0.0, 10.0])
+    lon2 = np.array([0.0, 90.0, 152.0])
+    f = np.array([0.5, 1.0/18.0, 0.75])
+
+    lat, lon = intermediate_point_array(lat1, lon1, lat2, lon2, f)
+
+    assert np.all(lat == np.array([0.0, 0.0, 10.0]))
+    assert np.all(lon == np.array([0.0, 5.0, 152.0]))
+
 
 
 def test_course_between_point_array():
