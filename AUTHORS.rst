@@ -23,6 +23,6 @@ Contributors
 Previous Contributors
 ---------------------
 
-* Chris Atkinson
+* Chris Atkinson <chris.atkinson@metoffice.gov.uk>
 * Kate Willett <kate.willett@metoffice.gov.uk> `@Kate-Willett <https://github.com/Kate-Willett>`_
   - humidity QC contribution
