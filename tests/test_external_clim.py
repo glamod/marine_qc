@@ -7,9 +7,6 @@ import pandas as pd
 
 from cdm_reader_mapper.common.getting_files import load_file
 
-from marine_qc.Climatology import (
-    Climatology as Climatology_exp,
-)
 from marine_qc.external_clim import (
     Climatology,
     inspect_climatology,
@@ -64,14 +61,6 @@ def external_at(external_clim):
         time_axis="pentad_time",
     )
 
-
-@pytest.fixture(scope="session")
-def expected_at(external_clim):
-    return Climatology_exp.from_filename(
-        external_clim["AT"]["mean"],
-        "at",
-    )
-
     
 @pytest.fixture(scope="session")
 def external_dpt(external_clim):
@@ -79,15 +68,7 @@ def external_dpt(external_clim):
         external_clim["DPT"]["mean"],
         "dpt",
         time_axis="pentad_time",
-    )
-
-
-@pytest.fixture(scope="session")
-def expected_dpt(external_clim):
-    return Climatology_exp.from_filename(
-        external_clim["DPT"]["mean"],
-        "dpt",
-    )    
+    )  
        
 
 @pytest.fixture(scope="session")
@@ -99,39 +80,17 @@ def external_slp(external_clim):
 
 
 @pytest.fixture(scope="session")
-def expected_slp(external_clim):
-    return Climatology_exp.from_filename(
-        external_clim["SLP"]["mean"],
-        "slp",
-    )
-
-@pytest.fixture(scope="session")
 def external_sst(external_clim):
     return Climatology.open_netcdf_file(
         external_clim["SST"]["mean"],
         "sst",
         valid_ntime=31,        
     )
-
-
-@pytest.fixture(scope="session")
-def expected_sst(external_clim):
-    return Climatology_exp.from_filename(
-        external_clim["SST"]["mean"],
-        "sst",
-    )      
+    
     
 @pytest.fixture(scope="session")
 def external_sst2(external_clim):
     return Climatology.open_netcdf_file(
-        external_clim["SST2"]["mean"],
-        "sst",
-    )
-
-
-@pytest.fixture(scope="session")
-def expected_sst2(external_clim):
-    return Climatology_exp.from_filename(
         external_clim["SST2"]["mean"],
         "sst",
     )
