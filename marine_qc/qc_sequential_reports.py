@@ -38,9 +38,8 @@ def time_differences_array(times2, times1):
     return time_difference.astype(float)
 
 
-def sphere_distance_array(lat1, lon1, lat2, lon2):
+def angular_distance_array(lat1, lon1, lat2, lon2):
     """Return distances in kilometres between points on the globe"""
-    earths_radius = 6371.0088
     radians_per_degree = np.pi / 180.0
 
     # convert degrees to radians
@@ -64,7 +63,41 @@ def sphere_distance_array(lat1, lon1, lat2, lon2):
         delta_lambda
     )
 
-    return np.arctan2(top_bit, bottom_bit) * earths_radius
+    return np.arctan2(top_bit, bottom_bit)
+
+
+def sphere_distance_array(lat1, lon1, lat2, lon2):
+    """Return distances in kilometres between points on the globe"""
+    earths_radius = 6371.0088
+    return angular_distance_array(lat1, lon1, lat2, lon2) * earths_radius
+
+
+def intermediate_point_array(lat1, lon1, lat2, lon2, f):
+
+    earths_radius = 6371.0088
+    radians_per_degree = np.pi / 180.0
+
+    f[f > 1.0] = np.nan
+
+    d = angular_distance_array(lat1, lon1, lat2, lon2)
+
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    lat2 = lat2 * radians_per_degree
+    lon2 = lon2 * radians_per_degree
+
+    a = np.sin((1 - f) * d) / np.sin(d)
+    b = np.sin(f * d) / np.sin(d)
+    x = a * np.cos(lat1) * np.cos(lon1) + b * np.cos(lat2) * np.cos(lon2)
+    y = a * np.cos(lat1) * np.sin(lon1) + b * np.cos(lat2) * np.sin(lon2)
+    z = a * np.sin(lat1) + b * np.sin(lat2)
+    lat = np.arctan2(z, np.sqrt(x * x + y * y)) / radians_per_degree
+    lon = np.arctan2(y, x) / radians_per_degree
+
+    lat[d == 0.0] = lat1[d == 0.0] / radians_per_degree
+    lon[d == 0.0] = lon1[d == 0.0] / radians_per_degree
+
+    return lat, lon
 
 
 def course_between_points_array(lat1, lon1, lat2, lon2):
@@ -205,6 +238,37 @@ def increment_position_array(alat1, alon1, avs, ads, timediff):
     lon = lon - alon1
 
     return lat, lon
+
+
+def calculate_midpoint_array(lat, lon, timediff):
+    number_of_obs = len(lat)
+    midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
+
+    t0 = timediff
+    t1 = np.roll(timediff, -1)
+    fraction_of_time_diff = t0 / (t0 + t1)
+    fraction_of_time_diff[t0 + t1 == 0] = 0.0
+    fraction_of_time_diff[np.isnan(t0)] = 0.0
+    fraction_of_time_diff[np.isnan(t1)] = 0.0
+
+    est_midpoint_lat, est_midpoint_lon = intermediate_point_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(lat, -1),
+        np.roll(lon, -1),
+        fraction_of_time_diff,
+    )
+
+    est_midpoint_lat[0] = np.nan
+    est_midpoint_lat[-1] = np.nan
+    est_midpoint_lon[0] = np.nan
+    est_midpoint_lon[-1] = np.nan
+
+    midpoint_discrepancies = sphere_distance_array(
+        lat, lon, est_midpoint_lat, est_midpoint_lon
+    )
+
+    return midpoint_discrepancies
 
 
 @post_format_return_type(["value"])
