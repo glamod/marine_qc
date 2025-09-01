@@ -129,16 +129,15 @@ def test_just_pass_and_just_fail(angle):
 
 @pytest.mark.parametrize("angle", [0, 45, 90, 135, 180, 225, 270, 315, 360])
 def test_direction_continuity_array(angle):
-    dsi = np.zeros((10)) + angle
-    ship_directions = np.zeros((10)) + angle + 60.1
+    dsi = np.zeros(10) + angle
+    ship_directions = np.zeros(10) + angle + 60.1
     result = direction_continuity_array(dsi, ship_directions)
     assert np.all(result == 10.0)
 
-    dsi = np.zeros((10)) + angle
-    ship_directions = np.zeros((10)) + angle + 59.9
+    dsi = np.zeros(10) + angle
+    ship_directions = np.zeros(10) + angle + 59.9
     result = direction_continuity_array(dsi, ship_directions)
     assert np.all(result == 0.0)
-
 
 
 def test_direction_continuity():
