@@ -65,6 +65,7 @@ def angular_distance_array(lat1, lon1, lat2, lon2):
 
     return np.arctan2(top_bit, bottom_bit)
 
+
 def sphere_distance_array(lat1, lon1, lat2, lon2):
     """Return distances in kilometres between points on the globe"""
     earths_radius = 6371.0088
@@ -246,7 +247,7 @@ def calculate_midpoint_array(lat, lon, timediff):
     t0 = timediff
     t1 = np.roll(timediff, -1)
     fraction_of_time_diff = t0 / (t0 + t1)
-    fraction_of_time_diff[t0+t1 == 0] = 0.0
+    fraction_of_time_diff[t0 + t1 == 0] = 0.0
     fraction_of_time_diff[np.isnan(t0)] = 0.0
     fraction_of_time_diff[np.isnan(t1)] = 0.0
 
@@ -264,13 +265,11 @@ def calculate_midpoint_array(lat, lon, timediff):
     est_midpoint_lon[-1] = np.nan
 
     midpoint_discrepancies = sphere_distance_array(
-        lat,
-        lon,
-        est_midpoint_lat,
-        est_midpoint_lon
+        lat, lon, est_midpoint_lat, est_midpoint_lon
     )
 
     return midpoint_discrepancies
+
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value", "lat", "lon", "date"], sortby="date")

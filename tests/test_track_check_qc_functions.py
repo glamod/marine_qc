@@ -887,6 +887,7 @@ def test_calculate_midpoint(lats, lons, timediffs, expected):
     expected = np.array(expected)
     assert np.array_equal(result, expected, equal_nan=True)
 
+
 @pytest.mark.parametrize(
     "lats, lons, timediffs, expected",
     [
@@ -896,7 +897,9 @@ def test_calculate_midpoint(lats, lons, timediffs, expected):
     ],
 )
 def test_calculate_midpoint_array(lats, lons, timediffs, expected):
-    result = calculate_midpoint_array(np.array(lats), np.array(lons), np.array(timediffs))
+    result = calculate_midpoint_array(
+        np.array(lats), np.array(lons), np.array(timediffs)
+    )
     expected = np.array(expected)
     assert np.array_equal(result, expected, equal_nan=True)
 
@@ -941,13 +944,12 @@ def test_intermediate_point_array():
     lon1 = np.array([0.0, 0.0, 152.0])
     lat2 = np.array([89, 0.0, 10.0])
     lon2 = np.array([0.0, 90.0, 152.0])
-    f = np.array([0.5, 1.0/18.0, 0.75])
+    f = np.array([0.5, 1.0 / 18.0, 0.75])
 
     lat, lon = intermediate_point_array(lat1, lon1, lat2, lon2, f)
 
     assert np.all(lat == np.array([0.0, 0.0, 10.0]))
     assert np.all(lon == np.array([0.0, 5.0, 152.0]))
-
 
 
 def test_course_between_point_array():
