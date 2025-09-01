@@ -142,7 +142,7 @@ def direction_continuity_array(dsi, ship_directions, max_direction_change=60.0):
 
     allowed_list = [0, 45, 90, 135, 180, 225, 270, 315, 360]
 
-    dsi_filtered = np.empty((len(dsi)))
+    dsi_filtered = np.empty(len(dsi))
     selection = np.isin(dsi, allowed_list)
     dsi_filtered[selection] = dsi[selection]
 
@@ -154,7 +154,7 @@ def direction_continuity_array(dsi, ship_directions, max_direction_change=60.0):
     selection3 = max_direction_change < abs(dsi_previous - ship_directions)
     selection4 = abs(dsi_previous - ship_directions) < (360 - max_direction_change)
 
-    result = np.zeros((len(dsi)))
+    result = np.zeros(len(dsi))
     result[np.logical_and(selection1, selection2)] = 10.0
     result[np.logical_and(selection3, selection4)] = 10.0
 
