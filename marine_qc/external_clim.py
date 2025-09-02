@@ -17,7 +17,12 @@ from joblib import Parallel, delayed
 from numpy import ndarray
 from xclim.core.units import convert_units_to
 
-from .auxiliary import ValueFloatType, generic_decorator, isvalid
+from .auxiliary import (
+    ValueFloatType,
+    generic_decorator,
+    isvalid,
+    post_format_return_type,
+)
 from .time_control import (
     convert_date,
     day_in_year,
@@ -104,10 +109,7 @@ def inspect_climatology(
                         f"in function '{pre_handler.__funcname__}': {missing_in_kwargs}. "
                         f"Ensure all required arguments are passed via **kwargs."
                     )
-                try:
-                    climatology = climatology.get_value(**meta_kwargs)
-                except (TypeError, ValueError):
-                    climatology = np.nan
+                climatology = climatology.get_value_fast(**meta_kwargs)
 
             arguments[clim_key] = climatology
 
@@ -287,7 +289,16 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
-    def get_value_fast(self, lat, lon, date=None, month=None, day=None):
+    @post_format_return_type(["lat"], dtype=float)
+    @convert_date(["month", "day"])
+    def get_value_fast(
+        self,
+        lat: float | Sequence[float] | np.ndarray,
+        lon: float | Sequence[float] | np.ndarray,
+        date: datetime | None | Sequence[datetime | None] | np.ndarray = None,
+        month: int | None | Sequence[int | None] | np.ndarray = None,
+        day: int | None | Sequence[int | None] | np.ndarray = None,
+    ) -> ndarray | pd.Series:
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
@@ -302,28 +313,32 @@ class Climatology:
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        ml = np.array(get_month_lengths(2004))
-        month_lengths = np.where(
-            (month_arr >= 1) & (month_arr <= 12), ml[month_arr - 1], 0
-        )
-
         valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
         valid &= (month_arr >= 1) & (month_arr <= 12)
+
+        ml = np.array(get_month_lengths(2004))
+        month_lengths = np.zeros_like(month_arr)
+        month_lengths[valid] = ml[month_arr[valid] - 1]
+
         valid &= (day_arr >= 1) & (day_arr <= month_lengths)
         valid &= (lon_arr >= -180) & (lon_arr <= 180)
         valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
+        result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
+
         lat_indices = Climatology.get_y_index(
-            lat_arr, self.data.coords[self.lat_axis].data
+            lat_arr[valid], self.data.coords[self.lat_axis].data
         )
         lon_indices = Climatology.get_x_index(
-            lon_arr, self.data.coords[self.lon_axis].data
+            lon_arr[valid], self.data.coords[self.lon_axis].data
         )
-        time_indices = Climatology.get_t_index(month, day, self.ntime) - 1
+        time_indices = (
+            Climatology.get_t_index(month_arr[valid], day_arr[valid], self.ntime) - 1
+        )
 
-        values = self.data.values[time_indices, lat_indices, lon_indices]
+        result[valid] = self.data.values[time_indices, lat_indices, lon_indices]
 
-        return values
+        return result
 
     @staticmethod
     def get_y_index(lat_arr, lat_axis):
