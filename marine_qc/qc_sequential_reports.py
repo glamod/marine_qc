@@ -61,30 +61,14 @@ def sphere_distance_array(lat1, lon1, lat2, lon2):
 
 def intermediate_point_array(lat1, lon1, lat2, lon2, f):
 
-    earths_radius = 6371.0088
-    radians_per_degree = np.pi / 180.0
+    # Clamp f to [0, 1]
+    f = np.clip(f, 0, 1)
 
-    f[f > 1.0] = np.nan
+    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
+    distance_at_f = dist * f
 
-    d = angular_distance_array(lat1, lon1, lat2, lon2)
-
-    lat1 = lat1 * radians_per_degree
-    lon1 = lon1 * radians_per_degree
-    lat2 = lat2 * radians_per_degree
-    lon2 = lon2 * radians_per_degree
-
-    a = np.sin((1 - f) * d) / np.sin(d)
-    b = np.sin(f * d) / np.sin(d)
-    x = a * np.cos(lat1) * np.cos(lon1) + b * np.cos(lat2) * np.cos(lon2)
-    y = a * np.cos(lat1) * np.sin(lon1) + b * np.cos(lat2) * np.sin(lon2)
-    z = a * np.sin(lat1) + b * np.sin(lat2)
-    lat = np.arctan2(z, np.sqrt(x * x + y * y)) / radians_per_degree
-    lon = np.arctan2(y, x) / radians_per_degree
-
-    lat[d == 0.0] = lat1[d == 0.0] / radians_per_degree
-    lon[d == 0.0] = lon1[d == 0.0] / radians_per_degree
-
-    return lat, lon
+    lon_f, lat_f, _ = geod.fwd(lon1, lat1, fwd_az, distance_at_f)
+    return lat_f, lon_f
 
 
 def course_between_points_array(lat1, lon1, lat2, lon2):
