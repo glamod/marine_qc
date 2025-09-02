@@ -113,25 +113,10 @@ def calculate_speed_course_distance_time_difference_array(
 
 
 def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
-    radians_per_degree = np.pi / 180.0
-    earths_radius = 6371.0088
-
-    lat1 = lat1 * radians_per_degree
-    lon1 = lon1 * radians_per_degree
-    tcr = tc * radians_per_degree
-
-    dr = d / earths_radius
-
-    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
-    dlon = np.arctan2(
-        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
-    )
-    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
-
-    lat = lat / radians_per_degree
-    lon = lon / radians_per_degree
-
-    return lat, lon
+    dist_m = d * 1000
+    
+    lon2, lat2, back_az = geod.fwd(lon1, lat1, tc, dist_m)
+    return lat2, lon2
 
 
 @inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
