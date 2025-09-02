@@ -11,9 +11,8 @@ import math
 
 import numpy as np
 
-from .auxiliary import isvalid
+from .auxiliary import earths_radius, isvalid
 
-earths_radius = 6371.0088
 radians_per_degree = np.pi / 180.0
 
 
@@ -42,7 +41,7 @@ def sphere_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float
     float
         Return the great circle distance in kilometres between the two points
     """
-    return angular_distance(lat1, lon1, lat2, lon2) * earths_radius
+    return angular_distance(lat1, lon1, lat2, lon2) * earths_radius / 1000.0
 
 
 def angular_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -128,7 +127,7 @@ def lat_lon_from_course_and_distance(
     lon1 = lon1 * radians_per_degree
     tcr = tc * radians_per_degree
 
-    dr = d / earths_radius
+    dr = d / earths_radius * 1000.0
 
     lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
     dlon = np.arctan2(
