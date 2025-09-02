@@ -11,7 +11,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-import pyproj
+from pyproj import Geod
 
 from . import spherical_geometry as sg
 from . import time_control
@@ -20,13 +20,18 @@ from .auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
     SequenceIntType,
+    convert_to,
     convert_units,
+    earths_radius,
     failed,
     inspect_arrays,
     isvalid,
     passed,
     post_format_return_type,
 )
+
+
+geod = Geod(a=earths_radius, b=earths_radius)
 
 
 @inspect_arrays(["times2", "times1"])
@@ -38,9 +43,6 @@ def time_differences_array(times2, times1):
     return time_difference.astype(float)
 
 
-geod = Geod(ellps="WGS84")
-
-
 def geod_inv(lon1, lat1, lon2, lat2):
     """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
     fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
@@ -49,9 +51,7 @@ def geod_inv(lon1, lat1, lon2, lat2):
 
 def angular_distance_array(lat1, lon1, lat2, lon2):
     """Returns angular distance in radians between two points using the ellipsoidal model."""
-    return (
-        geod_inv(lon1, lat1, lon2, lat2)[2] / geod.a
-    )  # geod.a: ellipsoid equatorial radius
+    return geod_inv(lon1, lat1, lon2, lat2)[2] / earths_radius
 
 
 def sphere_distance_array(lat1, lon1, lat2, lon2):
@@ -64,7 +64,7 @@ def intermediate_point_array(lat1, lon1, lat2, lon2, f):
     # Clamp f to [0, 1]
     f = np.clip(f, 0, 1)
 
-    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
+    fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
     distance_at_f = dist * f
 
     lon_f, lat_f, _ = geod.fwd(lon1, lat1, fwd_az, distance_at_f)
@@ -73,8 +73,7 @@ def intermediate_point_array(lat1, lon1, lat2, lon2, f):
 
 def course_between_points_array(lat1, lon1, lat2, lon2):
     """Calculate courses between two sets of points using arrays and pyproj"""
-    geodesic = pyproj.Geod(ellps="WGS84")
-    fwd_azimuth, back_azimuth, distance = geodesic.inv(lon1, lat1, lon2, lat2)
+    fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
 
 
@@ -113,10 +112,23 @@ def calculate_speed_course_distance_time_difference_array(
 
 
 def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
-    dist_m = d * 1000
-    
-    lon2, lat2, back_az = geod.fwd(lon1, lat1, tc, dist_m)
-    return lat2, lon2
+
+    lat1 = convert_to(lat1, "deg", "rad")
+    lon1 = convert_to(lon1, "deg", "rad")
+    tcr = convert_to(tc, "deg", "rad")
+
+    dr = d / earths_radius * 1000
+
+    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
+    dlon = np.arctan2(
+        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
+    )
+    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
+
+    lat = convert_to(lat, "rad", "deg")
+    lon = convert_to(lon, "rad", "deg")
+
+    return lat, lon
 
 
 @inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
@@ -1383,7 +1395,7 @@ def find_repeated_values(
     if allcount <= min_count:
         return rep
 
-    unique_values, unique_inverse, counts = np.unique(
+    _, unique_inverse, counts = np.unique(
         value[valid_indices], return_inverse=True, return_counts=True
     )
     cutoff = threshold * allcount  # Calculate the cutoff
