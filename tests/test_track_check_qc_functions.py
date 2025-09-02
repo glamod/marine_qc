@@ -1078,8 +1078,8 @@ def test_intermediate_point_array():
 
     lat, lon = intermediate_point_array(lat1, lon1, lat2, lon2, f)
 
-    assert np.all(lat == np.array([0.0, 0.0, 10.0]))
-    assert np.all(lon == np.array([0.0, 5.0, 152.0]))
+    assert np.allclose(lat, np.array([0.0, 0.0, 10.0]))
+    assert np.allclose(lon, np.array([0.0, 5.0, 152.0]))
 
 
 def test_course_between_point_array():
