@@ -303,7 +303,9 @@ class Climatology:
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
         ml = get_month_lengths(2004)
-        month_lengths = np.where((month_arr >= 1) & (month_arr <= 12), ml[month_arr - 1], 0)
+        month_lengths = np.where(
+            (month_arr >= 1) & (month_arr <= 12), ml[month_arr - 1], 0
+        )
 
         valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
         valid &= (month_arr >= 1) & (month_arr <= 12)
