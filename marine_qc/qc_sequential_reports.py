@@ -38,38 +38,19 @@ def time_differences_array(times2, times1):
     return time_difference.astype(float)
 
 
+geod = Geod(ellps="WGS84")
+def geod_inv(lon1, lat1, lon2, lat2):
+    """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
+    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
+    return fwd_az, back_az, dist
+
 def angular_distance_array(lat1, lon1, lat2, lon2):
-    """Return distances in kilometres between points on the globe"""
-    radians_per_degree = np.pi / 180.0
-
-    # convert degrees to radians
-    lat1 = lat1 * radians_per_degree
-    lon1 = lon1 * radians_per_degree
-    lat2 = lat2 * radians_per_degree
-    lon2 = lon2 * radians_per_degree
-
-    delta_lambda = abs(lon1 - lon2)
-    bit1 = np.cos(lat2) * np.sin(delta_lambda)
-    bit1 = bit1 * bit1
-    bit2 = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(
-        delta_lambda
-    )
-    bit2 = bit2 * bit2
-
-    top_bit = bit1 + bit2
-    top_bit = np.sqrt(top_bit)
-
-    bottom_bit = np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(
-        delta_lambda
-    )
-
-    return np.arctan2(top_bit, bottom_bit)
-
-
+    """Returns angular distance in radians between two points using the ellipsoidal model."""
+    return geod_inv(lon1, lat1, lon2, lat2)[2] / geod.a  # geod.a: ellipsoid equatorial radius
+    
 def sphere_distance_array(lat1, lon1, lat2, lon2):
-    """Return distances in kilometres between points on the globe"""
-    earths_radius = 6371.0088
-    return angular_distance_array(lat1, lon1, lat2, lon2) * earths_radius
+    """Returns geodesic distance in kilometers using the ellipsoidal model."""
+    return geod_inv(lon1, lat1, lon2, lat2)[2] / 1000.  # convert to kilometers
 
 
 def intermediate_point_array(lat1, lon1, lat2, lon2, f):
