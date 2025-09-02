@@ -9,15 +9,13 @@ assumed.
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 
 from . import spherical_geometry as sph
 from .auxiliary import convert_to, isvalid
 
 
-def modal_speed(awork: list) -> float:
+def modal_speed(speeds: list) -> float:
     """Calculate the modal speed from the input array in 3 knot bins. Returns the
     bin-centre for the modal group.
 
@@ -31,7 +29,7 @@ def modal_speed(awork: list) -> float:
 
     Parameters
     ----------
-    awork : list
+    speeds : list
         Input speeds in km/h
 
     Returns
@@ -44,38 +42,32 @@ def modal_speed(awork: list) -> float:
     # if the speed is on a bin edge then it rounds up to higher bin
     # if the modal speed is less than 8.50 then it is set to 8.50
     # anything exceeding 36 knots is assigned to the top bin
-    ikmode = -32768
-    acint = []
-    ifreq = []
-    for i in range(1, 13):
-        acint.append(i * 3.0)
-        ifreq.append(0.0)
+    if len(speeds) <= 1:
+        return np.nan
 
-    ntime = len(awork)
-    atmode = 0
-    icmode = 0
-    amode = np.nan
-    awork = convert_to(awork, "km/h", "knots")
-    if ntime > 1:
-        for i in range(1, ntime):
-            # fixed so that indexing starts at zero
-            index = int(math.floor(awork[i] / 3.0))
-            if index < 0:
-                index = 0
-            elif index > 11:
-                index = 11
-            ifreq[index] = ifreq[index] + 1
+    # Convert km/h to knots
+    speeds = np.asarray(speeds)
+    speeds = convert_to(speeds, "km/h", "knots")
 
-        for index in range(0, 12):
-            if ifreq[index] > ikmode:
-                ikmode = ifreq[index]
-                icmode = 1
-                atmode = acint[index] - 1.50
+    # Bin edges: [0, 3, 6, ..., 36], 12 bins
+    bins = np.arange(0, 37, 3)
 
-        amode = atmode / icmode
-        amode = max(amode, 8.5)
+    # Digitize returns bin index starting from 1
+    bin_indices = np.digitize(speeds, bins, right=False) - 1
+    bin_indices = np.clip(bin_indices, 0, 11)
 
-    return convert_to(amode, "knots", "km/h")
+    # Count occurrences in each bin
+    counts = np.bincount(bin_indices, minlength=12)
+
+    # Find the modal bin (first one in case of tie)
+    modal_bin = np.argmax(counts)
+
+    # Bin centres: 1.5, 4.5, ..., 34.5
+    bin_centres = bins[:-1] + 1.5
+    modal_speed_knots = max(bin_centres[modal_bin], 8.5)
+
+    # Convert back to km/h
+    return convert_to(modal_speed_knots, "knots", "km/h")
 
 
 def set_speed_limits(amode: float) -> (float, float, float):
