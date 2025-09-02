@@ -52,6 +52,8 @@ ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
 
+earths_radius = 6371008.8  # m
+
 
 def is_scalar_like(x: Any) -> bool:
     """
