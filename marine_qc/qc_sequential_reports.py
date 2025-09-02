@@ -114,7 +114,7 @@ def calculate_speed_course_distance_time_difference_array(
 
 def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
     dist_m = d * 1000
-    
+
     lon2, lat2, back_az = geod.fwd(lon1, lat1, tc, dist_m)
     return lat2, lon2
 
