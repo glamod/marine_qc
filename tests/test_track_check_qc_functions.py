@@ -26,8 +26,12 @@ from marine_qc.qc_sequential_reports import (
     calculate_midpoint_array,
     do_track_check_array,
 )
-from marine_qc.spherical_geometry import sphere_distance_array, intermediate_point_array, course_between_points_array, \
-    lat_lon_from_course_and_distance_array
+from marine_qc.spherical_geometry import (
+    sphere_distance_array,
+    intermediate_point_array,
+    course_between_points_array,
+    lat_lon_from_course_and_distance_array,
+)
 from marine_qc.time_control import time_differences_array
 
 
