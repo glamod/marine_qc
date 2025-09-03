@@ -95,7 +95,7 @@ def inspect_climatology(
                 )
             climatology = arguments[clim_key]
             if isinstance(climatology, Climatology):
-                get_value_sig = inspect.signature(climatology.get_value)
+                get_value_sig = inspect.signature(climatology.get_value_fast)
                 required_keys = {
                     name
                     for name, param in get_value_sig.parameters.items()
@@ -109,7 +109,11 @@ def inspect_climatology(
                         f"in function '{pre_handler.__funcname__}': {missing_in_kwargs}. "
                         f"Ensure all required arguments are passed via **kwargs."
                     )
-                climatology = climatology.get_value_fast(**meta_kwargs)
+
+                try:
+                    climatology = climatology.get_value(**meta_kwargs)
+                except (TypeError, ValueError):
+                    climatology = np.nan
 
             arguments[clim_key] = climatology
 
@@ -332,11 +336,25 @@ class Climatology:
         lon_indices = Climatology.get_x_index(
             lon_arr[valid], self.data.coords[self.lon_axis].data
         )
-        time_indices = (
-            Climatology.get_t_index(month_arr[valid], day_arr[valid], self.ntime) - 1
+        time_indices = Climatology.get_t_index(
+            month_arr[valid], day_arr[valid], self.ntime
         )
 
-        result[valid] = self.data.values[time_indices, lat_indices, lon_indices]
+        lat_indices = np.array(lat_indices, dtype=int)
+        lon_indices = np.array(lon_indices, dtype=int)
+        time_indices = np.array(time_indices, dtype=int)
+
+        lat_mask = np.isin(lat_indices, np.arange(len(self.data[self.lat_axis])))
+        lon_mask = np.isin(lon_indices, np.arange(len(self.data[self.lon_axis])))
+        time_mask = np.isin(time_indices, np.arange(len(self.data[self.time_axis])))
+
+        coord_mask = lat_mask & lon_mask & time_mask
+        valid_indices = np.where(valid)[0]
+        valid[valid_indices] &= coord_mask
+
+        result[valid] = self.data.values[
+            time_indices[coord_mask], lat_indices[coord_mask], lon_indices[coord_mask]
+        ]
 
         return result
 
@@ -395,11 +413,10 @@ class Climatology:
         if ntime == 1:
             return t_index
         elif ntime == 73:
-            return which_pentad_array(month, day)
+            return which_pentad_array(month, day) - 1
         elif ntime == 365:
-            return day_in_year_array(month=month, day=day)
-
-        return t_index
+            return day_in_year_array(month=month, day=day) - 1
+        return t_index - 1
 
     @convert_date(["month", "day"])
     def get_value(

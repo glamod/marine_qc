@@ -1033,6 +1033,7 @@ def test_do_sst_missing_value_clim_check(testdata, climdata, apply_func):
         "sst",
         valid_ntime=31,
     )
+    climatology.ntime = 365
     if apply_func is True:
         results = db_.apply(
             lambda row: do_missing_value_clim_check(
@@ -1078,6 +1079,7 @@ def test_do_sst_climatology_check(testdata, climdata, apply_func):
         "sst",
         valid_ntime=31,
     )
+    climatology.ntime = 365
     if apply_func is True:
         results = db_.apply(
             lambda row: do_climatology_check(
@@ -1876,7 +1878,6 @@ def test_buddy_check(climdata_buddy, testdata_track):
         number_of_obs_thresholds=number_of_obs_thresholds,
         multipliers=multipliers,
     )
-
     for i, flag in enumerate(result):
         if i in [7, 8, 9, 10, 12, 13, 14, 15, 45]:
             assert flag == failed
