@@ -153,7 +153,7 @@ def increment_position_array(
     avs: np.ndarray,
     ads: np.ndarray,
     timediff: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
     increments of latitude and longitude which correspond to half the time difference.
 
