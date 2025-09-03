@@ -354,16 +354,16 @@ def test_get_x_index(lats, lat0, delta, expected):
 
 def test_get_t_index():
 
-    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
+    month = np.array([1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12])
+    day = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 31])
 
     result = Climatology.get_t_index(month, day, 365)
     assert np.all(
-        result == np.array([1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346])
+        result == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364])
     )
 
     result = Climatology.get_t_index(month, day, 73)
-    assert np.all(result == np.array([0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69]))
+    assert np.all(result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72]))
 
     result = Climatology.get_t_index(month, day, 1)
     assert np.all(result == np.zeros(len(result)))
