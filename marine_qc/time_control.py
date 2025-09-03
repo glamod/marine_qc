@@ -312,7 +312,21 @@ def which_pentad_array(month, day):
     return pentad
 
 
-def day_in_year_array(month, day):
+def day_in_year_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
+    """Get the day in year from 1 to 365. Leap years are dealt with by allowing Feb 29 and Mar 1 to be the same day.
+
+    Parameters
+    ----------
+    month: 1D np.ndarray
+        Array of months
+    day: 1D np.ndarray
+        Array of days
+
+    Returns
+    -------
+    np.ndarray
+        Array of day number from 1-365.
+    """
     cumulative_month_lengths = np.array(
         [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
     )
