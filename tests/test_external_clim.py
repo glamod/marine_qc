@@ -121,7 +121,7 @@ def _get_value(external, lat, lon, month, day, expected):
         "month": month,
         "day": day,
     }
-    result = external.get_value(**kwargs)
+    result = external.get_value_fast(**kwargs)
     assert np.allclose(result, expected, equal_nan=True)
 
 

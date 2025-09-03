@@ -111,7 +111,7 @@ def inspect_climatology(
                     )
 
                 try:
-                    climatology = climatology.get_value(**meta_kwargs)
+                    climatology = climatology.get_value_fast(**meta_kwargs)
                 except (TypeError, ValueError):
                     climatology = np.nan
 
