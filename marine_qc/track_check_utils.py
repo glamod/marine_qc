@@ -10,6 +10,7 @@ assumed.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -146,27 +147,40 @@ def increment_position(
     return lat, lon
 
 
-def direction_continuity_array(dsi, ship_directions, max_direction_change=60.0):
+def increment_position_array(
+    alat1: np.ndarray,
+    alon1: np.ndarray,
+    avs: np.ndarray,
+    ads: np.ndarray,
+    timediff: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+    increments of latitude and longitude which correspond to half the time difference.
 
-    allowed_list = [0, 45, 90, 135, 180, 225, 270, 315, 360]
+    Parameters
+    ----------
+    alat1 : 1D np.ndarray of float
+      One-dimensional array of Latitude at starting point in degrees.
+    alon1 : 1D np.ndarray of float
+      One-dimensional array of Longitude at starting point in degrees
+    avs : 1D np.ndarray of float
+      One-dimensional array of speed of ship in km/h.
+    ads : 1D np.ndarray of float
+      One-dimensional array of heading of ship in degrees.
+    timdiff : 1D np.ndarray of float
+      One-dimensional array of time difference between the points in hours.
 
-    dsi_filtered = np.empty(len(dsi))
-    selection = np.isin(dsi, allowed_list)
-    dsi_filtered[selection] = dsi[selection]
+    Returns
+    -------
+    1D np.ndarray of float
+        Returns latitude and longitude increment or None and None if timediff is None
+    """
+    distance = avs * timediff / 2.0
+    lat, lon = sph.lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
+    lat = lat - alat1
+    lon = lon - alon1
 
-    dsi_previous = np.roll(dsi, 1)
-    dsi_previous[0] = np.nan
-
-    selection1 = max_direction_change < abs(dsi - ship_directions)
-    selection2 = abs(dsi - ship_directions) < (360 - max_direction_change)
-    selection3 = max_direction_change < abs(dsi_previous - ship_directions)
-    selection4 = abs(dsi_previous - ship_directions) < (360 - max_direction_change)
-
-    result = np.zeros(len(dsi))
-    result[np.logical_and(selection1, selection2)] = 10.0
-    result[np.logical_and(selection3, selection4)] = 10.0
-
-    return result
+    return lat, lon
 
 
 def direction_continuity(
@@ -220,12 +234,45 @@ def direction_continuity(
     return result
 
 
-def speed_continuity_array(vsi, speeds, max_speed_change=10.0):
-    result = np.zeros(len(vsi))
-    vsi_previous = np.roll(vsi, 1)
-    selection1 = abs(vsi - speeds) > max_speed_change
-    selection2 = abs(vsi_previous - speeds) > max_speed_change
+def direction_continuity_array(
+    dsi: np.ndarray, ship_directions: np.ndarray, max_direction_change: float = 60.0
+) -> np.ndarray:
+    """Check that the reported direction at the previous time step and the actual
+    direction taken are within max_direction_change degrees of one another.
+
+    Parameters
+    ----------
+    dsi : 1D np.ndarray of float
+        heading at current time step in degrees
+    ship_directions : 1D np.ndarray of float
+        calculated ship direction from reported positions in degrees
+    max_direction_change : float
+        Largest deviations that will not be flagged in degrees
+
+    Returns
+    -------
+    np.ndarray
+        Returned array elements are 10.0 if the difference between reported and calculated direction is greater
+        than the max_direction_change (default, 60 degrees), 0.0 otherwise
+    """
+    allowed_list = [0, 45, 90, 135, 180, 225, 270, 315, 360]
+
+    dsi_filtered = np.empty(len(dsi))
+    selection = np.isin(dsi, allowed_list)
+    dsi_filtered[selection] = dsi[selection]
+
+    dsi_previous = np.roll(dsi, 1)
+    dsi_previous[0] = np.nan
+
+    selection1 = max_direction_change < abs(dsi - ship_directions)
+    selection2 = abs(dsi - ship_directions) < (360 - max_direction_change)
+    selection3 = max_direction_change < abs(dsi_previous - ship_directions)
+    selection4 = abs(dsi_previous - ship_directions) < (360 - max_direction_change)
+
+    result = np.zeros(len(dsi))
     result[np.logical_and(selection1, selection2)] = 10.0
+    result[np.logical_and(selection3, selection4)] = 10.0
+
     return result
 
 
@@ -264,24 +311,34 @@ def speed_continuity(
     return result
 
 
-def check_distance_from_estimate_array(
-    vsi, time_differences, fwd_diff_from_estimated, rev_diff_from_estimated
-):
+def speed_continuity_array(
+    vsi: np.ndarray,
+    speeds: np.ndarray,
+    max_speed_change: float = 10.0,
+) -> np.ndarray:
+    """Check if reported speed at this and previous time step is within max_speed_change
+    knots of calculated speed between those two time steps
 
-    vsi_previous = np.roll(vsi, 1)
-    vsi_previous[0] = np.nan
+    Parameters
+    ----------
+    vsi : 1D np.ndarray of float
+        One-dimensional array of reported speed in km/h at current time step
+    speeds : 1D np.ndarray of float
+        One-dimensional array of speed of ship calculated from locations at current and previous time steps in km/h
+    max_speed_change : float
+        Largest change of speed that will not raise flag in km/h, default 10
 
-    alwdis = time_differences * ((vsi + vsi_previous) / 2.0)
-
-    selection = fwd_diff_from_estimated > alwdis
-    selection = np.logical_and(selection, rev_diff_from_estimated > alwdis)
-    selection = np.logical_and(selection, vsi > 0)
-    selection = np.logical_and(selection, vsi_previous > 0)
-    selection = np.logical_and(selection, time_differences > 0)
-
+    Returns
+    -------
+    np.ndarray
+        Returned array elements are 10 if the reported and calculated speeds differ by more than 10 knots,
+        0 otherwise
+    """
     result = np.zeros(len(vsi))
-    result[selection] = 10.0
-
+    vsi_previous = np.roll(vsi, 1)
+    selection1 = abs(vsi - speeds) > max_speed_change
+    selection2 = abs(vsi_previous - speeds) > max_speed_change
+    result[np.logical_and(selection1, selection2)] = 10.0
     return result
 
 
@@ -335,147 +392,47 @@ def check_distance_from_estimate(
     return result
 
 
-def increment_position_array(alat1, alon1, avs, ads, timediff):
-    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
-    increments of latitude and longitude which correspond to half the time difference.
-    """
-    distance = avs * timediff / 2.0
-    lat, lon = sph.lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
-    lat = lat - alat1
-    lon = lon - alon1
-
-    return lat, lon
-
-
-def calculate_speed_course_distance_time_difference_array(
-    lat, lon, date, alternating=False
+def check_distance_from_estimate_array(
+    vsi: np.ndarray,
+    time_differences: np.ndarray,
+    fwd_diff_from_estimated: np.ndarray,
+    rev_diff_from_estimated: np.ndarray,
 ):
+    """Check that distances from estimated positions (calculated forward and backwards in time) are less than
+    time difference multiplied by the average reported speeds
 
-    if alternating:
-        distance = sphere_distance_array(
-            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
-        )
-        timediff = time_differences_array(np.roll(date, -1), np.roll(date, 1))
-        course = course_between_points_array(
-            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
-        )
-        # Alternating estimates are unavailable for the first and last elements
-        distance[0] = np.nan
-        distance[-1] = np.nan
-        timediff[0] = np.nan
-        timediff[-1] = np.nan
-        course[0] = np.nan
-        course[-1] = np.nan
-    else:
-        distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
-        timediff = time_differences_array(date, np.roll(date, 1))
-        course = course_between_points_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
-        # With the regular first differences, we don't have anything for the first element
-        distance[0] = np.nan
-        timediff[0] = np.nan
-        course[0] = np.nan
+    Parameters
+    ----------
+    vsi : 1D np.ndarray of float
+        reported speed in km/h at current time step
+    time_differences : 1D np.ndarray of float
+        calculated time differences between reports in hours
+    fwd_diff_from_estimated : 1D np.ndarray of float
+        distance in km from estimated position, estimates made forward in time
+    rev_diff_from_estimated : 1D np.ndarray of float
+        distance in km from estimated position, estimates made backward in time
 
-    speed = distance / timediff
-    speed[timediff == 0.0] = 0.0
+    Returns
+    -------
+    np.ndarray
+        Returned array elements set to 10 if estimated and reported positions differ by more than the reported
+        speed multiplied by the calculated time difference, 0 otherwise
+    """
+    vsi_previous = np.roll(vsi, 1)
+    vsi_previous[0] = np.nan
 
-    return speed, distance, course, timediff
+    alwdis = time_differences * ((vsi + vsi_previous) / 2.0)
 
+    selection = fwd_diff_from_estimated > alwdis
+    selection = np.logical_and(selection, rev_diff_from_estimated > alwdis)
+    selection = np.logical_and(selection, vsi > 0)
+    selection = np.logical_and(selection, vsi_previous > 0)
+    selection = np.logical_and(selection, time_differences > 0)
 
-@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
-@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
-def forward_discrepancy_array(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
-    date: SequenceDatetimeType,
-    vsi: SequenceFloatType,
-    dsi: SequenceFloatType,
-) -> SequenceFloatType:
-    """"""
+    result = np.zeros(len(vsi))
+    result[selection] = 10.0
 
-    timediff = time_differences_array(date, np.roll(date, 1))
-    lat1, lon1 = increment_position_array(
-        np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff
-    )
-
-    lat2, lon2 = increment_position_array(lat, lon, vsi, dsi, timediff)
-
-    updated_latitude = np.roll(lat, 1) + lat1 + lat2
-    updated_longitude = np.roll(lon, 1) + lon1 + lon2
-
-    # calculate distance between calculated position and the second reported position
-    distance_from_est_location = sphere_distance_array(
-        lat, lon, updated_latitude, updated_longitude
-    )
-
-    distance_from_est_location[0] = np.nan
-
-    return distance_from_est_location
-
-
-@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
-@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
-def backward_discrepancy_array(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
-    date: SequenceDatetimeType,
-    vsi: SequenceFloatType,
-    dsi: SequenceFloatType,
-) -> SequenceFloatType:
-    """"""
-
-    timediff = time_differences_array(date, np.roll(date, 1))
-    lat2, lon2 = increment_position_array(
-        np.roll(lat, 1),
-        np.roll(lon, 1),
-        np.roll(vsi, 1),
-        np.roll(dsi, 1) - 180,
-        timediff,
-    )
-
-    lat1, lon1 = increment_position_array(lat, lon, vsi, dsi - 180, timediff)
-
-    updated_latitude = lat + lat1 + lat2
-    updated_longitude = lon + lon1 + lon2
-
-    # calculate distance between calculated position and the second reported position
-    distance_from_est_location = sphere_distance_array(
-        np.roll(lat, 1), np.roll(lon, 1), updated_latitude, updated_longitude
-    )
-
-    distance_from_est_location[-1] = np.nan
-
-    return distance_from_est_location
-
-
-def calculate_midpoint_array(lat, lon, timediff):
-    number_of_obs = len(lat)
-    midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
-
-    t0 = timediff
-    t1 = np.roll(timediff, -1)
-    fraction_of_time_diff = t0 / (t0 + t1)
-    fraction_of_time_diff[t0 + t1 == 0] = 0.0
-    fraction_of_time_diff[np.isnan(t0)] = 0.0
-    fraction_of_time_diff[np.isnan(t1)] = 0.0
-
-    est_midpoint_lat, est_midpoint_lon = intermediate_point_array(
-        np.roll(lat, 1),
-        np.roll(lon, 1),
-        np.roll(lat, -1),
-        np.roll(lon, -1),
-        fraction_of_time_diff,
-    )
-
-    est_midpoint_lat[0] = np.nan
-    est_midpoint_lat[-1] = np.nan
-    est_midpoint_lon[0] = np.nan
-    est_midpoint_lon[-1] = np.nan
-
-    midpoint_discrepancies = sphere_distance_array(
-        lat, lon, est_midpoint_lat, est_midpoint_lon
-    )
-
-    return midpoint_discrepancies
+    return result
 
 
 @convert_units(
@@ -618,6 +575,67 @@ def calculate_speed_course_distance_time_difference(
     return speed, distance, course, timediff
 
 
+def calculate_speed_course_distance_time_difference_array(
+    lat: np.ndarray,
+    lon: np.ndarray,
+    date: np.ndarray,
+    alternating: bool = False,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Calculates speeds, courses, distances and time differences using consecutive reports.
+
+    Parameters
+    ----------
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    alternating : bool, default: False
+        Whether to use alternating reports for calculation.
+
+    Returns
+    -------
+    tuple of np.ndarray, each with float values, shape (n,)
+        A tuple containing four one-dimensional arrays representing: speed, distance, course, and time difference.
+    """
+    if alternating:
+        distance = sphere_distance_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        timediff = time_differences_array(np.roll(date, -1), np.roll(date, 1))
+        course = course_between_points_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        # Alternating estimates are unavailable for the first and last elements
+        distance[0] = np.nan
+        distance[-1] = np.nan
+        timediff[0] = np.nan
+        timediff[-1] = np.nan
+        course[0] = np.nan
+        course[-1] = np.nan
+    else:
+        distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        timediff = time_differences_array(date, np.roll(date, 1))
+        course = course_between_points_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        # With the regular first differences, we don't have anything for the first element
+        distance[0] = np.nan
+        timediff[0] = np.nan
+        course[0] = np.nan
+
+    speed = distance / timediff
+    speed[timediff == 0.0] = 0.0
+
+    return speed, distance, course, timediff
+
+
 @inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def forward_discrepancy(
@@ -732,6 +750,76 @@ def forward_discrepancy(
         )
 
         distance_from_est_location[i] = discrepancy
+
+    return distance_from_est_location
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def forward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """Calculate what the distance is between the projected position (based on the reported
+    speed and heading at the current and previous time steps) and the actual position. The
+    observations are taken in time order.
+
+    This takes the speed and direction reported by the ship and projects it forwards half a
+    time step, it then projects it forwards another half time-step using the speed and
+    direction for the next report, to which the projected location
+    is then compared. The distances between the projected and actual locations is returned
+
+    Parameters
+    ----------
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported speed array in km/h.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported heading array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    Same type as input, but with float values, shape (n,)
+        One-dimensional array, sequence, or pandas Series containing distances from estimated positions.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat1, lon1 = increment_position_array(
+        np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff
+    )
+
+    lat2, lon2 = increment_position_array(lat, lon, vsi, dsi, timediff)
+
+    updated_latitude = np.roll(lat, 1) + lat1 + lat2
+    updated_longitude = np.roll(lon, 1) + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        lat, lon, updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[0] = np.nan
 
     return distance_from_est_location
 
@@ -853,6 +941,79 @@ def backward_discrepancy(
     return distance_from_est_location[::-1]
 
 
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def backward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """Calculate what the distance is between the projected position (based on the reported speed and
+    heading at the current and previous time steps) and the actual position. The calculation proceeds from the
+    final, later observation to the first (in contrast to distr1 which runs in time order)
+
+    This takes the speed and direction reported by the ship and projects it forwards half a time step, it then
+    projects it forwards another half-time step using the speed and direction for the next report, to which the
+    projected location is then compared. The distances between the projected and actual locations is returned
+
+    Parameters
+    ----------
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported speed array in km/h.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported heading array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    Same type as input, but with float values, shape (n,)
+        One-dimensional array, sequence, or pandas Series containing distances from estimated positions.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat2, lon2 = increment_position_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(vsi, 1),
+        np.roll(dsi, 1) - 180,
+        timediff,
+    )
+
+    lat1, lon1 = increment_position_array(lat, lon, vsi, dsi - 180, timediff)
+
+    updated_latitude = lat + lat1 + lat2
+    updated_longitude = lon + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        np.roll(lat, 1), np.roll(lon, 1), updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[-1] = np.nan
+
+    return distance_from_est_location
+
+
 @inspect_arrays(["lat", "lon", "timediff"])
 @convert_units(lat="degrees", lon="degrees")
 def calculate_midpoint(
@@ -923,5 +1084,68 @@ def calculate_midpoint(
         )
 
         midpoint_discrepancies[i] = discrepancy
+
+    return midpoint_discrepancies
+
+
+def calculate_midpoint_array(
+    lat: np.ndarray,
+    lon: np.ndarray,
+    timediff: np.ndarray,
+) -> np.ndarray:
+    """Interpolate between alternate reports and compare the interpolated location to the actual location. e.g.
+    take difference between reports 2 and 4 and interpolate to get an estimate for the position at the time
+    of report 3. Then compare the estimated and actual positions at the time of report 3.
+
+    The calculation linearly interpolates the latitudes and longitudes (allowing for wrapping around the
+    dateline and so on).
+
+    Parameters
+    ----------
+    lat : 1D np.ndarray of float
+        One-dimensional latitude array in degrees.
+
+    lon : 1D np.ndarray of float
+        One-dimensional longitude array in degrees.
+
+    timediff : 1D np.ndarray of datetime
+        One-dimensional time difference array.
+
+    Returns
+    -------
+    1D np.ndarray of float
+        One-dimensional array of distances from estimated positions in kilometers.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    number_of_obs = len(lat)
+    midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
+
+    t0 = timediff
+    t1 = np.roll(timediff, -1)
+    fraction_of_time_diff = t0 / (t0 + t1)
+    fraction_of_time_diff[t0 + t1 == 0] = 0.0
+    fraction_of_time_diff[np.isnan(t0)] = 0.0
+    fraction_of_time_diff[np.isnan(t1)] = 0.0
+
+    est_midpoint_lat, est_midpoint_lon = intermediate_point_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(lat, -1),
+        np.roll(lon, -1),
+        fraction_of_time_diff,
+    )
+
+    est_midpoint_lat[0] = np.nan
+    est_midpoint_lat[-1] = np.nan
+    est_midpoint_lon[0] = np.nan
+    est_midpoint_lon[-1] = np.nan
+
+    midpoint_discrepancies = sphere_distance_array(
+        lat, lon, est_midpoint_lat, est_midpoint_lon
+    )
 
     return midpoint_discrepancies
