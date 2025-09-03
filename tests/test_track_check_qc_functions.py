@@ -15,17 +15,11 @@ from marine_qc import (
 )
 from marine_qc.auxiliary import failed, passed
 from marine_qc.qc_sequential_reports import (
-    backward_discrepancy,
-    calculate_course_parameters,
-    calculate_speed_course_distance_time_difference,
-    calculate_speed_course_distance_time_difference_array,
-    forward_discrepancy_array,
-    backward_discrepancy_array,
-    forward_discrepancy,
-    calculate_midpoint,
-    calculate_midpoint_array,
     do_track_check_array,
 )
+from marine_qc.track_check_utils import calculate_speed_course_distance_time_difference_array, \
+    forward_discrepancy_array, backward_discrepancy_array, calculate_midpoint_array, calculate_course_parameters, \
+    calculate_speed_course_distance_time_difference, forward_discrepancy, backward_discrepancy, calculate_midpoint
 from marine_qc.spherical_geometry import (
     sphere_distance_array,
     intermediate_point_array,
