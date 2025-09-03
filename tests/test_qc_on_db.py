@@ -1879,7 +1879,7 @@ def test_buddy_check(climdata_buddy, testdata_track):
         multipliers=multipliers,
     )
     for i, flag in enumerate(result):
-        if i in [7, 8, 9, 10, 12, 13, 14, 15, 45]:
+        if i in [7, 8, 9, 10, 11, 12, 13, 14, 15, 45]:
             assert flag == failed
         else:
             assert flag == passed
