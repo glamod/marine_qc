@@ -359,11 +359,14 @@ def test_get_t_index():
 
     result = Climatology.get_t_index(month, day, 365)
     assert np.all(
-        result == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364])
+        result
+        == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364])
     )
 
     result = Climatology.get_t_index(month, day, 73)
-    assert np.all(result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72]))
+    assert np.all(
+        result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72])
+    )
 
     result = Climatology.get_t_index(month, day, 1)
     assert np.all(result == np.zeros(len(result)))
