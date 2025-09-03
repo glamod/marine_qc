@@ -11,7 +11,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from pyproj import Geod
 
 from . import spherical_geometry as sg
 from . import time_control
@@ -20,61 +19,20 @@ from .auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
     SequenceIntType,
-    convert_to,
     convert_units,
-    earths_radius,
     failed,
     inspect_arrays,
     isvalid,
     passed,
     post_format_return_type,
 )
-
-
-geod = Geod(a=earths_radius, b=earths_radius)
-
-
-@inspect_arrays(["times2", "times1"])
-def time_differences_array(times2, times1):
-    """Return time differences in hours"""
-    times1 = pd.to_datetime(times1).values
-    times2 = pd.to_datetime(times2).values
-    time_difference = (times2 - times1) / (1e9 * 60 * 60)
-    return time_difference.astype(float)
-
-
-def geod_inv(lon1, lat1, lon2, lat2):
-    """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
-    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
-    return fwd_az, back_az, dist
-
-
-def angular_distance_array(lat1, lon1, lat2, lon2):
-    """Returns angular distance in radians between two points using the ellipsoidal model."""
-    return geod_inv(lon1, lat1, lon2, lat2)[2] / earths_radius
-
-
-def sphere_distance_array(lat1, lon1, lat2, lon2):
-    """Returns geodesic distance in kilometers using the ellipsoidal model."""
-    return geod_inv(lon1, lat1, lon2, lat2)[2] / 1000.0  # convert to kilometers
-
-
-def intermediate_point_array(lat1, lon1, lat2, lon2, f):
-
-    # Clamp f to [0, 1]
-    f = np.clip(f, 0, 1)
-
-    fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
-    distance_at_f = dist * f
-
-    lon_f, lat_f, _ = geod.fwd(lon1, lat1, fwd_az, distance_at_f)
-    return lat_f, lon_f
-
-
-def course_between_points_array(lat1, lon1, lat2, lon2):
-    """Calculate courses between two sets of points using arrays and pyproj"""
-    fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
-    return fwd_azimuth
+from .spherical_geometry import (
+    sphere_distance_array,
+    intermediate_point_array,
+    course_between_points_array,
+)
+from .time_control import time_differences_array
+from .track_check_utils import increment_position_array
 
 
 def calculate_speed_course_distance_time_difference_array(
@@ -109,26 +67,6 @@ def calculate_speed_course_distance_time_difference_array(
     speed[timediff == 0.0] = 0.0
 
     return speed, distance, course, timediff
-
-
-def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
-
-    lat1 = convert_to(lat1, "deg", "rad")
-    lon1 = convert_to(lon1, "deg", "rad")
-    tcr = convert_to(tc, "deg", "rad")
-
-    dr = d / earths_radius * 1000
-
-    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
-    dlon = np.arctan2(
-        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
-    )
-    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
-
-    lat = convert_to(lat, "rad", "deg")
-    lon = convert_to(lon, "rad", "deg")
-
-    return lat, lon
 
 
 @inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
@@ -195,18 +133,6 @@ def backward_discrepancy_array(
     distance_from_est_location[-1] = np.nan
 
     return distance_from_est_location
-
-
-def increment_position_array(alat1, alon1, avs, ads, timediff):
-    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
-    increments of latitude and longitude which correspond to half the time difference.
-    """
-    distance = avs * timediff / 2.0
-    lat, lon = lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
-    lat = lat - alat1
-    lon = lon - alon1
-
-    return lat, lon
 
 
 def calculate_midpoint_array(lat, lon, timediff):

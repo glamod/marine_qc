@@ -9,8 +9,9 @@ from datetime import datetime
 from typing import Sequence
 
 import numpy as np
+import pandas as pd
 
-from .auxiliary import generic_decorator, is_scalar_like, isvalid
+from .auxiliary import generic_decorator, is_scalar_like, isvalid, inspect_arrays
 
 
 def convert_date(params: list[str]) -> Callable:
@@ -665,3 +666,12 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
         duration_in_seconds = (date - dates[0]).total_seconds()
         hours_elapsed[i] = duration_in_seconds / (60 * 60)
     return hours_elapsed
+
+
+@inspect_arrays(["times2", "times1"])
+def time_differences_array(times2, times1):
+    """Return time differences in hours"""
+    times1 = pd.to_datetime(times1).values
+    times2 = pd.to_datetime(times2).values
+    time_difference = (times2 - times1) / (1e9 * 60 * 60)
+    return time_difference.astype(float)

@@ -317,3 +317,15 @@ def check_distance_from_estimate(
             result = 10.0
 
     return result
+
+
+def increment_position_array(alat1, alon1, avs, ads, timediff):
+    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+    increments of latitude and longitude which correspond to half the time difference.
+    """
+    distance = avs * timediff / 2.0
+    lat, lon = sph.lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
+    lat = lat - alat1
+    lon = lon - alon1
+
+    return lat, lon

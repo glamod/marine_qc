@@ -10,10 +10,12 @@ from __future__ import annotations
 import math
 
 import numpy as np
+from pyproj import Geod
 
-from .auxiliary import earths_radius, isvalid
+from .auxiliary import earths_radius, isvalid, convert_to
 
 radians_per_degree = np.pi / 180.0
+geod = Geod(a=earths_radius, b=earths_radius)
 
 
 def sphere_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -273,3 +275,57 @@ def intermediate_point(
         lon = lon1
 
     return lat, lon
+
+
+def angular_distance_array(lat1, lon1, lat2, lon2):
+    """Returns angular distance in radians between two points using the ellipsoidal model."""
+    return geod_inv(lon1, lat1, lon2, lat2)[2] / earths_radius
+
+
+def sphere_distance_array(lat1, lon1, lat2, lon2):
+    """Returns geodesic distance in kilometers using the ellipsoidal model."""
+    return geod_inv(lon1, lat1, lon2, lat2)[2] / 1000.0  # convert to kilometers
+
+
+def intermediate_point_array(lat1, lon1, lat2, lon2, f):
+
+    # Clamp f to [0, 1]
+    f = np.clip(f, 0, 1)
+
+    fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
+    distance_at_f = dist * f
+
+    lon_f, lat_f, _ = geod.fwd(lon1, lat1, fwd_az, distance_at_f)
+    return lat_f, lon_f
+
+
+def course_between_points_array(lat1, lon1, lat2, lon2):
+    """Calculate courses between two sets of points using arrays and pyproj"""
+    fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
+    return fwd_azimuth
+
+
+def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
+
+    lat1 = convert_to(lat1, "deg", "rad")
+    lon1 = convert_to(lon1, "deg", "rad")
+    tcr = convert_to(tc, "deg", "rad")
+
+    dr = d / earths_radius * 1000
+
+    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
+    dlon = np.arctan2(
+        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
+    )
+    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
+
+    lat = convert_to(lat, "rad", "deg")
+    lon = convert_to(lon, "rad", "deg")
+
+    return lat, lon
+
+
+def geod_inv(lon1, lat1, lon2, lat2):
+    """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
+    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
+    return fwd_az, back_az, dist
