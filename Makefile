@@ -36,9 +36,9 @@ clean-build: ## remove build artifacts
 	find . -name '*.egg' -exec rm -f {} +
 
 clean-docs: ## remove docs artifacts
-  rm -f docs/apidoc/marine_qc*.rst
-  rm -f docs/apidoc/modules.rst
-  $(MAKE) -C docs clean
+	rm -f docs/apidoc/marine_qc*.rst
+	rm -f docs/apidoc/modules.rst
+	$(MAKE) -C docs clean
 
 clean-pyc: ## remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
@@ -54,12 +54,12 @@ clean-test: ## remove test and coverage artifacts
 
 lint/flake8: ## check style with flake8
 	python -m ruff check src/marine_qc tests
-  python -m flake8 --config=.flake8 src/marine_qc tests
-  python -m numpydoc lint src/marine_qc/**.py
+	python -m flake8 --config=.flake8 src/marine_qc tests
+	python -m numpydoc lint src/marine_qc/**.py
 
 lint/black: ## check style with black
-  python -m black --check src/marine_qc tests
-  python -m blackdoc --check src/marine_qc docs
+	python -m black --check src/marine_qc tests
+	python -m blackdoc --check src/marine_qc docs
 
 lint: lint/flake8 ## check style
 
@@ -84,23 +84,23 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(BROWSER) docs/_build/html/index.html
 
 autodoc: clean-docs ## create sphinx-apidoc files:
-  sphinx-apidoc -o docs/apidoc --private --module-first src/marine_qc
+	sphinx-apidoc -o docs/apidoc --private --module-first src/marine_qc
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
-  $(MAKE) -C docs linkcheck
+	$(MAKE) -C docs linkcheck
 
 docs: autodoc ## generate Sphinx HTML documentation, including API docs
-  $(MAKE) -C docs html
+	$(MAKE) -C docs html
 ifndef READTHEDOCS
-  $(BROWSER) docs/_build/html/index.html
+	$(BROWSER) docs/_build/html/index.html
 endif
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 dist: clean ## builds source and wheel package
-  python -m flint build
-  ls -l dist
+	python -m flint build
+	ls -l dist
 
 release: dist ## package and upload a release
 	python -m flint publish dist/*
@@ -109,5 +109,5 @@ install: clean ## install the package to the active Python's site-packages
 	python -m pip install .
 
 dev: clean ## install the package to the active Python's site-packages
-  python -m pip install --editable .[all]
-  pre-commit install
+	python -m pip install --editable .[all]
+	pre-commit install
