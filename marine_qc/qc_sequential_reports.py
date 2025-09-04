@@ -10,6 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from scipy.ndimage import label
+
 from .auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
@@ -34,6 +36,7 @@ from .track_check_utils import (
     direction_continuity,
     speed_continuity,
 )
+from .time_control import time_difference
 
 
 @post_format_return_type(["value"])
@@ -437,54 +440,30 @@ def find_saturated_runs(
     * min_time_threshold =  48.0
     * shortest_run = 4
     """
-    satcount = []
+    saturated = at == dpt
 
-    repsat = np.asarray([passed] * len(lat))  # type: np.ndarray
+    # Label contiguous runs of saturation
+    labeled_array, num_features = label(saturated)
 
-    for i in range(len(repsat)):
+    # Initialize result array
+    qc_flags = np.zeros_like(at, dtype=int)
 
-        saturated = dpt[i] == at[i]
+    for run_id in range(1, num_features + 1):
+        indices = np.where(labeled_array == run_id)[0]
 
-        if saturated:
-            satcount.append(i)
-        elif not saturated and len(satcount) > shortest_run:
-            later = satcount[len(satcount) - 1]
-            earlier = satcount[0]
-            _, _, _, tdiff = calculate_course_parameters(
-                lat_later=lat[later],
-                lat_earlier=lat[earlier],
-                lon_later=lon[later],
-                lon_earlier=lon[earlier],
-                date_later=date[later],
-                date_earlier=date[earlier],
-            )
+        if len(indices) < shortest_run:
+            continue
 
-            if tdiff >= min_time_threshold:
-                for loc in satcount:
-                    repsat[loc] = failed
-                satcount = []
-            else:
-                satcount = []
+        i_start = indices[0]
+        i_end = indices[-1]
 
-        else:
-            satcount = []
+        # Time difference in hours
+        tdiff = time_difference(date[i_start], date[i_end])
 
-    if len(satcount) > shortest_run:
-        later = satcount[len(satcount) - 1]
-        earlier = satcount[0]
-        _, _, _, tdiff = calculate_course_parameters(
-            lat_later=lat[later],
-            lat_earlier=lat[earlier],
-            lon_later=lon[later],
-            lon_earlier=lon[earlier],
-            date_later=date[later],
-            date_earlier=date[earlier],
-        )
         if tdiff >= min_time_threshold:
-            for loc in satcount:
-                repsat[loc] = failed
+            qc_flags[indices] = 1
 
-    return repsat
+    return qc_flags
 
 
 @post_format_return_type(["value"])
@@ -607,15 +586,15 @@ def find_repeated_values(
     _, unique_inverse, counts = np.unique(
         value[valid_indices], return_inverse=True, return_counts=True
     )
-    cutoff = threshold * allcount  # Calculate the cutoff
-    exceedances = counts > cutoff  # Find the unique values that exceed the cutoff
+    cutoff = threshold * allcount
+    exceedances = counts > cutoff
     exceedances = np.where(
         exceedances, failed, passed
-    )  # replace True/False with failed and passed
+    )
     pass_fail = exceedances[
         unique_inverse
-    ]  # Rebuild array using the pass/fails in place of unique values
-    rep[valid_indices] = pass_fail  # Put the passes and fails back into
+    ]
+    rep[valid_indices] = pass_fail
 
     return rep
 
