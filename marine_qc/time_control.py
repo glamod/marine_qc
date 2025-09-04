@@ -11,7 +11,13 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from .auxiliary import generic_decorator, is_scalar_like, isvalid, inspect_arrays
+from .auxiliary import (
+    generic_decorator,
+    is_scalar_like,
+    isvalid,
+    inspect_arrays,
+    post_format_return_type,
+)
 
 
 def convert_date(params: list[str]) -> Callable:
@@ -309,8 +315,7 @@ def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
 
 def which_pentad_array(month, day):
     pentad = ((day_in_year_array(month=month, day=day) - 1) / 5).astype(int)
-    pentad = pentad + 1
-    return pentad
+    return pentad + 1
 
 
 def day_in_year_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
@@ -562,69 +567,6 @@ def jul_day(year: int, month: int, day: int) -> int:
     return day + ((153 * m + 2) // 5) + 365 * y + y // 4 - y // 100 + y // 400 - 32045
 
 
-def time_difference(
-    year1: int,
-    month1: int,
-    day1: int,
-    hour1: int,
-    year2: int,
-    month2: int,
-    day2: int,
-    hour2: int,
-) -> float:
-    """Calculate time difference in hours between any two times.
-
-    Parameters
-    ----------
-    year1: int
-        Year of first time point.
-    month1: int
-        Month of first time point.
-    day1: int
-        Day of first time point.
-    hour1: int
-        Hour of first time point.
-    year2: int
-        Year of second time point.
-    month2: int
-        Month of second time point.
-    day2: int
-        Day of second time point.
-    hour2: int
-        Hour of second time point.
-
-    Returns
-    -------
-    float
-        Difference in hours between the two times.
-    """
-    # First check if any of the input parameters are invalid
-    args = locals()
-    for _, value in args.items():
-        if not isvalid(value):
-            return np.nan
-
-    if not (0 <= hour1 <= 24):
-        raise ValueError(f"Invalid hour1: {hour1}. Must be between 1 and 24.")
-    if not (0 <= hour2 <= 24):
-        raise ValueError(f"Invalid hour2: {hour2}. Must be between 1 and 24.")
-
-    if (
-        (year1 > year2)
-        or (year1 == year2 and month1 > month2)
-        or (year1 == year2 and month1 == month2 and day1 > day2)
-        or (year1 == year2 and month1 == month2 and day1 == day2 and hour1 > hour2)
-    ):
-        return -1 * time_difference(
-            year2, month2, day2, hour2, year1, month1, day1, hour1
-        )
-
-    first_day = jul_day(year1, month1, day1) + hour1 / 24.0
-    last_day = jul_day(year2, month2, day2) + hour2 / 24.0
-
-    return 24.0 * (last_day - first_day)
-
-
 def get_month_lengths(year: int) -> list[int]:
     """Return a list holding the lengths of the months in a given year
 
@@ -668,10 +610,41 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
     return hours_elapsed
 
 
-@inspect_arrays(["times2", "times1"])
-def time_differences_array(times2, times1):
-    """Return time differences in hours"""
-    times1 = pd.to_datetime(times1).values
-    times2 = pd.to_datetime(times2).values
-    time_difference = (times2 - times1) / (1e9 * 60 * 60)
-    return time_difference.astype(float)
+@post_format_return_type(["times1", "times2"], dtype=float)
+@inspect_arrays(["times1", "times2"])
+def time_difference(times1, times2):
+    """Calculate time difference in hours between any two times.
+
+    Parameters
+    ----------
+    year1: int
+        Year of first time point.
+    month1: int
+        Month of first time point.
+    day1: int
+        Day of first time point.
+    hour1: int
+        Hour of first time point.
+    year2: int
+        Year of second time point.
+    month2: int
+        Month of second time point.
+    day2: int
+        Day of second time point.
+    hour2: int
+        Hour of second time point.
+
+    Returns
+    -------
+    float
+        Difference in hours between the two times.
+    """
+    # docstring !!!
+    times1 = pd.to_datetime(times1, errors="coerce").values
+    times2 = pd.to_datetime(times2, errors="coerce").values
+
+    valid = isvalid(times1) & isvalid(times2)
+
+    result = np.full(times1.shape, np.nan, dtype=float)  # np.ndarray
+    result[valid] = (times2[valid] - times1[valid]) / (1e9 * 60 * 60)
+    return result

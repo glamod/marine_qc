@@ -25,7 +25,6 @@ from marine_qc import (
     do_iquam_track_check,
     do_spike_check,
     do_track_check,
-    do_track_check_array,
     find_multiple_rounded_values,
     find_repeated_values,
     find_saturated_runs,
@@ -1361,7 +1360,7 @@ def test_do_track_check_array(testdata_track):
         [("header", "primary_station_id")], group_keys=False, sort=False
     )
     results = groups.apply(
-        lambda track: do_track_check_array(
+        lambda track: do_track_check(
             vsi=track[("header", "station_speed")],
             dsi=track[("header", "station_course")],
             lat=track[("header", "latitude")],

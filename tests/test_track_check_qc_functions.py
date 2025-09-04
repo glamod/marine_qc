@@ -14,14 +14,7 @@ from marine_qc import (
     find_saturated_runs,
 )
 from marine_qc.auxiliary import failed, passed
-from marine_qc.qc_sequential_reports import (
-    do_track_check_array,
-)
 from marine_qc.track_check_utils import (
-    calculate_speed_course_distance_time_difference_array,
-    forward_discrepancy_array,
-    backward_discrepancy_array,
-    calculate_midpoint_array,
     calculate_course_parameters,
     calculate_speed_course_distance_time_difference,
     forward_discrepancy,
@@ -29,12 +22,12 @@ from marine_qc.track_check_utils import (
     calculate_midpoint,
 )
 from marine_qc.spherical_geometry import (
-    sphere_distance_array,
-    intermediate_point_array,
-    course_between_points_array,
-    lat_lon_from_course_and_distance_array,
+    sphere_distance,
+    intermediate_point,
+    course_between_points,
+    lat_lon_from_course_and_distance,
 )
-from marine_qc.time_control import time_differences_array
+from marine_qc.time_control import time_difference
 
 
 def generic_frame(in_pt):
@@ -298,7 +291,7 @@ def test_do_track_check_testdata():
 
 def test_do_track_check_array_very_few_obs(ship_frame):
     ship_frame = ship_frame.loc[[0, 1]]
-    trk = do_track_check_array(
+    trk = do_track_check(
         lat=ship_frame.lat,
         lon=ship_frame.lon,
         date=ship_frame.date,
@@ -315,7 +308,7 @@ def test_do_track_check_array_very_few_obs(ship_frame):
 
 def test_do_track_check_array_no_obs(ship_frame):
     ship_frame = ship_frame.loc[[]]
-    trk = do_track_check_array(
+    trk = do_track_check(
         lat=[],
         lon=[],
         date=[],
@@ -330,7 +323,7 @@ def test_do_track_check_array_no_obs(ship_frame):
 
 
 def test_do_track_check_array_passed(ship_frame):
-    trk = do_track_check_array(
+    trk = do_track_check(
         lat=ship_frame.lat,
         lon=ship_frame.lon,
         date=ship_frame.date,
@@ -349,7 +342,7 @@ def test_do_track_check_array_mixed(ship_frame):
     lon = ship_frame.lon.array
     lon[15] = 30.0
     ship_frame["lon"] = lon
-    trk = do_track_check_array(
+    trk = do_track_check(
         lat=ship_frame.lat,
         lon=ship_frame.lon,
         date=ship_frame.date,
@@ -399,7 +392,7 @@ def test_do_track_check_array_testdata():
     )
     date = pd.to_datetime(date).tolist()
 
-    results = do_track_check_array(
+    results = do_track_check(
         vsi=vsi,
         dsi=dsi,
         lat=lat,
@@ -425,7 +418,7 @@ def test_do_track_check_array_testdata():
     np.testing.assert_array_equal(results, expected)
 
 
-def test_backward_discrepancy(ship_frame):
+def test_backward_discrepancy_array(ship_frame):
     result = backward_discrepancy(
         vsi=ship_frame["vsi"],
         dsi=ship_frame["dsi"],
@@ -434,38 +427,12 @@ def test_backward_discrepancy(ship_frame):
         date=ship_frame["date"],
     )
     for i in range(len(result) - 1):
-        assert pytest.approx(result[i], abs=0.00001) == 0.0
-    assert np.isnan(result[-1])
-
-
-def test_backward_discrepancy_array_version(ship_frame):
-    result = backward_discrepancy_array(
-        vsi=ship_frame["vsi"],
-        dsi=ship_frame["dsi"],
-        lat=ship_frame["lat"],
-        lon=ship_frame["lon"],
-        date=ship_frame["date"],
-    )
-    for i in range(len(result) - 1):
         assert pytest.approx(result[i], abs=0.0001) == 0.0
-    assert np.isnan(result[-1])
+    assert np.isnan(result.values[-1])
 
 
-def test_forward_discrepancy(ship_frame):
+def test_forward_discrepancy_array(ship_frame):
     result = forward_discrepancy(
-        vsi=ship_frame["vsi"],
-        dsi=ship_frame["dsi"],
-        lat=ship_frame["lat"],
-        lon=ship_frame["lon"],
-        date=ship_frame["date"],
-    )
-    for i in range(1, len(result)):
-        assert pytest.approx(result[i], abs=0.00001) == 0.0
-    assert np.isnan(result[0])
-
-
-def test_forward_discrepancy_array_version(ship_frame):
-    result = forward_discrepancy_array(
         vsi=ship_frame["vsi"],
         dsi=ship_frame["dsi"],
         lat=ship_frame["lat"],
@@ -497,11 +464,9 @@ def test_calc_alternate_speeds(ship_frame):
         assert pytest.approx(timediff[i], abs=0.0001) == 2.0
 
 
-def test_calc_alternate_speeds_array_version(ship_frame):
-    speed, distance, course, timediff = (
-        calculate_speed_course_distance_time_difference_array(
-            ship_frame.lat, ship_frame.lon, ship_frame.date, alternating=True
-        )
+def test_calc_alternate_speeds_array(ship_frame):
+    speed, distance, course, timediff = calculate_speed_course_distance_time_difference(
+        ship_frame.lat, ship_frame.lon, ship_frame.date, alternating=True
     )
 
     for i in range(1, len(speed) - 1):
@@ -578,13 +543,11 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
             assert np.isnan(speed[i])
 
 
-def test_calculate_speed_course_distance_time_difference_array_version(ship_frame):
-    speed, distance, course, timediff = (
-        calculate_speed_course_distance_time_difference_array(
-            lat=ship_frame.lat,
-            lon=ship_frame.lon,
-            date=ship_frame.date,
-        )
+def test_calculate_speed_course_distance_time_difference_array(ship_frame):
+    speed, distance, course, timediff = calculate_speed_course_distance_time_difference(
+        lat=ship_frame.lat,
+        lon=ship_frame.lon,
+        date=ship_frame.date,
     )
     numobs = len(speed)
     for i in range(numobs):
@@ -1031,9 +994,7 @@ def test_calculate_midpoint(lats, lons, timediffs, expected):
     ],
 )
 def test_calculate_midpoint_array(lats, lons, timediffs, expected):
-    result = calculate_midpoint_array(
-        np.array(lats), np.array(lons), np.array(timediffs)
-    )
+    result = calculate_midpoint(np.array(lats), np.array(lons), np.array(timediffs))
     expected = np.array(expected)
     assert np.array_equal(result, expected, equal_nan=True)
 
@@ -1042,7 +1003,7 @@ def test_time_differences_array():
     dates = pd.date_range(start="1850-01-01", freq="1h", periods=11)
     in1 = dates[0:10]
     in2 = dates[1:11]
-    result = time_differences_array(in2, in1)
+    result = time_difference(in1, in2)
     assert np.all(result == 1)
 
 
@@ -1052,7 +1013,7 @@ def test_sphere_distance_array():
     lon1 = np.zeros(len(lat1))
     lon2 = np.zeros(len(lat2))
 
-    result = sphere_distance_array(lat1, lon1, lat2, lon2)
+    result = sphere_distance(lat1, lon1, lat2, lon2)
     assert np.allclose(result, 6371.0088 * np.pi / 180.0)
 
 
@@ -1063,7 +1024,7 @@ def test_sphere_distance_array_works_with_nans():
     lon2 = np.zeros(len(lat2))
     lat1[0] = np.nan
 
-    result = sphere_distance_array(lat1, lon1, lat2, lon2)
+    result = sphere_distance(lat1, lon1, lat2, lon2)
     expected = np.zeros(len(lat1)) + 6371.0088 * np.pi / 180.0
     expected[0] = np.nan
     assert np.allclose(result, expected, equal_nan=True)
@@ -1080,7 +1041,7 @@ def test_intermediate_point_array():
     lon2 = np.array([0.0, 90.0, 152.0])
     f = np.array([0.5, 1.0 / 18.0, 0.75])
 
-    lat, lon = intermediate_point_array(lat1, lon1, lat2, lon2, f)
+    lat, lon = intermediate_point(lat1, lon1, lat2, lon2, f)
 
     assert np.allclose(lat, np.array([0.0, 0.0, 10.0]))
     assert np.allclose(lon, np.array([0.0, 5.0, 152.0]))
@@ -1093,10 +1054,10 @@ def test_course_between_point_array():
     lon2 = np.zeros(len(lat2))
 
     # heading due north
-    result = course_between_points_array(lat1, lon1, lat2, lon2)
+    result = course_between_points(lat1, lon1, lat2, lon2)
     assert np.all(result == 0.0)
     # or, inverted, south
-    result = course_between_points_array(lat2, lon2, lat1, lon1)
+    result = course_between_points(lat2, lon2, lat1, lon1)
     assert np.all(result == 180.0)
 
     lon1 = np.arange(-180.0, 180.0, 1.0)
@@ -1105,14 +1066,14 @@ def test_course_between_point_array():
     lat2 = np.zeros(len(lon2))
 
     # heading east
-    result = course_between_points_array(lat1, lon1, lat2, lon2)
+    result = course_between_points(lat1, lon1, lat2, lon2)
     assert np.all(result == 90.0)
     # or, inverted, west
-    result = course_between_points_array(lat2, lon2, lat1, lon1)
+    result = course_between_points(lat2, lon2, lat1, lon1)
     assert np.all(result == -90.0)
 
 
-def test_lat_lon_from_course_and_distance_array_version():
+def test_lat_lon_from_course_and_distance_array():
 
     earths_radius = 6371.0088
     npiearth = np.pi * earths_radius
@@ -1124,7 +1085,7 @@ def test_lat_lon_from_course_and_distance_array_version():
 
     expected_lat = np.array([0.0, 90.0, 90.0, 0.0, 0.0])
     expected_lon = np.array([0.0, 0.0, 90.0, 0.0, -180.0])
-    result_lat, result_lon = lat_lon_from_course_and_distance_array(lat, lon, tc, d)
+    result_lat, result_lon = lat_lon_from_course_and_distance(lat, lon, tc, d)
 
     assert np.allclose(result_lat, expected_lat)
     assert np.allclose(result_lon, expected_lon)

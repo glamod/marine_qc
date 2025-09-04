@@ -288,10 +288,20 @@ def test_jul_day_raises():
         jul_day(2005, 7, 32)
 
 
-def test_time_difference():
-    with pytest.raises(ValueError):
-        time_difference(2003, 1, 1, -1, 2003, 1, 1, 1)
-    with pytest.raises(ValueError):
-        time_difference(2003, 1, 1, 1, 2003, 1, 1, 25)
+@pytest.mark.parametrize(
+    "time1, time2, expected",
+    [
+        ("2003-01-01 01:00", "2003-01-01 02:00", 1.0),
+        ("2003-01-01 01:00", "2003-13-01 02:00", np.nan),
+        ("2003-01-01 01:00", "2003-01-01 25:00", np.nan),
+        ("2003-01-01 01:00", "2003-01-32 02:00", np.nan),
+        ("2003-01--01 01:00", "2003-01-30 02:00", np.nan),
+    ],
+)
+def test_time_difference(time1, time2, expected):
+    result = time_difference(time1, time2)
 
-    assert np.isnan(time_difference(2003, 1, 1, 1, 2003, None, 1, 2))
+    if np.isnan(expected):
+        assert np.isnan(result)
+    else:
+        assert result == expected

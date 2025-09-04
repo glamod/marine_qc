@@ -50,13 +50,13 @@ def test_same_start_and_end_have_zero_angular_distance():
 def test_pole_to_pole():
     """Make sure pole to pole distance is pi"""
     a = sg.angular_distance(-90.0, 0.0, 90.0, 0.0)
-    assert a == np.pi
+    assert pytest.approx(a, 0.00000001) == np.pi
 
 
 def test_round_equator():
     """Make sure half the equator is pi"""
     a = sg.angular_distance(0.0, 0.0, 0.0, 180.0)
-    assert a == np.pi
+    assert pytest.approx(a, 0.00000001) == np.pi
 
 
 def test_round_the_world_is_zero():
@@ -74,9 +74,8 @@ def test_round_the_world_is_zero():
         (0.0, 0.0, 0.0, None, ValueError),
     ],
 )
-def test_angular_distance_raises(lat1, lon1, lat2, lon2, expected):
-    with pytest.raises(expected):
-        sg.angular_distance(lat1, lon1, lat2, lon2)
+def test_angular_distance_nan(lat1, lon1, lat2, lon2, expected):
+    assert np.isnan(sg.angular_distance(lat1, lon1, lat2, lon2))
 
 
 def test_going_nowhere():
@@ -169,8 +168,8 @@ def test_equator_is_halfway_from_pole_to_pole():
     """Make sure equator is halfway between (almost) the poles"""
     # don't do 90S to 90N as the great circle is not uniquely defined
     lat, lon = sg.intermediate_point(-89, 0, 89, 0, 0.5)
-    assert lat == 0.0
-    assert lon == 0.0
+    assert pytest.approx(lat, 0.0000001) == 0.0
+    assert pytest.approx(lon, 0.0000001) == 0.0
 
 
 def test_that_5deg_is_one_72th_of_equator():
@@ -186,6 +185,8 @@ def test_any_fraction_of_no_move_is_nothing():
     assert lat == 10.0
 
 
-def test_intermediate_point_raises():
-    with pytest.raises(ValueError):
-        sg.intermediate_point(10.0, 152.0, 10.0, 152.0, 1.75)
+@pytest.mark.parametrize("f", [1.75, -0.25])
+def test_intermediate_point_nan(f):
+    lat, lon = sg.intermediate_point(10.0, 152.0, 10.0, 152.0, f)
+    assert np.isnan(lat)
+    assert np.isnan(lon)
