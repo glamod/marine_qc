@@ -298,7 +298,7 @@ def generic_decorator(
     return decorator
 
 
-def post_format_return_type(params: list[str], dtype=int) -> Callable:
+def post_format_return_type(params: list[str], dtype=int, multiple=False) -> Callable:
     """
     Decorator to format a function's return value to match the type of its original input(s).
 
@@ -315,7 +315,10 @@ def post_format_return_type(params: list[str], dtype=int) -> Callable:
         format the return value.
     dtype : type, optional
         Desired data type of the result. Default is int.
-
+    multiple : bool, optional
+        If True, assumes the function returns a sequence of results (e.g., a tuple),
+        and applies `format_return_type` to each element individually.
+        If False (default), applies `format_return_type` once on the entire result.
 
     Returns
     -------
@@ -339,7 +342,12 @@ def post_format_return_type(params: list[str], dtype=int) -> Callable:
             if param in original_call:
                 input_values.append(original_call[param])
                 continue
-        return format_return_type(result, *input_values, dtype=dtype)
+        if multiple:
+            return tuple(
+                format_return_type(r, *input_values, dtype=dtype) for r in result
+            )
+        else:
+            return format_return_type(result, *input_values, dtype=dtype)
 
     return generic_decorator(post_handler=post_handler)
 
