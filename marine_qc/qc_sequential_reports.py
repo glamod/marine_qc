@@ -588,12 +588,8 @@ def find_repeated_values(
     )
     cutoff = threshold * allcount
     exceedances = counts > cutoff
-    exceedances = np.where(
-        exceedances, failed, passed
-    )
-    pass_fail = exceedances[
-        unique_inverse
-    ]
+    exceedances = np.where(exceedances, failed, passed)
+    pass_fail = exceedances[unique_inverse]
     rep[valid_indices] = pass_fail
 
     return rep
