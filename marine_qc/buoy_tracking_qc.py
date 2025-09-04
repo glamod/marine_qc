@@ -17,8 +17,8 @@ from typing import Sequence
 import numpy as np
 
 from .astronomical_geometry import sunangle
-from .auxiliary import failed, isvalid, passed, untestable, untested
-from .qc_sequential_reports import do_iquam_track_check, inspect_arrays
+from .auxiliary import failed, inspect_arrays, isvalid, passed, untestable, untested
+from .qc_sequential_reports import do_iquam_track_check
 from .spherical_geometry import sphere_distance
 from .statistics import trim_mean, trim_std
 from .time_control import convert_date_to_hours, day_in_year
