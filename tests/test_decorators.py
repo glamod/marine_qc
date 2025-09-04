@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import re
 
 import numpy as np
@@ -70,9 +69,7 @@ def test_convert_units_raise():
 
 
 def test_convert_units_valueerror():
-    with pytest.raises(
-        ValueError, match="Parameter 'value2' not found in function arguments."
-    ):
+    with pytest.raises(ValueError, match="Parameter 'value2' not found in function arguments."):
         _convert_function2(30.0, units={"value2": "degC"})
 
 
@@ -107,9 +104,7 @@ def test_inspect_arrays_raise_length():
 
 
 def test_inspect_arrays_raise_parameter():
-    with pytest.raises(
-        ValueError, match="Parameter 'value3' is not a valid parameter."
-    ):
+    with pytest.raises(ValueError, match="Parameter 'value3' is not a valid parameter."):
         _array_function2(1, 2)
 
 
