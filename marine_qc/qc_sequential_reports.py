@@ -321,7 +321,9 @@ def do_track_check(
         vsi, timediff, forward_diff_from_estimated, reverse_diff_from_estimated
     )
     # Check for continuity of direction
-    thisqc_b += direction_continuity(dsi, course, max_direction_change=max_direction_change)
+    thisqc_b += direction_continuity(
+        dsi, course, max_direction_change=max_direction_change
+    )
     # Check for continuity of speed.
     thisqc_b += speed_continuity(vsi, speed, max_speed_change=max_speed_change)
 
