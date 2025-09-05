@@ -9,6 +9,8 @@ authors = [
   {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"},
   {name = "John Kennedy", email = "jjk8932@googlemail.com"},
   {name = "Tina Leiding", email = "tina.leiding@dwd.de"},
+  {name = "Kate Willett", email = "kate.willett@metoffice.gov.uk"},
+  {name = "Chris Atkinson", email = "chris.atkinson@metoffice.gov.uk"},
   {name = "Axel Andersson", email = "axel.andersson@dwd.de"}
 ]
 maintainers = [
