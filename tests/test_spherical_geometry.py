@@ -87,9 +87,7 @@ def test_going_nowhere():
 
 def test_heading_north_from_pole_to_pole():
     """Heading north from the southpole for an angular distance of pi takes you to the north pole"""
-    lat, lon = sg.lat_lon_from_course_and_distance(
-        -90.0, 0.0, 0.0, np.pi * sg.earths_radius
-    )
+    lat, lon = sg.lat_lon_from_course_and_distance(-90.0, 0.0, 0.0, np.pi * sg.earths_radius)
     assert lat == 90.0
     assert lon == 0.0
 
@@ -97,24 +95,18 @@ def test_heading_north_from_pole_to_pole():
 def test_heading_north_from_pole_to_pole_on_different_headings():
     """Heading north from the southpole for an angular distance of pi takes you to the north pole"""
     for i in range(0, 100):
-        lat, _lon = sg.lat_lon_from_course_and_distance(
-            -90.0, 0.0, i * 360.0 / 100.0, np.pi * sg.earths_radius
-        )
+        lat, _lon = sg.lat_lon_from_course_and_distance(-90.0, 0.0, i * 360.0 / 100.0, np.pi * sg.earths_radius)
         assert lat == 90.0
 
 
 def test_heading_east_round_equator():
-    lat, lon = sg.lat_lon_from_course_and_distance(
-        0.0, 0.0, 90.0, 2 * np.pi * sg.earths_radius
-    )
+    lat, lon = sg.lat_lon_from_course_and_distance(0.0, 0.0, 90.0, 2 * np.pi * sg.earths_radius)
     assert pytest.approx(lat, 0.00000001) == 0.0
     assert pytest.approx(lon, 0.00000001) == 0.0
 
 
 def test_heading_eastish_round_equator():
-    lat, lon = sg.lat_lon_from_course_and_distance(
-        0.0, 0.0, 45.0, np.pi * sg.earths_radius
-    )
+    lat, lon = sg.lat_lon_from_course_and_distance(0.0, 0.0, 45.0, np.pi * sg.earths_radius)
     assert pytest.approx(lat, 0.00000001) == 0.0
     assert lon in [-180, 180]
 

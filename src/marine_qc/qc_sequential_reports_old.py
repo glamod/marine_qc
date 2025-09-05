@@ -1,0 +1,1564 @@
+"""
+QC of sequential reports
+========================
+
+Module containing QC functions for track checking which could be applied on a DataBundle.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import pyproj
+
+from . import spherical_geometry as sg
+from . import time_control
+from . import track_check_utils as tc
+from .auxiliary import (
+    SequenceDatetimeType,
+    SequenceFloatType,
+    SequenceIntType,
+    convert_units,
+    failed,
+    inspect_arrays,
+    isvalid,
+    passed,
+    post_format_return_type,
+)
+
+
+@inspect_arrays(["times2", "times1"])
+def time_differences_array(times2, times1):
+    """Return time differences in hours"""
+    times1 = pd.to_datetime(times1).values
+    times2 = pd.to_datetime(times2).values
+    time_difference = (times2 - times1) / (1e9 * 60 * 60)
+    return time_difference.astype(float)
+
+
+def angular_distance_array(lat1, lon1, lat2, lon2):
+    """Return distances in kilometres between points on the globe"""
+    radians_per_degree = np.pi / 180.0
+
+    # convert degrees to radians
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    lat2 = lat2 * radians_per_degree
+    lon2 = lon2 * radians_per_degree
+
+    delta_lambda = abs(lon1 - lon2)
+    bit1 = np.cos(lat2) * np.sin(delta_lambda)
+    bit1 = bit1 * bit1
+    bit2 = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(
+        delta_lambda
+    )
+    bit2 = bit2 * bit2
+
+    top_bit = bit1 + bit2
+    top_bit = np.sqrt(top_bit)
+
+    bottom_bit = np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(
+        delta_lambda
+    )
+
+    return np.arctan2(top_bit, bottom_bit)
+
+
+def sphere_distance_array(lat1, lon1, lat2, lon2):
+    """Return distances in kilometres between points on the globe"""
+    earths_radius = 6371.0088
+    return angular_distance_array(lat1, lon1, lat2, lon2) * earths_radius
+
+
+def intermediate_point_array(lat1, lon1, lat2, lon2, f):
+
+    earths_radius = 6371.0088
+    radians_per_degree = np.pi / 180.0
+
+    f[f > 1.0] = np.nan
+
+    d = angular_distance_array(lat1, lon1, lat2, lon2)
+
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    lat2 = lat2 * radians_per_degree
+    lon2 = lon2 * radians_per_degree
+
+    a = np.sin((1 - f) * d) / np.sin(d)
+    b = np.sin(f * d) / np.sin(d)
+    x = a * np.cos(lat1) * np.cos(lon1) + b * np.cos(lat2) * np.cos(lon2)
+    y = a * np.cos(lat1) * np.sin(lon1) + b * np.cos(lat2) * np.sin(lon2)
+    z = a * np.sin(lat1) + b * np.sin(lat2)
+    lat = np.arctan2(z, np.sqrt(x * x + y * y)) / radians_per_degree
+    lon = np.arctan2(y, x) / radians_per_degree
+
+    lat[d == 0.0] = lat1[d == 0.0] / radians_per_degree
+    lon[d == 0.0] = lon1[d == 0.0] / radians_per_degree
+
+    return lat, lon
+
+
+def course_between_points_array(lat1, lon1, lat2, lon2):
+    """Calculate courses between two sets of points using arrays and pyproj"""
+    geodesic = pyproj.Geod(ellps="WGS84")
+    fwd_azimuth, back_azimuth, distance = geodesic.inv(lon1, lat1, lon2, lat2)
+    return fwd_azimuth
+
+
+def calculate_speed_course_distance_time_difference_array(
+    lat, lon, date, alternating=False
+):
+
+    if alternating:
+        distance = sphere_distance_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        timediff = time_differences_array(np.roll(date, -1), np.roll(date, 1))
+        course = course_between_points_array(
+            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
+        )
+        # Alternating estimates are unavailable for the first and last elements
+        distance[0] = np.nan
+        distance[-1] = np.nan
+        timediff[0] = np.nan
+        timediff[-1] = np.nan
+        course[0] = np.nan
+        course[-1] = np.nan
+    else:
+        distance = sphere_distance_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        timediff = time_differences_array(date, np.roll(date, 1))
+        course = course_between_points_array(np.roll(lat, 1), np.roll(lon, 1), lat, lon)
+        # With the regular first differences, we don't have anything for the first element
+        distance[0] = np.nan
+        timediff[0] = np.nan
+        course[0] = np.nan
+
+    speed = distance / timediff
+    speed[timediff == 0.0] = 0.0
+
+    return speed, distance, course, timediff
+
+
+def lat_lon_from_course_and_distance_array(lat1, lon1, tc, d):
+    radians_per_degree = np.pi / 180.0
+    earths_radius = 6371.0088
+
+    lat1 = lat1 * radians_per_degree
+    lon1 = lon1 * radians_per_degree
+    tcr = tc * radians_per_degree
+
+    dr = d / earths_radius
+
+    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
+    dlon = np.arctan2(
+        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
+    )
+    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
+
+    lat = lat / radians_per_degree
+    lon = lon / radians_per_degree
+
+    return lat, lon
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def forward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """"""
+
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat1, lon1 = increment_position_array(
+        np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff
+    )
+
+    lat2, lon2 = increment_position_array(lat, lon, vsi, dsi, timediff)
+
+    updated_latitude = np.roll(lat, 1) + lat1 + lat2
+    updated_longitude = np.roll(lon, 1) + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        lat, lon, updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[0] = np.nan
+
+    return distance_from_est_location
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def backward_discrepancy_array(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """"""
+
+    timediff = time_differences_array(date, np.roll(date, 1))
+    lat2, lon2 = increment_position_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(vsi, 1),
+        np.roll(dsi, 1) - 180,
+        timediff,
+    )
+
+    lat1, lon1 = increment_position_array(lat, lon, vsi, dsi - 180, timediff)
+
+    updated_latitude = lat + lat1 + lat2
+    updated_longitude = lon + lon1 + lon2
+
+    # calculate distance between calculated position and the second reported position
+    distance_from_est_location = sphere_distance_array(
+        np.roll(lat, 1), np.roll(lon, 1), updated_latitude, updated_longitude
+    )
+
+    distance_from_est_location[-1] = np.nan
+
+    return distance_from_est_location
+
+
+def increment_position_array(alat1, alon1, avs, ads, timediff):
+    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+    increments of latitude and longitude which correspond to half the time difference.
+    """
+    distance = avs * timediff / 2.0
+    lat, lon = lat_lon_from_course_and_distance_array(alat1, alon1, ads, distance)
+    lat = lat - alat1
+    lon = lon - alon1
+
+    return lat, lon
+
+
+def calculate_midpoint_array(lat, lon, timediff):
+    number_of_obs = len(lat)
+    midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
+
+    t0 = timediff
+    t1 = np.roll(timediff, -1)
+    fraction_of_time_diff = t0 / (t0 + t1)
+    fraction_of_time_diff[t0 + t1 == 0] = 0.0
+    fraction_of_time_diff[np.isnan(t0)] = 0.0
+    fraction_of_time_diff[np.isnan(t1)] = 0.0
+
+    est_midpoint_lat, est_midpoint_lon = intermediate_point_array(
+        np.roll(lat, 1),
+        np.roll(lon, 1),
+        np.roll(lat, -1),
+        np.roll(lon, -1),
+        fraction_of_time_diff,
+    )
+
+    est_midpoint_lat[0] = np.nan
+    est_midpoint_lat[-1] = np.nan
+    est_midpoint_lon[0] = np.nan
+    est_midpoint_lon[-1] = np.nan
+
+    midpoint_discrepancies = sphere_distance_array(
+        lat, lon, est_midpoint_lat, est_midpoint_lon
+    )
+
+    return midpoint_discrepancies
+
+
+@post_format_return_type(["value"])
+@inspect_arrays(["value", "lat", "lon", "date"], sortby="date")
+@convert_units(lat="degrees", lon="degrees")
+def do_spike_check(
+    value: SequenceFloatType,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    max_gradient_space: float,
+    max_gradient_time: float,
+    delta_t: float,
+    n_neighbours: int,
+) -> SequenceIntType:
+    """Perform IQUAM-like spike check.
+
+    Parameters
+    ----------
+    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional array of values to be analyzed.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional array of latitudes in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional array of longitudes in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional array of datetime values.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    max_gradient_space : float, default: 0.5
+        Maximum allowed spatial gradient.
+        The unit is "units of value" per kilometer.
+
+    max_gradient_time : float, default: 1.0
+        Maximum allowed temporal gradient.
+        The unit is "units of value" per hour.
+
+    delta_t : float, default: 2.0
+        Temperature delta used in the comparison.
+        Typically set to 2.0 for ships and 1.0 for drifting buoys.
+
+    n_neighbours : int, default: 5
+        Number of neighboring points considered in the analysis.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+        One-dimensional array, sequence, or pandas Series of integer QC flags.
+        - Returns array/sequence/Series of 1s if the spike check fails.
+        - Returns array/sequence/Series of 0s otherwise.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+
+    Note
+    ----
+    In previous versions, default values for the parameters were:
+
+    * max_gradient_space: float = 0.5
+    * max_gradient_time: float = 1.0
+    * delta_t: float = 2.0
+    * n_neighbours: int = 5
+    """
+    gradient_violations = []
+    count_gradient_violations = []
+
+    number_of_obs = len(value)
+
+    spike_qc = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+
+    for t1 in range(number_of_obs):
+
+        violations_for_this_report = []
+        count_violations_this_report = 0.0
+
+        lo = max(0, t1 - n_neighbours)
+        hi = min(number_of_obs, t1 + n_neighbours + 1)
+
+        for t2 in range(lo, hi):
+
+            if not isvalid(value[t1]) or not isvalid(value[t2]):
+                continue
+
+            distance = sg.sphere_distance(lat[t1], lon[t1], lat[t2], lon[t2])
+            delta = pd.Timestamp(date[t2]) - pd.Timestamp(date[t1])
+            time_diff = abs(delta.days * 24 + delta.seconds / 3600.0)
+            val_change = abs(value[t2] - value[t1])
+
+            iquam_condition = max(
+                [
+                    delta_t,
+                    abs(distance) * max_gradient_space,
+                    abs(time_diff) * max_gradient_time,
+                ]
+            )
+
+            if val_change > iquam_condition:
+                violations_for_this_report.append(t2)
+                count_violations_this_report += 1.0
+
+        gradient_violations.append(violations_for_this_report)
+        count_gradient_violations.append(count_violations_this_report)
+
+    while np.sum(count_gradient_violations) > 0.0:
+        most_fails = int(np.argmax(count_gradient_violations))
+        spike_qc[most_fails] = failed
+
+        for index in gradient_violations[most_fails]:
+            if most_fails in gradient_violations[index]:
+                gradient_violations[index].remove(most_fails)
+                count_gradient_violations[index] -= 1.0
+
+        count_gradient_violations[most_fails] = 0
+
+    return spike_qc
+
+
+@convert_units(
+    lat_later="degrees",
+    lat_earlier="degrees",
+    lon_later="degrees",
+    lon_earlier="degrees",
+)
+def calculate_course_parameters(
+    lat_later: float,
+    lat_earlier: float,
+    lon_later: float,
+    lon_earlier: float,
+    date_later: datetime,
+    date_earlier: datetime,
+) -> tuple[float, float, float, float]:
+    """Calculate course parameters.
+
+    Parameters
+    ----------
+    lat_later: float
+        Latitude in degrees of later timestamp.
+    lat_earlier:float
+        Latitude in degrees of earlier timestamp.
+    lon_later: float
+        Longitude in degrees of later timestamp.
+    lon_earlier: float
+        Longitude in degrees of earlier timestamp.
+    date_later: datetime
+        Date of later timestamp.
+    date_earlier: datetime
+        Date of earlier timestamp.
+
+    Returns
+    -------
+    tuple of float
+        A tuple of four floats representing the speed, distance, course and time difference
+    """
+    distance = sg.sphere_distance(lat_later, lon_later, lat_earlier, lon_earlier)
+    date_earlier = pd.Timestamp(date_earlier)
+    date_later = pd.Timestamp(date_later)
+
+    timediff = time_control.time_difference(
+        date_earlier.year,
+        date_earlier.month,
+        date_earlier.day,
+        date_earlier.hour + date_earlier.minute / 60.0,
+        date_later.year,
+        date_later.month,
+        date_later.day,
+        date_later.hour + date_later.minute / 60.0,
+    )
+    if timediff != 0 and isvalid(timediff):
+        speed = distance / abs(timediff)
+    else:
+        timediff = 0.0
+        speed = distance
+
+    course = sg.course_between_points(lat_earlier, lon_earlier, lat_later, lon_later)
+
+    return speed, distance, course, timediff
+
+
+@inspect_arrays(["lat", "lon", "date"])
+@convert_units(lat="degrees", lon="degrees")
+def calculate_speed_course_distance_time_difference(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    alternating: bool = False,
+) -> tuple[SequenceFloatType, SequenceFloatType, SequenceFloatType, SequenceFloatType]:
+    """
+    Calculates speeds, courses, distances and time differences using consecutive reports.
+
+    Parameters
+    ----------
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    alternating : bool, default: False
+        Whether to use alternating reports for calculation.
+
+    Returns
+    -------
+    tuple of same types as input, each with float values, shape (n,)
+        A tuple containing four one-dimensional arrays, sequences, or pandas Series of floats representing:
+        speed, distance, course, and time difference.
+
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    number_of_obs = len(lat)
+
+    speed = np.empty(number_of_obs)  # type: np.ndarray
+    course = np.empty(number_of_obs)  # type: np.ndarray
+    distance = np.empty(number_of_obs)  # type: np.ndarray
+    timediff = np.empty(number_of_obs)  # type: np.ndarray
+
+    speed.fill(np.nan)
+    course.fill(np.nan)
+    distance.fill(np.nan)
+    timediff.fill(np.nan)
+
+    if number_of_obs == 1:
+        return speed, distance, course, timediff
+
+    range_end = number_of_obs
+    first_entry_offset = 0
+    second_entry_offset = -1
+    if alternating:
+        range_end = number_of_obs - 1
+        first_entry_offset = 1
+
+    for i in range(1, range_end):
+        fe = i + first_entry_offset
+        se = i + second_entry_offset
+        ship_speed, ship_distance, ship_direction, ship_time_difference = (
+            calculate_course_parameters(
+                lat[fe], lat[se], lon[fe], lon[se], date[fe], date[se]
+            )
+        )
+
+        speed[i] = ship_speed
+        course[i] = ship_direction
+        distance[i] = ship_distance
+        timediff[i] = ship_time_difference
+
+    return speed, distance, course, timediff
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def forward_discrepancy(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """Calculate what the distance is between the projected position (based on the reported
+    speed and heading at the current and previous time steps) and the actual position. The
+    observations are taken in time order.
+
+    This takes the speed and direction reported by the ship and projects it forwards half a
+    time step, it then projects it forwards another half time-step using the speed and
+    direction for the next report, to which the projected location
+    is then compared. The distances between the projected and actual locations is returned
+
+    Parameters
+    ----------
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported speed array in km/h.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported heading array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    Same type as input, but with float values, shape (n,)
+        One-dimensional array, sequence, or pandas Series containing distances from estimated positions.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    number_of_obs = len(lat)
+
+    distance_from_est_location = np.asarray(
+        [np.nan] * number_of_obs
+    )  # type: np.ndarray
+
+    for i in range(1, number_of_obs):
+
+        vsi_current = vsi[i]
+        vsi_previous = vsi[i - 1]
+        dsi_current = dsi[i]
+        dsi_previous = dsi[i - 1]
+        tsi_current = pd.Timestamp(date[i])
+        tsi_previous = pd.Timestamp(date[i - 1])
+        lat_current = lat[i]
+        lat_previous = lat[i - 1]
+        lon_current = lon[i]
+        lon_previous = lon[i - 1]
+
+        if False in [
+            isvalid(x)
+            for x in [
+                vsi_current,
+                dsi_current,
+                vsi_previous,
+                dsi_previous,
+                tsi_current,
+                tsi_previous,
+                lat_current,
+                lat_previous,
+                lon_current,
+                lon_previous,
+            ]
+        ]:
+            continue
+
+        timediff = (tsi_current - tsi_previous).total_seconds() / 3600
+        # get increment from initial position
+        lat1, lon1 = tc.increment_position(
+            lat_previous,
+            lon_previous,
+            vsi_previous,
+            dsi_current,
+            timediff,
+        )
+
+        lat2, lon2 = tc.increment_position(
+            lat_current,
+            lon_current,
+            vsi_current,
+            dsi_current,
+            timediff,
+        )
+
+        # apply increments to the lat and lon at i-1
+        updated_latitude = lat_previous + lat1 + lat2
+        updated_longitude = lon_previous + lon1 + lon2
+
+        # calculate distance between calculated position and the second reported position
+        discrepancy = sg.sphere_distance(
+            lat_current, lon_current, updated_latitude, updated_longitude
+        )
+
+        distance_from_est_location[i] = discrepancy
+
+    return distance_from_est_location
+
+
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def backward_discrepancy(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+) -> SequenceFloatType:
+    """Calculate what the distance is between the projected position (based on the reported speed and
+    heading at the current and previous time steps) and the actual position. The calculation proceeds from the
+    final, later observation to the first (in contrast to distr1 which runs in time order)
+
+    This takes the speed and direction reported by the ship and projects it forwards half a time step, it then
+    projects it forwards another half-time step using the speed and direction for the next report, to which the
+    projected location is then compared. The distances between the projected and actual locations is returned
+
+    Parameters
+    ----------
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported speed array in km/h.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported heading array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    Same type as input, but with float values, shape (n,)
+        One-dimensional array, sequence, or pandas Series containing distances from estimated positions.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    number_of_obs = len(lat)
+
+    distance_from_est_location = np.asarray(
+        [np.nan] * number_of_obs
+    )  # type: np.ndarray
+
+    for i in range(number_of_obs - 1, 0, -1):
+
+        vsi_current = vsi[i]
+        vsi_previous = vsi[i - 1]
+        dsi_current = dsi[i]
+        dsi_previous = dsi[i - 1]
+        tsi_current = pd.Timestamp(date[i])
+        tsi_previous = pd.Timestamp(date[i - 1])
+        lat_current = lat[i]
+        lat_previous = lat[i - 1]
+        lon_current = lon[i]
+        lon_previous = lon[i - 1]
+
+        if False in [
+            isvalid(x)
+            for x in [
+                vsi_current,
+                dsi_current,
+                vsi_previous,
+                dsi_previous,
+                tsi_current,
+                tsi_previous,
+                lat_current,
+                lat_previous,
+                lon_current,
+                lon_previous,
+            ]
+        ]:
+            continue
+
+        timediff = (tsi_current - tsi_previous).total_seconds() / 3600
+        # get increment from initial position - backwards in time means reversing the direction by 180 degrees
+        lat1, lon1 = tc.increment_position(
+            lat_current,
+            lon_current,
+            vsi_current,
+            dsi_current - 180.0,
+            timediff,
+        )
+
+        lat2, lon2 = tc.increment_position(
+            lat_previous,
+            lon_previous,
+            vsi_previous,
+            dsi_previous - 180.0,
+            timediff,
+        )
+
+        # apply increments to the lat and lon at i-1
+        updated_latitude = lat_current + lat1 + lat2
+        updated_longitude = lon_current + lon1 + lon2
+
+        # calculate distance between calculated position and the second reported position
+        discrepancy = sg.sphere_distance(
+            lat_previous, lon_previous, updated_latitude, updated_longitude
+        )
+        distance_from_est_location[i] = discrepancy
+
+    # that fancy bit at the end reverses the array
+    return distance_from_est_location[::-1]
+
+
+@inspect_arrays(["lat", "lon", "timediff"])
+@convert_units(lat="degrees", lon="degrees")
+def calculate_midpoint(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    timediff: SequenceDatetimeType,
+) -> SequenceFloatType:
+    """Interpolate between alternate reports and compare the interpolated location to the actual location. e.g.
+    take difference between reports 2 and 4 and interpolate to get an estimate for the position at the time
+    of report 3. Then compare the estimated and actual positions at the time of report 3.
+
+    The calculation linearly interpolates the latitudes and longitudes (allowing for wrapping around the
+    dateline and so on).
+
+    Parameters
+    ----------
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional latitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional longitude array in degrees.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    timediff : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+        One-dimensional time difference array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    Same type as input, but with float values, shape (n,)
+        One-dimensional array, sequence, or pandas Series of distances from estimated positions in kilometers.
+
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+    """
+    number_of_obs = len(lat)
+
+    midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
+
+    for i in range(1, number_of_obs - 1):
+        t0 = timediff[i]
+        t1 = timediff[i + 1]
+        if t0 is not None and t1 is not None:
+            if t0 + t1 != 0:
+                fraction_of_time_diff = t0 / (t0 + t1)
+            else:
+                fraction_of_time_diff = 0.0
+        else:
+            fraction_of_time_diff = 0.0
+
+        estimated_lat_at_midpoint, estimated_lon_at_midpoint = sg.intermediate_point(
+            lat[i - 1],
+            lon[i - 1],
+            lat[i + 1],
+            lon[i + 1],
+            fraction_of_time_diff,
+        )
+
+        discrepancy = sg.sphere_distance(
+            lat[i],
+            lon[i],
+            estimated_lat_at_midpoint,
+            estimated_lon_at_midpoint,
+        )
+
+        midpoint_discrepancies[i] = discrepancy
+
+    return midpoint_discrepancies
+
+
+@post_format_return_type(["vsi"])
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def do_track_check(
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    max_direction_change: float,
+    max_speed_change: float,
+    max_absolute_speed: float,
+    max_midpoint_discrepancy: float,
+) -> SequenceIntType:
+    """Perform one pass of the track check.  This is an implementation of the MDS track check code
+    which was originally written in the 1990s. I don't know why this piece of historic trivia so exercises
+    my mind, but it does: the 1990s! I wish my code would last so long.
+
+    Parameters
+    ----------
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional reported speed array in km/h.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional reported heading array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional latitude array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional longitude array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+      One-dimensional date array.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    max_direction_change : float, default: 60.0
+      Maximum valid direction change in degrees.
+
+    max_speed_change : float, default: 10.0
+      Maximum valid speed change in km/h.
+
+    max_absolute_speed : float, default: 40.0
+      Maximum valid absolute speed in km/h.
+
+    max_midpoint_discrepancy : float, default: 150.0
+      Maximum valid midpoint discrepancy in meters.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+      One-dimensional array, sequence, or pandas Series of integer QC flags.
+      - Returns array/sequence/Series of 1s if the track check fails.
+      - Returns array/sequence/Series of 0s otherwise.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+
+    Note
+    ----
+    If number of observations is less than three, the track check always passes.
+
+    In previous versions, the default values of the parameters were:
+
+    * max_direction_change = 60.0
+    * max_speed_change = 10.0
+    * max_absolute_speed =  40.0
+    * max_midpoint_discrepancy = 150.0
+    """
+    number_of_obs = len(lat)
+
+    # no obs in, no qc outcomes out
+    if number_of_obs == 0:
+        return np.asarray([])
+
+    # fewer than three obs - set the fewsome flag
+    if number_of_obs < 3:
+        return np.asarray([passed] * number_of_obs)
+
+    # work out speeds and distances between alternating points
+    speed_alt, _distance_alt, _course_alt, _timediff_alt = (
+        calculate_speed_course_distance_time_difference(
+            lat=lat,
+            lon=lon,
+            date=date,
+            alternating=True,
+        )
+    )
+    speed, _distance, course, timediff = (
+        calculate_speed_course_distance_time_difference(
+            lat=lat,
+            lon=lon,
+            date=date,
+        )
+    )
+
+    # what are the mean and mode speeds?
+    modal_speed = tc.modal_speed(speed)
+
+    # set speed limits based on modal speed
+    amax, _amaxx, _amin = tc.set_speed_limits(modal_speed)
+
+    # compare reported speeds and positions if we have them
+    forward_diff_from_estimated = forward_discrepancy(
+        lat=lat,
+        lon=lon,
+        date=date,
+        vsi=vsi,
+        dsi=dsi,
+    )
+    reverse_diff_from_estimated = backward_discrepancy(
+        lat=lat,
+        lon=lon,
+        date=date,
+        vsi=vsi,
+        dsi=dsi,
+    )
+
+    midpoint_diff_from_estimated = calculate_midpoint(
+        lat=lat,
+        lon=lon,
+        timediff=timediff,
+    )
+
+    # do QC
+    trk = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+
+    for i in range(1, number_of_obs - 1):
+        thisqc_a = 0
+        thisqc_b = 0
+
+        # together these cover the speeds calculate from point i
+        if (
+            isvalid(speed[i])
+            and speed[i] > amax
+            and isvalid(speed_alt[i - 1])
+            and speed_alt[i - 1] > amax
+        ):
+            thisqc_a += 1.00
+        elif (
+            isvalid(speed[i + 1])
+            and speed[i + 1] > amax
+            and isvalid(speed_alt[i + 1])
+            and speed_alt[i + 1] > amax
+        ):
+            thisqc_a += 2.00
+        elif (
+            isvalid(speed[i])
+            and speed[i] > amax
+            and isvalid(speed[i + 1])
+            and speed[i + 1] > amax
+        ):
+            thisqc_a += 3.00
+
+        # Quality-control by examining the distance
+        # between the calculated and reported second position.
+        thisqc_b += tc.check_distance_from_estimate(
+            vsi[i],
+            vsi[i - 1],
+            timediff[i],
+            forward_diff_from_estimated[i],
+            reverse_diff_from_estimated[i],
+        )
+        # Check for continuity of direction
+        thisqc_b += tc.direction_continuity(
+            dsi[i],
+            dsi[i - 1],
+            course[i],
+            max_direction_change,
+        )
+        # Check for continuity of speed.
+        thisqc_b += tc.speed_continuity(
+            vsi[i],
+            vsi[i - 1],
+            speed[i],
+            max_speed_change,
+        )
+
+        # check for speeds in excess of 40.00 knots
+        if speed[i] > max_absolute_speed:
+            thisqc_b += 10.0
+
+        # make the final decision
+        if (
+            midpoint_diff_from_estimated[i] > max_midpoint_discrepancy
+            and thisqc_a > 0
+            and thisqc_b > 0
+        ):
+            trk[i] = failed
+
+    return trk
+
+
+@post_format_return_type(["vsi"])
+@inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+def do_track_check_array(
+    vsi: SequenceFloatType,
+    dsi: SequenceFloatType,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    max_direction_change: float,
+    max_speed_change: float,
+    max_absolute_speed: float,
+    max_midpoint_discrepancy: float,
+) -> SequenceIntType:
+    number_of_obs = len(lat)
+
+    # no obs in, no qc outcomes out
+    if number_of_obs == 0:
+        return np.asarray([])
+
+    # fewer than three obs - set the fewsome flag
+    if number_of_obs < 3:
+        return np.asarray([passed] * number_of_obs)
+
+    # work out speeds and distances between alternating points
+    speed_alt, _distance_alt, _course_alt, _timediff_alt = (
+        calculate_speed_course_distance_time_difference_array(
+            lat=lat,
+            lon=lon,
+            date=date,
+            alternating=True,
+        )
+    )
+    speed, _distance, course, timediff = (
+        calculate_speed_course_distance_time_difference_array(
+            lat=lat,
+            lon=lon,
+            date=date,
+        )
+    )
+
+    # what are the mean and mode speeds?
+    modal_speed = tc.modal_speed(speed)
+
+    # set speed limits based on modal speed
+    amax, _amaxx, _amin = tc.set_speed_limits(modal_speed)
+
+    # compare reported speeds and positions if we have them
+    forward_diff_from_estimated = forward_discrepancy_array(
+        lat=lat,
+        lon=lon,
+        date=date,
+        vsi=vsi,
+        dsi=dsi,
+    )
+    reverse_diff_from_estimated = backward_discrepancy_array(
+        lat=lat,
+        lon=lon,
+        date=date,
+        vsi=vsi,
+        dsi=dsi,
+    )
+
+    midpoint_diff_from_estimated = calculate_midpoint_array(
+        lat=lat,
+        lon=lon,
+        timediff=timediff,
+    )
+
+    thisqc_a = np.zeros(number_of_obs)
+    thisqc_b = np.zeros(number_of_obs)
+
+    speed_alt_previous = np.roll(speed_alt, 1)
+    speed_alt_next = np.roll(speed_alt, -1)
+    speed_next = np.roll(speed, -1)
+
+    selection1 = speed > amax
+    selection2 = speed_alt_previous > amax
+    selection_a = np.logical_and(selection1, selection2)
+
+    selection1 = speed_next > amax
+    selection2 = speed_alt_next > amax
+    selection_b = np.logical_and(selection1, selection2)
+
+    selection1 = speed > amax
+    selection2 = speed_next > amax
+    selection_c = np.logical_and(selection1, selection2)
+
+    thisqc_a[selection_c] = thisqc_a[selection_c] + 3.00
+    thisqc_a[selection_b] = thisqc_a[selection_b] + 2.00
+    thisqc_a[selection_a] = thisqc_a[selection_a] + 1.00
+
+    # Quality-control by examining the distance
+    # between the calculated and reported second position.
+    thisqc_b += tc.check_distance_from_estimate_array(
+        vsi, timediff, forward_diff_from_estimated, reverse_diff_from_estimated
+    )
+    # Check for continuity of direction
+    thisqc_b += tc.direction_continuity_array(dsi, course, max_direction_change)
+    # Check for continuity of speed.
+    thisqc_b += tc.speed_continuity_array(vsi, speed, max_speed_change)
+
+    thisqc_b[speed > max_absolute_speed] = thisqc_b[speed > max_absolute_speed] + 10.0
+
+    fails = (
+        (midpoint_diff_from_estimated > max_midpoint_discrepancy)
+        & (thisqc_a > 0)
+        & (thisqc_b > 0)
+    )
+
+    trk = np.where(fails, failed, passed)
+
+    return trk
+
+
+@post_format_return_type(["value"])
+@inspect_arrays(["value"])
+def do_few_check(
+    value: SequenceFloatType,
+) -> SequenceIntType:
+    """Checks if number of observations is less than 3.
+
+    Parameters
+    ----------
+    value: sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional array of values to be analyzed.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+      One-dimensional array, sequence, or pandas Series of integer QC flags.
+      - Returns array/sequence/Series of 1s if number of observations is less than 3.
+      - Returns array/sequence/Series of 0s otherwise.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional.
+    """
+    number_of_obs = len(value)
+
+    # no obs in, no qc outcomes out
+    if number_of_obs == 0:
+        return [failed] * number_of_obs
+
+    # fewer than three obs - set the fewsome flag
+    if number_of_obs < 3:
+        return [failed] * number_of_obs
+
+    return [passed] * number_of_obs
+
+
+@post_format_return_type(["at"])
+@inspect_arrays(["at", "dpt", "lat", "lon", "date"], sortby="date")
+@convert_units(at="K", dpt="K", lat="degrees", lon="degrees")
+def find_saturated_runs(
+    at: SequenceFloatType,
+    dpt: SequenceFloatType,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    min_time_threshold: float,
+    shortest_run: int,
+) -> SequenceIntType:
+    """Perform checks on persistence of 100% rh while going through the voyage.
+    While going through the voyage repeated strings of 100 %rh (AT == DPT) are noted.
+    If a string extends beyond 20 reports and two days/48 hrs in time then all values are set to
+    fail the repsat qc flag.
+
+    Parameters
+    ----------
+    at : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional air temperature array.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dpt : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional dew point temperature array.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional latitude array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional longitude array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+      One-dimensional date array.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    min_time_threshold : float, default: 48.0
+      Minimum time threshold in hours.
+
+    shortest_run : int, default: 4
+      Shortest number of observations.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+      One-dimensional array, sequence, or pandas Series of integer QC flags.
+      - Returns array/sequence/Series of 1s if a saturated run is found.
+      - Returns array/sequence/Series of 0s otherwise.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+
+    Note
+    ----
+    In previous version, default values for the parameters were:
+
+    * min_time_threshold =  48.0
+    * shortest_run = 4
+    """
+    satcount = []
+
+    repsat = np.asarray([passed] * len(lat))  # type: np.ndarray
+
+    for i in range(len(repsat)):
+
+        saturated = dpt[i] == at[i]
+
+        if saturated:
+            satcount.append(i)
+        elif not saturated and len(satcount) > shortest_run:
+            later = satcount[len(satcount) - 1]
+            earlier = satcount[0]
+            _, _, _, tdiff = calculate_course_parameters(
+                lat_later=lat[later],
+                lat_earlier=lat[earlier],
+                lon_later=lon[later],
+                lon_earlier=lon[earlier],
+                date_later=date[later],
+                date_earlier=date[earlier],
+            )
+
+            if tdiff >= min_time_threshold:
+                for loc in satcount:
+                    repsat[loc] = failed
+                satcount = []
+            else:
+                satcount = []
+
+        else:
+            satcount = []
+
+    if len(satcount) > shortest_run:
+        later = satcount[len(satcount) - 1]
+        earlier = satcount[0]
+        _, _, _, tdiff = calculate_course_parameters(
+            lat_later=lat[later],
+            lat_earlier=lat[earlier],
+            lon_later=lon[later],
+            lon_earlier=lon[earlier],
+            date_later=date[later],
+            date_earlier=date[earlier],
+        )
+        if tdiff >= min_time_threshold:
+            for loc in satcount:
+                repsat[loc] = failed
+
+    return repsat
+
+
+@post_format_return_type(["value"])
+@inspect_arrays(["value"])
+def find_multiple_rounded_values(
+    value: SequenceFloatType, min_count: int, threshold: float
+) -> SequenceIntType:
+    """Find instances when more than "threshold" of the observations are
+    whole numbers and set the 'round' flag. Used in the humidity QC
+    where there are times when the values are rounded and this may
+    have caused a bias.
+
+    Parameters
+    ----------
+    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional array of values.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    min_count : int, default: 20
+      Minimum number of rounded figures that will trigger the test.
+
+    threshold : float, default: 0.5
+      Minimum fraction of all observations that will trigger the test.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+      One-dimensional array, sequence, or pandas Series of integer QC flags.
+      - Returns array/sequence/Series of 1s if the value is a whole number.
+      - Returns array/sequence/Series of 0s otherwise.
+
+    Note
+    ----
+    Previous versions had default values for the parameters of:
+
+    * min_count = 20
+    * threshold = 0.5
+    """
+    if not (0.0 <= threshold <= 1.0):
+        raise ValueError(
+            f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0."
+        )
+
+    number_of_obs = len(value)
+
+    if number_of_obs == 0:
+        return [passed] * number_of_obs
+
+    rounded = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+
+    valid_indices = isvalid(value)
+    allcount = np.count_nonzero(valid_indices)
+    if allcount <= min_count:
+        return rounded
+
+    # Find rounded values by checking where value mod 1 equals zero and set to failed if they exceed threshold
+    rounded_values = np.equal(np.mod(value[valid_indices], 1), 0)
+    cutoff = allcount * threshold
+    if np.count_nonzero(rounded_values) > cutoff:
+        rounded[valid_indices & rounded_values] = failed
+
+    return rounded
+
+
+@post_format_return_type(["value"])
+@inspect_arrays(["value"])
+def find_repeated_values(
+    value: SequenceFloatType, min_count: int, threshold: float
+) -> SequenceIntType:
+    """Find cases where more than a given proportion of SSTs have the same value
+
+    This function goes through a voyage and finds any cases where more than a threshold fraction of
+    the observations have the same values for a specified variable.
+
+
+    Parameters
+    ----------
+    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional array of values.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    min_count : int, default: 20
+      Minimum number of repeated values that will trigger the test.
+
+    threshold : float, default: 0.7
+      Smallest fraction of all observations that will trigger the test.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+      One-dimensional array, sequence, or pandas Series of integer QC flags.
+      - Returns array/sequence/Series of 1s if the value is repeated.
+      - Returns array/sequence/Series of 0s otherwise.
+
+    Note
+    ----
+    Previous versions had default values for the parameters of:
+
+    * min_count = 20
+    * threshold = 0.7
+    """
+    if not (0.0 <= threshold <= 1.0):
+        raise ValueError(
+            f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0."
+        )
+
+    number_of_obs = len(value)
+
+    if number_of_obs == 0:
+        return [passed] * number_of_obs
+
+    rep = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+
+    valid_indices = isvalid(value)
+
+    allcount = np.count_nonzero(valid_indices)
+    if allcount <= min_count:
+        return rep
+
+    unique_values, unique_inverse, counts = np.unique(
+        value[valid_indices], return_inverse=True, return_counts=True
+    )
+    cutoff = threshold * allcount  # Calculate the cutoff
+    exceedances = counts > cutoff  # Find the unique values that exceed the cutoff
+    exceedances = np.where(
+        exceedances, failed, passed
+    )  # replace True/False with failed and passed
+    pass_fail = exceedances[
+        unique_inverse
+    ]  # Rebuild array using the pass/fails in place of unique values
+    rep[valid_indices] = pass_fail  # Put the passes and fails back into
+
+    return rep
+
+
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "date"], sortby="date")
+@convert_units(lat="degrees", lon="degrees")
+def do_iquam_track_check(
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
+    speed_limit: float,
+    delta_d: float,
+    delta_t: float,
+    n_neighbours: int,
+) -> SequenceIntType:
+    """Perform the IQUAM track check as detailed in Xu and Ignatov 2013
+
+    The track check calculates speeds between pairs of observations and
+    counts how many exceed a threshold speed. The ob with the most
+    violations of this limit is flagged as bad and removed from the
+    calculation. Then the next worst is found and removed until no
+    violations remain.
+
+    Parameters
+    ----------
+    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional latitude array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+      One-dimensional longitude array in degrees.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+      One-dimensional date array.
+      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    speed_limit : float
+      Speed limit of platform in kilometers per hour.
+      Typically, 60.0 for ships and 15.0 for drifting buoys.
+
+    delta_d : float
+      Latitude tolerance in degrees.
+
+    delta_t : float
+      Time tolerance in hundredths of an hour.
+
+    n_neighbours : int
+      Number of neighbouring points considered in the analysis.
+
+    Returns
+    -------
+    Same type as input, but with integer values, shape (n,)
+      One-dimensional array, sequence, or pandas Series of integer QC flags.
+      - Returns array/sequence/Series of 1s if the IQUAM QC fails.
+      - Returns array/sequence/Series of 0s otherwise.
+
+    Raises
+    ------
+    ValueError
+        If either input is not 1-dimensional or if their lengths do not match.
+
+    Note
+    ----
+    Previous versions had default values for the parameters of:
+
+    * speed_limit = 60.0 for ships and 15.0 for drifting buoys
+    * delta_d = 1.11
+    * delta_t = 0.01
+    * n_neighbours = 5
+    """
+    number_of_obs = len(lat)
+
+    if number_of_obs == 0:
+        return [passed] * number_of_obs
+
+    speed_violations = []
+    count_speed_violations = []
+
+    iquam_track = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+
+    for t1 in range(0, number_of_obs):
+        violations_for_this_report = []
+        count_violations_this_report = 0.0
+
+        lo = max(0, t1 - n_neighbours)
+        hi = min(number_of_obs, t1 + n_neighbours + 1)
+
+        for t2 in range(lo, hi):
+
+            _, distance, _, timediff = calculate_course_parameters(
+                lat_later=lat[t2],
+                lat_earlier=lat[t1],
+                lon_later=lon[t2],
+                lon_earlier=lon[t1],
+                date_later=date[t2],
+                date_earlier=date[t1],
+            )
+
+            iquam_condition = max([abs(distance) - delta_d, 0.0]) / (
+                abs(timediff) + delta_t
+            )
+
+            if iquam_condition > speed_limit:
+                violations_for_this_report.append(t2)
+                count_violations_this_report += 1.0
+
+        speed_violations.append(violations_for_this_report)
+        count_speed_violations.append(count_violations_this_report)
+
+    while np.sum(count_speed_violations) > 0.0:
+        most_fails = int(np.argmax(count_speed_violations))
+        iquam_track[most_fails] = failed
+
+        for index in speed_violations[most_fails]:
+            if most_fails in speed_violations[index]:
+                speed_violations[index].remove(most_fails)
+                count_speed_violations[index] -= 1.0
+
+        count_speed_violations[most_fails] = passed
+
+    return iquam_track

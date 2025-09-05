@@ -3,15 +3,15 @@ Marine Quality Control: ``marine_qc`` toolbox
 ==================================================================
 
 +----------------------------+----------------------------------------------------------------+
-| Versions                   | |pypi| |versions|                                              |
+| Versions                   | |pypi|                                                         |
 +----------------------------+----------------------------------------------------------------+
-| Documentation and Support  | |docs|                                                         |
+| Documentation and Support  | |docs| |versions|                                              |
 +----------------------------+----------------------------------------------------------------+
 | Open Source                | |license| |zenodo|                                             |
 +----------------------------+----------------------------------------------------------------+
 |                            | |fair-software| |ossf|                                         |
 +----------------------------+----------------------------------------------------------------+
-| Coding Standards           | |black| |ruff| |pre-commit| |codefactor|                       |
+| Coding Standards           | |black| |isort| |ruff| |pre-commit| |codefactor|               |
 +----------------------------+----------------------------------------------------------------+
 |                            | |security| |fossa|                                             |
 +----------------------------+----------------------------------------------------------------+
@@ -99,7 +99,7 @@ Credits
 
 ``marine_qc`` development is funded through Copernicus Climate Change Service (C3S_).
 
-This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-pypackage`_ project template.
+This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pypackage`_ project template.
 
 .. hyperlinks
 
@@ -150,6 +150,10 @@ This package was created with Cookiecutter_ and the `audreyfeldroy/cookiecutter-
 .. |fossa| image:: https://app.fossa.com/api/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc.svg?type=shield
         :target: https://app.fossa.com/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc?ref=badge_shield
         :alt: FOSSA
+
+.. |isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+        :target: https://pycqa.github.io/isort/
+        :alt: Isort
 
 .. |license| image:: https://img.shields.io/github/license/glamod/marine_qc.svg
         :target: https://github.com/glamod/marine_qc/blob/main/LICENSE

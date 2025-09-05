@@ -10,14 +10,16 @@
 'CI':
   - changed-files:
     - any-glob-to-any-file:
+      - '.editorconfig'
       - '.flake8'
       - '.gitignore'
       - '.pre-commit-config.yaml'
-      - '.pylintrc.toml'
       - '.readthedocs.yaml'
       - '.yamllint.yaml'
       - '.github/workflows/*'
       - 'docs/Makefile'
+      - 'tox.ini'
+      - 'CI/**/*'
       - 'Makefile'
 
 'docs':
@@ -25,23 +27,29 @@
     - any-glob-to-any-file:
       - '.readthedocs.yml'
       - 'docs/**/*'
+      - 'environment-docs.yml'
       - 'AUTHORS.rst'
       - 'CONTRIBUTING.rst'
+      - 'CODE_OF_CONDUCT.md'
+      - 'DISCUSSION_TEMPLATE/**/*'
+      - 'ISSUE_TEMPLATE/**/*'
+      - 'ISSUE_TEMPLATE.md'
+      - 'PULL_REQUEST_TEMPLATE.md'
       - 'README.rst'
-      - 'CHANGES.rst'
+      - 'CHANGELOG.rst'
 
 'marine_qc':
   - changed-files:
     - any-glob-to-any-file:
-      - 'marine_qc/*.py'
-      - 'marine_qc/**/*.py'
-      - 'marine_qc/**/*.json'
+      - 'src/marine_qc/*.py'
+      - 'src/marine_qc/**/*.py'
+      - 'src/marine_qc/**/*.json'
 
 'information':
   - changed-files:
     - any-glob-to-any-file:
       - 'CONTRIBUTING.rst'
-      - 'CHANGES.rst'
+      - 'CHANGELOG.rst'
 
 'license':
   - changed-files:

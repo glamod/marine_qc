@@ -1,4 +1,4 @@
-﻿.. module:: marine_qc
+.. module:: marine_qc
 
 .. marine_qc documentation master file
 
@@ -20,16 +20,18 @@ modular way via a standardised interface.
    :caption: Contents:
 
    About <readme>
-   tool-set-up
+   installation
+   usage
    introduction
    overview
    overview_seq
    overview_grp
    overview_buoy_tracking
    contributing
+   releasing
    authors
    api
-   changes
+   changelog
 
 
 About
