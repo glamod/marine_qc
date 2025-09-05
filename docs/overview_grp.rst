@@ -7,9 +7,6 @@ Overview of QC functions for grouped reports
 This page gives a brief overview of each of the QC functions currently implemented. For more detailed documentation
 please see the API. Titles of individual sections below link to the relevant pages in the API.
 
-QC of Grouped Reports
----------------------
-
 The final type of tests are those performed on a group of reports, potentially comprising reports from many platforms
 and platform types. The reports can cover large areas and multiple months. The tests currently include so-called
 "buddy" checks in which the values for each report are compared to those of their neighbours.

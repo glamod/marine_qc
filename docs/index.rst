@@ -27,6 +27,7 @@ modular way via a standardised interface.
    overview_grp
    overview_buoy_tracking
    contributing
+   dev_guide
    authors
    api
    changes

@@ -1,21 +1,5 @@
 .. currentmodule:: marine_qc
 
-Auxiliary functions
--------------------
-
-.. autosummary::
-   :toctree: generated/
-
-   auxiliary.convert_to
-   auxiliary.format_return_type
-   auxiliary.is_scalar_like
-   auxiliary.isvalid
- 46 changes: 0 additions & 46 deletions46
-docs/api/api_buoy.rst
-Original file line number	Diff line number	Diff line change
-@@ -1,46 +0,0 @@
-.. currentmodule:: marine_qc
-
 Buoy tracking classes
 ---------------------
 
