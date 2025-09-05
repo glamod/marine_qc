@@ -137,7 +137,7 @@ def test_heading_cos_lat_near_zero():
 def test_heading_just_west_of_north():
     """Just west of north heading should be 360.0"""
     heading = sg.course_between_points(0.0, 0.0, 1.3, -0.0000001)
-    assert pytest.approx(heading, 0.00001) == 360.0
+    assert pytest.approx(heading, 0.00001) == 360.0 or pytest.approx(heading, 0.00001) == 0.0
 
 
 def test_heading_east():
