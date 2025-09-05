@@ -321,9 +321,9 @@ def do_track_check(
         vsi, timediff, forward_diff_from_estimated, reverse_diff_from_estimated
     )
     # Check for continuity of direction
-    thisqc_b += direction_continuity(dsi, course, max_direction_change)
+    thisqc_b += direction_continuity(dsi, course, max_direction_change=max_direction_change)
     # Check for continuity of speed.
-    thisqc_b += speed_continuity(vsi, speed, max_speed_change)
+    thisqc_b += speed_continuity(vsi, speed, max_speed_change=max_speed_change)
 
     thisqc_b[speed > max_absolute_speed] = thisqc_b[speed > max_absolute_speed] + 10.0
 
@@ -711,6 +711,6 @@ def do_iquam_track_check(
                 speed_violations[index].remove(most_fails)
                 count_speed_violations[index] -= 1.0
 
-        count_speed_violations[most_fails] = passed
+        count_speed_violations[most_fails] = 0.0
 
     return iquam_track

@@ -646,5 +646,5 @@ def time_difference(times1, times2):
     valid = isvalid(times1) & isvalid(times2)
 
     result = np.full(times1.shape, np.nan, dtype=float)  # np.ndarray
-    result[valid] = (times2[valid] - times1[valid]) / (1e9 * 60 * 60)
+    result[valid] = (times2[valid] - times1[valid]).astype(float) / (1e9 * 60 * 60)
     return result

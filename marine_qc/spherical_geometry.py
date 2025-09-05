@@ -167,7 +167,6 @@ def course_between_points(lat1, lon1, lat2, lon2):
     """
     # docstring !!!
     fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
-    fwd_azimuth[fwd_azimuth < 0] = fwd_azimuth[fwd_azimuth < 0] + 360.0
     return fwd_azimuth
 
 
