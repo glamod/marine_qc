@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import warnings
+from collections import defaultdict
 from collections.abc import Callable
 from datetime import datetime
 from typing import Literal, Sequence, TypeAlias
@@ -12,16 +13,37 @@ import cf_xarray  # noqa
 import numpy as np
 import pandas as pd
 import xarray as xr
+from joblib import Parallel, delayed
 from numpy import ndarray
 from xclim.core.units import convert_units_to
 
-from .auxiliary import ValueFloatType, generic_decorator, isvalid
+from .auxiliary import (
+    ValueFloatType,
+    generic_decorator,
+    isvalid,
+    post_format_return_type,
+)
 from .time_control import (
     convert_date,
     day_in_year,
+    day_in_year_array,
     get_month_lengths,
     which_pentad,
+    which_pentad_array,
 )
+
+
+def _format_output(result, lat):
+    if np.isscalar(lat):
+        return result[0]
+    if isinstance(lat, pd.Series):
+        return pd.Series(result, index=lat.index)
+    return result
+
+
+def _select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
+    sel = da_slice.sel({lat_axis: lat_arr[i], lon_axis: lon_arr[i]}, method="nearest")
+    return i, float(sel.values)
 
 
 def inspect_climatology(
@@ -73,7 +95,7 @@ def inspect_climatology(
                 )
             climatology = arguments[clim_key]
             if isinstance(climatology, Climatology):
-                get_value_sig = inspect.signature(climatology.get_value)
+                get_value_sig = inspect.signature(climatology.get_value_fast)
                 required_keys = {
                     name
                     for name, param in get_value_sig.parameters.items()
@@ -87,8 +109,9 @@ def inspect_climatology(
                         f"in function '{pre_handler.__funcname__}': {missing_in_kwargs}. "
                         f"Ensure all required arguments are passed via **kwargs."
                     )
+
                 try:
-                    climatology = climatology.get_value(**meta_kwargs)
+                    climatology = climatology.get_value_fast(**meta_kwargs)
                 except (TypeError, ValueError):
                     climatology = np.nan
 
@@ -270,6 +293,131 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
+    @post_format_return_type(["lat"], dtype=float)
+    @convert_date(["month", "day"])
+    def get_value_fast(
+        self,
+        lat: float | Sequence[float] | np.ndarray,
+        lon: float | Sequence[float] | np.ndarray,
+        date: datetime | None | Sequence[datetime | None] | np.ndarray = None,
+        month: int | None | Sequence[int | None] | np.ndarray = None,
+        day: int | None | Sequence[int | None] | np.ndarray = None,
+    ) -> ndarray | pd.Series:
+        lat_arr = np.atleast_1d(lat)  # type: np.ndarray
+        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
+
+        lon_arr = np.atleast_1d(lon)  # type: np.ndarray
+        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
+
+        month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+
+        day_arr = np.atleast_1d(day)  # type: np.ndarray
+        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
+
+        valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
+        valid &= (month_arr >= 1) & (month_arr <= 12)
+
+        ml = np.array(get_month_lengths(2004))
+        month_lengths = np.zeros_like(month_arr)
+        month_lengths[valid] = ml[month_arr[valid] - 1]
+
+        valid &= (day_arr >= 1) & (day_arr <= month_lengths)
+        valid &= (lon_arr >= -180) & (lon_arr <= 180)
+        valid &= (lat_arr >= -90) & (lat_arr <= 90)
+
+        result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
+
+        lat_indices = Climatology.get_y_index(
+            lat_arr[valid], self.data.coords[self.lat_axis].data
+        )
+        lon_indices = Climatology.get_x_index(
+            lon_arr[valid], self.data.coords[self.lon_axis].data
+        )
+        time_indices = Climatology.get_t_index(
+            month_arr[valid], day_arr[valid], self.ntime
+        )
+
+        lat_indices = np.array(lat_indices, dtype=int)
+        lon_indices = np.array(lon_indices, dtype=int)
+        time_indices = np.array(time_indices, dtype=int)
+
+        lat_mask = np.isin(lat_indices, np.arange(len(self.data[self.lat_axis])))
+        lon_mask = np.isin(lon_indices, np.arange(len(self.data[self.lon_axis])))
+        time_mask = np.isin(time_indices, np.arange(len(self.data[self.time_axis])))
+
+        coord_mask = lat_mask & lon_mask & time_mask
+        valid_indices = np.where(valid)[0]
+        valid[valid_indices] &= coord_mask
+
+        result[valid] = self.data.values[
+            time_indices[coord_mask], lat_indices[coord_mask], lon_indices[coord_mask]
+        ]
+
+        return result
+
+    @staticmethod
+    def get_y_index(lat_arr, lat_axis):
+
+        lat_axis_0 = lat_axis[0]
+        lat_axis_delta = lat_axis[1] - lat_axis[0]
+
+        # Need to know if grid cells are defined by centres or by lower edges...
+        if lat_axis_0 not in [-90.0, 90.0]:
+            if lat_axis_0 == -90 + lat_axis_delta / 2.0:
+                lat_axis_0 = -90.0
+            elif lat_axis_0 == 90 + lat_axis_delta / 2.0:
+                lat_axis_0 = 90.0
+            else:
+                raise RuntimeError(
+                    f"I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)"
+                )
+
+        y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
+
+        y_index[y_index >= len(lat_axis)] = len(lat_axis) - 1
+
+        return y_index
+
+    @staticmethod
+    def get_x_index(lon_arr, lon_axis):
+
+        lon_axis_0 = lon_axis[0]
+        lon_axis_delta = lon_axis[1] - lon_axis[0]
+
+        # Need to know if grid cells are defined by centres or by lower edges...
+        if lon_axis_0 not in [-180.0, 180.0]:
+            if lon_axis_0 == -180 + lon_axis_delta / 2.0:
+                lon_axis_0 = -180.0
+            elif lon_axis_0 == 180 + lon_axis_delta / 2.0:
+                lon_axis_0 = 180.0
+            else:
+                raise RuntimeError(
+                    f"I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)"
+                )
+
+        x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
+
+        x_index[x_index >= len(lon_axis)] = len(lon_axis) - 1
+
+        return x_index
+
+    @staticmethod
+    def get_t_index(month, day, ntime):
+
+        n_points = len(month)
+        t_index = np.zeros(n_points)
+
+        if ntime == 1:
+            return t_index
+        elif ntime == 73:
+            return which_pentad_array(month, day) - 1
+        elif ntime == 365:
+            return day_in_year_array(month=month, day=day) - 1
+        return t_index - 1
+
     @convert_date(["month", "day"])
     def get_value(
         self,
@@ -304,49 +452,51 @@ class Climatology:
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
+        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
+        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
         month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.atleast_1d(day)  # type: np.ndarray
-        valid_indices = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
-        result = np.full(lat_arr.shape, None, dtype=float)  # type: np.ndarray
+        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        if isinstance(valid_indices, (bool, np.bool)):
-            valid_indices = [valid_indices]
+        ml = get_month_lengths(2004)
+        month_lengths = np.array([ml[m - 1] if 1 <= m <= 12 else 0 for m in month_arr])
 
-        for i in range(np.size(result)):
-            if not valid_indices[i]:
-                continue
+        valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
+        valid &= (month_arr >= 1) & (month_arr <= 12)
+        valid &= (day_arr >= 1) & (day_arr <= month_lengths)
+        valid &= (lon_arr >= -180) & (lon_arr <= 180)
+        valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
-            mon_i = int(month_arr[i])
-            ml = get_month_lengths(2004)
-            day_i = int(day_arr[i])
-            lat_i = lat_arr[i]
-            lon_i = lon_arr[i]
-            if (
-                mon_i < 1
-                or mon_i > 12
-                or day_i < 1
-                or day_i > ml[mon_i - 1]
-                or lat_i < -180
-                or lat_i > 180
-                or lon_i < -90
-                or lon_i > 90
-            ):
-                continue
+        result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
 
-            tindex = self.get_tindex(mon_i, day_i)
-            data = self.data.isel(**{self.time_axis: tindex})
-            data = data.sel(**{self.lat_axis: lat_i}, method="nearest")
-            data = data.sel(**{self.lon_axis: lon_i}, method="nearest")
-            result[i] = data.values
+        valid_idx = np.where(valid)[0]
+        if len(valid_idx) == 0:
+            return _format_output(result, lat)
 
-        if np.isscalar(lat):
-            return result[0]
+        grouped = defaultdict(list)
+        for i in valid_idx:
+            tindex = self.get_tindex(month_arr[i], day_arr[i])
+            grouped[tindex].append(i)
 
-        if isinstance(lat, pd.Series):
-            return pd.Series(result, index=lat.index)
+        data = self.data.load()
 
-        return result
+        for tindex, indices in grouped.items():
+            da_slice = data.isel({self.time_axis: tindex})
+
+            results = Parallel(n_jobs=-1)(
+                delayed(_select_point)(
+                    i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis
+                )
+                for i in indices
+            )
+            for idx, value in results:
+                result[idx] = value
+
+        return _format_output(result, lat)
 
     def get_tindex(self, month: int, day: int) -> int:
         """Get the time index of the input month and day.

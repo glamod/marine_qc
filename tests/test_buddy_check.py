@@ -6,7 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import marine_qc.Climatology as clim
+import xarray as xr
+
+import marine_qc.external_clim as clim
 from marine_qc import do_bayesian_buddy_check, do_mds_buddy_check
 from marine_qc.auxiliary import (
     failed,
@@ -17,6 +19,23 @@ from marine_qc.qc_grouped_reports import (
     SuperObsGrid,
     get_threshold_multiplier,
 )
+
+
+def _create_dataarray(array, name):
+    time_len, lat_len, lon_len = array.shape
+    time = np.arange(time_len)
+    lat = np.linspace(-89.5, 89.5, lat_len)
+    lon = np.linspace(-179.5, 179.5, lon_len)
+    da = xr.DataArray(
+        array,
+        dims=("time", "lat", "lon"),
+        coords={"time": time, "lat": lat, "lon": lon},
+        name=name,
+    )
+    da.coords["time"].attrs["standard_name"] = "time"
+    da.coords["lat"].attrs["standard_name"] = "latitude"
+    da.coords["lon"].attrs["standard_name"] = "longitude"
+    return da
 
 
 @pytest.fixture
@@ -138,12 +157,14 @@ def reps3():
 
 @pytest.fixture
 def dummy_pentad_stdev():
-    return clim.Climatology(np.full([73, 180, 360], 1.5))
+    data = _create_dataarray(np.full([73, 180, 360], 1.5), "stdev")
+    return clim.Climatology(data)
 
 
 @pytest.fixture
 def dummy_pentad_stdev_empty():
-    return clim.Climatology(np.full([73, 180, 360], np.nan))
+    data = _create_dataarray(np.full([73, 180, 360], np.nan), "stdev")
+    return clim.Climatology(data)
 
 
 @pytest.fixture
@@ -541,7 +562,8 @@ def buddy_reps_singleton():
 
 @pytest.fixture
 def dummy_pentad_stdev_():
-    return clim.Climatology(np.full([73, 180, 360], 1.0))
+    data = _create_dataarray(np.full([73, 180, 360], 1.0), "stdev")
+    return clim.Climatology(data)
 
 
 def test_get_neighbour_anomalies(reps2_):
