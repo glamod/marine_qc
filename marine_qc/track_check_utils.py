@@ -446,8 +446,9 @@ def calculate_speed_course_distance_time_difference(
         timediff[0] = np.nan
         course[0] = np.nan
 
-    speed = distance / timediff
-    speed[timediff == 0.0] = 0.0
+    speed = np.zeros_like(timediff)
+    valid = timediff != 0.0
+    speed[valid] = distance[valid] / timediff[valid]
 
     return speed, distance, course, timediff
 
@@ -642,10 +643,9 @@ def calculate_midpoint(
 
     t0 = timediff
     t1 = np.roll(timediff, -1)
-    fraction_of_time_diff = t0 / (t0 + t1)
-    fraction_of_time_diff[t0 + t1 == 0] = 0.0
-    fraction_of_time_diff[np.isnan(t0)] = 0.0
-    fraction_of_time_diff[np.isnan(t1)] = 0.0
+    fraction_of_time_diff = np.zeros_like(t0)
+    valid = (t0 + t1 != 0) & isvalid(t0) & isvalid(t1)
+    fraction_of_time_diff[valid] = t0[valid] / (t0[valid] + t1[valid])
 
     est_midpoint_lat, est_midpoint_lon = intermediate_point(
         np.roll(lat, 1),
