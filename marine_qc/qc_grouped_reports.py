@@ -748,7 +748,7 @@ def do_bayesian_buddy_check(
                 grid.get_buddy_mean(lat_, lon_, mon, day),
                 buddy_stdev,
             )
-        except ValueError:
+        except (ValueError, ZeroDivisionError):
             qc_outcomes[i] = failed
             continue
 
