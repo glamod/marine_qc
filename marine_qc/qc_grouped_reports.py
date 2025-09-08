@@ -486,6 +486,7 @@ def do_mds_buddy_check(
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
     multipliers: list[list[float]],
+    ignore_indexes: list[int] | None = None,
 ):
     """Do the old style buddy check. The buddy check compares an observation to the average of its near neighbours
     (called the buddy mean). Depending on how many neighbours there are and their proximity to the observation being
@@ -526,6 +527,8 @@ def do_mds_buddy_check(
     multipliers : list[list]
         multiplier, x, used for buddy check mu +- x * sigma. The list should have the same structure as
         `number_of_obs_threshold`.
+    ignore_indexes: list[int]
+        List of row numbers to be skipped.
 
     Returns
     -------
@@ -574,8 +577,13 @@ def do_mds_buddy_check(
     numobs = len(lat)
     qc_outcomes = np.zeros(numobs) + untested
 
+    if ignore_indexes is None:
+        ignore_indexes = []
+
     # finally loop over all reports and update buddy QC
     for i in range(numobs):
+        if i in ignore_indexes:
+            continue
         lat_ = lat[i]
         lon_ = lon[i]
         mon = pd.Timestamp(date[i]).month
@@ -617,6 +625,7 @@ def do_bayesian_buddy_check(
     noise_scaling: float,
     maximum_anomaly: float,
     fail_probability: float,
+    ignore_indexes: list[int] | None = None,
 ) -> Sequence[int]:
     """Do the Bayesian buddy check. The bayesian buddy check assigns a
     probability of gross error to each observation, which is rounded down to the
@@ -675,6 +684,8 @@ def do_bayesian_buddy_check(
     fail_probability : float
         Probability of gross error that corresponds to a failed test. Anything with a probability of gross error
         greater than fail_probability will be considered failing.
+    ignore_indexes: list[int], optional
+        List of row numbers to be skipped.
 
     Returns
     -------
@@ -714,7 +725,12 @@ def do_bayesian_buddy_check(
     numobs = len(lat)
     qc_outcomes = np.zeros(numobs) + untested
 
+    if ignore_indexes is None:
+        ignore_indexes = []
+
     for i in range(numobs):
+        if i in ignore_indexes:
+            continue
         lat_ = lat[i]
         lon_ = lon[i]
         mon = pd.Timestamp(date[i]).month

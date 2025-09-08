@@ -14,6 +14,7 @@ from marine_qc.auxiliary import (
     failed,
     passed,
     untestable,
+    untested,
 )
 from marine_qc.qc_grouped_reports import (
     SuperObsGrid,
@@ -711,6 +712,27 @@ def test_buddy_check(reps_, dummy_pentad_stdev_):
     assert np.all(result == [passed, passed, passed, passed])
 
 
+def test_buddy_check_ignore_indexes(reps_, dummy_pentad_stdev_):
+    limits = [[1, 1, 2], [2, 2, 2], [1, 1, 4], [2, 2, 4]]
+    number_of_obs_thresholds = [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]]
+    multipliers = [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]]
+
+    result = do_mds_buddy_check(
+        reps_["LAT"],
+        reps_["LON"],
+        reps_["DATE"],
+        reps_["SST"],
+        reps_["SST_CLIM"],
+        dummy_pentad_stdev_,
+        limits,
+        number_of_obs_thresholds,
+        multipliers,
+        ignore_indexes=[1, 2],
+    )
+
+    assert np.all(result == [passed, untested, untested, passed])
+
+
 def test_buddy_check_single_ob_flagged_untestable(
     buddy_reps_singleton, dummy_pentad_stdev_
 ):
@@ -878,6 +900,29 @@ def test_bayesian_buddy_check(reps_, dummy_pentad_stdev_):
     )
 
     assert np.all(result == [passed, passed, passed, passed])
+
+
+def test_bayesian_buddy_check_ignore_indexes(reps_, dummy_pentad_stdev_):
+    result = do_bayesian_buddy_check(
+        reps_["LAT"],
+        reps_["LON"],
+        reps_["DATE"],
+        reps_["SST"],
+        reps_["SST_CLIM"],
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        0.05,
+        0.1,
+        1.0,
+        [2, 2, 4],
+        3.0,
+        8.0,
+        0.3,
+        ignore_indexes=[1, 2],
+    )
+
+    assert np.all(result == [passed, untested, untested, passed])
 
 
 def test_bayesian_buddy_check_again(buddy_reps, dummy_pentad_stdev_):
