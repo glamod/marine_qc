@@ -738,15 +738,19 @@ def do_bayesian_buddy_check(
 
         # Calculate the probability of gross error given the set-up
         buddy_stdev = grid.get_buddy_stdev(lat_, lon_, mon, day)
-        ppp = p_gross(
-            p0,
-            q,
-            r_hi,
-            r_lo,
-            anoms[i],
-            grid.get_buddy_mean(lat_, lon_, mon, day),
-            buddy_stdev,
-        )
+        try:
+            ppp = p_gross(
+                p0,
+                q,
+                r_hi,
+                r_lo,
+                anoms[i],
+                grid.get_buddy_mean(lat_, lon_, mon, day),
+                buddy_stdev,
+            )
+        except ValueError:
+            qc_outcomes[i] = failed
+            continue
 
         # QC outcome is based on the probability of gross error. If the probability of gross error is larger than
         # the fail_probability then it is considered a fail.
