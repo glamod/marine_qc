@@ -41,7 +41,9 @@ About
 
 :License: |license|
 
-|logo_c3s| |logo_NOC| |logo_DWD| |logo_copernicus|
+|logo_copernicus| |logo_c3s|
+
+|logo_NOC| |logo_DWD| |logo_metoffice|
 
 .. include:: hyperlinks.rst
 
