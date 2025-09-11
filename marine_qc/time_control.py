@@ -313,7 +313,21 @@ def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
     return True
 
 
-def which_pentad_array(month, day):
+def which_pentad_array(month: np.ndarray, day: np.ndarray):
+    """Take month and day arrays as inputs and return array of pentads in range 1-73.
+
+    Parameters
+    ----------
+    month: ndarray
+        Month containing the day for which we want to calculate the pentad.
+    day: ndarray
+        Day for the day for which we want to calculate the pentad.
+
+    Returns
+    -------
+    ndarray
+        Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
+    """
     pentad = ((day_in_year_array(month=month, day=day) - 1) / 5).astype(int)
     return pentad + 1
 
