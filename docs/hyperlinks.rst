@@ -39,5 +39,5 @@
         :target: https://www.dwd.de/
 
 .. |logo_metoffice| image:: _static/images/logo_metoffice_rbg.png
-        :width: 50%
+        :width: 35%
         :target: https://www.metoffice.gov.uk/

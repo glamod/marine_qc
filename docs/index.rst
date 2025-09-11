@@ -41,11 +41,24 @@ About
 
 :License: |license|
 
-|logo_copernicus| |logo_c3s|
+|newline|
 
-|logo_NOC| |logo_DWD| |logo_metoffice|
+|newline|
+
+|tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |logo_copernicus| |logo_c3s|
+
+|logo_DWD| |tab| |tab| |tab| |logo_metoffice| |tab| |tab| |tab| |logo_NOC|
 
 .. include:: hyperlinks.rst
 
 .. include:: ../README.rst
     :start-after: hyperlinks
+
+.. |newline| raw:: html
+
+   <br>
+
+.. |tab| raw:: html
+
+   &emsp;  <!-- HTML em-space -->
+
