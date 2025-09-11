@@ -705,8 +705,7 @@ def do_bayesian_buddy_check(
     * maximum_anomaly = 8.0
     * fail_probability = 0.3
     """
-    anoms = value - climatology
-
+    numobs = len(lat)
     p0 = prior_probability_of_gross_error
     q = quantization_interval
     sigma_m = one_sigma_measurement_uncertainty
@@ -718,11 +717,15 @@ def do_bayesian_buddy_check(
     r_hi = maximum_anomaly
     r_lo = -1.0 * r_hi  # previous lower QC limit set
 
+    # Return unsteable if any parameters is invalid
+    if p0 < 0.0 or p0 > 1.0 or q <= 0.0 or r_hi < r_lo:
+        return np.zeros(numobs) + untestable
+
+    anoms = value - climatology
     grid = SuperObsGrid()
     grid.add_multiple_observations(lat, lon, date, anoms)
     grid.get_new_buddy_limits(stdev1, stdev2, stdev3, limits, sigma_m, noise_scaling)
 
-    numobs = len(lat)
     qc_outcomes = np.zeros(numobs) + untested
 
     if ignore_indexes is None:

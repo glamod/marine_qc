@@ -902,6 +902,37 @@ def test_bayesian_buddy_check(reps_, dummy_pentad_stdev_):
     assert np.all(result == [passed, passed, passed, passed])
 
 
+@pytest.mark.parametrize(
+    ["p0", "q", "r_hi"],
+    [
+        [-0.05, 0.1, 8.0],
+        [2.0, 0.1, 8.0],
+        [0.05, -0.1, 8.0],
+        [0.05, 0.1, -8.0],
+    ],
+)
+def test_bayesian_buddy_check_untestable(reps_, dummy_pentad_stdev_, p0, q, r_hi):
+    result = do_bayesian_buddy_check(
+        reps_["LAT"],
+        reps_["LON"],
+        reps_["DATE"],
+        reps_["SST"],
+        reps_["SST_CLIM"],
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        p0,
+        q,
+        1.0,
+        [2, 2, 4],
+        3.0,
+        r_hi,
+        0.3,
+    )
+
+    assert np.all(result == [untestable, untestable, untestable, untestable])
+
+
 def test_bayesian_buddy_check_ignore_indexes(reps_, dummy_pentad_stdev_):
     result = do_bayesian_buddy_check(
         reps_["LAT"],
