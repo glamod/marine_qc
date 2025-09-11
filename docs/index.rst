@@ -61,4 +61,3 @@ About
 .. |tab| raw:: html
 
    &emsp;  <!-- HTML em-space -->
-
