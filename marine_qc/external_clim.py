@@ -303,6 +303,32 @@ class Climatology:
         month: int | None | Sequence[int | None] | np.ndarray = None,
         day: int | None | Sequence[int | None] | np.ndarray = None,
     ) -> ndarray | pd.Series:
+        """
+        Get the value from a climatology at the give position and time.
+
+        Parameters
+        ----------
+        lat: float, optional
+            Latitude of location to extract value from in degrees.
+        lon: float, optional
+            Longitude of location to extract value from in degrees.
+        date: datetime-like, optional
+            Date for which the value is required.
+        month: int, optional
+            Month for which the value is required.
+        day: int, optional
+            Day for which the value is required.
+
+        Returns
+        -------
+        ndarray or pd.Series
+            Climatology value at specified location and time.
+
+        Note
+        ----
+        Assumes that the grid is a regular latitude longitude grid. The alternative method `get_value`
+        works with non-regular grids.
+        """
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
@@ -360,7 +386,21 @@ class Climatology:
 
     @staticmethod
     def get_y_index(lat_arr, lat_axis):
+        """
+        Convert an array of latitudes to an array of indices for the grid.
 
+        Parameters
+        ----------
+        lat_arr: ndarray
+            Array of latitudes.
+        lat_axis: ndarray
+            Array containing the latitude axis.
+
+        Returns
+        -------
+        ndarray
+            Array of indices.
+        """
         lat_axis_0 = lat_axis[0]
         lat_axis_delta = lat_axis[1] - lat_axis[0]
 
@@ -372,7 +412,7 @@ class Climatology:
                 lat_axis_0 = 90.0
             else:
                 raise RuntimeError(
-                    f"I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)"
+                    "I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)"
                 )
 
         y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
@@ -383,6 +423,21 @@ class Climatology:
 
     @staticmethod
     def get_x_index(lon_arr, lon_axis):
+        """
+        Convert an array of longitudes to an array of indices for the grid.
+
+        Parameters
+        ----------
+        lon_arr: ndarray
+            Array of longitudes.
+        lon_axis: ndarray
+            Array containing the longitude axis.
+
+        Returns
+        -------
+        ndarray
+            Array of indices.
+        """
 
         lon_axis_0 = lon_axis[0]
         lon_axis_delta = lon_axis[1] - lon_axis[0]
@@ -395,7 +450,7 @@ class Climatology:
                 lon_axis_0 = 180.0
             else:
                 raise RuntimeError(
-                    f"I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)"
+                    "I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)"
                 )
 
         x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
@@ -406,6 +461,24 @@ class Climatology:
 
     @staticmethod
     def get_t_index(month, day, ntime):
+        """
+        Convert arrays of months and days to an array of indices for the grid.
+
+        Parameters
+        ----------
+        month: ndarray
+            Array of months.
+        day: ndarray
+            Array of days.
+        ntime: int
+            Number of time points in the grid, valid values are 1, 73 (pentad resolution) and
+            365 (daily resolution).
+
+        Returns
+        -------
+        ndarray
+            Array of indices.
+        """
 
         n_points = len(month)
         t_index = np.zeros(n_points)
