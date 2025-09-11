@@ -438,7 +438,6 @@ class Climatology:
         ndarray
             Array of indices.
         """
-
         lon_axis_0 = lon_axis[0]
         lon_axis_delta = lon_axis[1] - lon_axis[0]
 
@@ -479,7 +478,6 @@ class Climatology:
         ndarray
             Array of indices.
         """
-
         n_points = len(month)
         t_index = np.zeros(n_points)
 

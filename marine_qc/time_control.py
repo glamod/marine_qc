@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import calendar
 import math
-import numpy as np
 from collections.abc import Callable
 from datetime import datetime
 from typing import Sequence
