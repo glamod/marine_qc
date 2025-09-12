@@ -31,4 +31,3 @@ Internal changes
 * moved to using pyproj for spherical geometry calculations (:pull:`24`)
 * removed dependence on old Climatology class (:pull:`24`)
 * utility functions moved from qc_sequential_reports to track_check_utils (:pull:`24`)
-
