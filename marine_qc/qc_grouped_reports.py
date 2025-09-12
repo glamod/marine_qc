@@ -717,8 +717,8 @@ def do_bayesian_buddy_check(
     r_hi = maximum_anomaly
     r_lo = -1.0 * r_hi  # previous lower QC limit set
 
-    # Return unsteable if any parameters is invalid
-    if p0 < 0.0 or p0 > 1.0 or q <= 0.0 or r_hi < r_lo:
+    # Return untestable if any parameters is invalid
+    if p0 < 0.0 or p0 > 1.0 or q <= 0.0 or r_hi < r_lo or sigma_m < 0.0:
         return np.zeros(numobs) + untestable
 
     anoms = value - climatology
