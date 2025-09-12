@@ -15,6 +15,7 @@ New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * ``do_night_check``: reverse ``do_day_check`` (:pull:`21`)
 * Added documentation (:issue:`4`, :pull:`11`, :pull:`12`)
+* Added ``get_value_fast`` for extracting values from climatologies (:pull:`24`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -26,3 +27,4 @@ Internal changes
 * combine `time_control.day_in_year` and `time_control.dayinyear` to `time_control.day_in_year` (:pull:`9`)
 * new function `time_control.valid_month_day` to validate month and day information (:pul:`9`)
 * extract daytime check from `do_day_check` and `do_night_check` (:pull:`21`)
+* vectorised many of the QC checks to speed up processing on large datasets (:pull:`24`)
