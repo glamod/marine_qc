@@ -903,15 +903,18 @@ def test_bayesian_buddy_check(reps_, dummy_pentad_stdev_):
 
 
 @pytest.mark.parametrize(
-    ["p0", "q", "r_hi"],
+    ["p0", "q", "sigma_m", "r_hi"],
     [
-        [-0.05, 0.1, 8.0],
-        [2.0, 0.1, 8.0],
-        [0.05, -0.1, 8.0],
-        [0.05, 0.1, -8.0],
+        [-0.05, 0.1, 1.0, 8.0],
+        [2.0, 0.1, 1.0, 8.0],
+        [0.05, -0.1, 1.0, 8.0],
+        [0.05, 0.1, 1.0, -8.0],
+        [0.05, 0.1, -1.0, 8.0],
     ],
 )
-def test_bayesian_buddy_check_untestable(reps_, dummy_pentad_stdev_, p0, q, r_hi):
+def test_bayesian_buddy_check_untestable(
+    reps_, dummy_pentad_stdev_, p0, q, sigma_m, r_hi
+):
     result = do_bayesian_buddy_check(
         reps_["LAT"],
         reps_["LON"],
@@ -923,7 +926,7 @@ def test_bayesian_buddy_check_untestable(reps_, dummy_pentad_stdev_, p0, q, r_hi
         dummy_pentad_stdev_,
         p0,
         q,
-        1.0,
+        sigma_m,
         [2, 2, 4],
         3.0,
         r_hi,
