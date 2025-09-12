@@ -1,3 +1,10 @@
+"""
+Plot QC outcomes
+================
+
+Some plotting routines for QC outcomes
+"""
+
 import tempfile
 from pathlib import Path
 import matplotlib.pyplot as plt
