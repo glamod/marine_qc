@@ -28,3 +28,7 @@ Internal changes
 * new function `time_control.valid_month_day` to validate month and day information (:pul:`9`)
 * extract daytime check from `do_day_check` and `do_night_check` (:pull:`21`)
 * vectorised many of the QC checks to speed up processing on large datasets (:pull:`24`)
+* moved to using pyproj for spherical geometry calculations (:pull:`24`)
+* removed dependence on old Climatology class (:pull:`24`)
+* utility functions moved from qc_sequential_reports to track_check_utils (:pull:`24`)
+

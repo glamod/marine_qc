@@ -1,10 +1,31 @@
 import tempfile
 from pathlib import Path
 import matplotlib.pyplot as plt
+import numpy as np
 
 
-def latitude_variable_plot(lat, value, qc_outcomes, filename=None):
+def latitude_variable_plot(
+    lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str = None
+):
+    """
+    Plot a graph of points showing the latitude and value of a set of observations coloured according to
+    whether or not they pass qc. The graph is output to the temporary directory.
 
+    Parameters
+    ----------
+    lat: np.ndarray
+        Array of latitude values in degrees
+    value: np.ndarray
+        Array of observed values for the variable
+    qc_outcomes: np.ndarray
+        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure
+    filename: str or None
+        Filename to save the figure to. If None, the figure is saved with a standard name
+
+    Returns
+    -------
+    None
+    """
     colours = []
     for outcome in qc_outcomes:
         if outcome == 0:
@@ -27,7 +48,29 @@ def latitude_variable_plot(lat, value, qc_outcomes, filename=None):
 
     plt.close()
 
-def latitude_longitude_plot(lat, lon, qc_outcomes, filename=None):
+
+def latitude_longitude_plot(
+    lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str = None
+) -> None:
+    """
+    Plot a graph of points showing the latitude and longitude of a set of observations coloured according to
+    the QC outcomes.
+
+    Parameters
+    ----------
+    lat: np.ndarray
+        array of latitude values in degrees
+    lon: np.ndarray
+        array of longitude values in degrees
+    qc_outcomes: np.ndarray
+        array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure
+    filename: str or None
+        Filename to save the figure to. If None, the figure is saved with a standard name
+
+    Returns
+    -------
+    None
+    """
     colours = []
     for outcome in qc_outcomes:
         if outcome == 0:
