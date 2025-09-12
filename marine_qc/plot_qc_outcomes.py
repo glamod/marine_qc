@@ -27,6 +27,7 @@ def latitude_variable_plot(lat, value, qc_outcomes, filename=None):
 
     plt.close()
 
+
 def latitude_longitude_plot(lat, lon, qc_outcomes, filename=None):
     colours = []
     for outcome in qc_outcomes:
