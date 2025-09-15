@@ -20,6 +20,7 @@ from .auxiliary import (
     convert_units,
     failed,
     inspect_arrays,
+    isvalid,
     passed,
     post_format_return_type,
     untestable,
@@ -584,6 +585,10 @@ def do_mds_buddy_check(
     for i in range(numobs):
         if i in ignore_indexes:
             continue
+
+        if not isvalid(anoms[i]):
+            continue
+
         lat_ = lat[i]
         lon_ = lon[i]
         mon = pd.Timestamp(date[i]).month
@@ -722,6 +727,7 @@ def do_bayesian_buddy_check(
         return np.zeros(numobs) + untestable
 
     anoms = value - climatology
+
     grid = SuperObsGrid()
     grid.add_multiple_observations(lat, lon, date, anoms)
     grid.get_new_buddy_limits(stdev1, stdev2, stdev3, limits, sigma_m, noise_scaling)
@@ -734,6 +740,10 @@ def do_bayesian_buddy_check(
     for i in range(numobs):
         if i in ignore_indexes:
             continue
+
+        if not isvalid(anoms[i]):
+            continue
+
         lat_ = lat[i]
         lon_ = lon[i]
         mon = pd.Timestamp(date[i]).month
@@ -741,6 +751,7 @@ def do_bayesian_buddy_check(
 
         # Calculate the probability of gross error given the set-up
         buddy_stdev = grid.get_buddy_stdev(lat_, lon_, mon, day)
+
         try:
             ppp = p_gross(
                 p0,
