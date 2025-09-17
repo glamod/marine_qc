@@ -8,7 +8,56 @@ Some plotting routines for QC outcomes
 import tempfile
 from pathlib import Path
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
+
+
+def _get_colours_labels(qc_outcomes):
+    colours = []
+    colour_passed = "#55ff55"
+    colour_failed = "#ff5555"
+    colour_other = "#808080"
+    passed = 0
+    failed = 0
+    other = 0
+    for outcome in qc_outcomes:
+        if outcome == 0:
+            colours.append(colour_passed)
+            passed += 1
+        elif outcome == 1:
+            colours.append(colour_failed)
+            failed += 1
+        else:
+            colours.append(colour_other)
+            other += 1
+
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label=f"0: {passed}",
+            markerfacecolor=colour_passed,
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label=f"1: {failed}",
+            markerfacecolor=colour_failed,
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label=f"other: {other}",
+            markerfacecolor=colour_other,
+        ),
+    ]
+    return colours, legend_elements
 
 
 def latitude_variable_plot(
@@ -33,18 +82,15 @@ def latitude_variable_plot(
     -------
     None
     """
-    colours = []
-    for outcome in qc_outcomes:
-        if outcome == 0:
-            colours.append("#555555")
-        else:
-            colours.append("#ff5555")
+    colours, legend_elements = _get_colours_labels(qc_outcomes)
 
     plt.scatter(value, lat, c=colours)
     plt.ylim(-90.0, 90.0)
 
     plt.xlabel("Variable")
     plt.ylabel("Latitude")
+
+    plt.legend(handles=legend_elements)
 
     if filename is None:
         plt.show()
@@ -76,12 +122,7 @@ def latitude_longitude_plot(
     -------
     None
     """
-    colours = []
-    for outcome in qc_outcomes:
-        if outcome == 0:
-            colours.append("#555555")
-        else:
-            colours.append("#ff5555")
+    colours, legend_elements = _get_colours_labels(qc_outcomes)
 
     plt.scatter(lon, lat, c=colours)
     plt.xlim(-180.0, 180.0)
@@ -89,6 +130,8 @@ def latitude_longitude_plot(
 
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
+
+    plt.legend(handles=legend_elements)
 
     if filename is None:
         plt.show()
