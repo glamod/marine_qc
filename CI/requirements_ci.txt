@@ -2,3 +2,4 @@ cdm_reader_mapper
 xclim
 cf_xarray
 pyproj
+matplotlib
