@@ -11,9 +11,26 @@
       "name": "Kennedy, John",
       "affiliation": "Independent consultant, France",
       "orcid": "0000-0002-6841-7289"
+    },
+    {
+      "name": "Leiding, Tina",
+      "affiliation": "Deutscher Wetterdienst, Hamburg, Germany"
+    },
+    {
+      "name": "Willett, Kate",
+      "affiliation": "Met Office, Exeter, UK"
+    },
+    {
+      "name": "Atkinson",
+      "affiliation": "Met Office, Exeter, UK"
+    },
+    {
+      "name": "Andersson, Axel",
+      "affiliation": "Deutscher Wetterdienst, Hamburg, Germany",
+      "orcid": "0000-0002-6956-0298"
     }
   ],
-  "keywords": [],
+  "keywords": ["quality control", "observations", "ship", "buoys", "climatology", "marine climatology", "climate change"],
   "license": "Apache-2.0",
   "language": "eng",
   "upload_type": "software",
