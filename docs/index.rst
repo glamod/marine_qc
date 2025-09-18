@@ -27,6 +27,7 @@ modular way via a standardised interface.
    overview_grp
    overview_buoy_tracking
    contributing
+   dev_guide
    authors
    api
    changes
@@ -41,9 +42,23 @@ About
 
 :License: |license|
 
-|logo_c3s| |logo_NOC| |logo_DWD| |logo_copernicus|
+|newline|
+
+|newline|
+
+|tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |logo_copernicus| |logo_c3s| |tab|
+
+|tab| |tab| |tab| |tab| |tab| |tab| |logo_DWD| |logo_metoffice| |logo_NOC|
 
 .. include:: hyperlinks.rst
 
 .. include:: ../README.rst
     :start-after: hyperlinks
+
+.. |newline| raw:: html
+
+   <br>
+
+.. |tab| raw:: html
+
+   &emsp;  <!-- HTML em-space -->

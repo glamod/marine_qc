@@ -11,4 +11,18 @@ Development Lead
 Co-Developers
 -------------
 
-* John J Kennedy <jjk8932@googlemail.com> `@jjk-code-otter <https://github.com/jjk-code-otter>`_
+* John Kennedy <jjk8932@googlemail.com> `@jjk-code-otter <https://github.com/jjk-code-otter>`_
+
+Contributors
+------------
+
+* Axel Andersson <axel.andersson@dwd.de> `@aanderss <https://github.com/aanderss>`_
+
+* Tina Leiding <tina.leiding@dwd.de> `@TinaLeiding <https://github.com/TinaLeiding>`_
+
+Previous Contributors
+---------------------
+
+* Chris Atkinson <chris.atkinson@metoffice.gov.uk>
+* Kate Willett <kate.willett@metoffice.gov.uk> `@Kate-Willett <https://github.com/Kate-Willett>`_
+  - humidity QC contribution

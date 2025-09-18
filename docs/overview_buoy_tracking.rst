@@ -4,19 +4,24 @@
 Overview of QC functions for additional buoy QC
 ---------------------------------------------------
 
-This page gives a brief overview of each of the QC functions currently implemented. For more detailed documentation
-please see the API. Titles of individual sections below link to the relevant pages in the API.
+This page gives a brief overview of each of the buoy-specific QC functions currently implemented. These routines
+were specifically designed for the QC of sea-surface temperatures from drifting buoys and are intended to be run
+on whole drifting buoy records from when a drifter is first deployed to when it ceases to report.
 
-Tracking QC
------------
+Some of the functions require additional information. Here "matched" means that the values at the location of the
+report have been extracted, usually from a gridded field.
 
-There are additional routines that are intended for the QC of measurements of sea surface temperature
-from drifting buoys specifically. These checks are based on Atkinson et al. 2013. The checks are designed to be
-run on whole drifting buoy records from when a drifter is first deployed to when it ceases to report.
+* matched background SSTs from a spatially complete analysis. OSTIA was used in the original paper.
+* matched sea ice concentrations from a spatially complete analysis. OSTIA was used in the original paper.
+* matched background sea surface temperature field variances.
+
+For more detailed documentation please see the API and the paper Atkinson et al. (2013). Titles of individual
+sections below link to the relevant pages in the API.
 
 Atkinson, C. P., N. A. Rayner, J. Roberts-Jones, and R. O. Smith (2013), Assessing the quality of sea
 surface temperature observations from drifting buoys and ships on a platform-by-platform basis, J.
-Geophys. Res. Oceans, 118, 3507–3529, https://doi.org/10.1002/jgrc.20257
+Geophys. Res. Oceans, 118, 3507-3529,  https://doi.org/10.1002/jgrc.20257
+
 
 :func:`.do_speed_check`
 =======================

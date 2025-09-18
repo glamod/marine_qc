@@ -5,7 +5,7 @@ Changelog
 
 0.0.1 (unreleased)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John J Kennedy (:user:`jjk-code-otter`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John Kennedy (:user:`jjk-code-otter`)
 
 Announcements
 ^^^^^^^^^^^^^
@@ -25,7 +25,7 @@ Internal changes
 * Fixing some typos in docstrings and comments (:pull:`7`)
 * Improved unit test coverage (:pull:`9`)
 * combine `time_control.day_in_year` and `time_control.dayinyear` to `time_control.day_in_year` (:pull:`9`)
-* new function `time_control.valid_month_day` to validate month and day information (:pul:`9`)
+* new function `time_control.valid_month_day` to validate month and day information (:pull:`9`)
 * extract daytime check from `do_day_check` and `do_night_check` (:pull:`21`)
 * vectorised many of the QC checks to speed up processing on large datasets (:pull:`24`)
 * moved to using pyproj for spherical geometry calculations (:pull:`24`)
