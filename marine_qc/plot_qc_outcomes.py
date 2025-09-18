@@ -82,7 +82,8 @@ def latitude_variable_plot(
     """
     colours, legend_elements = _get_colours_labels(qc_outcomes)
 
-    plt.scatter(value, lat, c=colours)
+    plt.figure(figsize=(16, 9))
+    plt.scatter(value, lat, c=colours, s=1)
     plt.ylim(-90.0, 90.0)
 
     plt.xlabel("Variable")
@@ -122,7 +123,8 @@ def latitude_longitude_plot(
     """
     colours, legend_elements = _get_colours_labels(qc_outcomes)
 
-    plt.scatter(lon, lat, c=colours)
+    plt.figure(figsize=(16, 9))
+    plt.scatter(lon, lat, c=colours, s=1)
     plt.xlim(-180.0, 180.0)
     plt.ylim(-90.0, 90.0)
 

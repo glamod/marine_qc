@@ -212,7 +212,7 @@ def test_eight_near_neighbours_missing_stdev_defaults_to_one(
 ):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps["LAT"], reps["LON"], reps["DATE"], reps["SST"] - reps["SST_CLIM"]
+        reps["LAT"], reps["LON"], reps["SST"] - reps["SST_CLIM"], date=reps["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev_empty,
@@ -230,7 +230,7 @@ def test_eight_near_neighbours_missing_stdev_defaults_to_one(
 def test_eight_near_neighbours(dummy_pentad_stdev, reps):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps["LAT"], reps["LON"], reps["DATE"], reps["SST"] - reps["SST_CLIM"]
+        reps["LAT"], reps["LON"], reps["SST"] - reps["SST_CLIM"], date=reps["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -248,7 +248,7 @@ def test_eight_near_neighbours(dummy_pentad_stdev, reps):
 def test_eight_distant_near_neighbours(dummy_pentad_stdev, reps2):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2["LAT"], reps2["LON"], reps2["DATE"], reps2["SST"] - reps2["SST_CLIM"]
+        reps2["LAT"], reps2["LON"], reps2["SST"] - reps2["SST_CLIM"], date=reps2["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -266,7 +266,7 @@ def test_eight_distant_near_neighbours(dummy_pentad_stdev, reps2):
 def test_eight_even_more_distant_near_neighbours(dummy_pentad_stdev, reps3):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps3["LAT"], reps3["LON"], reps3["DATE"], reps3["SST"] - reps3["SST_CLIM"]
+        reps3["LAT"], reps3["LON"], reps3["SST"] - reps3["SST_CLIM"], date=reps3["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -283,7 +283,7 @@ def test_eight_even_more_distant_near_neighbours(dummy_pentad_stdev, reps3):
 def test_eight_too_distant_neighbours(dummy_pentad_stdev, reps4):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps4["LAT"], reps4["LON"], reps4["DATE"], reps4["SST"] - reps4["SST_CLIM"]
+        reps4["LAT"], reps4["LON"], reps4["SST"] - reps4["SST_CLIM"], date=reps4["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -570,7 +570,7 @@ def dummy_pentad_stdev_():
 def test_get_neighbour_anomalies(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2_["LAT"], reps2_["LON"], reps2_["DATE"], reps2_["SST"] - reps2_["SST_CLIM"]
+        reps2_["LAT"], reps2_["LON"], reps2_["SST"] - reps2_["SST_CLIM"], date=reps2_["DATE"]
     )
     temp_anom, temp_nobs = g.get_neighbour_anomalies([2, 2, 2], 180, 89, 0)
 
@@ -587,7 +587,7 @@ def test_get_neighbour_anomalies(reps2_):
 def test_get_neighbour_anomalies_raises(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2_["LAT"], reps2_["LON"], reps2_["DATE"], reps2_["SST"] - reps2_["SST_CLIM"]
+        reps2_["LAT"], reps2_["LON"], reps2_["SST"] - reps2_["SST_CLIM"], date=reps2_["DATE"]
     )
 
     with pytest.raises(ValueError):
@@ -665,7 +665,7 @@ def test_add_single_observation_raises():
 def test_add_multiple(reps_, dummy_pentad_stdev_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps_["LAT"], reps_["LON"], reps_["DATE"], reps_["SST"] - reps_["SST_CLIM"]
+        reps_["LAT"], reps_["LON"], reps_["SST"] - reps_["SST_CLIM"], date=reps_["DATE"]
     )
     g.get_new_buddy_limits(
         dummy_pentad_stdev_,

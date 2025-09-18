@@ -13,6 +13,7 @@ from typing import Sequence
 
 import numpy as np
 import pandas as pd
+from marine_qc.time_control import which_pentad_array
 
 from .auxiliary import (
     SequenceDatetimeType,
@@ -40,6 +41,7 @@ from .statistics import p_gross
 from .time_control import (
     pentad_to_month_day,
     which_pentad,
+    convert_date,
 )
 
 
@@ -108,13 +110,16 @@ class SuperObsGrid:
         self.buddy_stdev = np.zeros((360, 180, 73))  # type: np.ndarray
         self.nobs = np.zeros((360, 180, 73))  # type: np.ndarray
 
-    @inspect_arrays(["lats", "lons", "values"])
+    @inspect_arrays(["lats", "lons", "values", "date"])
+    @convert_date(["month", "day"])
     def add_multiple_observations(
         self,
         lats: SequenceFloatType,
         lons: SequenceFloatType,
-        dates: SequenceDatetimeType,
         values: SequenceFloatType,
+        date: SequenceDatetimeType = None,
+        month: SequenceDatetimeType = None,
+        day: SequenceDatetimeType = None,
     ) -> None:
         """Add a series of observations to the grid and take the grid average. The observations should be
         anomalies.
@@ -133,13 +138,28 @@ class SuperObsGrid:
         values : array-like of float, shape (n,)
             1-dimensional anomaly array.
         """
-        n_obs = len(lats)
-        for i in range(n_obs):
-            date = pd.Timestamp(dates[i])
-            self.add_single_observation(
-                lats[i], lons[i], date.month, date.day, values[i]
-            )
-        self.take_average()
+        lat_axis = np.arange(90., -90., -1.)
+        lon_axis = np.arange(-180., 180., 1.)
+
+        month_arr = np.atleast_1d(month)
+        day_arr = np.atleast_1d(day)
+
+        y_index = Climatology.get_y_index(lats, lat_axis)
+        x_index = Climatology.get_x_index(lons, lon_axis)
+        t_index = Climatology.get_t_index(month_arr, day_arr, 73)
+
+        unique_index = t_index * 1000000 + y_index * 1000 + x_index
+
+        df = pd.DataFrame({'uid': unique_index, 'value': values, 'x': x_index, 'y': y_index, 't': t_index})
+        means = df.groupby('uid')['value'].mean()
+        nobs = df.groupby('uid')['value'].count()
+        x = df.groupby('uid')['x'].first()
+        y = df.groupby('uid')['y'].first()
+        t = df.groupby('uid')['t'].first()
+
+        self.grid[x, y, t] = means[:]
+        self.nobs[x, y, t] = nobs[:]
+
 
     def add_single_observation(
         self, lat: float, lon: float, month: int, day: int, anom: float
@@ -570,7 +590,7 @@ def do_mds_buddy_check(
 
     # calculate superob averages and numbers of observations
     grid = SuperObsGrid()
-    grid.add_multiple_observations(lat, lon, date, anoms)
+    grid.add_multiple_observations(lat, lon, anoms, date=date)
     grid.get_buddy_limits_with_parameters(
         standard_deviation, limits, number_of_obs_thresholds, multipliers
     )
@@ -729,7 +749,7 @@ def do_bayesian_buddy_check(
     anoms = value - climatology
 
     grid = SuperObsGrid()
-    grid.add_multiple_observations(lat, lon, date, anoms)
+    grid.add_multiple_observations(lat, lon, anoms, date=date)
     grid.get_new_buddy_limits(stdev1, stdev2, stdev3, limits, sigma_m, noise_scaling)
 
     qc_outcomes = np.zeros(numobs) + untested
