@@ -45,9 +45,9 @@ About
 
 |newline|
 
-|tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |logo_copernicus| |logo_c3s|
+|tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |logo_copernicus| |logo_c3s| |tab|
 
-|logo_DWD| |tab| |tab| |tab| |logo_metoffice| |tab| |tab| |tab| |logo_NOC|
+|tab| |tab| |tab| |tab| |tab| |tab| |logo_DWD| |logo_metoffice| |logo_NOC|
 
 .. include:: hyperlinks.rst
 
