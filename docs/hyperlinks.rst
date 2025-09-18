@@ -16,6 +16,12 @@
 
 .. _tarball: https://github.com/glamod/mdf_reader/tarball/master
 
+.. _HadSST4: https://www.metoffice.gov.uk/hadobs/hadsst4/
+
+.. _HadISDH: https://www.metoffice.gov.uk/hadobs/hadisdh/
+
+.. _HadNMAT2: https://www.metoffice.gov.uk/hadobs/hadnmat2/
+
 .. |logo_c3s| image:: _static/images/logo_c3s-392x154.png
         :width: 25%
         :target: https://climate.copernicus.eu/
@@ -24,10 +30,14 @@
         :width: 25%
         :target: https://www.copernicus.eu/en
 
-.. |logo_ICOADS| image:: _static/images/icoadsLogo.png
-        :width: 20%
-        :target: https://icoads.noaa.gov/
-
-.. |logo_NOC| image:: _static/images/LOGO_2024_-_NOC_1_COLOUR.png
+.. |logo_NOC| image:: _static/images/LOGO_2024_NOC_1_COLOUR.png
         :width: 10%
         :target: https://noc.ac.uk/
+
+.. |logo_DWD| image:: _static/images/logo_DWD_RGB.png
+        :width: 35%
+        :target: https://www.dwd.de/
+
+.. |logo_metoffice| image:: _static/images/logo_metoffice_rbg.png
+        :width: 35%
+        :target: https://www.metoffice.gov.uk/
