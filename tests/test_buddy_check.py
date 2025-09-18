@@ -570,7 +570,10 @@ def dummy_pentad_stdev_():
 def test_get_neighbour_anomalies(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2_["LAT"], reps2_["LON"], reps2_["SST"] - reps2_["SST_CLIM"], date=reps2_["DATE"]
+        reps2_["LAT"],
+        reps2_["LON"],
+        reps2_["SST"] - reps2_["SST_CLIM"],
+        date=reps2_["DATE"],
     )
     temp_anom, temp_nobs = g.get_neighbour_anomalies([2, 2, 2], 180, 89, 0)
 
@@ -587,7 +590,10 @@ def test_get_neighbour_anomalies(reps2_):
 def test_get_neighbour_anomalies_raises(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2_["LAT"], reps2_["LON"], reps2_["SST"] - reps2_["SST_CLIM"], date=reps2_["DATE"]
+        reps2_["LAT"],
+        reps2_["LON"],
+        reps2_["SST"] - reps2_["SST_CLIM"],
+        date=reps2_["DATE"],
     )
 
     with pytest.raises(ValueError):

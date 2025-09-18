@@ -138,8 +138,8 @@ class SuperObsGrid:
         values : array-like of float, shape (n,)
             1-dimensional anomaly array.
         """
-        lat_axis = np.arange(90., -90., -1.)
-        lon_axis = np.arange(-180., 180., 1.)
+        lat_axis = np.arange(90.0, -90.0, -1.0)
+        lon_axis = np.arange(-180.0, 180.0, 1.0)
 
         month_arr = np.atleast_1d(month)
         day_arr = np.atleast_1d(day)
@@ -150,16 +150,23 @@ class SuperObsGrid:
 
         unique_index = t_index * 1000000 + y_index * 1000 + x_index
 
-        df = pd.DataFrame({'uid': unique_index, 'value': values, 'x': x_index, 'y': y_index, 't': t_index})
-        means = df.groupby('uid')['value'].mean()
-        nobs = df.groupby('uid')['value'].count()
-        x = df.groupby('uid')['x'].first()
-        y = df.groupby('uid')['y'].first()
-        t = df.groupby('uid')['t'].first()
+        df = pd.DataFrame(
+            {
+                "uid": unique_index,
+                "value": values,
+                "x": x_index,
+                "y": y_index,
+                "t": t_index,
+            }
+        )
+        means = df.groupby("uid")["value"].mean()
+        nobs = df.groupby("uid")["value"].count()
+        x = df.groupby("uid")["x"].first()
+        y = df.groupby("uid")["y"].first()
+        t = df.groupby("uid")["t"].first()
 
         self.grid[x, y, t] = means[:]
         self.nobs[x, y, t] = nobs[:]
-
 
     def add_single_observation(
         self, lat: float, lon: float, month: int, day: int, anom: float
