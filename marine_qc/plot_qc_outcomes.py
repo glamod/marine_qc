@@ -58,6 +58,50 @@ def _get_colours_labels(qc_outcomes):
     return colours, legend_elements
 
 
+def _make_plot(xvalue, yvalue, flags, xlim, ylim, xlabel, ylabel, filename):
+    colours, legend_elements = _get_colours_labels(flags)
+
+    colours = np.array(colours)
+
+    mask_passed = flags == 0
+    mask_failed = flags == 1
+    mask_other = (flags != 0) & (flags != 1)
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10), sharex=True, sharey=True)
+    axes = axes.flatten()
+
+    titles = ["QC == 0 (Passed)", "QC == 1 (Failed)", "QC == Other", "All Points"]
+
+    masks = [mask_passed, mask_failed, mask_other, np.ones_like(flags, dtype=bool)]
+
+    for i in range(4):
+        ax = axes[i]
+        ax.scatter(xvalue[masks[i]], yvalue[masks[i]], c=colours[masks[i]], s=1)
+        ax.set_title(titles[i])
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if xlim:
+            ax.set_xlim(*xlim)
+        if ylim:
+            ax.set_ylim(*ylim)
+
+    fig.legend(
+        handles=legend_elements,
+        loc="center",
+        ncol=len(legend_elements),
+        bbox_to_anchor=(0.5, 0.53),
+    )
+
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
+
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename)
+
+    plt.close()
+
+
 def latitude_variable_plot(
     lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str = None
 ):
@@ -80,22 +124,16 @@ def latitude_variable_plot(
     -------
     None
     """
-    colours, legend_elements = _get_colours_labels(qc_outcomes)
-
-    plt.scatter(value, lat, c=colours)
-    plt.ylim(-90.0, 90.0)
-
-    plt.xlabel("Variable")
-    plt.ylabel("Latitude")
-
-    plt.legend(handles=legend_elements)
-
-    if filename is None:
-        plt.show()
-    else:
-        plt.savefig(filename)
-
-    plt.close()
+    _make_plot(
+        xvalue=value,
+        yvalue=lat,
+        flags=qc_outcomes,
+        xlim=None,
+        ylim=[-90.0, 90.0],
+        xlabel="Variable",
+        ylabel="Latitude",
+        filename=filename,
+    )
 
 
 def latitude_longitude_plot(
@@ -120,20 +158,13 @@ def latitude_longitude_plot(
     -------
     None
     """
-    colours, legend_elements = _get_colours_labels(qc_outcomes)
-
-    plt.scatter(lon, lat, c=colours)
-    plt.xlim(-180.0, 180.0)
-    plt.ylim(-90.0, 90.0)
-
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
-
-    plt.legend(handles=legend_elements)
-
-    if filename is None:
-        plt.show()
-    else:
-        plt.savefig(filename)
-
-    plt.close()
+    _make_plot(
+        xvalue=lon,
+        yvalue=lat,
+        flags=qc_outcomes,
+        xlim=[-180.0, 180.0],
+        ylim=[-90.0, 90.0],
+        xlabel="Longitude",
+        ylabel="Latitude",
+        filename=filename,
+    )
