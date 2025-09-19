@@ -51,6 +51,7 @@ def convert_date(params: list[str]) -> Callable:
 
     def pre_handler(arguments: dict, **meta_kwargs):
         date = arguments.get("date")
+
         if date is None:
             return
 
@@ -90,6 +91,7 @@ def split_date(date: datetime) -> dict:
     dict
         Dictionary containing year, month, day and hour.
     """
+    date = pd.to_datetime(date)
     try:
         year = int(date.year)
     except (AttributeError, ValueError):
