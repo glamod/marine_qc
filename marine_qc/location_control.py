@@ -74,6 +74,32 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
 
 
 def mds_lat_to_yindex_fast(lat, res):
+    """For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
+
+    Parameters
+    ----------
+    lat: float
+        Latitude of the point.
+    res: float
+        Resolution of grid in degrees.
+
+    Returns
+    -------
+    int
+        Grid box index.
+
+    Note
+    ----
+    In the northern hemisphere, borderline latitudes which fall on grid boundaries are pushed north, except
+    90 which goes south. In the southern hemisphere, they are pushed south, except -90 which goes north.
+    At 0 degrees they are pushed south.
+
+    Expects that latitudes run from 90N to 90S
+
+    Note
+    ----
+    In previous versions, ``res`` had the default value 1.0.
+    """
     lat_local = lat
     lat_local[lat_local == -90] = lat_local[lat_local == -90] + 0.001
     lat_local[lat_local == 90] = lat_local[lat_local == 90] - 0.001
@@ -180,6 +206,30 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
 
 
 def mds_lon_to_xindex_fast(lon, res):
+    """For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
+
+    Parameters
+    ----------
+    lon: float
+        Longitude of the point.
+    res: float
+        Resolution of grid in degrees.
+
+    Returns
+    -------
+    int
+        Grid box index.
+
+    Note
+    ----
+    In the western hemisphere, borderline longitudes which fall on grid boundaries are pushed west, except
+    -180 which goes east. In the eastern hemisphere, they are pushed east, except 180 which goes west.
+    At 0 degrees they are pushed west.
+
+    Note
+    ----
+    In previous versions, ``res`` had the default value 1.0.
+    """
     long_local = lon
     long_local[long_local == -180] = long_local[long_local == -180] + 0.001
     long_local[long_local == 180] = long_local[long_local == 180] - 0.001
