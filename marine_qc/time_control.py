@@ -91,7 +91,10 @@ def split_date(date: datetime) -> dict:
     dict
         Dictionary containing year, month, day and hour.
     """
-    date = pd.to_datetime(date)
+    try:
+        date = pd.to_datetime(date)
+    except TypeError:
+        date = date
     try:
         year = int(date.year)
     except (AttributeError, ValueError):
