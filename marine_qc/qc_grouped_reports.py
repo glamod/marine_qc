@@ -175,7 +175,6 @@ class SuperObsGrid:
                 "t": t_index,
             }
         )
-
         means = df.groupby("uid")["value"].mean().values
         nobs = df.groupby("uid")["value"].count().values
         x = df.groupby("uid")["x"].first().values
