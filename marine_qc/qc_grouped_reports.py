@@ -35,7 +35,9 @@ from .external_clim import (
 )
 from .location_control import (
     mds_lat_to_yindex,
+    mds_lat_to_yindex_fast,
     mds_lon_to_xindex,
+    mds_lon_to_xindex_fast,
 )
 from .statistics import p_gross
 from .time_control import (
@@ -110,16 +112,16 @@ class SuperObsGrid:
         self.buddy_stdev = np.zeros((360, 180, 73))  # type: np.ndarray
         self.nobs = np.zeros((360, 180, 73))  # type: np.ndarray
 
-    @inspect_arrays(["lats", "lons", "values", "date"])
     @convert_date(["month", "day"])
+    @inspect_arrays(["lats", "lons", "values", "month", "day"])
     def add_multiple_observations(
         self,
         lats: SequenceFloatType,
         lons: SequenceFloatType,
         values: SequenceFloatType,
         date: SequenceDatetimeType = None,
-        month: SequenceDatetimeType = None,
-        day: SequenceDatetimeType = None,
+        month: SequenceFloatType = None,
+        day: SequenceFloatType = None,
     ) -> None:
         """Add a series of observations to the grid and take the grid average. The observations should be
         anomalies.
@@ -138,28 +140,52 @@ class SuperObsGrid:
         values : array-like of float, shape (n,)
             1-dimensional anomaly array.
         """
-        lat_axis = np.arange(90., -90., -1.)
-        lon_axis = np.arange(-180., 180., 1.)
+        value_arr = np.atleast_1d(values)  # type: np.ndarray
+        value_arr = np.where(value_arr is None, np.nan, value_arr).astype(float)
 
-        month_arr = np.atleast_1d(month)
-        day_arr = np.atleast_1d(day)
+        lat_arr = np.atleast_1d(lats)  # type: np.ndarray
+        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
-        y_index = Climatology.get_y_index(lats, lat_axis)
-        x_index = Climatology.get_x_index(lons, lon_axis)
-        t_index = Climatology.get_t_index(month_arr, day_arr, 73)
+        lon_arr = np.atleast_1d(lons)  # type: np.ndarray
+        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
+
+        month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+
+        day_arr = np.atleast_1d(day)  # type: np.ndarray
+        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
+
+        valid = isvalid(lats) & isvalid(lons) & isvalid(month) & isvalid(day) & isvalid(values)
+        valid &= (month_arr >= 1) & (month_arr <= 12)
+
+        y_index = mds_lat_to_yindex_fast(lat_arr[valid], res=1)
+        x_index = mds_lon_to_xindex_fast(lon_arr[valid], res=1)
+        t_index = Climatology.get_t_index(month_arr[valid], day_arr[valid], 73)
 
         unique_index = t_index * 1000000 + y_index * 1000 + x_index
 
-        df = pd.DataFrame({'uid': unique_index, 'value': values, 'x': x_index, 'y': y_index, 't': t_index})
-        means = df.groupby('uid')['value'].mean()
-        nobs = df.groupby('uid')['value'].count()
-        x = df.groupby('uid')['x'].first()
-        y = df.groupby('uid')['y'].first()
-        t = df.groupby('uid')['t'].first()
+        df = pd.DataFrame(
+            {
+                "uid": unique_index,
+                "value": value_arr[valid],
+                "x": x_index,
+                "y": y_index,
+                "t": t_index,
+            }
+        )
+
+        means = df.groupby("uid")["value"].mean().values
+        nobs = df.groupby("uid")["value"].count().values
+        x = df.groupby("uid")["x"].first().values
+        y = df.groupby("uid")["y"].first().values
+        t = df.groupby("uid")["t"].first().values
 
         self.grid[x, y, t] = means[:]
         self.nobs[x, y, t] = nobs[:]
 
+        return
 
     def add_single_observation(
         self, lat: float, lon: float, month: int, day: int, anom: float
