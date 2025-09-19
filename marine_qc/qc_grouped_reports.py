@@ -157,7 +157,13 @@ class SuperObsGrid:
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        valid = isvalid(lats) & isvalid(lons) & isvalid(month) & isvalid(day) & isvalid(values)
+        valid = (
+            isvalid(lats)
+            & isvalid(lons)
+            & isvalid(month)
+            & isvalid(day)
+            & isvalid(values)
+        )
         valid &= (month_arr >= 1) & (month_arr <= 12)
 
         y_index = mds_lat_to_yindex_fast(lat_arr[valid], res=1)

@@ -80,10 +80,11 @@ def mds_lat_to_yindex_fast(lat, res):
 
     index = np.zeros_like(lat_local.astype(int))
 
-    index[lat > 0] =  (90 / res - 1 - (lat_local[lat >0] / res).astype(int)).astype(int)
+    index[lat > 0] = (90 / res - 1 - (lat_local[lat > 0] / res).astype(int)).astype(int)
     index[lat <= 0] = (90 / res - (lat_local[lat <= 0] / res).astype(int)).astype(int)
 
     return index
+
 
 def lat_to_yindex(lat: float, res: float) -> int:
     """For a given latitude return the y index in a 1x1x5-day global grid.
@@ -177,6 +178,7 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
         return int(int(long_local / res) + 180 / res)
     return int(int(long_local / res) + 180 / res - 1)
 
+
 def mds_lon_to_xindex_fast(lon, res):
     long_local = lon
     long_local[long_local == -180] = long_local[long_local == -180] + 0.001
@@ -184,10 +186,15 @@ def mds_lon_to_xindex_fast(lon, res):
 
     index = np.zeros_like(long_local.astype(int))
 
-    index[lon > 0.0] = ((long_local[lon > 0.0] / res).astype(int) + 180 / res).astype(int)
-    index[lon <= 0.0] = ((long_local[lon <= 0.0] / res).astype(int) + 180 / res - 1).astype(int)
+    index[lon > 0.0] = ((long_local[lon > 0.0] / res).astype(int) + 180 / res).astype(
+        int
+    )
+    index[lon <= 0.0] = (
+        (long_local[lon <= 0.0] / res).astype(int) + 180 / res - 1
+    ).astype(int)
 
     return index
+
 
 def lon_to_xindex(lon: float, res: float) -> int:
     """For a given longitude return the x index in a 1x1x5-day global grid.
