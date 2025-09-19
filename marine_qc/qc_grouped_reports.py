@@ -13,7 +13,6 @@ from typing import Sequence
 
 import numpy as np
 import pandas as pd
-from marine_qc.time_control import which_pentad_array
 
 from .auxiliary import (
     SequenceDatetimeType,
