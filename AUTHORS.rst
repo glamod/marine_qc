@@ -26,3 +26,9 @@ Previous Contributors
 * Chris Atkinson <chris.atkinson@metoffice.gov.uk>
 * Kate Willett <kate.willett@metoffice.gov.uk> `@Kate-Willett <https://github.com/Kate-Willett>`_
   - humidity QC contribution
+
+Funded by
+---------
+This project is funded through Copernicus Climate Change Service (C3S_).
+
+.. _C3S: https://climate.copernicus.eu/
