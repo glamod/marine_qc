@@ -27,7 +27,7 @@ New features and enhancements
 
   * dtype: Desired data type of the result. Default is int.
   * multiple: If True, assumes the function returns a sequence of results (e.g., a tuple), and applies `format_return_type` to each element individually.
-  
+
 * Both `do_bayesian_buddy_check` and `do_mds_buddy_check` allow a list of row numbers to be skipped (`ignore_index`) (:pull:`24`).
 
 Internal changes
