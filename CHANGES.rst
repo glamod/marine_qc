@@ -16,6 +16,19 @@ New features and enhancements
 * ``do_night_check``: reverse ``do_day_check`` (:pull:`21`)
 * Added documentation (:issue:`4`, :pull:`11`, :pull:`12`)
 * Added ``get_value_fast`` for extracting values from climatologies (:pull:`24`)
+* Added ``mds_lat_to_yindex_fast`` for extracting values from climatologies (:pull:`24`)
+* Added ``mds_lon_to_xindex_fast`` for extracting values from climatologies (:pull:`24`)
+* Implement plotting routines for QC outcomes (:pull:`24`):
+
+  * `marine_qc.plot_qc_outcomes.latitude_variable_plot`: Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC outcomes.
+  * `marine_qc.plot_qc_outcomes.latitude_longitude_plot`: Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
+
+* decorator `post_formt_return_type` has new prameters:
+
+  * dtype: Desired data type of the result. Default is int.
+  * multiple: If True, assumes the function returns a sequence of results (e.g., a tuple), and applies `format_return_type` to each element individually.
+  
+* Both `do_bayesian_buddy_check` and `do_mds_buddy_check` allow a list of row numbers to be skipped (`ignore_index`) (:pull:`24`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
