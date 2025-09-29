@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .auxiliary import isvalid
+from .auxiliary import isvalid, ValueFloatType, ValueIntType
 from .statistics import missing_mean
 
 
@@ -73,20 +73,21 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
     return int(90 / res - int(lat_local / res))
 
 
-def mds_lat_to_yindex_fast(lat, res):
+def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
     """For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
-    lat: float
-        Latitude of the point.
+    lat: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     res: float
         Resolution of grid in degrees.
 
     Returns
     -------
-    int
-        Grid box index.
+    Same type as input, but with integer values
+        Grid box indexes.
 
     Note
     ----
@@ -205,20 +206,21 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
     return int(int(long_local / res) + 180 / res - 1)
 
 
-def mds_lon_to_xindex_fast(lon, res):
+def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
     """For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
-    lon: float
-        Longitude of the point.
+    lon: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     res: float
         Resolution of grid in degrees.
 
     Returns
     -------
-    int
-        Grid box index.
+    Same type as input, but with integer values
+        Grid box indexes.
 
     Note
     ----
@@ -283,6 +285,35 @@ def lon_to_xindex(lon: float, res: float) -> int:
     return int(xindex)
 
 
+def filler(value_to_fill, neighbour1, neighbour2, opposite):
+    """If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
+    it is replaced with the value from the opposite member.
+
+    Parameters
+    ----------
+    value_to_fill: float
+        The value to fill.
+
+    neighbour1: float
+        The first neighbour.
+
+    neighbour2: float
+        The second neighbour.
+
+    opposite: float
+        The opposite member.
+
+    Returns
+    -------
+    float
+    """
+    if not isvalid(value_to_fill):
+        value_to_fill = missing_mean([neighbour1, neighbour2])
+    if not isvalid(value_to_fill):
+        value_to_fill = opposite
+    return value_to_fill
+
+
 def fill_missing_vals(
     q11: float, q12: float, q21: float, q22: float
 ) -> tuple[float, float, float, float]:
@@ -317,35 +348,6 @@ def fill_missing_vals(
     outq21 = filler(outq21, q11, q22, q12)
 
     return outq11, outq12, outq21, outq22
-
-
-def filler(value_to_fill, neighbour1, neighbour2, opposite):
-    """If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
-    it is replaced with the value from the opposite member.
-
-    Parameters
-    ----------
-    value_to_fill: float
-        The value to fill.
-
-    neighbour1: float
-        The first neighbour.
-
-    neighbour2: float
-        The second neighbour.
-
-    opposite: float
-        The opposite member.
-
-    Returns
-    -------
-    float
-    """
-    if not isvalid(value_to_fill):
-        value_to_fill = missing_mean([neighbour1, neighbour2])
-    if not isvalid(value_to_fill):
-        value_to_fill = opposite
-    return value_to_fill
 
 
 def get_four_surrounding_points(

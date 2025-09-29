@@ -107,7 +107,7 @@ def latitude_variable_plot(
 ):
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to
-    whether or not they pass qc. The graph is output to the temporary directory.
+    the QC oucomes.
 
     Parameters
     ----------

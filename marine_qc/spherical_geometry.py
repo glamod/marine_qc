@@ -22,6 +22,12 @@ radians_per_degree = np.pi / 180.0
 geod = Geod(a=earths_radius, b=earths_radius)
 
 
+def _geod_inv(lon1, lat1, lon2, lat2):
+    """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
+    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
+    return fwd_az, back_az, dist
+
+
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def angular_distance(lat1, lon1, lat2, lon2):
@@ -49,13 +55,12 @@ def angular_distance(lat1, lon1, lat2, lon2):
     ValueError
         If either lat1, lat2, lon1 or lon2 is numerically invalid or None.
     """
-    # docstring !!!
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
     result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
 
     result[valid] = (
-        geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / earths_radius
+        _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / earths_radius
     )
     return result
 
@@ -87,13 +92,12 @@ def sphere_distance(lat1, lon1, lat2, lon2):
     float
         Return the great circle distance in kilometres between the two points
     """
-    # docstring !!!
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
     result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
 
     result[valid] = (
-        geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / 1000.0
+        _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / 1000.0
     )
     return result
 
@@ -126,7 +130,6 @@ def intermediate_point(lat1, lon1, lat2, lon2, f):
         return the latitude and longitude of the point a fraction f along the great circle between the
         first and second points.
     """
-    # docstring !!!
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
     valid &= f >= 0.0
@@ -165,7 +168,6 @@ def course_between_points(lat1, lon1, lat2, lon2):
         return the initial true course in degrees at point one along the great circle between point
         one and point two
     """
-    # docstring !!!
     fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
 
@@ -199,7 +201,6 @@ def lat_lon_from_course_and_distance(lat1, lon1, tc, d):
     float, float
         return the new latitude and longitude
     """
-    # docstring !!!
     lat1 = convert_to(lat1, "deg", "rad")
     lon1 = convert_to(lon1, "deg", "rad")
     tcr = convert_to(tc, "deg", "rad")
@@ -216,9 +217,3 @@ def lat_lon_from_course_and_distance(lat1, lon1, tc, d):
     lon = convert_to(lon, "rad", "deg")
 
     return lat, lon
-
-
-def geod_inv(lon1, lat1, lon2, lat2):
-    """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
-    fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
-    return fwd_az, back_az, dist
