@@ -44,7 +44,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "black[jupyter] ==25.9.0",
-  "blackdoc ==0.4.1",
+  "blackdoc ==0.4.2",
   "codespell ==2.4.1",
   "coverage >=7.5.0",
   "coveralls >=4.0.1",
