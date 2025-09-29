@@ -11,6 +11,10 @@ Announcements
 ^^^^^^^^^^^^^
 * This marine QC repository is a copy of the results of https://github.com/glamod/glamod-marine-processing/pull/117. This repository replaces `glamod_marine_proccesing.qc_suite.modules` as an independent package (:pull:`6`).
 
+License and Legal
+^^^^^^^^^^^^^^^^^
+* Update copyright statements in `zenodo`, `LICENSE` and `documentation` (:issue:`20`, :pull:`23`)
+
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * ``do_night_check``: reverse ``do_day_check`` (:pull:`21`)
