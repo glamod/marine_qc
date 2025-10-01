@@ -9,6 +9,7 @@ dependencies:
     - python>=3.10,<3.14
     - xclim
     - cf_xarray
+    - matplotlib
 
     #development
     - black =25.1.0
@@ -48,3 +49,4 @@ dependencies:
     #from pypi
     - pip:
       - cdm_reader_mapper
+      - pyproj

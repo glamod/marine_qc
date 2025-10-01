@@ -4,13 +4,17 @@ import math
 
 import pytest  # noqa
 
+import numpy as np
+
 from marine_qc.location_control import (
     fill_missing_vals,
     get_four_surrounding_points,
     lat_to_yindex,
     lon_to_xindex,
     mds_lat_to_yindex,
+    mds_lat_to_yindex_fast,
     mds_lon_to_xindex,
+    mds_lon_to_xindex_fast,
     xindex_to_lon,
     yindex_to_lat,
 )
@@ -52,6 +56,13 @@ def test_lats_with_res(lat, res, expected):
     assert mds_lat_to_yindex(lat, res=res) == expected
 
 
+def test_lats_with_res_fast():
+    lats = np.array([90.0, 88.0, 85.0, -85.0, -88.4, -90.0, 0.0])
+    result = mds_lat_to_yindex_fast(lats, res=5.0)
+    expected = np.array([0, 0, 0, 35, 35, 35, 18])
+    assert np.all(result == expected)
+
+
 @pytest.mark.parametrize(
     "lon, res, expected",
     [
@@ -66,6 +77,13 @@ def test_lats_with_res(lat, res, expected):
 )
 def test_lons_with_res(lon, res, expected):
     assert mds_lon_to_xindex(lon, res=res) == expected
+
+
+def test_lons_with_res_fast():
+    lons = np.array([-180, -178, -175, 175, 178.4, 180, 0])
+    result = mds_lon_to_xindex_fast(lons, res=5.0)
+    expected = np.array([0, 0, 0, 71, 71, 71, 35])
+    assert np.all(result == expected)
 
 
 @pytest.mark.parametrize(
@@ -92,6 +110,15 @@ def test_lats(lat, expected):
     assert mds_lat_to_yindex(lat, res=1) == expected
 
 
+def test_lats_fast():
+    lats = np.array(
+        [90, 89, 88, 87, 88.7, -90, -89, -88, -87, -88.7, 0, 0.5, 1.0, -0.5, -1.0]
+    )
+    result = mds_lat_to_yindex_fast(lats, res=1.0)
+    expected = np.array([0, 0, 1, 2, 1, 179, 179, 178, 177, 178, 90, 89, 88, 90, 91])
+    assert np.all(result == expected)
+
+
 @pytest.mark.parametrize(
     "lon, expected",
     [
@@ -108,6 +135,13 @@ def test_lats(lat, expected):
 )
 def test_lons(lon, expected):
     assert mds_lon_to_xindex(lon, res=1) == expected
+
+
+def test_lons_fast():
+    lons = np.array([-180, -179, -178, 180, 179, 178, -1, 0, 1])
+    result = mds_lon_to_xindex_fast(lons, res=1)
+    expected = np.array([0, 0, 1, 359, 359, 358, 178, 179, 181])
+    assert np.all(result == expected)
 
 
 @pytest.mark.parametrize(
