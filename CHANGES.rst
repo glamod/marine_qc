@@ -13,8 +13,8 @@ Announcements
 
 License and Legal
 ^^^^^^^^^^^^^^^^^
-* Update copyright statements in LICENSE (:pull:`43`)
-* Update author list for publishing on zendodo and readthedocs (:issue:`25`, :pull:`43`)
+* Update copyright statements in LICENSE (:pull:`23`, :pull:`43`)
+* Update author list for publishing on zendodo and readthedocs (:issue:`20`, :issue:`25`, :pull:`23`, :pull:`43`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
