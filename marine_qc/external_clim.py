@@ -44,18 +44,31 @@ def _format_output(result, lat):
 def _select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
     sel = da_slice.sel({lat_axis: lat_arr[i], lon_axis: lon_arr[i]}, method="nearest")
     return i, float(sel.values)
-    
+
+
 def _empty_dataarray():
 
-  lat = xr.DataArray([], dims="latitude", coords={"latitude": []}, attrs={"standard_name": "latitude", "units": "degrees_north"})
-  time = xr.DataArray([], dims="time", coords={"time": []}, attrs={"standard_name": "time"})
-  lon = xr.DataArray([], dims="longitude", coords={"longitude": []}, attrs={"standard_name": "longitude", "units": "degrees_east"})
+    lat = xr.DataArray(
+        [],
+        dims="latitude",
+        coords={"latitude": []},
+        attrs={"standard_name": "latitude", "units": "degrees_north"},
+    )
+    time = xr.DataArray(
+        [], dims="time", coords={"time": []}, attrs={"standard_name": "time"}
+    )
+    lon = xr.DataArray(
+        [],
+        dims="longitude",
+        coords={"longitude": []},
+        attrs={"standard_name": "longitude", "units": "degrees_east"},
+    )
 
-  return xr.DataArray(
-    data=np.empty((0, 0, 0)),
-    coords={"latitude": lat, "pentad_time": time, "longitude": lon},
-    dims=["latitude", "time", "longitude"]
-  )  
+    return xr.DataArray(
+        data=np.empty((0, 0, 0)),
+        coords={"latitude": lat, "pentad_time": time, "longitude": lon},
+        dims=["latitude", "time", "longitude"],
+    )
 
 
 def inspect_climatology(
@@ -281,12 +294,12 @@ class Climatology:
     def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:
         """Open filename with xarray."""
         try:
-          ds = open_xrdataset(file_name)
-          da = ds[clim_name]
-          return cls(da, **kwargs)
+            ds = open_xrdataset(file_name)
+            da = ds[clim_name]
+            return cls(da, **kwargs)
         except OSError:
-          warnings.warn(f"Could not open: {file_name}.")
-        return cls(_empty_dataarray(), **kwargs)  
+            warnings.warn(f"Could not open: {file_name}.")
+        return cls(_empty_dataarray(), **kwargs)
 
     def convert_units_to(self, target_units, source_units=None) -> None:
         """Convert units to user-specific units.
@@ -371,19 +384,15 @@ class Climatology:
         valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
         result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
-        
+
         lat_axis = self.data.coords[self.lat_axis].data
         lon_axis = self.data.coords[self.lon_axis].data
 
         if not lat_axis or not lon_axis:
             return result
 
-        lat_indices = Climatology.get_y_index(
-            lat_arr[valid], lat_axis
-        )
-        lon_indices = Climatology.get_x_index(
-            lon_arr[valid], lon_axis
-        )
+        lat_indices = Climatology.get_y_index(lat_arr[valid], lat_axis)
+        lon_indices = Climatology.get_x_index(lon_arr[valid], lon_axis)
         time_indices = Climatology.get_t_index(
             month_arr[valid], day_arr[valid], self.ntime
         )
