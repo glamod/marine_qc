@@ -95,7 +95,7 @@ remove_from_toctrees = ["generated/*", "api/generated/*"]
 
 # General information about the project.
 project = "marine_qc"
-author = "Ludwig Lierhammer, John Kennedy, Tina Leiding, Kate Willett, Chris Atkinson and Axel Andersson"
+author = "Ludwig Lierhammer, John Kennedy, Tina Leiding, Kate Willett, Chris Atkinson, Richard Cornes, Elizabeth Kent and Axel Andersson"
 copyright = f"2025, {author}"
 
 # The version info for the project you're documenting, acts as replacement for

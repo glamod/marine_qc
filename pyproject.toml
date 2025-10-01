@@ -11,6 +11,8 @@ authors = [
   {name = "Tina Leiding", email = "tina.leiding@dwd.de"},
   {name = "Kate Willett", email = "kate.willett@metoffice.gov.uk"},
   {name = "Chris Atkinson", email = "chris.atkinson@metoffice.gov.uk"},
+  {name = "Richard Cornes", email = "richard.cornes@noc.ac.uk"},
+  {name = "Elizabeth Kent", email = "eck@noc.ac.uk"},
   {name = "Axel Andersson", email = "axel.andersson@dwd.de"}
 ]
 maintainers = [

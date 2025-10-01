@@ -20,6 +20,10 @@ Contributors
 
 * Tina Leiding <tina.leiding@dwd.de> `@TinaLeiding <https://github.com/TinaLeiding>`_
 
+* Richard Cornes <richard.cornes@noc.ac.uk> `@rcornes <https://github.com/rcornes>`_
+
+* Elizabeth Kent <eck@noc.ac.uk> `@lizkent <https://github.com/lizkent>`_
+
 Previous Contributors
 ---------------------
 
