@@ -44,6 +44,18 @@ def _format_output(result, lat):
 def _select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
     sel = da_slice.sel({lat_axis: lat_arr[i], lon_axis: lon_arr[i]}, method="nearest")
     return i, float(sel.values)
+    
+def _empty_dataarray():
+
+  lat = xr.DataArray([], dims="latitude", coords={"latitude": []}, attrs={"standard_name": "latitude", "units": "degrees_north"})
+  time = xr.DataArray([], dims="time", coords={"time": []}, attrs={"standard_name": "time"})
+  lon = xr.DataArray([], dims="longitude", coords={"longitude": []}, attrs={"standard_name": "longitude", "units": "degrees_east"})
+
+  return xr.DataArray(
+    data=np.empty((0, 0, 0)),
+    coords={"latitude": lat, "pentad_time": time, "longitude": lon},
+    dims=["latitude", "time", "longitude"]
+  )  
 
 
 def inspect_climatology(
@@ -241,7 +253,7 @@ class Climatology:
         lon_axis: str | None = None,
         source_units: str | None = None,
         target_units: str | None = None,
-        valid_ntime: int | list = [1, 73, 365],
+        valid_ntime: int | list = [0, 1, 73, 365],
     ):
         self.data = data
         self.convert_units_to(target_units, source_units=source_units)
@@ -268,9 +280,13 @@ class Climatology:
     @classmethod
     def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:
         """Open filename with xarray."""
-        ds = open_xrdataset(file_name)
-        da = ds[clim_name]
-        return cls(da, **kwargs)
+        try:
+          ds = open_xrdataset(file_name)
+          da = ds[clim_name]
+          return cls(da, **kwargs)
+        except OSError:
+          warnings.warn(f"Could not open: {file_name}.")
+        return cls(_empty_dataarray(), **kwargs)  
 
     def convert_units_to(self, target_units, source_units=None) -> None:
         """Convert units to user-specific units.
@@ -355,12 +371,18 @@ class Climatology:
         valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
         result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
+        
+        lat_axis = self.data.coords[self.lat_axis].data
+        lon_axis = self.data.coords[self.lon_axis].data
+
+        if not lat_axis or not lon_axis:
+            return result
 
         lat_indices = Climatology.get_y_index(
-            lat_arr[valid], self.data.coords[self.lat_axis].data
+            lat_arr[valid], lat_axis
         )
         lon_indices = Climatology.get_x_index(
-            lon_arr[valid], self.data.coords[self.lon_axis].data
+            lon_arr[valid], lon_axis
         )
         time_indices = Climatology.get_t_index(
             month_arr[valid], day_arr[valid], self.ntime
