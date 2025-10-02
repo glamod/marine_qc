@@ -46,7 +46,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "black[jupyter] ==25.9.0",
-  "blackdoc ==0.4.2",
+  "blackdoc ==0.4.3",
   "codespell ==2.4.1",
   "coverage >=7.5.0",
   "coveralls >=4.0.1",
@@ -55,7 +55,7 @@ dev = [
   "flake8 >=7.1.1",
   "flake8-rst-docstrings >=0.3.0",
   "flit >=3.9.0",
-  "isort ==6.0.1",
+  "isort ==6.1.0",
   "notebook",
   "pip >=24.2.0",
   "pre-commit >=3.7",
