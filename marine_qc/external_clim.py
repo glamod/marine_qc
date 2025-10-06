@@ -387,8 +387,11 @@ class Climatology:
 
         lat_axis = self.data.coords[self.lat_axis].data
         lon_axis = self.data.coords[self.lon_axis].data
-
-        if not lat_axis or not lon_axis:
+        # print('------------------------------------------')
+        # print(lat_axis)
+        # print(lon_axis)
+        # print('------------------------------------------')
+        if lat_axis.size == 0 or lon_axis.size == 0:
             return result
 
         lat_indices = Climatology.get_y_index(lat_arr[valid], lat_axis)
