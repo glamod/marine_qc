@@ -52,6 +52,8 @@ ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
 
+earths_radius = 6371008.8  # m
+
 
 def is_scalar_like(x: Any) -> bool:
     """
@@ -98,7 +100,7 @@ def isvalid(inval: ValueFloatType) -> bool | np.ndarray:
     return result
 
 
-def format_return_type(result_array: np.ndarray, *input_values: Any) -> Any:
+def format_return_type(result_array: np.ndarray, *input_values: Any, dtype=int) -> Any:
     """
     Convert the result numpy array(s) to the same type as the input `value`.
 
@@ -111,6 +113,8 @@ def format_return_type(result_array: np.ndarray, *input_values: Any) -> Any:
         The numpy array of results.
     input_values : scalar, sequence, np.ndarray, pd.Series or None
         One or more original input values to infer the desired return type from.
+    dtype : type, optional
+        Desired data type of the result. Default is int.
 
     Returns
     -------
@@ -122,9 +126,9 @@ def format_return_type(result_array: np.ndarray, *input_values: Any) -> Any:
     if input_value is None or is_scalar_like(input_value):
         if hasattr(result_array, "ndim") and result_array.ndim > 0:
             result_array = result_array[0]
-        return int(result_array)
+        return dtype(result_array)
     if isinstance(input_value, pd.Series):
-        return pd.Series(result_array, index=input_value.index, dtype=int)
+        return pd.Series(result_array, index=input_value.index, dtype=dtype)
     if isinstance(input_value, (list, tuple)):
         return type(input_value)(result_array.tolist())
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
@@ -294,7 +298,7 @@ def generic_decorator(
     return decorator
 
 
-def post_format_return_type(params: list[str]) -> Callable:
+def post_format_return_type(params: list[str], dtype=int, multiple=False) -> Callable:
     """
     Decorator to format a function's return value to match the type of its original input(s).
 
@@ -309,6 +313,12 @@ def post_format_return_type(params: list[str]) -> Callable:
     params : list of str
         List of parameter names whose original input types should be used to
         format the return value.
+    dtype : type, optional
+        Desired data type of the result. Default is int.
+    multiple : bool, optional
+        If True, assumes the function returns a sequence of results (e.g., a tuple),
+        and applies `format_return_type` to each element individually.
+        If False (default), applies `format_return_type` once on the entire result.
 
     Returns
     -------
@@ -332,7 +342,12 @@ def post_format_return_type(params: list[str]) -> Callable:
             if param in original_call:
                 input_values.append(original_call[param])
                 continue
-        return format_return_type(result, *input_values)
+        if multiple:
+            return tuple(
+                format_return_type(r, *input_values, dtype=dtype) for r in result
+            )
+        else:
+            return format_return_type(result, *input_values, dtype=dtype)
 
     return generic_decorator(post_handler=post_handler)
 

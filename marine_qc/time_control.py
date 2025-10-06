@@ -9,8 +9,15 @@ from datetime import datetime
 from typing import Sequence
 
 import numpy as np
+import pandas as pd
 
-from .auxiliary import generic_decorator, is_scalar_like, isvalid
+from .auxiliary import (
+    generic_decorator,
+    is_scalar_like,
+    isvalid,
+    inspect_arrays,
+    post_format_return_type,
+)
 
 
 def convert_date(params: list[str]) -> Callable:
@@ -44,6 +51,7 @@ def convert_date(params: list[str]) -> Callable:
 
     def pre_handler(arguments: dict, **meta_kwargs):
         date = arguments.get("date")
+
         if date is None:
             return
 
@@ -83,6 +91,10 @@ def split_date(date: datetime) -> dict:
     dict
         Dictionary containing year, month, day and hour.
     """
+    try:
+        date = pd.to_datetime(date)
+    except TypeError:
+        date = date
     try:
         year = int(date.year)
     except (AttributeError, ValueError):
@@ -304,6 +316,47 @@ def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
         return False
 
     return True
+
+
+def which_pentad_array(month: np.ndarray, day: np.ndarray):
+    """Take month and day arrays as inputs and return array of pentads in range 1-73.
+
+    Parameters
+    ----------
+    month: ndarray
+        Month containing the day for which we want to calculate the pentad.
+    day: ndarray
+        Day for the day for which we want to calculate the pentad.
+
+    Returns
+    -------
+    ndarray
+        Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
+    """
+    pentad = ((day_in_year_array(month=month, day=day) - 1) / 5).astype(int)
+    return pentad + 1
+
+
+def day_in_year_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
+    """Get the day in year from 1 to 365. Leap years are dealt with by allowing Feb 29 and Mar 1 to be the same day.
+
+    Parameters
+    ----------
+    month: 1D np.ndarray
+        Array of months
+    day: 1D np.ndarray
+        Array of days
+
+    Returns
+    -------
+    np.ndarray
+        Array of day number from 1-365.
+    """
+    cumulative_month_lengths = np.array(
+        [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
+    )
+    day_number = cumulative_month_lengths[month - 1] + day
+    return day_number
 
 
 def which_pentad(month: int, day: int) -> int:
@@ -533,69 +586,6 @@ def jul_day(year: int, month: int, day: int) -> int:
     return day + ((153 * m + 2) // 5) + 365 * y + y // 4 - y // 100 + y // 400 - 32045
 
 
-def time_difference(
-    year1: int,
-    month1: int,
-    day1: int,
-    hour1: int,
-    year2: int,
-    month2: int,
-    day2: int,
-    hour2: int,
-) -> float:
-    """Calculate time difference in hours between any two times.
-
-    Parameters
-    ----------
-    year1: int
-        Year of first time point.
-    month1: int
-        Month of first time point.
-    day1: int
-        Day of first time point.
-    hour1: int
-        Hour of first time point.
-    year2: int
-        Year of second time point.
-    month2: int
-        Month of second time point.
-    day2: int
-        Day of second time point.
-    hour2: int
-        Hour of second time point.
-
-    Returns
-    -------
-    float
-        Difference in hours between the two times.
-    """
-    # First check if any of the input parameters are invalid
-    args = locals()
-    for _, value in args.items():
-        if not isvalid(value):
-            return np.nan
-
-    if not (0 <= hour1 <= 24):
-        raise ValueError(f"Invalid hour1: {hour1}. Must be between 1 and 24.")
-    if not (0 <= hour2 <= 24):
-        raise ValueError(f"Invalid hour2: {hour2}. Must be between 1 and 24.")
-
-    if (
-        (year1 > year2)
-        or (year1 == year2 and month1 > month2)
-        or (year1 == year2 and month1 == month2 and day1 > day2)
-        or (year1 == year2 and month1 == month2 and day1 == day2 and hour1 > hour2)
-    ):
-        return -1 * time_difference(
-            year2, month2, day2, hour2, year1, month1, day1, hour1
-        )
-
-    first_day = jul_day(year1, month1, day1) + hour1 / 24.0
-    last_day = jul_day(year2, month2, day2) + hour2 / 24.0
-
-    return 24.0 * (last_day - first_day)
-
-
 def get_month_lengths(year: int) -> list[int]:
     """Return a list holding the lengths of the months in a given year
 
@@ -637,3 +627,43 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
         duration_in_seconds = (date - dates[0]).total_seconds()
         hours_elapsed[i] = duration_in_seconds / (60 * 60)
     return hours_elapsed
+
+
+@post_format_return_type(["times1", "times2"], dtype=float)
+@inspect_arrays(["times1", "times2"])
+def time_difference(times1, times2):
+    """Calculate time difference in hours between any two times.
+
+    Parameters
+    ----------
+    year1: int
+        Year of first time point.
+    month1: int
+        Month of first time point.
+    day1: int
+        Day of first time point.
+    hour1: int
+        Hour of first time point.
+    year2: int
+        Year of second time point.
+    month2: int
+        Month of second time point.
+    day2: int
+        Day of second time point.
+    hour2: int
+        Hour of second time point.
+
+    Returns
+    -------
+    float
+        Difference in hours between the two times.
+    """
+    # docstring !!!
+    times1 = pd.to_datetime(times1, errors="coerce").values
+    times2 = pd.to_datetime(times2, errors="coerce").values
+
+    valid = isvalid(times1) & isvalid(times2)
+
+    result = np.full(times1.shape, np.nan, dtype=float)  # np.ndarray
+    result[valid] = (times2[valid] - times1[valid]).astype(float) / (1e9 * 60 * 60)
+    return result

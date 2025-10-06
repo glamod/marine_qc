@@ -40,6 +40,8 @@ dynamic = ["version"]
 dependencies = [
   "cdm_reader_mapper",
   "cf_xarray",
+  "matplotlib",
+  "pyproj",
   "xclim"
 ]
 

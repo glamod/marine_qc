@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from .auxiliary import isvalid
+import numpy as np
+
+from .auxiliary import isvalid, ValueFloatType, ValueIntType
 from .statistics import missing_mean
 
 
@@ -69,6 +71,46 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
     if lat > 0.0:
         return int(90 / res - 1 - int(lat_local / res))
     return int(90 / res - int(lat_local / res))
+
+
+def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
+    """For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
+
+    Parameters
+    ----------
+    lat: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    res: float
+        Resolution of grid in degrees.
+
+    Returns
+    -------
+    Same type as input, but with integer values
+        Grid box indexes.
+
+    Note
+    ----
+    In the northern hemisphere, borderline latitudes which fall on grid boundaries are pushed north, except
+    90 which goes south. In the southern hemisphere, they are pushed south, except -90 which goes north.
+    At 0 degrees they are pushed south.
+
+    Expects that latitudes run from 90N to 90S
+
+    Note
+    ----
+    In previous versions, ``res`` had the default value 1.0.
+    """
+    lat_local = lat
+    lat_local[lat_local == -90] = lat_local[lat_local == -90] + 0.001
+    lat_local[lat_local == 90] = lat_local[lat_local == 90] - 0.001
+
+    index = np.zeros_like(lat_local.astype(int))
+
+    index[lat > 0] = (90 / res - 1 - (lat_local[lat > 0] / res).astype(int)).astype(int)
+    index[lat <= 0] = (90 / res - (lat_local[lat <= 0] / res).astype(int)).astype(int)
+
+    return index
 
 
 def lat_to_yindex(lat: float, res: float) -> int:
@@ -164,6 +206,48 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
     return int(int(long_local / res) + 180 / res - 1)
 
 
+def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
+    """For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
+
+    Parameters
+    ----------
+    lon: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    res: float
+        Resolution of grid in degrees.
+
+    Returns
+    -------
+    Same type as input, but with integer values
+        Grid box indexes.
+
+    Note
+    ----
+    In the western hemisphere, borderline longitudes which fall on grid boundaries are pushed west, except
+    -180 which goes east. In the eastern hemisphere, they are pushed east, except 180 which goes west.
+    At 0 degrees they are pushed west.
+
+    Note
+    ----
+    In previous versions, ``res`` had the default value 1.0.
+    """
+    long_local = lon
+    long_local[long_local == -180] = long_local[long_local == -180] + 0.001
+    long_local[long_local == 180] = long_local[long_local == 180] - 0.001
+
+    index = np.zeros_like(long_local.astype(int))
+
+    index[lon > 0.0] = ((long_local[lon > 0.0] / res).astype(int) + 180 / res).astype(
+        int
+    )
+    index[lon <= 0.0] = (
+        (long_local[lon <= 0.0] / res).astype(int) + 180 / res - 1
+    ).astype(int)
+
+    return index
+
+
 def lon_to_xindex(lon: float, res: float) -> int:
     """For a given longitude return the x index in a 1x1x5-day global grid.
 
@@ -201,6 +285,35 @@ def lon_to_xindex(lon: float, res: float) -> int:
     return int(xindex)
 
 
+def filler(value_to_fill, neighbour1, neighbour2, opposite):
+    """If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
+    it is replaced with the value from the opposite member.
+
+    Parameters
+    ----------
+    value_to_fill: float
+        The value to fill.
+
+    neighbour1: float
+        The first neighbour.
+
+    neighbour2: float
+        The second neighbour.
+
+    opposite: float
+        The opposite member.
+
+    Returns
+    -------
+    float
+    """
+    if not isvalid(value_to_fill):
+        value_to_fill = missing_mean([neighbour1, neighbour2])
+    if not isvalid(value_to_fill):
+        value_to_fill = opposite
+    return value_to_fill
+
+
 def fill_missing_vals(
     q11: float, q12: float, q21: float, q22: float
 ) -> tuple[float, float, float, float]:
@@ -235,35 +348,6 @@ def fill_missing_vals(
     outq21 = filler(outq21, q11, q22, q12)
 
     return outq11, outq12, outq21, outq22
-
-
-def filler(value_to_fill, neighbour1, neighbour2, opposite):
-    """If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
-    it is replaced with the value from the opposite member.
-
-    Parameters
-    ----------
-    value_to_fill: float
-        The value to fill.
-
-    neighbour1: float
-        The first neighbour.
-
-    neighbour2: float
-        The second neighbour.
-
-    opposite: float
-        The opposite member.
-
-    Returns
-    -------
-    float
-    """
-    if not isvalid(value_to_fill):
-        value_to_fill = missing_mean([neighbour1, neighbour2])
-    if not isvalid(value_to_fill):
-        value_to_fill = opposite
-    return value_to_fill
 
 
 def get_four_surrounding_points(
