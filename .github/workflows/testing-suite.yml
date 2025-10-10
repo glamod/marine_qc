@@ -51,7 +51,7 @@ jobs:
           python -m tox -e lint
 
   test-pypi:
-    name: Test with Python${{ matrix.python-version }} (tox, ${{ matrix.os }})
+    name: Test with Python${{ matrix.python-version }}
     needs: lint
     runs-on: ${{ matrix.os }}
     strategy:
@@ -63,31 +63,67 @@ jobs:
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
         with:
           egress-policy: audit
+
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          fetch-depth: 0 # Fetch all history for all branches and tags.
           persist-credentials: false
-      - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+
+      - name: Set environment variables
+        run: |
+          echo "UV_ENV_FILE=pyproject.toml" >> $GITHUB_ENV
+          echo "PYTHON_VERSION=${{ matrix.python-version }}" >> $GITHUB_ENV
+          echo "UV_CACHE_DIR=/tmp/.uv-cache" >> $GITHUB_ENV
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
         with:
           python-version: ${{ matrix.python-version }}
-          cache: pip
-      - name: Install CI libraries
-        run: |
-          python -m pip install --require-hashes -r CI/requirements_ci.txt
-      - name: Environment Caching
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+          enable-cache: true
+          cache-local-path: ${{ env.UV_CACHE_DIR }}
+
+      - name: Restore uv cache
+        uses: actions/cache@v4
         with:
-          path: .tox
-          key: ${{ matrix.os }}-Python${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'tox.ini') }}
-      - name: Test with tox
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles(env.UV_ENV_FILE) }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles(env.UV_ENV_FILE) }}
+            uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}
+
+      - name: Install marine QC toolbox
         run: |
-          python -m tox
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: run-${{ matrix.python-version }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_SERVICE_NAME: github
+          uv sync --extra dev
+
+      - name: Version info
+        run: |
+          uv version
+          uv pip list
+
+      - name: Import marine QC toolbox
+        run: |
+          uv run python -c "import marine_qc"
+
+      - name: Run tests
+        timeout-minutes: 10
+        run: uv run pytest tests
+          --cov=marine_qc
+          --cov-report=xml
+          --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
+
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN}}
+          files: ./coverage.xml
+          flags: unittests
+          env_vars: RUNNER_OS,PYTHON_VERSION
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Minimise uv cache
+        run: uv cache prune --ci
 
   finish:
     needs:

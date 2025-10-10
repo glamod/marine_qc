@@ -37,3 +37,7 @@
 .. |logo_DWD| image:: _static/images/logo_DWD_RGB.png
         :width: 35%
         :target: https://www.dwd.de/
+
+.. |logo_metoffice| image:: _static/images/logo_metoffice_rbg.png
+        :width: 35%
+        :target: https://www.metoffice.gov.uk/
