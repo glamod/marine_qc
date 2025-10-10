@@ -29,4 +29,3 @@ body:
       description: Do you intend to submit a fix for this bug? (The Marine Quality Control developers will help with code compliance)
       options:
         - label: I would be willing/able to open a Pull Request to contribute this feature.
-~

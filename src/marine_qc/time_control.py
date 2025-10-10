@@ -1,12 +1,10 @@
 """Some generally helpful time control functions for base QC."""
 
 from __future__ import annotations
-
 import calendar
 import math
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import datetime
-from typing import Sequence
 
 import numpy as np
 
@@ -71,7 +69,8 @@ def convert_date(params: list[str]) -> Callable:
 
 
 def split_date(date: datetime) -> dict:
-    """Split datetime date into year, month, day and hour.
+    """
+    Split datetime date into year, month, day and hour.
 
     Parameters
     ----------
@@ -103,11 +102,12 @@ def split_date(date: datetime) -> dict:
 
 
 def pentad_to_month_day(p: int) -> tuple[int, int]:
-    """Given a pentad number, return the month and day of the first day in the pentad.
+    """
+    Given a pentad number, return the month and day of the first day in the pentad.
 
     Parameters
     ----------
-    p: int
+    p:  int
         Pentad number from 1 to 73
 
     Returns
@@ -270,18 +270,18 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     return m[p - 1], d[p - 1]
 
 
-def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
+def valid_month_day(year: int | None = None, month: int = 1, day: int = 1) -> bool:
     """
     Returns True if month and day combination are allowed, False otherwise. Assumes that Feb 29th is valid.
 
     Parameters
     ----------
-    year: int, optional, default: None
+    year : int, optional, default: None
         Year to be tested
         If none, set year to default leap year
-    month: int, default: 1
+    month : int, default: 1
         Month to be tested
-    day: int, default: 1
+    day : int, default: 1
         Day to be tested
 
     Returns
@@ -307,7 +307,8 @@ def valid_month_day(year: int = None, month: int = 1, day: int = 1) -> bool:
 
 
 def which_pentad(month: int, day: int) -> int:
-    """Take month and day as inputs and return pentad in range 1-73.
+    """
+    Take month and day as inputs and return pentad in range 1-73.
 
     Parameters
     ----------
@@ -342,8 +343,9 @@ def which_pentad(month: int, day: int) -> int:
     return pentad
 
 
-def day_in_year(year: int = None, month: int = 1, day: int = 1) -> int:
-    """Get the day in year from 1 to 365 or 366.
+def day_in_year(year: int | None = None, month: int = 1, day: int = 1) -> int:
+    """
+    Get the day in year from 1 to 365 or 366.
 
     Parameters
     ----------
@@ -367,9 +369,7 @@ def day_in_year(year: int = None, month: int = 1, day: int = 1) -> int:
         year_not_specified = True
 
     if not valid_month_day(year=year, month=month, day=day):
-        raise ValueError(
-            f"Invalid year {year} - month {month} - day {day} combination."
-        )
+        raise ValueError(f"Invalid year {year} - month {month} - day {day} combination.")
 
     if year_not_specified:
         year = 2003
@@ -391,7 +391,8 @@ def day_in_year(year: int = None, month: int = 1, day: int = 1) -> int:
 
 
 def relative_year_number(year: int, reference: int = 1979) -> int:
-    """Get number of year relative to reference year (1979 by default).
+    """
+    Get number of year relative to reference year (1979 by default).
 
     Parameters
     ----------
@@ -408,10 +409,9 @@ def relative_year_number(year: int, reference: int = 1979) -> int:
     return year - (reference + 1)
 
 
-def convert_time_in_hours(
-    hour: int, minute: int, sec: int, zone: int | float, daylight_savings_time: float
-) -> float:
-    """Convert integer hour, minute, and second to time in decimal hours
+def convert_time_in_hours(hour: int, minute: int, sec: int, zone: int | float, daylight_savings_time: float) -> float:
+    """
+    Convert integer hour, minute, and second to time in decimal hours
 
     Parameters
     ----------
@@ -435,7 +435,8 @@ def convert_time_in_hours(
 
 
 def leap_year(years_since_1980: int) -> int:
-    """Is input year a Leap year?
+    """
+    Is input year a Leap year?
 
     Parameters
     ----------
@@ -450,10 +451,9 @@ def leap_year(years_since_1980: int) -> int:
     return math.floor(years_since_1980 / 4.0)
 
 
-def time_in_whole_days(
-    time_in_hours: int, day: int, years_since_1980: int, leap: int
-) -> float:
-    """Calculate from time in hours to time in whole days.
+def time_in_whole_days(time_in_hours: int, day: int, years_since_1980: int, leap: int) -> float:
+    """
+    Calculate from time in hours to time in whole days.
 
     Parameters
     ----------
@@ -474,10 +474,9 @@ def time_in_whole_days(
     return years_since_1980 * 365 + leap + day - 1.0 + time_in_hours / 24.0
 
 
-def leap_year_correction(
-    time_in_hours: float, day: int, years_since_1980: int
-) -> float:
-    """Make leap year correction.
+def leap_year_correction(time_in_hours: float, day: int, years_since_1980: int) -> float:
+    """
+    Make leap year correction.
 
     Parameters
     ----------
@@ -503,7 +502,8 @@ def leap_year_correction(
 
 
 def jul_day(year: int, month: int, day: int) -> int:
-    """Routine to calculate julian day. This is the weird Astronomical thing which counts from 1 Jan 4713 BC.
+    """
+    Routine to calculate julian day. This is the weird Astronomical thing which counts from 1 Jan 4713 BC.
 
     Parameters
     ----------
@@ -543,7 +543,8 @@ def time_difference(
     day2: int,
     hour2: int,
 ) -> float:
-    """Calculate time difference in hours between any two times.
+    """
+    Calculate time difference in hours between any two times.
 
     Parameters
     ----------
@@ -571,7 +572,7 @@ def time_difference(
     """
     # First check if any of the input parameters are invalid
     args = locals()
-    for _, value in args.items():
+    for value in args.values():
         if not isvalid(value):
             return np.nan
 
@@ -586,9 +587,7 @@ def time_difference(
         or (year1 == year2 and month1 == month2 and day1 > day2)
         or (year1 == year2 and month1 == month2 and day1 == day2 and hour1 > hour2)
     ):
-        return -1 * time_difference(
-            year2, month2, day2, hour2, year1, month1, day1, hour1
-        )
+        return -1 * time_difference(year2, month2, day2, hour2, year1, month1, day1, hour1)
 
     first_day = jul_day(year1, month1, day1) + hour1 / 24.0
     last_day = jul_day(year2, month2, day2) + hour2 / 24.0
@@ -597,7 +596,8 @@ def time_difference(
 
 
 def get_month_lengths(year: int) -> list[int]:
-    """Return a list holding the lengths of the months in a given year
+    """
+    Return a list holding the lengths of the months in a given year
 
     Parameters
     ----------

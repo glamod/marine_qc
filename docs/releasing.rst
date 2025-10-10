@@ -36,7 +36,7 @@ A reminder for the **maintainers** on how to deploy. This section is only releva
 .. warning::
 
     Uploads to PyPI can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version "broken") on PyPI.
-    
+
 Packaging
 ---------
 
@@ -101,4 +101,3 @@ We can now leave our docker container (`exit`) and continue with uploading the f
     .. code-block:: console
 
         python -m twine upload dist/*
-    

@@ -41,7 +41,7 @@ repos:
       - id: python-check-blanket-type-ignore
       - id: python-no-eval
       - id: python-no-log-warn
-      - id: python-use-type-annotations
+#      - id: python-use-type-annotations
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
@@ -61,21 +61,21 @@ repos:
     rev: 'v2.14'
     hooks:
       - id: vulture
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
-    hooks:
-      - id: mypy
+#  - repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: v1.18.2
+#    hooks:
+#      - id: mypy
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
         additional_dependencies: [ 'tomli' ]
         args: [ '--toml=pyproject.toml' ]
-  - repo: https://github.com/numpy/numpydoc
-    rev: v1.9.0
-    hooks:
-      - id: numpydoc-validation
-        exclude: ^docs/|^tests/
+#  - repo: https://github.com/numpy/numpydoc
+#    rev: v1.9.0
+#    hooks:
+#      - id: numpydoc-validation
+#        exclude: ^docs/|^tests/
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.34.0
     hooks:

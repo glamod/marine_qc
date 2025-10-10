@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
-import pytest  # noqa
+import pytest
 from cdm_reader_mapper import DataBundle, read_tables
 from cdm_reader_mapper.common.getting_files import load_file
 

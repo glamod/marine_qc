@@ -1,4 +1,4 @@
-name: Publish Python í ½í° distributions í ½í³¦ to TestPyPI
+name: Publish Python ğŸ distributions ğŸ“¦ to TestPyPI
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
           prerelease: false
 
   deploy-testpypi:
-    name: Build and publish Python í ½í° distributions í ½í³¦ to TestPyPI
+    name: Build and publish Python ğŸ distributions ğŸ“¦ to TestPyPI
     runs-on: ubuntu-latest
     environment: staging
     permissions:
@@ -81,7 +81,7 @@ jobs:
         run: |
           python -m flit build
 
-      - name: Publish distribution í ½í³¦ to Test PyPI
+      - name: Publish distribution ğŸ“¦ to Test PyPI
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
         with:
           repository-url: https://test.pypi.org/legacy/

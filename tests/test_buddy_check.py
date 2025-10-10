@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import marine_qc.Climatology as clim  # noqa
-from marine_qc import do_bayesian_buddy_check, do_mds_buddy_check
+from marine_qc import Climatology, do_bayesian_buddy_check, do_mds_buddy_check
 from marine_qc.auxiliary import (
     failed,
     passed,
@@ -137,12 +136,12 @@ def reps3():
 
 @pytest.fixture
 def dummy_pentad_stdev():
-    return clim.Climatology(np.full([73, 180, 360], 1.5))
+    return Climatology.Climatology(np.full([73, 180, 360], 1.5))
 
 
 @pytest.fixture
 def dummy_pentad_stdev_empty():
-    return clim.Climatology(np.full([73, 180, 360], np.nan))
+    return Climatology.Climatology(np.full([73, 180, 360], np.nan))
 
 
 @pytest.fixture
@@ -528,7 +527,7 @@ def buddy_reps_singleton():
 
 @pytest.fixture
 def dummy_pentad_stdev_():
-    return clim.Climatology(np.full([73, 180, 360], 1.0))
+    return Climatology.Climatology(np.full([73, 180, 360], 1.0))
 
 
 def test_get_neighbour_anomalies(reps2_):

@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import numpy as np
-import pytest  # noqa
+import pytest
 
 from marine_qc.time_control import (
     convert_date_to_hours,

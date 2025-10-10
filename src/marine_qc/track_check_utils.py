@@ -8,7 +8,6 @@ assumed.
 """
 
 from __future__ import annotations
-
 import math
 
 import numpy as np
@@ -18,7 +17,8 @@ from .auxiliary import convert_to, isvalid
 
 
 def modal_speed(awork: list) -> float:
-    """Calculate the modal speed from the input array in 3 knot bins. Returns the
+    """
+    Calculate the modal speed from the input array in 3 knot bins. Returns the
     bin-centre for the modal group.
 
     The data are binned into 3-knot bins with the first from 0-3 knots having a
@@ -79,7 +79,8 @@ def modal_speed(awork: list) -> float:
 
 
 def set_speed_limits(amode: float) -> (float, float, float):
-    """Takes a modal speed and calculates speed limits for the track checker
+    """
+    Takes a modal speed and calculates speed limits for the track checker
 
     Parameters
     ----------
@@ -103,10 +104,9 @@ def set_speed_limits(amode: float) -> (float, float, float):
     return amode * 1.25, convert_to(30.0, "knots", "km/h"), amode * 0.75
 
 
-def increment_position(
-    alat1: float, alon1: float, avs: float, ads: float, timdif: float
-) -> (float, float):
-    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+def increment_position(alat1: float, alon1: float, avs: float, ads: float, timdif: float) -> (float, float):
+    """
+    Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
     increments of latitude and longitude which correspond to half the time difference.
 
     Parameters
@@ -144,7 +144,8 @@ def direction_continuity(
     ship_directions: float,
     max_direction_change: float = 60.0,
 ) -> float:
-    """Check that the reported direction at the previous time step and the actual
+    """
+    Check that the reported direction at the previous time step and the actual
     direction taken are within max_direction_change degrees of one another.
 
     Parameters
@@ -177,22 +178,17 @@ def direction_continuity(
     if dsi_previous not in allowed_list:
         raise ValueError(f"dsi_previous not one of allowed values {dsi_previous}")
 
-    if (
-        max_direction_change < abs(dsi - ship_directions) < 360 - max_direction_change
-    ) or (
-        max_direction_change
-        < abs(dsi_previous - ship_directions)
-        < 360 - max_direction_change
+    if (max_direction_change < abs(dsi - ship_directions) < 360 - max_direction_change) or (
+        max_direction_change < abs(dsi_previous - ship_directions) < 360 - max_direction_change
     ):
         result = 10.0
 
     return result
 
 
-def speed_continuity(
-    vsi: float, vsi_previous: float, speeds: float, max_speed_change: float = 10.0
-) -> float:
-    """Check if reported speed at this and previous time step is within max_speed_change
+def speed_continuity(vsi: float, vsi_previous: float, speeds: float, max_speed_change: float = 10.0) -> float:
+    """
+    Check if reported speed at this and previous time step is within max_speed_change
     knots of calculated speed between those two time steps
 
     Parameters
@@ -215,10 +211,7 @@ def speed_continuity(
     if not isvalid(vsi) or not isvalid(vsi_previous) or not isvalid(speeds):
         return result
 
-    if (
-        abs(vsi - speeds) > max_speed_change
-        and abs(vsi_previous - speeds) > max_speed_change
-    ):
+    if abs(vsi - speeds) > max_speed_change and abs(vsi_previous - speeds) > max_speed_change:
         result = 10.0
 
     return result
@@ -231,7 +224,8 @@ def check_distance_from_estimate(
     fwd_diff_from_estimated: float,
     rev_diff_from_estimated: float,
 ) -> float:
-    """Check that distances from estimated positions (calculated forward and backwards in time) are less than
+    """
+    Check that distances from estimated positions (calculated forward and backwards in time) are less than
     time difference multiplied by the average reported speeds
 
     Parameters

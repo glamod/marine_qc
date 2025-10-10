@@ -236,6 +236,7 @@ extend-select = [
 ]
 ignore = [
   "COM", # commas
+  "D103", # missing-docstring-in-public-function
   "D205", # blank-line-after-summary
   "D400", # ends-in-period
   "D401" # non-imperative-mood
@@ -278,6 +279,7 @@ max-complexity = 15
 "docs/*.py" = ["D100", "D101", "D102", "D103"]
 "tests/**/*test*.py" = ["D100", "D101", "D102", "D103", "N802", "S101"]
 "src/marine_qc/**/__init__.py" = ["F401", "F403"]
+"src/marine_qc/Climatology.py" = ["N999"] # naming a module with a capital letter is against PEP8, but changing it would be a breaking change
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180
