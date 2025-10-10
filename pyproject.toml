@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.12.0,<4"]
+requires = ["flit_core >=3.11.0,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -14,13 +14,13 @@ maintainers = [
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.10.0"
-license = {file = "LICENSE"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 keywords = ["marine_qc"]
 classifiers = [
   "Development Status :: 1 - Planning",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
@@ -39,21 +39,21 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "black ==25.1.0",
-  "blackdoc ==0.3.9",
-  "bump-my-version >=1.2.0",
+  "bump-my-version >=1.2.3",
   "coverage >=7.5.0",
-  "flake8 >=7.2.0",
-  "flake8-rst-docstrings >=0.3.0",
-  "flit >=3.12.0,<4.0",
-  "mypy >=1.14.1",
-  "numpydoc >=1.8.0",
-  "pip >=25.1.1",
-  "pre-commit >=3.5.0",
+  "deptry >=0.23.1",
+  "flake8 >=7.3.0",
+  "flake8-rst-docstrings >=0.3.1",
+  "flit >=3.11.0,<4.0",
+  "mypy >=1.18.2",
+  "numpydoc >=1.9.0",
+  "pip >=25.2",
+  "pre-commit >=3.7.0",
   "pytest >=8.3.2",
   "pytest-cov >=5.0.0",
-  "ruff >=0.12.0",
-  "tox >=4.26.0",
+  "ruff >=0.13.3",
+  "tox >=4.30.3",
+  "vulture >=2.14",
   "watchdog >=4.0.0"
 ]
 docs = [
@@ -61,7 +61,7 @@ docs = [
   "ipython",
   "jupyter_client",
   "nbsphinx >=0.9.5",
-  "sphinx >=7.1.0",
+  "sphinx >=7.1.0,<8.2",
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton",
   "sphinx-book-theme >=1.0"
@@ -75,14 +75,6 @@ all = ["marine_qc[dev]", "marine_qc[docs]"]
 "Issue tracker" = "https://github.com/glamod/marine_qc"
 
 [tool]
-
-[tool.black]
-target-version = [
-  "py310",
-  "py311",
-  "py312",
-  "py313"
-]
 
 [tool.bumpversion]
 current_version = "0.1.0"
@@ -131,6 +123,10 @@ relative_files = true
 omit = ["tests/*.py"]
 source = ["marine_qc"]
 
+[tool.deptry]
+extend_exclude = ["docs"]
+pep621_dev_dependency_groups = ["all", "dev", "docs"]
+
 [tool.flit.sdist]
 include = [
   ".zenodo.json",
@@ -166,12 +162,6 @@ exclude = [
   "docs/apidoc/modules.rst",
   "docs/apidoc/marine_qc*.rst"
 ]
-
-[tool.isort]
-profile = "black"
-py_version = 312
-append_only = true
-add_imports = "from __future__ import annotations"
 
 [tool.mypy]
 files = "."

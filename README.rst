@@ -8,11 +8,9 @@ Marine Quality Control: ``marine_qc`` toolbox
 | Documentation and Support  | |docs| |versions|                                              |
 +----------------------------+----------------------------------------------------------------+
 | Open Source                | |license| |zenodo|                                             |
-+----------------------------+----------------------------------------------------------------+
 |                            | |fair-software| |ossf|                                         |
 +----------------------------+----------------------------------------------------------------+
-| Coding Standards           | |black| |isort| |ruff| |pre-commit| |codefactor|               |
-+----------------------------+----------------------------------------------------------------+
+| Coding Standards           | |ruff| |pre-commit| |codefactor|                               |
 |                            | |security| |fossa|                                             |
 +----------------------------+----------------------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                                   |
@@ -115,6 +113,8 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 
 .. _LICENSE: https://github.com/glamod/marine_qc/blob/main/LICENSE
 
+.. _Ouranosinc/cookiecutter-pypackage: https://github.com/Ouranosinc/cookiecutter-pypackage
+
 .. _issue tracker: https://github.com/glamod/marine_qc/issues
 
 .. _uv: https://docs.astral.sh/uv/
@@ -123,37 +123,29 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://github.com/glamod/marine_qc/actions/workflows/testing-suite.yml
         :alt: Build Status
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-        :target: https://github.com/psf/black
-        :alt: Python Black
-
 .. |c3s| image:: https://img.shields.io/badge/Powered%20by-Copernicus%20Climate%20Change%20Service-blue.svg
         :target: https://climate.copernicus.eu/
         :alt: Funding
 
 .. |codefactor| image:: https://www.codefactor.io/repository/github/glamod/marine_qc/badge
-		    :target: https://www.codefactor.io/repository/github/glamod/marine_qc
-		    :alt: CodeFactor
+        :target: https://www.codefactor.io/repository/github/glamod/marine_qc
+        :alt: CodeFactor
 
 .. |coveralls| image:: https://codecov.io/gh/glamod/marine_qc/branch/main/graph/badge.svg
-	      :target: https://codecov.io/gh/glamod/marine_qc
-	      :alt: Coveralls
+        :target: https://codecov.io/gh/glamod/marine_qc
+        :alt: Coveralls
 
 .. |docs| image:: https://readthedocs.org/projects/marine_qc/badge/?version=latest
-	:target: https://marine-qc.readthedocs.io/en/latest/
+        :target: https://marine-qc.readthedocs.io/en/latest/
         :alt: Documentation Status
 
 .. |fair-software| image:: https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F-green
-   	    :target: https://fair-software.eu
-	      :alt: FAIR-software
+        :target: https://fair-software.eu
+        :alt: FAIR-software
 
 .. |fossa| image:: https://app.fossa.com/api/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc.svg?type=shield
         :target: https://app.fossa.com/projects/git%2Bgithub.com%2Fglamod%2Fmarine_qc?ref=badge_shield
         :alt: FOSSA
-
-.. |isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
-        :target: https://pycqa.github.io/isort/
-        :alt: Isort
 
 .. |license| image:: https://img.shields.io/github/license/glamod/marine_qc.svg
         :target: https://github.com/glamod/marine_qc/blob/main/LICENSE
@@ -176,8 +168,8 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :alt: Ruff
 
 .. |security| image:: https://bestpractices.coreinfrastructure.org/projects/10980/badge
-	      :target: https://bestpractices.coreinfrastructure.org/projects/10980
-	      :alt: OpenSSf Best Practices
+        :target: https://bestpractices.coreinfrastructure.org/projects/10980
+        :alt: OpenSSf Best Practices
 
 .. |status| image:: https://www.repostatus.org/badges/latest/concept.svg
         :target: https://www.repostatus.org/#concept
@@ -189,4 +181,4 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 
 .. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo..svg
         :target: https://doi.org/10.5281/zenodo.
- 	:alt: DOI
+        :alt: DOI

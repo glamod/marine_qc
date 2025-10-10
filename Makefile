@@ -57,10 +57,6 @@ lint/flake8: ## check style with flake8
 	python -m flake8 --config=.flake8 src/marine_qc tests
 	python -m numpydoc lint src/marine_qc/**.py
 
-lint/black: ## check style with black
-	python -m black --check src/marine_qc tests
-	python -m blackdoc --check src/marine_qc docs
-
 lint: lint/flake8 ## check style
 
 test: ## run tests quickly with the default Python

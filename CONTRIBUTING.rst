@@ -95,7 +95,7 @@ Ready to contribute? Here's how to set up ``marine_qc`` for local development.
 
     This installs ``marine_qc`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone.
 
-    On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, ``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
+    On commit, ``pre-commit`` will check that ``flake8``, and ``ruff`` checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
 
     You can also run the hooks manually with:
 
@@ -193,7 +193,7 @@ Before you submit a pull request, check that it meets these guidelines:
 Tips
 ----
 
-To run a subset of tests::
+To run a subset of tests:
 
 .. code-block:: console
 
@@ -213,13 +213,11 @@ To run specific code style checks:
 
 .. code-block:: console
 
-    python -m black --check src/marine_qc tests
-    python -m blackdoc --check src/marine_qc docs
     python -m ruff check src/marine_qc tests
     python -m flake8 src/marine_qc tests
-    validate-docstrings src/marine_qc/**.py
+    python -m numpydoc lint src/marine_qc/**.py
 
-To get ``black``, ``blackdoc``, ``ruff``, ``flake8`` (with the ``flake8-rst-docstrings`` plugin), and ``numpydoc`` (for ``validate-docstrings``), simply install them with ``pip`` into your environment.
+To get ``ruff``, ``flake8`` (with the ``flake8-rst-docstrings`` plugin), and ``numpydoc``, simply install them with ``pip`` into your environment.
 
 .. code-block:: console
 
