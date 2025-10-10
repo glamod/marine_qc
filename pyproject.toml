@@ -10,6 +10,8 @@ authors = [
   {name = "Tina Leiding", email = "tina.leiding@dwd.de"},
   {name = "Kate Willett", email = "kate.willett@metoffice.gov.uk"},
   {name = "Chris Atkinson", email = "chris.atkinson@metoffice.gov.uk"},
+  {name = "Richard Cornes", email = "richard.cornes@noc.ac.uk"},
+  {name = "Elizabeth Kent", email = "eck@noc.ac.uk"},
   {name = "Axel Andersson", email = "axel.andersson@dwd.de"}
 ]
 maintainers = [
@@ -50,11 +52,14 @@ dev = [
   "flake8-rst-docstrings >=0.3.1",
   "flit >=3.11.0,<4.0",
   "mypy >=1.18.2",
+  "notebook",
   "numpydoc >=1.9.0",
   "pip >=25.2",
   "pre-commit >=3.7.0",
-  "pytest >=8.3.2",
-  "pytest-cov >=5.0.0",
+  "pylint >=3.3.1",
+  "pytest >=8.3.4",
+  "pytest-cov >=6.0.0",
+  "pytest-env >=1.1.5",
   "ruff >=0.13.3",
   "tox >=4.30.3",
   "vulture >=2.14",
@@ -62,11 +67,13 @@ dev = [
 ]
 docs = [
   "ipykernel",
-  "ipython",
+  "ipython >=8.5.0",
   "jupyter_client",
-  "nbsphinx >=0.9.5",
+  "myst-nb >=1.2.0",
+  "nbconvert >=7.16.4",
+  "numpydoc >=1.9.0",
   "sphinx >=7.1.0,<8.2",
-  "sphinx-codeautolink >=0.16.2",
+  "sphinx-autodoc-typehints",
   "sphinx-copybutton",
   "sphinx-book-theme >=1.0"
 ]
@@ -116,7 +123,7 @@ optional_value = "release"
 values = ["dev", "release"]
 
 [tool.codespell]
-skip = "src/marine_qc//*.json"
+skip = "src/marine_qc/*.json"
 ignore-words-list = "astroid"
 
 [tool.coverage.paths]
@@ -129,6 +136,7 @@ source = ["marine_qc"]
 
 [tool.deptry]
 extend_exclude = ["docs"]
+ignore_notebooks = true
 pep621_dev_dependency_groups = ["all", "dev", "docs"]
 
 [tool.flit.sdist]
@@ -147,24 +155,20 @@ include = [
   "docs/Makefile",
   "docs/conf.py",
   "docs/make.bat",
-  "src/marine_qc",
+  "src/marine_qc/**/*.json",
+  "src/marine_qc/**/*.py",
+  "src/marine_qc/**/*.txt",
+  "src/marine_qc/**/*.yml",
   "tests/**/*.py",
   "tox.ini"
 ]
 exclude = [
   "*.py[co]",
   "__pycache__",
-  ".coveralls.yml",
-  ".editorconfig",
-  ".flake8",
-  ".gitignore",
-  ".pre-commit-config.yaml",
-  ".readthedocs.yml",
-  ".yamllint.yaml",
-  ".zizmor.yml",
+  ".*",
   "docs/_*",
-  "docs/apidoc/modules.rst",
-  "docs/apidoc/marine_qc*.rst"
+  "docs/modules.rst",
+  "pylintrc"
 ]
 
 [tool.mypy]
@@ -176,11 +180,21 @@ warn_no_return = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
+plugins = ["numpy.typing.mypy_plugin"]
 
 [[tool.mypy.overrides]]
 module = [
-  # Don't require test functions to include types
-  "tests.*"
+  "boltons.*",
+  "cftime.*",
+  "jsonpickle.*",
+  "numba.*",
+  "pytest_socket.*",
+  "SBCK.*",
+  "scipy.*",
+  "sklearn.*",
+  "statsmodels.*",
+  "yamale.*",
+  "yaml.*"
 ]
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
@@ -220,7 +234,7 @@ testpaths = [
 [tool.ruff]
 src = ["marine_qc"]
 line-length = 150
-exclude = [".eggs", ".git", "build", ".eggs"]
+exclude = [".git", "build", ".eggs"]
 extend-include = [
   "*.ipynb" # Include notebooks
 ]
@@ -268,6 +282,13 @@ select = [
 
 [tool.ruff.lint.flake8-bandit]
 check-typed-exception = true
+
+[tool.ruff.lint.flake8-import-conventions.aliases]
+"matplotlib.pyplot" = "plt"
+numpy = "np"
+pandas = "pd"
+scipy = "sp"
+xarray = "xr"
 
 [tool.ruff.lint.isort]
 known-first-party = ["marine_qc"]

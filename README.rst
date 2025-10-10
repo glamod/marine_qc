@@ -1,6 +1,6 @@
-==================================================================
+=============================================
 Marine Quality Control: ``marine_qc`` toolbox
-==================================================================
+=============================================
 
 +----------------------------+----------------------------------------------------------------+
 | Versions                   | |pypi|                                                         |
@@ -73,7 +73,6 @@ To develop the package using uv, the following will create a virtual environment
     uv venv --python 3.12      # Create an environment with the recommended python version
     source .venv/bin/activate  # Load the virtual environment (for bash or zsh)
     uv sync
-
 
 Contributing to marine_qc
 =========================
