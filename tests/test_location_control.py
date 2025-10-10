@@ -1,8 +1,7 @@
 from __future__ import annotations
-
 import math
 
-import pytest  # noqa
+import pytest
 
 from marine_qc.location_control import (
     fill_missing_vals,

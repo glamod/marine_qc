@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest  # noqa
 
 import marine_qc.calculate_humidity as ch
 
