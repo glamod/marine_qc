@@ -55,7 +55,7 @@ dev = [
   "flake8 >=7.1.1",
   "flake8-rst-docstrings >=0.3.0",
   "flit >=3.9.0",
-  "isort ==6.1.0",
+  "isort ==7.0.0",
   "notebook",
   "pip >=24.2.0",
   "pre-commit >=3.7",
