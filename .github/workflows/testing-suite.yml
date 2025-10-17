@@ -98,7 +98,6 @@ jobs:
 
       - name: Version info
         run: |
-          uv version
           uv pip list
 
       - name: Import marine QC toolbox
