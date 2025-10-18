@@ -15,6 +15,10 @@ License and Legal
 * Update copyright statements in LICENSE (:pull:`23`, :pull:`43`)
 * Update author list for publishing on zendodo and readthedocs (:issue:`20`, :issue:`25`, :pull:`23`, :pull:`43`)
 
+CI changes
+^^^^^^^^^^
+* Use `cruft` and cookicutter template `https://github.com/Ouranosinc/cookiecutter-pypackage` (:pull:`30`)
+
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * ``do_night_check``: reverse ``do_day_check`` (:pull:`21`)
