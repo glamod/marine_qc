@@ -3,6 +3,7 @@
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
+
 from urllib.request import pathname2url
 
 webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
@@ -34,6 +35,11 @@ clean-build: ## remove build artifacts
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 
+clean-docs: ## remove docs artifacts
+	rm -f docs/apidoc/marine_qc*.rst
+	rm -f docs/apidoc/modules.rst
+	$(MAKE) -C docs clean
+
 clean-pyc: ## remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
@@ -47,20 +53,22 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	flake8 index_calculator tests
+	python -m ruff check src/marine_qc tests
+	python -m flake8 --config=.flake8 src/marine_qc tests
+	# python -m numpydoc lint src/marine_qc/**.py
 
 lint: lint/flake8 ## check style
 
 test: ## run tests quickly with the default Python
-	pytest
+	python -m pytest
 
 test-all: ## run tests on every Python version with tox
-	tox
+	python -m tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source marine_qc -m pytest
-	coverage report -m
-	coverage html
+	python -m coverage run --source src/marine_qc -m pytest
+	python -m coverage report -m
+	python -m coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
@@ -71,16 +79,25 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
+autodoc: clean-docs ## create sphinx-apidoc files:
+	sphinx-apidoc -o docs/apidoc --private --module-first src/marine_qc
+
+linkcheck: autodoc ## run checks over all external links found throughout the documentation
+	$(MAKE) -C docs linkcheck
+
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: dist ## package and upload a release
-	twine upload dist/*
-
 dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python -m flint build
 	ls -l dist
 
+release: dist ## package and upload a release
+	python -m flint publish dist/*
+
 install: clean ## install the package to the active Python's site-packages
-	pip install -e . install
+	python -m pip install .
+
+dev: clean ## install the package to the active Python's site-packages
+	python -m pip install --editable .[all]
+	pre-commit install

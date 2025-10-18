@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from datetime import datetime
 
 import numpy as np
@@ -378,9 +377,7 @@ def test_do_night_check(year, month, day, hour, latitude, longitude, time, expec
     assert result == expected
 
 
-@pytest.mark.parametrize(
-    "at, expected", [(5.6, passed), (None, failed), (np.nan, failed)]
-)  # not sure if np.nan should trigger FAIL
+@pytest.mark.parametrize("at, expected", [(5.6, passed), (None, failed), (np.nan, failed)])  # not sure if np.nan should trigger FAIL
 def test_do_air_temperature_missing_value_check(at, expected):
     assert do_missing_value_check(at) == expected
 
@@ -393,9 +390,7 @@ def test_do_air_temperature_missing_value_clim_check(at_climatology, expected):
     assert do_missing_value_clim_check(at_climatology) == expected
 
 
-@pytest.mark.parametrize(
-    "sst, expected", [(5.6, passed), (None, failed), (np.nan, failed)]
-)  # not sure if np.nan should trigger FAIL
+@pytest.mark.parametrize("sst, expected", [(5.6, passed), (None, failed), (np.nan, failed)])  # not sure if np.nan should trigger FAIL
 def test_do_sst_missing_value_check(sst, expected):
     assert do_missing_value_check(sst) == expected
 
@@ -550,10 +545,7 @@ def test_do_sst_freeze_check(sst, sst_uncertainty, freezing_point, n_sigma, expe
     ],
 )
 def test_do_sst_freeze_check_nouncertainty(sst, freezing_point, n_sigma, expected):
-    assert (
-        do_sst_freeze_check(sst, freezing_point, freeze_check_n_sigma=n_sigma)
-        == expected
-    )
+    assert do_sst_freeze_check(sst, freezing_point, freeze_check_n_sigma=n_sigma) == expected
 
 
 def test_do_sst_freeze_check_defaults():

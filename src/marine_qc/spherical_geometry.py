@@ -6,19 +6,20 @@ Sourced from https://edwilliams.org/avform147.htm formerly williams.best.vwh.net
 """
 
 from __future__ import annotations
-
 import math
 
 import numpy as np
 
 from .auxiliary import isvalid
 
+
 earths_radius = 6371.0088
 radians_per_degree = np.pi / 180.0
 
 
 def sphere_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Calculate the great circle distance between two points on the sphere designated
+    """
+    Calculate the great circle distance between two points on the sphere designated
     by their latitude and longitude
 
     The great circle distance is the shortest distance between any two points on the Earths surface.
@@ -46,7 +47,8 @@ def sphere_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float
 
 
 def angular_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Calculate distance between two points on a sphere  input latitudes and longitudes should be in degrees
+    """
+    Calculate distance between two points on a sphere  input latitudes and longitudes should be in degrees
     output is in radians
 
     Parameters
@@ -88,21 +90,15 @@ def angular_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> floa
     delta_lambda = abs(lon1 - lon2)
     bit1 = np.cos(lat2) * np.sin(delta_lambda)
     bit1 = bit1 * bit1
-    bit2 = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(
-        delta_lambda
-    )
+    bit2 = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(delta_lambda)
     bit2 = bit2 * bit2
     top_bit = bit1 + bit2
     top_bit = np.sqrt(top_bit)
-    bottom_bit = np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(
-        delta_lambda
-    )
+    bottom_bit = np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(delta_lambda)
     return np.arctan2(top_bit, bottom_bit)
 
 
-def lat_lon_from_course_and_distance(
-    lat1: float, lon1: float, tc: float, d: float
-) -> tuple[float, float]:
+def lat_lon_from_course_and_distance(lat1: float, lon1: float, tc: float, d: float) -> tuple[float, float]:
     """
     Calculate a latitude and longitude given a starting point, course (in radians) and
     angular distance (also in radians) from https://edwilliams.org/avform147.htm
@@ -131,9 +127,7 @@ def lat_lon_from_course_and_distance(
     dr = d / earths_radius
 
     lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
-    dlon = np.arctan2(
-        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
-    )
+    dlon = np.arctan2(np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat))
     lon = math.fmod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
 
     lat = lat / radians_per_degree
@@ -143,7 +137,8 @@ def lat_lon_from_course_and_distance(
 
 
 def course_between_points(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Given two points find the initial true course at point1 inputs are in degrees and output is in degrees
+    """
+    Given two points find the initial true course at point1 inputs are in degrees and output is in degrees
 
     Parameters
     ----------
@@ -177,29 +172,13 @@ def course_between_points(lat1: float, lon1: float, lat2: float, lon2: float) ->
                 tc1 = 2.0 * np.pi
         else:
             if np.sin(lon2 - lon1) > 0:
-                if (
-                    1.0
-                    >= (np.sin(lat2) - np.sin(lat1) * np.cos(d))
-                    / (np.sin(d) * np.cos(lat1))
-                    >= -1.0
-                ):
-                    tc1 = np.arccos(
-                        (np.sin(lat2) - np.sin(lat1) * np.cos(d))
-                        / (np.sin(d) * np.cos(lat1))
-                    )
+                if 1.0 >= (np.sin(lat2) - np.sin(lat1) * np.cos(d)) / (np.sin(d) * np.cos(lat1)) >= -1.0:
+                    tc1 = np.arccos((np.sin(lat2) - np.sin(lat1) * np.cos(d)) / (np.sin(d) * np.cos(lat1)))
                 else:
                     tc1 = float("nan")
             else:
-                if (
-                    1.0
-                    >= (np.sin(lat2) - np.sin(lat1) * np.cos(d))
-                    / (np.sin(d) * np.cos(lat1))
-                    >= -1.0
-                ):
-                    tc1 = 2.0 * np.pi - np.arccos(
-                        (np.sin(lat2) - np.sin(lat1) * np.cos(d))
-                        / (np.sin(d) * np.cos(lat1))
-                    )
+                if 1.0 >= (np.sin(lat2) - np.sin(lat1) * np.cos(d)) / (np.sin(d) * np.cos(lat1)) >= -1.0:
+                    tc1 = 2.0 * np.pi - np.arccos((np.sin(lat2) - np.sin(lat1) * np.cos(d)) / (np.sin(d) * np.cos(lat1)))
                 else:
                     tc1 = float("nan")
 
@@ -207,8 +186,7 @@ def course_between_points(lat1: float, lon1: float, lat2: float, lon2: float) ->
             tc1 = math.fmod(
                 np.arctan2(
                     np.sin(lon1 - lon2) * np.cos(lat2),
-                    np.cos(lat1) * np.sin(lat2)
-                    - np.sin(lat1) * np.cos(lat2) * np.cos(lon1 - lon2),
+                    np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(lon1 - lon2),
                 ),
                 2 * np.pi,
             )
@@ -219,10 +197,9 @@ def course_between_points(lat1: float, lon1: float, lat2: float, lon2: float) ->
     return tc1 / radians_per_degree
 
 
-def intermediate_point(
-    lat1: float, lon1: float, lat2: float, lon2: float, f: float
-) -> tuple[float, float]:
-    """Given two lat,lon point find the latitude and longitude that are a fraction f
+def intermediate_point(lat1: float, lon1: float, lat2: float, lon2: float, f: float) -> tuple[float, float]:
+    """
+    Given two lat,lon point find the latitude and longitude that are a fraction f
     of the great circle distance between them https://edwilliams.org/avform147.htm formerly
     williams.best.vwh.net/avform.htm#Intermediate
 

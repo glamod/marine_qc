@@ -1,9 +1,8 @@
 from __future__ import annotations
-
 import copy
 
 import numpy as np
-import pytest  # noqa
+import pytest
 
 from marine_qc.statistics import (
     missing_mean,

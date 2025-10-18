@@ -6,10 +6,9 @@ Module containing QC functions for quality control of grouped marine reports.
 """
 
 from __future__ import annotations
-
 import itertools
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
@@ -27,8 +26,8 @@ from .auxiliary import (
 )
 from .buoy_tracking_qc import is_monotonic
 from .external_clim import (
-    Climatology,
     ClimFloatType,
+    Climatology,
     inspect_climatology,
 )
 from .location_control import (
@@ -42,10 +41,9 @@ from .time_control import (
 )
 
 
-def get_threshold_multiplier(
-    total_nobs: int, nob_limits: list[int], multiplier_values: list[float]
-) -> float:
-    """Find the highest value of i such that total_nobs is greater than nob_limits[i] and return multiplier_values[i]
+def get_threshold_multiplier(total_nobs: int, nob_limits: list[int], multiplier_values: list[float]) -> float:
+    """
+    Find the highest value of i such that total_nobs is greater than nob_limits[i] and return multiplier_values[i]
 
     This routine is used by the buddy check. It's a bit niche.
 
@@ -53,10 +51,8 @@ def get_threshold_multiplier(
     ----------
     total_nobs : int
         total number of neighbour observations
-
     nob_limits : list[int]
         list containing the limiting numbers of observations in ascending order first element must be zero
-
     multiplier_values : list[float]
         list containing the multiplier values associated.
 
@@ -66,22 +62,16 @@ def get_threshold_multiplier(
         the multiplier value
     """
     if len(nob_limits) != len(multiplier_values):
-        raise ValueError(
-            f"Length mismatch: nob_limits has {len(nob_limits)}, but multiplier_values has{len(multiplier_values)}."
-        )
+        raise ValueError(f"Length mismatch: nob_limits has {len(nob_limits)}, but multiplier_values has{len(multiplier_values)}.")
 
     if min(multiplier_values) <= 0:
-        raise ValueError(
-            "Invalid minimum multiplier_value: {min(multiplier_values)}. Must be greater than zero."
-        )
+        raise ValueError("Invalid minimum multiplier_value: {min(multiplier_values)}. Must be greater than zero.")
     if nob_limits[0] != 0:
         raise ValueError(f"Invalid first nob_limits: {nob_limits[0]}. Must be zero.")
     if min(nob_limits) != 0:
         raise ValueError(f"Invalid minimum nob_limit: {min(nob_limits)}. Must be zero.")
     if not is_monotonic(nob_limits):
-        raise ValueError(
-            "Invalid nob_limits: {nob_limits}. Must be in ascending order."
-        )
+        raise ValueError("Invalid nob_limits: {nob_limits}. Must be in ascending order.")
 
     multiplier = -1
     if total_nobs == 0:
@@ -115,50 +105,40 @@ class SuperObsGrid:
         dates: SequenceDatetimeType,
         values: SequenceFloatType,
     ) -> None:
-        """Add a series of observations to the grid and take the grid average. The observations should be
-        anomalies.
+        """
+        Add a series of observations to the grid and take the grid average. The observations should be anomalies.
 
         Parameters
         ----------
         lats : array-like of float, shape (n,)
             1-dimensional latitude array.
-
         lons : array-like of float, shape (n,)
             1-dimensional longitude array.
-
         dates : array-like of datetime, shape (n,)
             1-dimensional date array.
-
         values : array-like of float, shape (n,)
             1-dimensional anomaly array.
         """
         n_obs = len(lats)
         for i in range(n_obs):
             date = pd.Timestamp(dates[i])
-            self.add_single_observation(
-                lats[i], lons[i], date.month, date.day, values[i]
-            )
+            self.add_single_observation(lats[i], lons[i], date.month, date.day, values[i])
         self.take_average()
 
-    def add_single_observation(
-        self, lat: float, lon: float, month: int, day: int, anom: float
-    ) -> None:
-        """Add an anomaly to the grid from specified lat lon and date.
+    def add_single_observation(self, lat: float, lon: float, month: int, day: int, anom: float) -> None:
+        """
+        Add an anomaly to the grid from specified lat lon and date.
 
         Parameters
         ----------
         lat : float
             Latitude of the observation in degrees
-
         lon : float
             Longitude of the observation in degrees
-
         month : int
             Month of the observation
-
         day : int
             Day of the observation
-
         anom : float
             Value to be added to the grid
 
@@ -186,22 +166,18 @@ class SuperObsGrid:
         nonmiss = np.nonzero(self.nobs)
         self.grid[nonmiss] = self.grid[nonmiss] / self.nobs[nonmiss]
 
-    def get_neighbour_anomalies(
-        self, search_radius: list, xindex: int, yindex: int, pindex: int
-    ) -> (list[float], list[float]):
-        """Search within a specified search radius of the given point and extract the neighbours for buddy check
+    def get_neighbour_anomalies(self, search_radius: list, xindex: int, yindex: int, pindex: int) -> (list[float], list[float]):
+        """
+        Search within a specified search radius of the given point and extract the neighbours for buddy check
 
         Parameters
         ----------
         search_radius : list
             three element array search radius in which to look lon, lat, time
-
         xindex : int
             the xindex of the gridcell to start from
-
         yindex : int
             the yindex of the gridcell to start from
-
         pindex : int
             the pindex of the gridcell to start from
 
@@ -211,9 +187,7 @@ class SuperObsGrid:
             anomalies and numbers of observations in two lists
         """
         if len(search_radius) != 3:
-            raise ValueError(
-                f"Length mismatch (search_radius): {len(search_radius)}. Must be 3."
-            )
+            raise ValueError(f"Length mismatch (search_radius): {len(search_radius)}. Must be 3.")
 
         radcon = np.pi / 180.0
 
@@ -254,19 +228,17 @@ class SuperObsGrid:
         number_of_obs_thresholds: list[list[int]],
         multipliers: list[list[float]],
     ) -> None:
-        """Get buddy limits with parameters.
+        """
+        Get buddy limits with parameters.
 
         Parameters
         ----------
         pentad_stdev : :py:class:`.Climatology`
             :py:class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
-
         limits : list[list[int]]
             list of the limits
-
         number_of_obs_thresholds : list[list[int]]
             list containing the number of obs thresholds
-
         multipliers : list[list[float]]
             list containing the multipliers to be applied
 
@@ -282,9 +254,7 @@ class SuperObsGrid:
             m, d = pentad_to_month_day(pindex + 1)
 
             # Originally get_value_mds_style - note: might be a mismatch
-            stdev = pentad_stdev.get_value(
-                lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d
-            )
+            stdev = pentad_stdev.get_value(lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d)
 
             if stdev is None or stdev < 0.0 or np.isnan(stdev):
                 stdev = 1.0
@@ -292,19 +262,14 @@ class SuperObsGrid:
             match_not_found = True
 
             for j, limit in enumerate(limits):
-                temp_anom, temp_nobs = self.get_neighbour_anomalies(
-                    limit, xindex, yindex, pindex
-                )
+                temp_anom, temp_nobs = self.get_neighbour_anomalies(limit, xindex, yindex, pindex)
 
                 if len(temp_anom) > 0 and match_not_found:
                     self.buddy_mean[xindex, yindex, pindex] = np.mean(temp_anom)
                     total_nobs = int(np.sum(temp_nobs))
 
                     self.buddy_stdev[xindex, yindex, pindex] = (
-                        get_threshold_multiplier(
-                            total_nobs, number_of_obs_thresholds[j], multipliers[j]
-                        )
-                        * stdev
+                        get_threshold_multiplier(total_nobs, number_of_obs_thresholds[j], multipliers[j]) * stdev
                     )
 
                     match_not_found = False
@@ -322,7 +287,8 @@ class SuperObsGrid:
         sigma_m: float,
         noise_scaling: float,
     ) -> None:
-        """Get buddy limits for new bayesian buddy check.
+        """
+        Get buddy limits for new bayesian buddy check.
 
         Parameters
         ----------
@@ -380,9 +346,7 @@ class SuperObsGrid:
                 stdev3_ex = 1.0
 
             # if there is neighbour in that range then calculate a mean
-            temp_anom, temp_nobs = self.get_neighbour_anomalies(
-                limits, xindex, yindex, pindex
-            )
+            temp_anom, temp_nobs = self.get_neighbour_anomalies(limits, xindex, yindex, pindex)
 
             if len(temp_anom) > 0:
                 self.buddy_mean[xindex, yindex, pindex] = np.mean(temp_anom)
@@ -400,19 +364,15 @@ class SuperObsGrid:
                 sigma_buddy = tot / (ntot**2.0)
                 sigma_buddy += stdev3_ex**2.0 / ntot
 
-                self.buddy_stdev[xindex, yindex, pindex] = math.sqrt(
-                    sigma_m**2.0
-                    + stdev1_ex**2.0
-                    + noise_scaling * stdev2_ex**2.0
-                    + sigma_buddy
-                )
+                self.buddy_stdev[xindex, yindex, pindex] = math.sqrt(sigma_m**2.0 + stdev1_ex**2.0 + noise_scaling * stdev2_ex**2.0 + sigma_buddy)
 
             else:
                 self.buddy_mean[xindex, yindex, pindex] = 0.0
                 self.buddy_stdev[xindex, yindex, pindex] = 500.0
 
     def get_buddy_mean(self, lat: float, lon: float, month: int, day: int) -> float:
-        """Get the buddy mean from the grid for a specified time and place
+        """
+        Get the buddy mean from the grid for a specified time and place
 
         Parameters
         ----------
@@ -439,7 +399,8 @@ class SuperObsGrid:
         return self.buddy_mean[xindex, yindex, pindex]
 
     def get_buddy_stdev(self, lat: float, lon: float, month: int, day: int) -> float:
-        """Get the buddy standard deviation from the grid for a specified time and place
+        """
+        Get the buddy standard deviation from the grid for a specified time and place
 
         Parameters
         ----------
@@ -481,7 +442,8 @@ def do_mds_buddy_check(
     number_of_obs_thresholds: list[list[int]],
     multipliers: list[list[float]],
 ):
-    """Do the old style buddy check. The buddy check compares an observation to the average of its near neighbours
+    """
+    Do the old style buddy check. The buddy check compares an observation to the average of its near neighbours
     (called the buddy mean). Depending on how many neighbours there are and their proximity to the observation being
     tested a multiplier is set. If the difference between the observation and the buddy mean is larger than the
     multiplier times the standard deviation then the observation fails the buddy check. If no buddy observations are
@@ -554,16 +516,12 @@ def do_mds_buddy_check(
 
     for i, thresholds in enumerate(number_of_obs_thresholds):
         if len(thresholds) != len(multipliers[i]):
-            raise ValueError(
-                "Number of obs thresholds and multipliers have different shapes"
-            )
+            raise ValueError("Number of obs thresholds and multipliers have different shapes")
 
     # calculate superob averages and numbers of observations
     grid = SuperObsGrid()
     grid.add_multiple_observations(lat, lon, date, anoms)
-    grid.get_buddy_limits_with_parameters(
-        standard_deviation, limits, number_of_obs_thresholds, multipliers
-    )
+    grid.get_buddy_limits_with_parameters(standard_deviation, limits, number_of_obs_thresholds, multipliers)
 
     numobs = len(lat)
     qc_outcomes = np.zeros(numobs) + untested
@@ -612,7 +570,8 @@ def do_bayesian_buddy_check(
     maximum_anomaly: float,
     fail_probability: float,
 ) -> Sequence[int]:
-    """Do the Bayesian buddy check. The bayesian buddy check assigns a
+    """
+    Do the Bayesian buddy check. The bayesian buddy check assigns a
     probability of gross error to each observation, which is rounded down to the
     tenth and then multiplied by 10 to yield a flag between 0 and 9.
 

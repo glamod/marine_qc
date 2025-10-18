@@ -56,9 +56,7 @@ class Climatology:
                     latitudes = climatology.variables[lat][:]
                     found_lat = True
             if found_lat is False:
-                raise ValueError(
-                    f"No readable latitude information in NetCDF file: {infile}"
-                )
+                raise ValueError(f"No readable latitude information in NetCDF file: {infile}")
 
             lon_synonyms = ["lon", "lons", "long", "longs", "longitude", "longitudes"]
             found_lon = False
@@ -67,9 +65,7 @@ class Climatology:
                     longitudes = climatology.variables[lon][:]
                     found_lon = True
             if found_lon is False:
-                raise ValueError(
-                    f"No readable longitude information in NetCDF file: {infile}"
-                )
+                raise ValueError(f"No readable longitude information in NetCDF file: {infile}")
 
             climatology.close()
 
@@ -96,7 +92,8 @@ class Climatology:
         return cls(field)
 
     def get_tindex(self, month, day):
-        """Get the time index of the input month and day.
+        """
+        Get the time index of the input month and day.
 
         :param month: month for which the time index is required
         :param day: day for which the time index is required
