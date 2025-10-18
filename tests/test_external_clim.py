@@ -23,7 +23,7 @@ def external_clim():
     clim_dict = {}
     clim_dict["AT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/AT_pentad_climatology.nc",
+            "external_files/AT_pentad_climatology.nc",
             **kwargs,
         ),
     }
