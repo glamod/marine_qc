@@ -12,27 +12,23 @@ dependencies:
     - matplotlib
 
     #development
-    - black =25.1.0
-    - blackdoc =0.3.9
-    - bump-my-version >=0.28.1
+    - bump-my-version >=1.2.3
     - codespell=2.3.0
     - coverage >=7.5.0
-    - coveralls >=4.0.1  # Note: coveralls is not yet compatible with Python 3.13
-    - deptry =0.20.0
+    - deptry =0.23.0
     - distributed >=2.0
-    - flake8 >=7.1.1
-    - flake8-rst-docstrings >=0.3.0
-    - flit >=3.9.0
-    - isort =5.13.2
+    - flake8 >=7.3
+    - flake8-rst-docstrings >=0.3.1
+    - flit >=3.11.0,<4.0
     - notebook
-    - pip >=24.2.0
-    - pre-commit >=3.7
+    - pip >=24.2
+    - pre-commit >=3.7.0
     - pylint >=3.3.1
     - pytest >=8.0.0
     - pytest-cov >=5.0.0
     - pytest-socket >=0.6.0
     - pytest-xdist >=3.2
-    - ruff >=0.7.0
+    - ruff >=0.13.3
     - vulture =2.14
 
     #documentation
@@ -40,8 +36,8 @@ dependencies:
     - ipython >= 8.5.0
     - myst-nb >= 1.2.0
     - nbconvert >=7.16.4
-    - numpydoc >=1.8.0
-    - sphinx >=7.0.0
+    - numpydoc >=1.9.0
+    - sphinx >=7.1.0,<8.2
     - sphinx-autodoc-typehints
     - sphinx-copybutton
     - sphinx-book-theme >=1.0
