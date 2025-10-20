@@ -12,6 +12,7 @@ authors = [
   {name = "Chris Atkinson", email = "chris.atkinson@metoffice.gov.uk"},
   {name = "Richard Cornes", email = "richard.cornes@noc.ac.uk"},
   {name = "Elizabeth Kent", email = "eck@noc.ac.uk"},
+  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
   {name = "Axel Andersson", email = "axel.andersson@dwd.de"}
 ]
 maintainers = [
