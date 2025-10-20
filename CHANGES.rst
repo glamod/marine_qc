@@ -23,7 +23,7 @@ New features and enhancements
   * `marine_qc.plot_qc_outcomes.latitude_variable_plot`: Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC outcomes.
   * `marine_qc.plot_qc_outcomes.latitude_longitude_plot`: Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 
-* decorator `post_formt_return_type` has new parameters:
+* decorator `post_formt_return_type` has new parameters (:pull:`24`):
 
   * dtype: Desired data type of the result. Default is int.
   * multiple: If True, assumes the function returns a sequence of results (e.g., a tuple), and applies `format_return_type` to each element individually.
