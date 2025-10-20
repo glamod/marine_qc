@@ -30,8 +30,8 @@
         :width: 25%
         :target: https://www.copernicus.eu/en
 
-.. |logo_NOC| image:: _static/images/LOGO_2024_NOC_1_COLOUR.png
-        :width: 10%
+.. |logo_NOC| image:: _static/images/LOGO_2025_NOC.png
+        :width: 25%
         :target: https://noc.ac.uk/
 
 .. |logo_DWD| image:: _static/images/logo_DWD_RGB.png

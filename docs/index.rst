@@ -48,7 +48,7 @@ About
 
 |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |tab| |logo_copernicus| |logo_c3s| |tab|
 
-|tab| |tab| |tab| |tab| |tab| |tab| |logo_DWD| |logo_metoffice| |logo_NOC|
+|logo_DWD| |logo_metoffice| |logo_NOC|
 
 .. include:: hyperlinks.rst
 
