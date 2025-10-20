@@ -108,11 +108,11 @@ def climdata_buddy():
     }
     buddy_data = {
         "stdev": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_stdev_climatology.nc",
+            "external_files/HadSST2_pentad_stdev_climatology.nc",
             **kwargs,
         ),
         "mean": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_climatology.nc",
+            "external_files/HadSST2_pentad_climatology.nc",
             **kwargs,
         ),
     }
@@ -127,19 +127,19 @@ def climdata_bayesian():
     }
     buddy_data = {
         "ostia1": load_file(
-            "metoffice_qc/external_files/OSTIA_buddy_range_sampling_error.nc",
+            "external_files/OSTIA_buddy_range_sampling_error.nc",
             **kwargs,
         ),
         "ostia2": load_file(
-            "metoffice_qc/external_files/OSTIA_compare_1x1x5box_to_buddy_average.nc",
+            "external_files/OSTIA_compare_1x1x5box_to_buddy_average.nc",
             **kwargs,
         ),
         "ostia3": load_file(
-            "metoffice_qc/external_files/OSTIA_compare_one_ob_to_1x1x5box.nc",
+            "external_files/OSTIA_compare_one_ob_to_1x1x5box.nc",
             **kwargs,
         ),
         "mean": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_climatology.nc",
+            "external_files/HadSST2_pentad_climatology.nc",
             **kwargs,
         ),
     }
@@ -206,37 +206,37 @@ def climdata():
     clim_dict = {}
     clim_dict["AT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/AT_pentad_climatology.nc",
+            "external_files/AT_pentad_climatology.nc",
             **kwargs,
         ),
         "stdev": load_file(
-            "metoffice_qc/external_files/AT_pentad_stdev_climatology.nc",
+            "external_files/AT_pentad_stdev_climatology.nc",
             **kwargs,
         ),
     }
     clim_dict["DPT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/DPT_pentad_climatology.nc",
+            "external_files/DPT_pentad_climatology.nc",
             **kwargs,
         ),
         "stdev": load_file(
-            "metoffice_qc/external_files/DPT_pentad_stdev_climatology.nc",
+            "external_files/DPT_pentad_stdev_climatology.nc",
             **kwargs,
         ),
     }
     clim_dict["SLP"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/SLP_pentad_climatology.nc",
+            "external_files/SLP_pentad_climatology.nc",
             **kwargs,
         ),
         "stdev": load_file(
-            "metoffice_qc/external_files/SLP_pentad_stdev_climatology.nc",
+            "external_files/SLP_pentad_stdev_climatology.nc",
             **kwargs,
         ),
     }
     clim_dict["SST"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/SST_daily_climatology_january.nc",
+            "external_files/SST_daily_climatology_january.nc",
             **kwargs,
         ),
     }

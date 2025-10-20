@@ -22,31 +22,31 @@ def external_clim():
     clim_dict = {}
     clim_dict["AT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/AT_pentad_climatology.nc",
+            "external_files/AT_pentad_climatology.nc",
             **kwargs,
         )
     }
     clim_dict["DPT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/DPT_pentad_climatology.nc",
+            "external_files/DPT_pentad_climatology.nc",
             **kwargs,
         )
     }
     clim_dict["SLP"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/SLP_pentad_climatology.nc",
+            "external_files/SLP_pentad_climatology.nc",
             **kwargs,
         )
     }
     clim_dict["SST"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/SST_daily_climatology_january.nc",
+            "external_files/SST_daily_climatology_january.nc",
             **kwargs,
         )
     }
     clim_dict["SST2"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_climatology.nc",
+            "external_files/HadSST2_pentad_climatology.nc",
             **kwargs,
         )
     }
