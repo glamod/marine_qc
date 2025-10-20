@@ -105,12 +105,7 @@ serialize = [
 ]
 
 [[tool.bumpversion.files]]
-filename = "src/marine_qc/__init__.py.rst"
-search = "__version__ = \"{current_version}\""
-replace = "__version__ = \"{new_version}\""
-
-[[tool.bumpversion.files]]
-filename = "tests/test_marine_qc.py"
+filename = "src/marine_qc/__init__.py"
 search = "__version__ = \"{current_version}\""
 replace = "__version__ = \"{new_version}\""
 
