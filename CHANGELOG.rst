@@ -17,7 +17,7 @@ License and Legal
 
 CI changes
 ^^^^^^^^^^
-* Use `cruft` and cookicutter template `https://github.com/Ouranosinc/cookiecutter-pypackage` (:issue:`13`, :pull:`30`)
+* Use `cruft` and cookicutter template `https://github.com/Ouranosinc/cookiecutter-pypackage` (:issue:`13`, :pull:`30`, :pull:`55`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
