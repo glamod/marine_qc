@@ -34,7 +34,7 @@
       - 'DISCUSSION_TEMPLATE/**/*'
       - 'ISSUE_TEMPLATE/**/*'
       - 'ISSUE_TEMPLATE.md'
-      - 'PULL_REQUEST_TEMPLATE.md'      
+      - 'PULL_REQUEST_TEMPLATE.md'
       - 'README.rst'
       - 'CHANGELOG.rst'
 

@@ -1,15 +1,15 @@
 """Module containing base QC which call multiple QC functions and could be applied on a DataBundle."""
 
 from __future__ import annotations
-
 import inspect
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
 import pandas as pd
 
 from .auxiliary import failed, passed, untested
-from .external_clim import get_climatological_value  # noqa
-from .qc_individual_reports import (  # noqa
+from .external_clim import get_climatological_value  # noqa: F401
+from .qc_individual_reports import (  # noqa: F401
     do_climatology_check,
     do_date_check,
     do_day_check,
@@ -26,7 +26,8 @@ from .qc_individual_reports import (  # noqa
 
 
 def _get_function(name: str) -> Callable:
-    """Returns the function of a given name or raises a NameError
+    """
+    Returns the function of a given name or raises a NameError
 
     Parameters
     ----------
@@ -49,7 +50,8 @@ def _get_function(name: str) -> Callable:
 
 
 def _is_func_param(func: Callable, param: str) -> bool:
-    """Returns True if param is the name of a parameter of function func.
+    """
+    Returns True if param is the name of a parameter of function func.
 
     Parameters
     ----------
@@ -70,7 +72,8 @@ def _is_func_param(func: Callable, param: str) -> bool:
 
 
 def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
-    """Return True if named column or variable, name, is in data
+    """
+    Return True if named column or variable, name, is in data
 
     Parameters
     ----------
@@ -96,10 +99,9 @@ def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     raise TypeError(f"Unsupported data type: {type(data)}")
 
 
-def _get_requests_from_params(
-    params: dict | None, func: Callable, data: pd.Series | pd.DataFrame
-) -> dict:
-    """Given a dictionary of key value pairs where the keys are parameters in the function, func, and the values
+def _get_requests_from_params(params: dict | None, func: Callable, data: pd.Series | pd.DataFrame) -> dict:
+    """
+    Given a dictionary of key value pairs where the keys are parameters in the function, func, and the values
     are columns or variables in data, create a new dictionary in which the keys are the parameter names (as in the
     original dictionary) and the values are the numbers extracted from data.
 
@@ -131,19 +133,16 @@ def _get_requests_from_params(
         return requests
     for param, cname in params.items():
         if not _is_func_param(func, param):
-            raise ValueError(
-                f"Parameter '{param}' is not a valid parameter of function '{func.__name__}'"
-            )
+            raise ValueError(f"Parameter '{param}' is not a valid parameter of function '{func.__name__}'")
         if not _is_in_data(cname, data):
-            raise NameError(
-                f"Variable '{cname}' is not available in input data: {data}."
-            )
+            raise NameError(f"Variable '{cname}' is not available in input data: {data}.")
         requests[param] = data[cname]
     return requests
 
 
 def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
-    """Given a dictionary of key value pairs, if one of the values is equal to __preprocessed__ then replace
+    """
+    Given a dictionary of key value pairs, if one of the values is equal to __preprocessed__ then replace
     the value with the value corresponding to that key in preprocessed.
 
     Parameters
@@ -173,7 +172,8 @@ def do_multiple_row_check(
     preproc_dict: dict | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.Series | pd.DataFrame:
-    """Basic row-by-row QC by using multiple QC functions.
+    """
+    Basic row-by-row QC by using multiple QC functions.
 
     Parameters
     ----------
@@ -306,9 +306,7 @@ def do_multiple_row_check(
         preproc_dict = {}
 
     if return_method not in ["all", "passed", "failed"]:
-        raise ValueError(
-            f"'return_method' has to be one of ['all', 'passed', 'failed']: {return_method}"
-        )
+        raise ValueError(f"'return_method' has to be one of ['all', 'passed', 'failed']: {return_method}")
 
     # Firstly, check if all functions are callable and all requested input variables are available!
     preprocessed = {}
@@ -336,9 +334,7 @@ def do_multiple_row_check(
         qc_inputs[qc_name]["kwargs"] = {}
 
         if "arguments" in qc_params.keys():
-            qc_inputs[qc_name]["kwargs"] = _get_preprocessed_args(
-                qc_params["arguments"], preprocessed
-            )
+            qc_inputs[qc_name]["kwargs"] = _get_preprocessed_args(qc_params["arguments"], preprocessed)
 
     is_series = isinstance(data, pd.Series)
     if is_series:
@@ -351,14 +347,8 @@ def do_multiple_row_check(
         if not mask.any():
             continue
 
-        args = {
-            k: (v[mask] if isinstance(v, pd.Series) else v)
-            for k, v in qc_params["requests"].items()
-        }
-        kwargs = {
-            k: (v[mask] if isinstance(v, pd.Series) else v)
-            for k, v in qc_params["kwargs"].items()
-        }
+        args = {k: (v[mask] if isinstance(v, pd.Series) else v) for k, v in qc_params["requests"].items()}
+        kwargs = {k: (v[mask] if isinstance(v, pd.Series) else v) for k, v in qc_params["kwargs"].items()}
 
         partial_result = qc_params["function"](**args, **kwargs)
         full_result = pd.Series(untested, index=data.index)

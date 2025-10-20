@@ -8,11 +8,10 @@ Module containing QC functions for sequential reports from a single drifting buo
 # noqa: S101
 
 from __future__ import annotations
-
 import math
 import warnings
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Sequence
 
 import numpy as np
 
@@ -22,6 +21,7 @@ from .qc_sequential_reports import do_iquam_track_check
 from .spherical_geometry import sphere_distance
 from .statistics import trim_mean, trim_std
 from .time_control import convert_date_to_hours, day_in_year
+
 
 """
 The trackqc module contains a set of functions for performing the tracking QC
@@ -51,7 +51,8 @@ def track_day_test(
     lon: float,
     elevdlim: float = -2.5,
 ) -> bool:
-    """Given date, time, lat and lon calculate if the sun elevation is > elevdlim.
+    """
+    Given date, time, lat and lon calculate if the sun elevation is > elevdlim.
     If so return daytime is True
 
     This is the "day" test used by tracking QC to decide whether an SST measurement is night or day.
@@ -121,9 +122,7 @@ def track_day_test(
     if lon == 0:
         lon2 = 0.0001
 
-    _, elevation, _, _, _, _ = sunangle(
-        year2, day2, hour2, minute2, 0, 0, 0, lat2, lon2
-    )
+    _, elevation, _, _, _, _ = sunangle(year2, day2, hour2, minute2, 0, 0, 0, lat2, lon2)
 
     if elevation > elevdlim:
         daytime = True
@@ -153,7 +152,8 @@ def is_monotonic(inarr: Sequence[float]) -> bool:
 
 
 class SpeedChecker:
-    """Class used to carry out :py:func:`.do_speed_check`
+    """
+    Class used to carry out :py:func:`.do_speed_check`
 
     The check identifies whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
     precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
@@ -231,29 +231,13 @@ class SpeedChecker:
         valid = False
 
         if not (self.speed_limit >= 0):
-            warnings.warn(
-                UserWarning(
-                    f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning(f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."), stacklevel=2)
         elif not (self.min_win_period >= 0):
-            warnings.warn(
-                UserWarning(
-                    f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
         elif not (self.min_win_period >= 0):
-            warnings.warn(
-                UserWarning(
-                    f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
         elif not (self.max_win_period >= self.min_win_period):
-            warnings.warn(
-                UserWarning(
-                    "max_win_period must be greater than or equal to min_win_period."
-                )
-            )
+            warnings.warn(UserWarning("max_win_period must be greater than or equal to min_win_period."), stacklevel=2)
         else:
             valid = True
 
@@ -264,13 +248,13 @@ class SpeedChecker:
         valid = False
 
         if any(np.isnan(self.lon)):
-            warnings.warn(UserWarning("Nan(s) found in longitude."))
+            warnings.warn(UserWarning("Nan(s) found in longitude."), stacklevel=2)
         elif any(np.isnan(self.lat)):
-            warnings.warn(UserWarning("Nan(s) found in latitudes."))
+            warnings.warn(UserWarning("Nan(s) found in latitudes."), stacklevel=2)
         elif any(np.isnan(self.hrs)):
-            warnings.warn(UserWarning("Nan(s) found in time differences."))
+            warnings.warn(UserWarning("Nan(s) found in time differences."), stacklevel=2)
         elif not is_monotonic(self.hrs):
-            warnings.warn(UserWarning("times are not sorted: {self.hrs}"))
+            warnings.warn(UserWarning("times are not sorted: {self.hrs}"), stacklevel=2)
         else:
             valid = True
 
@@ -309,9 +293,7 @@ class SpeedChecker:
 
             # If the actual window length is long enough then calculate the speed
             # based on the first and last points in the window
-            displace = sphere_distance(
-                self.lat[i], self.lon[i], self.lat[f_win][-1], self.lon[f_win][-1]
-            )
+            displace = sphere_distance(self.lat[i], self.lon[i], self.lat[f_win][-1], self.lon[f_win][-1])
             speed = displace / win_len  # km per hr
             speed = speed * 1000.0 / (60.0 * 60)  # metres per sec
 
@@ -327,7 +309,8 @@ class SpeedChecker:
 
 
 class NewSpeedChecker:
-    """Class used to carry out :py:func:`.do_new_speed_check`
+    """
+    Class used to carry out :py:func:`.do_new_speed_check`
 
     Check to see whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
     precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
@@ -430,17 +413,9 @@ class NewSpeedChecker:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
         valid = False
         if not (self.speed_limit >= 0):
-            warnings.warn(
-                UserWarning(
-                    f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning(f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."), stacklevel=2)
         elif not (self.min_win_period >= 0):
-            warnings.warn(
-                UserWarning(
-                    f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
         else:
             valid = True
 
@@ -451,20 +426,21 @@ class NewSpeedChecker:
         valid = False
 
         if any(np.isnan(self.lon)):
-            warnings.warn(UserWarning("Nan(s) found in longitude."))
+            warnings.warn(UserWarning("Nan(s) found in longitude."), stacklevel=2)
         elif any(np.isnan(self.lat)):
-            warnings.warn(UserWarning("Nan(s) found in latitudes."))
+            warnings.warn(UserWarning("Nan(s) found in latitudes."), stacklevel=2)
         elif any(np.isnan(self.hrs)):
-            warnings.warn(UserWarning("Nan(s) found in time differences."))
+            warnings.warn(UserWarning("Nan(s) found in time differences."), stacklevel=2)
         elif not is_monotonic(self.hrs):
-            warnings.warn(UserWarning("times are not sorted: {self.hrs}"))
+            warnings.warn(UserWarning("times are not sorted: {self.hrs}"), stacklevel=2)
         else:
             valid = True
 
         return valid
 
     def perform_iquam_track_check(self):
-        """Perform iQuam track check as if reports are from a ship. A deep copy of reps is made so metadata can be
+        """
+        Perform iQuam track check as if reports are from a ship. A deep copy of reps is made so metadata can be
         safely modified ahead of iQuam check an array of qc flags (iquam_track_ship) is the result
         """
         self.iquam_track_ship = do_iquam_track_check(
@@ -500,18 +476,14 @@ class NewSpeedChecker:
                 i += 1
                 time_to_end = self.hrs[-1] - self.hrs[i]
                 continue
-            f_win = (self.hrs >= self.hrs[i] + min_win_period_hours) & (
-                self.iquam_track_ship == passed
-            )
+            f_win = (self.hrs >= self.hrs[i] + min_win_period_hours) & (self.iquam_track_ship == passed)
             if not any(f_win):
                 i += 1
                 time_to_end = self.hrs[-1] - self.hrs[i]
                 continue
 
             win_len = self.hrs[f_win][0] - self.hrs[i]
-            displace = sphere_distance(
-                self.lat[i], self.lon[i], self.lat[f_win][0], self.lon[f_win][0]
-            )
+            displace = sphere_distance(self.lat[i], self.lon[i], self.lat[f_win][0], self.lon[f_win][0])
             speed = displace / win_len  # km per hr
             speed = speed * 1000.0 / (60.0 * 60)  # metres per sec
 
@@ -523,7 +495,8 @@ class NewSpeedChecker:
 
 
 class AgroundChecker:
-    """Class used to carry out :py:func:`.do_aground_check`
+    """
+    Class used to carry out :py:func:`.do_aground_check`
 
     Check to see whether a drifter has run aground based on 1/100th degree precision positions.
     A flag is set for each input report: flag=1 for reports deemed aground, else flag=0.
@@ -608,33 +581,17 @@ class AgroundChecker:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
         valid = False
         if self.smooth_win < 1:
-            warnings.warn(
-                UserWarning("Invalid smooth_win: {self.smooth_win}. Must be positive.")
-            )
+            warnings.warn(UserWarning("Invalid smooth_win: {self.smooth_win}. Must be positive."), stacklevel=2)
         elif self.smooth_win % 2 == 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid smooth_win: {self.smooth_win}. Must be an odd number."
-                )
-            )
+            warnings.warn(UserWarning("Invalid smooth_win: {self.smooth_win}. Must be an odd number."), stacklevel=2)
         elif self.min_win_period < 1:
-            warnings.warn(
-                UserWarning(
-                    f"Invalid min_win_period: {self.min_win_period}. Must be positive."
-                )
-            )
+            warnings.warn(UserWarning(f"Invalid min_win_period: {self.min_win_period}. Must be positive."), stacklevel=2)
         elif self.max_win_period is None:
             valid = True
         elif self.max_win_period < 1:
-            warnings.warn(
-                UserWarning(
-                    "Invalid max_win_period: {self.max_win_period}. Must be positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid max_win_period: {self.max_win_period}. Must be positive."), stacklevel=2)
         elif self.max_win_period < self.min_win_period:
-            warnings.warn(
-                "max_win_period must be greater than or equal to min_win_period."
-            )
+            warnings.warn("max_win_period must be greater than or equal to min_win_period.", stacklevel=2)
         else:
             valid = True
 
@@ -645,13 +602,13 @@ class AgroundChecker:
         valid = False
 
         if any(np.isnan(self.lon)):
-            warnings.warn(UserWarning("Nan(s) found in longitude."))
+            warnings.warn(UserWarning("Nan(s) found in longitude."), stacklevel=2)
         elif any(np.isnan(self.lat)):
-            warnings.warn(UserWarning("Nan(s) found in latitudes."))
+            warnings.warn(UserWarning("Nan(s) found in latitudes."), stacklevel=2)
         elif any(np.isnan(self.hrs)):
-            warnings.warn(UserWarning("Nan(s) found in time differences."))
+            warnings.warn(UserWarning("Nan(s) found in time differences."), stacklevel=2)
         elif not is_monotonic(self.hrs):
-            warnings.warn(UserWarning("times are not sorted: {self.hrs}"))
+            warnings.warn(UserWarning("times are not sorted: {self.hrs}"), stacklevel=2)
         else:
             valid = True
 
@@ -704,7 +661,6 @@ class AgroundChecker:
         i_aground = np.nan  # keeps track of index when drifter first ran aground
         time_to_end = self.hrs_smooth[-1] - self.hrs_smooth[i]
         while time_to_end >= min_win_period_hours:
-
             if self.max_win_period is not None:
                 f_win = self.hrs_smooth <= self.hrs_smooth[i] + max_win_period_hours
                 win_len = self.hrs_smooth[f_win][-1] - self.hrs_smooth[i]
@@ -749,7 +705,8 @@ class AgroundChecker:
 
 
 class SSTTailChecker:
-    """Class used to carry out :py:func:`.do_sst_start_tail_check` and :py:func:`.do_sst_end_tail_check`.
+    """
+    Class used to carry out :py:func:`.do_sst_start_tail_check` and :py:func:`.do_sst_end_tail_check`.
 
     Check to see whether there is erroneous sea surface temperature data at the beginning or end of a drifter record
     (referred to as 'tails'). Flags are set for each input report: flag=1 for reports
@@ -893,59 +850,23 @@ class SSTTailChecker:
         valid = False
 
         if self.long_win_len < 1:
-            warnings.warn(
-                UserWarning(
-                    "Invalid long_win_len: {self.long_win_len}. Must be positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid long_win_len: {self.long_win_len}. Must be positive."), stacklevel=2)
         elif not (self.long_win_len % 2 != 0):
-            warnings.warn(
-                UserWarning(
-                    "Invalid long_win_len: {self.long_win_len}. Must be an odd number."
-                )
-            )
+            warnings.warn(UserWarning("Invalid long_win_len: {self.long_win_len}. Must be an odd number."), stacklevel=2)
         elif self.long_err_std_n < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid long_err_std_n: {self.long_err_std_n}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid long_err_std_n: {self.long_err_std_n}. Must be zero or positive."), stacklevel=2)
         elif self.short_win_len < 1:
-            warnings.warn(
-                UserWarning(
-                    "Invalid short_win_len: {self.short_win_len}. Must be positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid short_win_len: {self.short_win_len}. Must be positive."), stacklevel=2)
         elif self.short_err_std_n < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid short_err_std_n: {self.short_err_std_n}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid short_err_std_n: {self.short_err_std_n}. Must be zero or positive."), stacklevel=2)
         elif self.short_win_n_bad < 1:
-            warnings.warn(
-                UserWarning(
-                    "Invalid short_win_n_bad: {self.short_win_n_bad}. Must be positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid short_win_n_bad: {self.short_win_n_bad}. Must be positive."), stacklevel=2)
         elif self.drif_inter < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid drif_inter: {self.drif_inter}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid drif_inter: {self.drif_inter}. Must be zero or positive."), stacklevel=2)
         elif self.drif_intra < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid drif_intra: {self.drif_intra}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid drif_intra: {self.drif_intra}. Must be zero or positive."), stacklevel=2)
         elif self.background_err_lim < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid background_err_lim: {self.background_err_lim}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid background_err_lim: {self.background_err_lim}. Must be zero or positive."), stacklevel=2)
         else:
             valid = True
 
@@ -958,7 +879,7 @@ class SSTTailChecker:
             return
 
         if not is_monotonic(self.hrs):
-            warnings.warn(UserWarning("Times do not increase monotonically"))
+            warnings.warn(UserWarning("Times do not increase monotonically"), stacklevel=2)
             self.qc_outcomes[:] = untestable
             return
 
@@ -985,9 +906,7 @@ class SSTTailChecker:
 
         # do short tail check on records that pass long tail check - whole record already failed long tail check
         if self.start_tail_ind < self.end_tail_ind:
-            first_pass_ind = (
-                self.start_tail_ind + 1
-            )  # first index passing long tail check
+            first_pass_ind = self.start_tail_ind + 1  # first index passing long tail check
             last_pass_ind = self.end_tail_ind - 1  # last index passing long tail check
             self._do_short_tail_check(first_pass_ind, last_pass_ind, forward=True)
             self._do_short_tail_check(first_pass_ind, last_pass_ind, forward=False)
@@ -1005,7 +924,8 @@ class SSTTailChecker:
 
     @staticmethod
     def _parse_rep(lat, lon, ostia, ice, bgvar, dates) -> (float, float, float, bool):
-        """Process a report
+        """
+        Process a report
 
         Parameters
         ----------
@@ -1035,7 +955,7 @@ class SSTTailChecker:
         if ice is None or np.isnan(ice):
             ice = 0.0
         if ice < 0.0 or ice > 1.0:
-            warnings.warn(UserWarning("Invalid ice value"))
+            warnings.warn(UserWarning("Invalid ice value"), stacklevel=2)
             invalid_ob = True
 
         try:
@@ -1049,7 +969,7 @@ class SSTTailChecker:
                 -2.5,
             )
         except ValueError as error:
-            warnings.warn(f"Daytime check failed with {error}")
+            warnings.warn(f"Daytime check failed with {error}", stacklevel=2)
             daytime = True
             invalid_ob = True
 
@@ -1081,10 +1001,10 @@ class SSTTailChecker:
 
             if good_match:
                 if bg_val < -5.0 or bg_val > 45.0:
-                    warnings.warn(UserWarning("Background value is invalid"))
+                    warnings.warn(UserWarning("Background value is invalid"), stacklevel=2)
                     invalid_series = True
                 if bgvar_val < 0 or bgvar_val > 10.0:
-                    warnings.warn(UserWarning("Background variance is invalid"))
+                    warnings.warn(UserWarning("Background variance is invalid"), stacklevel=2)
                     invalid_series = True
 
                 reps_ind.append(ind)
@@ -1104,7 +1024,8 @@ class SSTTailChecker:
         return invalid_series
 
     def _do_long_tail_check(self, forward: bool = True) -> None:
-        """Perform the long tail check
+        """
+        Perform the long tail check
 
         Parameters
         ----------
@@ -1135,10 +1056,9 @@ class SSTTailChecker:
             sst_anom_stdev = trim_std(sst_anom_winvals, 100)
             bgerr_avg = np.mean(bgerr_winvals)
             bgerr_rms = np.sqrt(np.mean(bgerr_winvals**2))
-            if (
-                abs(sst_anom_avg)
-                > self.long_err_std_n * np.sqrt(self.drif_inter**2 + bgerr_avg**2)
-            ) or (sst_anom_stdev > np.sqrt(self.drif_intra**2 + bgerr_rms**2)):
+            if (abs(sst_anom_avg) > self.long_err_std_n * np.sqrt(self.drif_inter**2 + bgerr_avg**2)) or (
+                sst_anom_stdev > np.sqrt(self.drif_intra**2 + bgerr_rms**2)
+            ):
                 if forward:
                     self.start_tail_ind = ix + mid_win_ind
                 else:
@@ -1147,7 +1067,8 @@ class SSTTailChecker:
                 break
 
     def _do_short_tail_check(self, first_pass_ind, last_pass_ind, forward=True):
-        """Perform the short tail check.
+        """
+        Perform the short tail check.
 
         Parameters
         ----------
@@ -1183,12 +1104,8 @@ class SSTTailChecker:
             bgerr_winvals = bgerr_temp[ix : ix + self.short_win_len]
             if np.any(bgerr_winvals > np.sqrt(self.background_err_lim)):
                 break
-            limit = self.short_err_std_n * np.sqrt(
-                bgerr_winvals**2 + self.drif_inter**2 + self.drif_intra**2
-            )
-            exceed_limit = np.logical_or(
-                sst_anom_winvals > limit, sst_anom_winvals < -limit
-            )
+            limit = self.short_err_std_n * np.sqrt(bgerr_winvals**2 + self.drif_inter**2 + self.drif_intra**2)
+            exceed_limit = np.logical_or(sst_anom_winvals > limit, sst_anom_winvals < -limit)
             if np.sum(exceed_limit) >= self.short_win_n_bad:
                 if forward:
                     # if all windows have failed, flag everything
@@ -1207,7 +1124,8 @@ class SSTTailChecker:
 
 
 class SSTBiasedNoisyChecker:
-    """Class used to perform the :py:func:`.do_sst_biased_check`,
+    """
+    Class used to perform the :py:func:`.do_sst_biased_check`,
     :py:func:`.do_sst_noisy_check`, and :py:func:`.do_sst_biased_noisy_short_check`.
 
     Check to see whether a drifter sea surface temperature record is unacceptably biased or noisy as a whole.
@@ -1322,41 +1240,19 @@ class SSTBiasedNoisyChecker:
         """Check the parameters are valid. Raises a warning and returns False if not valid"""
         valid = False
         if self.n_eval < 1:
-            warnings.warn(
-                UserWarning("Invalid n_eval: {self.n_eval}. Must be positive.")
-            )
+            warnings.warn(UserWarning("Invalid n_eval: {self.n_eval}. Must be positive."), stacklevel=2)
         elif self.bias_lim < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid bias_lim: {self.bias_lim}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid bias_lim: {self.bias_lim}. Must be zero or positive."), stacklevel=2)
         elif self.drif_inter < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid drif_inter: {self.drif_inter}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid drif_inter: {self.drif_inter}. Must be zero or positive."), stacklevel=2)
         elif self.drif_intra < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid drif_intra: {self.drif_intra}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid drif_intra: {self.drif_intra}. Must be zero or positive."), stacklevel=2)
         elif self.err_std_n < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid err_std_n: {self.err_std_n}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid err_std_n: {self.err_std_n}. Must be zero or positive."), stacklevel=2)
         elif self.n_bad < 1:
-            warnings.warn(UserWarning("Invalid n_bad: {self.n_bad}. Must be positive."))
+            warnings.warn(UserWarning("Invalid n_bad: {self.n_bad}. Must be positive."), stacklevel=2)
         elif self.background_err_lim < 0:
-            warnings.warn(
-                UserWarning(
-                    "Invalid background_err_lim: {self.background_err_lim}. Must be zero or positive."
-                )
-            )
+            warnings.warn(UserWarning("Invalid background_err_lim: {self.background_err_lim}. Must be zero or positive."), stacklevel=2)
         else:
             valid = True
 
@@ -1382,9 +1278,7 @@ class SSTBiasedNoisyChecker:
             untested,
             untestable,
         ]:
-            raise ValueError(
-                f"Invalid input_state: {input_state}. Must be one of [{passed}, {failed}, {untested}, {untestable}]."
-            )
+            raise ValueError(f"Invalid input_state: {input_state}. Must be one of [{passed}, {failed}, {untested}, {untestable}].")
         self.qc_outcomes_short[:] = input_state
         self.qc_outcomes_noise[:] = input_state
         self.qc_outcomes_bias[:] = input_state
@@ -1411,9 +1305,7 @@ class SSTBiasedNoisyChecker:
                 self._short_record_qc()
 
     @staticmethod
-    def _parse_rep(
-        lat, lon, ostia, ice, bgvar, dates, background_err_lim
-    ) -> (float, float, float, bool, bool, bool):
+    def _parse_rep(lat, lon, ostia, ice, bgvar, dates, background_err_lim) -> (float, float, float, bool, bool, bool):
         """
         Extract QC-relevant variables from a marine report and
 
@@ -1447,7 +1339,7 @@ class SSTBiasedNoisyChecker:
         if ice is None or np.isnan(ice):
             ice = 0.0
         if ice < 0.0 or ice > 1.0:
-            warnings.warn(UserWarning("Invalid ice value"))
+            warnings.warn(UserWarning("Invalid ice value"), stacklevel=2)
             invalid_ob = True
 
         try:
@@ -1461,7 +1353,7 @@ class SSTBiasedNoisyChecker:
                 -2.5,
             )
         except ValueError as error:
-            warnings.warn(f"Daytime check failed with {error}")
+            warnings.warn(f"Daytime check failed with {error}", stacklevel=2)
             daytime = True
             invalid_ob = True
 
@@ -1485,16 +1377,14 @@ class SSTBiasedNoisyChecker:
         bgvar_is_masked = False
 
         for ind in range(self.nreps):
-            bg_val, _ice_val, bgvar_val, good_match, bgvar_mask, invalid_ob = (
-                SSTBiasedNoisyChecker._parse_rep(
-                    self.lat[ind],
-                    self.lon[ind],
-                    self.ostia[ind],
-                    self.ice[ind],
-                    self.bgvar[ind],
-                    self.dates[ind],
-                    self.background_err_lim,
-                )
+            bg_val, _ice_val, bgvar_val, good_match, bgvar_mask, invalid_ob = SSTBiasedNoisyChecker._parse_rep(
+                self.lat[ind],
+                self.lon[ind],
+                self.ostia[ind],
+                self.ice[ind],
+                self.bgvar[ind],
+                self.dates[ind],
+                self.background_err_lim,
             )
             if invalid_ob:
                 invalid_series = True
@@ -1504,10 +1394,10 @@ class SSTBiasedNoisyChecker:
 
             if good_match:
                 if bg_val < -5.0 or bg_val > 45.0:
-                    warnings.warn(UserWarning("Background value is invalid"))
+                    warnings.warn(UserWarning("Background value is invalid"), stacklevel=2)
                     invalid_series = True
                 if bgvar_val < 0 or bgvar_val > 10.0:
-                    warnings.warn(UserWarning("Background variance is invalid"))
+                    warnings.warn(UserWarning("Background variance is invalid"), stacklevel=2)
                     invalid_series = True
 
                 sst_anom.append(self.sst[ind] - bg_val)
@@ -1522,7 +1412,7 @@ class SSTBiasedNoisyChecker:
         self.bgvar_is_masked = bgvar_is_masked
 
         if not is_monotonic(self.hrs):
-            warnings.warn(UserWarning("Not sorted in time order"))
+            warnings.warn(UserWarning("Not sorted in time order"), stacklevel=2)
             invalid_series = True
 
         return invalid_series
@@ -1545,9 +1435,7 @@ class SSTBiasedNoisyChecker:
         """Perform the short record check"""
         # Calculate the limit based on the combined uncertainties (background error, drifter inter and drifter intra
         # error) and then multiply by the err_std_n
-        limit = self.err_std_n * np.sqrt(
-            self.bgerr**2 + self.drif_inter**2 + self.drif_intra**2
-        )
+        limit = self.err_std_n * np.sqrt(self.bgerr**2 + self.drif_inter**2 + self.drif_intra**2)
 
         # If the number of obs outside the limit exceed n_bad then flag them all as bad
         self.qc_outcomes_short[:] = passed
@@ -1600,9 +1488,7 @@ def do_speed_check(
     * min_win_period = 0.8
     * max_win_perido = 1.8
     """
-    checker = SpeedChecker(
-        lons, lats, dates, speed_limit, min_win_period, max_win_period
-    )
+    checker = SpeedChecker(lons, lats, dates, speed_limit, min_win_period, max_win_period)
     checker.do_speed_check()
     return checker.get_qc_outcomes()
 
@@ -1722,9 +1608,7 @@ def do_aground_check(
     * min_win_period = 8
     * max_win_period = 10
     """
-    checker = AgroundChecker(
-        lons, lats, dates, smooth_win, min_win_period, max_win_period
-    )
+    checker = AgroundChecker(lons, lats, dates, smooth_win, min_win_period, max_win_period)
     checker.do_aground_check()
     return checker.get_qc_outcomes()
 

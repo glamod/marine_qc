@@ -26,16 +26,16 @@ from .auxiliary import (
 from .external_clim import ClimFloatType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
+
 vectorized_day_in_year = np.vectorize(day_in_year)
-vectorized_sunangle = np.vectorize(
-    sunangle, otypes=[float, float, float, float, float, float]
-)
+vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float, float, float])
 
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
 def value_check(value: ValueFloatType) -> ValueIntType:
-    """Check if a value is equal to None or numerically invalid (NaN).
+    """
+    Check if a value is equal to None or numerically invalid (NaN).
 
     Parameters
     ----------
@@ -85,12 +85,7 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
     valid_indices = isvalid(lat) & isvalid(lon)
 
     cond_failed = np.full(lat.shape, True, dtype=bool)  # type: np.ndarray
-    cond_failed[valid_indices] = (
-        (lat[valid_indices] < -90)
-        | (lat[valid_indices] > 90)
-        | (lon[valid_indices] < -180)
-        | (lon[valid_indices] > 360)
-    )
+    cond_failed[valid_indices] = (lat[valid_indices] < -90) | (lat[valid_indices] > 90) | (lon[valid_indices] < -180) | (lon[valid_indices] > 360)
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed
@@ -146,9 +141,7 @@ def do_date_check(
 
     unique_years = np.unique(year_valid)
     month_length_map = {y: get_month_lengths(y) for y in unique_years}
-    max_days = np.array(
-        [month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid)]
-    )
+    max_days = np.array([month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid, strict=False)])
 
     day_ok = (day_valid >= 1) & (day_valid <= max_days)
 
@@ -164,9 +157,7 @@ def do_date_check(
 @post_format_return_type(["date", "hour"])
 @convert_date(["hour"])
 @inspect_arrays(["hour"])
-def do_time_check(
-    date: ValueDatetimeType = None, hour: ValueFloatType = None
-) -> ValueIntType:
+def do_time_check(date: ValueDatetimeType = None, hour: ValueFloatType = None) -> ValueIntType:
     """
     Check that the time is valid i.e. in the range 0.0 to 23.99999...
 
@@ -199,9 +190,7 @@ def do_time_check(
     return result
 
 
-def _do_daytime_check(
-    date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode
-):
+def _do_daytime_check(date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode):
     if mode not in ["day", "night"]:
         raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
 
@@ -221,12 +210,7 @@ def _do_daytime_check(
     failed_mask = (p_check == failed) | (d_check == failed) | (t_check == failed)
     result[failed_mask] = failed
 
-    valid_mask = (
-        (~failed_mask)
-        & (p_check != untestable)
-        & (d_check != untestable)
-        & (t_check != untestable)
-    )
+    valid_mask = (~failed_mask) & (p_check != untestable) & (d_check != untestable) & (t_check != untestable)
     if not np.any(valid_mask):
         return result
 
@@ -290,7 +274,8 @@ def do_day_check(
     lon: ValueFloatType = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
-    """Determine if the sun was above the horizon a specified time before the report (`time_since_sub_above_horizon`)
+    """
+    Determine if the sun was above the horizon a specified time before the report (`time_since_sub_above_horizon`)
     based on date, time, and position.
 
     This "day" test is used to classify Marine Air Temperature (MAT) measurements as either
@@ -344,9 +329,7 @@ def do_day_check(
     --------
     do_night_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
     """
-    return _do_daytime_check(
-        date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day"
-    )
+    return _do_daytime_check(date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day")
 
 
 @post_format_return_type(["date", "year"])
@@ -363,7 +346,8 @@ def do_night_check(
     lon: ValueFloatType = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
-    """Determine if the sun was below the horizon a specified time before the report (`time_since_sub_above_horizon`)
+    """
+    Determine if the sun was below the horizon a specified time before the report (`time_since_sub_above_horizon`)
     based on date, time, and position.
 
     This "night" test is used to classify Marine Air Temperature (MAT) measurements as either
@@ -431,7 +415,8 @@ def do_night_check(
 
 
 def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
-    """Check if a value is equal to None or numerically invalid (NaN).
+    """
+    Check if a value is equal to None or numerically invalid (NaN).
 
     Parameters
     ----------
@@ -450,7 +435,8 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
 
 @inspect_climatology("climatology")
 def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIntType:
-    """Check if a climatological value is equal to None or numerically invalid (NaN).
+    """
+    Check if a climatological value is equal to None or numerically invalid (NaN).
 
     Parameters
     ----------
@@ -479,7 +465,8 @@ def do_hard_limit_check(
     value: ValueFloatType,
     limits: tuple[float, float],
 ) -> ValueIntType:
-    """Check if a value is outside specified limits.
+    """
+    Check if a value is outside specified limits.
 
     Parameters
     ----------
@@ -505,9 +492,7 @@ def do_hard_limit_check(
     valid_indices = isvalid(value)
 
     cond_passed = np.full(value.shape, True, dtype=bool)  # type: np.ndarray
-    cond_passed[valid_indices] = (limits[0] <= value[valid_indices]) & (
-        value[valid_indices] <= limits[1]
-    )
+    cond_passed[valid_indices] = (limits[0] <= value[valid_indices]) & (value[valid_indices] <= limits[1])
 
     result[valid_indices & cond_passed] = passed
     result[valid_indices & ~cond_passed] = failed
@@ -588,12 +573,7 @@ def do_climatology_check(
     elif standard_deviation_limits[1] <= standard_deviation_limits[0]:
         return format_return_type(result, value)
 
-    valid_indices = (
-        isvalid(value)
-        & isvalid(climatology)
-        & isvalid(maximum_anomaly)
-        & isvalid(standard_deviation)
-    )
+    valid_indices = isvalid(value) & isvalid(climatology) & isvalid(maximum_anomaly) & isvalid(standard_deviation)
     standard_deviation[valid_indices] = np.clip(
         standard_deviation[valid_indices],
         standard_deviation_limits[0],
@@ -602,9 +582,7 @@ def do_climatology_check(
 
     climate_diff = np.zeros_like(value)  # type: np.ndarray
 
-    climate_diff[valid_indices] = np.abs(
-        value[valid_indices] - climatology[valid_indices]
-    )
+    climate_diff[valid_indices] = np.abs(value[valid_indices] - climatology[valid_indices])
 
     if lowbar is None:
         low_check = np.ones(value.shape, dtype=bool)  # type: np.ndarray
@@ -612,10 +590,7 @@ def do_climatology_check(
         low_check = climate_diff > lowbar
 
     cond_failed = np.full(value.shape, False, dtype=bool)  # type: np.ndarray
-    cond_failed[valid_indices] = (
-        climate_diff[valid_indices] / standard_deviation[valid_indices]
-        > maximum_anomaly
-    ) & low_check[valid_indices]
+    cond_failed[valid_indices] = (climate_diff[valid_indices] / standard_deviation[valid_indices] > maximum_anomaly) & low_check[valid_indices]
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed
@@ -668,7 +643,8 @@ def do_sst_freeze_check(
     freeze_check_n_sigma: float | None = "default",
     sst_uncertainty: float | None = "default",
 ) -> ValueIntType:
-    """Check input sea-surface temperature(s) to see if it is above freezing.
+    """
+    Check input sea-surface temperature(s) to see if it is above freezing.
 
     This is a simple freezing point check made slightly more complex. We want to check if a
     measurement of SST is above freezing, but there are two problems. First, the freezing point
@@ -713,11 +689,7 @@ def do_sst_freeze_check(
     """
     result = np.full(sst.shape, untestable, dtype=int)  # type: np.ndarray
 
-    if (
-        not isvalid(sst_uncertainty)
-        or not isvalid(freezing_point)
-        or not isvalid(freeze_check_n_sigma)
-    ):
+    if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
         return result
 
     valid_sst = isvalid(sst)
@@ -729,9 +701,7 @@ def do_sst_freeze_check(
         sst_uncertainty = 0.0
 
     cond_failed = np.full(sst.shape, True, dtype=bool)  # type: np.ndarray
-    cond_failed[valid_sst] = sst[valid_sst] < (
-        freezing_point - freeze_check_n_sigma * sst_uncertainty
-    )
+    cond_failed[valid_sst] = sst[valid_sst] < (freezing_point - freeze_check_n_sigma * sst_uncertainty)
 
     result[valid_sst & cond_failed] = failed
     result[valid_sst & ~cond_failed] = passed
@@ -741,9 +711,7 @@ def do_sst_freeze_check(
 
 @post_format_return_type(["wind_speed", "wind_direction"])
 @inspect_arrays(["wind_speed", "wind_direction"])
-def do_wind_consistency_check(
-    wind_speed: ValueFloatType, wind_direction: ValueFloatType
-) -> ValueIntType:
+def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueFloatType) -> ValueIntType:
     """
     Test to compare windspeed to winddirection to check if they are consistent. Zero windspeed should correspond
     to no particular direction (variable) and wind speeds above a threshold should correspond to a particular
@@ -770,9 +738,9 @@ def do_wind_consistency_check(
     valid_indices = isvalid(wind_speed) & isvalid(wind_direction)
 
     cond_failed = np.full(wind_speed.shape, True, dtype=bool)  # type: np.ndarray
-    cond_failed[valid_indices] = (
-        (wind_speed[valid_indices] == 0) & (wind_direction[valid_indices] != 0)
-    ) | ((wind_speed[valid_indices] != 0) & (wind_direction[valid_indices] == 0))
+    cond_failed[valid_indices] = ((wind_speed[valid_indices] == 0) & (wind_direction[valid_indices] != 0)) | (
+        (wind_speed[valid_indices] != 0) & (wind_direction[valid_indices] == 0)
+    )
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed

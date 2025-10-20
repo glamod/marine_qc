@@ -14,20 +14,20 @@ from marine_qc import (
     find_saturated_runs,
 )
 from marine_qc.auxiliary import failed, passed
-from marine_qc.track_check_utils import (
-    calculate_course_parameters,
-    calculate_speed_course_distance_time_difference,
-    forward_discrepancy,
-    backward_discrepancy,
-    calculate_midpoint,
-)
 from marine_qc.spherical_geometry import (
-    sphere_distance,
-    intermediate_point,
     course_between_points,
+    intermediate_point,
     lat_lon_from_course_and_distance,
+    sphere_distance,
 )
 from marine_qc.time_control import time_difference
+from marine_qc.track_check_utils import (
+    backward_discrepancy,
+    calculate_course_parameters,
+    calculate_midpoint,
+    calculate_speed_course_distance_time_difference,
+    forward_discrepancy,
+)
 
 
 def generic_frame(in_pt):
@@ -456,10 +456,7 @@ def test_calc_alternate_speeds(ship_frame):
         # So with alternating reports, the speed is 11.11951 km/hour, the course is due north (0/360) the distance
         # between alternate reports is twice the hourly distance 22.23902 and the time difference is 2 hours
         assert pytest.approx(speed[i], abs=0.0001) == 11.11951
-        assert (
-            pytest.approx(course[i], abs=0.0001) == 0.0
-            or pytest.approx(course[i], abs=0.0001) == 360.0
-        )
+        assert pytest.approx(course[i], abs=0.0001) == 0.0 or pytest.approx(course[i], abs=0.0001) == 360.0
         assert pytest.approx(distance[i], abs=0.0001) == 22.23902
         assert pytest.approx(timediff[i], abs=0.0001) == 2.0
 
@@ -474,10 +471,7 @@ def test_calc_alternate_speeds_array(ship_frame):
         # So with alternating reports, the speed is 11.11951 km/hour, the course is due north (0/360) the distance
         # between alternate reports is twice the hourly distance 22.23902 and the time difference is 2 hours
         assert pytest.approx(speed[i], abs=0.0001) == 11.11951
-        assert (
-            pytest.approx(course[i], abs=0.0001) == 0.0
-            or pytest.approx(course[i], abs=0.0001) == 360.0
-        )
+        assert pytest.approx(course[i], abs=0.0001) == 0.0 or pytest.approx(course[i], abs=0.0001) == 360.0
         assert pytest.approx(distance[i], abs=0.0001) == 22.23902
         assert pytest.approx(timediff[i], abs=0.0001) == 2.0
 
@@ -534,10 +528,7 @@ def test_calculate_speed_course_distance_time_difference(ship_frame):
         if i > 0:
             assert pytest.approx(speed[i], 0.00001) == 11.119508064776555
             assert pytest.approx(distance[i], 0.00001) == 11.119508064776555
-            assert (
-                pytest.approx(course[i], 0.00001) == 0
-                or pytest.approx(course[i], 0.00001) == 360.0
-            )
+            assert pytest.approx(course[i], 0.00001) == 0 or pytest.approx(course[i], 0.00001) == 360.0
             assert pytest.approx(timediff[i], 0.0000001) == 1.0
         else:
             assert np.isnan(speed[i])
@@ -554,10 +545,7 @@ def test_calculate_speed_course_distance_time_difference_array(ship_frame):
         if i > 0:
             assert pytest.approx(speed[i], 0.00001) == 11.119508064776555
             assert pytest.approx(distance[i], 0.00001) == 11.119508064776555
-            assert (
-                pytest.approx(course[i], 0.00001) == 0
-                or pytest.approx(course[i], 0.00001) == 360.0
-            )
+            assert pytest.approx(course[i], 0.00001) == 0 or pytest.approx(course[i], 0.00001) == 360.0
             assert pytest.approx(timediff[i], 0.0000001) == 1.0
         else:
             assert np.isnan(speed[i])
@@ -590,9 +578,7 @@ def long_frame():
     dpt = [15.0 for i in range(30)]
     id = ["GOODTHING" for _ in range(30)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
-    df = pd.DataFrame(
-        {"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id}
-    )
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id})
     return df
 
 
@@ -604,9 +590,7 @@ def longer_frame():
     dpt = [15.0 for i in range(50)]
     id = ["GOODTHING" for _ in range(50)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
-    df = pd.DataFrame(
-        {"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id}
-    )
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id})
     return df
 
 
@@ -619,9 +603,7 @@ def longer_frame_last_passes():
     dpt[49] = 10.0
     id = ["GOODTHING" for _ in range(50)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
-    df = pd.DataFrame(
-        {"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id}
-    )
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id})
     return df
 
 
@@ -634,9 +616,7 @@ def longer_frame_broken_run():
     dpt[25] = 10.0
     id = ["GOODTHING" for _ in range(50)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
-    df = pd.DataFrame(
-        {"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id}
-    )
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id})
     return df
 
 
@@ -649,9 +629,7 @@ def longer_frame_early_broken_run():
     dpt[3] = 10.0
     id = ["GOODTHING" for _ in range(50)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
-    df = pd.DataFrame(
-        {"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id}
-    )
+    df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "dpt": dpt, "id": id})
     return df
 
 
@@ -800,8 +778,7 @@ def almost_repeated_data():
     lat = [-5.0 + i * 0.1 for i in range(50)]
     lon = [0 for _ in range(50)]
     at = [22.3 for i in range(20)]
-    for i in range(20, 50):
-        at.append(22.5 + (i - 20) * 0.3)
+    at.extend(22.5 + (i - 20) * 0.3 for i in range(20, 50))
     id = ["GOODTHING" for _ in range(50)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
     df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "id": id})
@@ -814,17 +791,14 @@ def almost_repeated_data_with_nan():
     lon = [0 for _ in range(50)]
     at = [22.3 for i in range(19)]
     at.append(np.nan)
-    for i in range(20, 50):
-        at.append(22.5 + (i - 20) * 0.3)
+    at.extend(22.5 + (i - 20) * 0.3 for i in range(20, 50))
     id = ["GOODTHING" for _ in range(50)]
     date = pd.date_range(start="1850-01-01", freq="1h", periods=len(lat))
     df = pd.DataFrame({"date": date, "lat": lat, "lon": lon, "at": at, "id": id})
     return df
 
 
-def test_find_repeated_values(
-    repeated_data, almost_repeated_data, almost_repeated_data_with_nan
-):
+def test_find_repeated_values(repeated_data, almost_repeated_data, almost_repeated_data_with_nan):
     repeated = find_repeated_values(repeated_data["at"], 20, 0.7)
     for i in range(len(repeated) - 1):
         assert repeated[i] == failed
@@ -1031,7 +1005,6 @@ def test_sphere_distance_array_works_with_nans():
 
 
 def test_intermediate_point_array():
-
     # 1. equator_is_halfway_from_pole_to_pole
     # 2. 5deg_is_one_72th_of_equator
     # 3. any_fraction_of_no_move_is_nothing
@@ -1074,7 +1047,6 @@ def test_course_between_point_array():
 
 
 def test_lat_lon_from_course_and_distance_array():
-
     earths_radius = 6371.0088
     npiearth = np.pi * earths_radius
 

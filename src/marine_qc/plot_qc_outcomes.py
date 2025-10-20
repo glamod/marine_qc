@@ -6,8 +6,8 @@ Some plotting routines for QC outcomes
 """
 
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 import numpy as np
+from matplotlib.lines import Line2D
 
 
 def _get_colours_labels(qc_outcomes):
@@ -102,9 +102,7 @@ def _make_plot(xvalue, yvalue, flags, xlim, ylim, xlabel, ylabel, filename):
     plt.close()
 
 
-def latitude_variable_plot(
-    lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str = None
-):
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to
     the QC oucomes.
@@ -136,9 +134,7 @@ def latitude_variable_plot(
     )
 
 
-def latitude_longitude_plot(
-    lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str = None
-) -> None:
+def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> None:
     """
     Plot a graph of points showing the latitude and longitude of a set of observations coloured according to
     the QC outcomes.

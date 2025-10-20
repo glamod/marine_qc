@@ -1,17 +1,14 @@
 """Some generally helpful statistical functions for base QC."""
 
 from __future__ import annotations
-
 import copy
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 
 
-def p_data_given_good(
-    x: float, q: float, r_hi: float, r_lo: float, mu: float, sigma: float
-) -> float:
+def p_data_given_good(x: float, q: float, r_hi: float, r_lo: float, mu: float, sigma: float) -> float:
     """
     Calculate the probability of an observed value x given a normal distribution with mean mu
     standard deviation of sigma, where x is constrained to fall between R_hi and R_lo
@@ -47,9 +44,7 @@ def p_data_given_good(
     if sigma <= 0.0:
         raise ValueError(f"Value is not positive: sigma = {sigma}.")
     if r_lo >= r_hi:
-        raise ValueError(
-            f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}."
-        )
+        raise ValueError(f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}.")
     if x < r_lo:
         raise ValueError(f"Lower limit is greater than x: r_lo = {r_lo}, x = {x}.")
     if x > r_hi:
@@ -58,19 +53,9 @@ def p_data_given_good(
     upper_x = min([x + 0.5 * q, r_hi + 0.5 * q])
     lower_x = max([x - 0.5 * q, r_lo - 0.5 * q])
 
-    normalizer = 0.5 * (
-        math.erf((r_hi + 0.5 * q - mu) / (sigma * math.sqrt(2)))
-        - math.erf((r_lo - 0.5 * q - mu) / (sigma * math.sqrt(2)))
-    )
+    normalizer = 0.5 * (math.erf((r_hi + 0.5 * q - mu) / (sigma * math.sqrt(2))) - math.erf((r_lo - 0.5 * q - mu) / (sigma * math.sqrt(2))))
 
-    return (
-        0.5
-        * (
-            math.erf((upper_x - mu) / (sigma * math.sqrt(2)))
-            - math.erf((lower_x - mu) / (sigma * math.sqrt(2)))
-        )
-        / normalizer
-    )
+    return 0.5 * (math.erf((upper_x - mu) / (sigma * math.sqrt(2))) - math.erf((lower_x - mu) / (sigma * math.sqrt(2)))) / normalizer
 
 
 def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
@@ -97,9 +82,7 @@ def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
         When limits are not ascending or q<=0
     """
     if r_hi < r_lo:
-        raise ValueError(
-            f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}."
-        )
+        raise ValueError(f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}.")
     if q <= 0.0:
         raise ValueError(f"Value is not positive: q = {q}.")
 
@@ -107,9 +90,7 @@ def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
     return 1.0 / (1.0 + (r / q))
 
 
-def p_gross(
-    p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, sigma: float
-) -> float:
+def p_gross(p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, sigma: float) -> float:
     """
     Calculate the posterior probability of a gross error given the prior probability p0,
     the quantization level of the observed value, Q, previous limits on the observed value,
@@ -151,9 +132,7 @@ def p_gross(
     if q <= 0.0:
         raise ValueError(f"Value is not positive: q = {q}.")
     if r_hi < r_lo:
-        raise ValueError(
-            f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}."
-        )
+        raise ValueError(f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}.")
     if x < r_lo:
         raise ValueError(f"Lower limit is greater than x: r_lo = {r_lo}, x = {x}.")
     if x > r_hi:
@@ -162,12 +141,7 @@ def p_gross(
         raise ValueError(f"Value is not positive: sigma = {sigma}.")
 
     pgross = (
-        p0
-        * p_data_given_gross(q, r_hi, r_lo)
-        / (
-            p0 * p_data_given_gross(q, r_hi, r_lo)
-            + (1 - p0) * p_data_given_good(x, q, r_hi, r_lo, mu, sigma)
-        )
+        p0 * p_data_given_gross(q, r_hi, r_lo) / (p0 * p_data_given_gross(q, r_hi, r_lo) + (1 - p0) * p_data_given_good(x, q, r_hi, r_lo, mu, sigma))
     )
 
     if not (0 <= pgross <= 1.0):
@@ -177,7 +151,8 @@ def p_gross(
 
 
 def winsorised_mean(inarr: list[float]) -> float:
-    """The winsorised mean is a resistant way of calculating an average.
+    """
+    The winsorised mean is a resistant way of calculating an average.
 
     Parameters
     ----------
@@ -218,7 +193,8 @@ def winsorised_mean(inarr: list[float]) -> float:
 
 
 def missing_mean(inarr: list[float]) -> float | None:
-    """Return mean of input array
+    """
+    Return mean of input array
 
     Parameters
     ----------
@@ -243,7 +219,7 @@ def missing_mean(inarr: list[float]) -> float | None:
 
 def _trim_stat(inarr: Sequence[float], trim: int, stat: str) -> float:
     """Calculate a resistant (aka robust) statistics of an input array given a trimming criteria."""
-    arr = copy.deepcopy(inarr)
+    arr = list(copy.deepcopy(inarr))
     stat_func = getattr(np, stat)
     if trim == 0:
         return float(stat_func(arr))
@@ -257,7 +233,8 @@ def _trim_stat(inarr: Sequence[float], trim: int, stat: str) -> float:
 
 
 def trim_mean(inarr: Sequence[float], trim: int) -> float:
-    """Calculate a resistant (aka robust) mean of an input array given a trimming criteria.
+    """
+    Calculate a resistant (aka robust) mean of an input array given a trimming criteria.
 
     Parameters
     ----------
@@ -276,7 +253,8 @@ def trim_mean(inarr: Sequence[float], trim: int) -> float:
 
 
 def trim_std(inarr: Sequence[float], trim: int) -> float:
-    """Calculate a resistant (aka robust) standard deviation of an input array given a trimming criteria.
+    """
+    Calculate a resistant (aka robust) standard deviation of an input array given a trimming criteria.
 
     Parameters
     ----------

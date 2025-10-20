@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 import math
 
-import pytest  # noqa
-
 import numpy as np
+import pytest
 
 from marine_qc.location_control import (
     fill_missing_vals,
@@ -111,9 +109,7 @@ def test_lats(lat, expected):
 
 
 def test_lats_fast():
-    lats = np.array(
-        [90, 89, 88, 87, 88.7, -90, -89, -88, -87, -88.7, 0, 0.5, 1.0, -0.5, -1.0]
-    )
+    lats = np.array([90, 89, 88, 87, 88.7, -90, -89, -88, -87, -88.7, 0, 0.5, 1.0, -0.5, -1.0])
     result = mds_lat_to_yindex_fast(lats, res=1.0)
     expected = np.array([0, 0, 1, 2, 1, 179, 179, 178, 177, 178, 90, 89, 88, 90, 91])
     assert np.all(result == expected)

@@ -1,7 +1,6 @@
 # flake8: noqa: E501
 
 from __future__ import annotations
-
 from datetime import datetime
 
 import numpy as np
@@ -285,21 +284,15 @@ def aground_check_test_data(selector):
         (17, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_missing_observation
         (18, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_not_time_sorted
         # fmt: off
-    ]
+    ],
 )
-def test_generic_aground(
-    selector, smooth_win, min_win_period, max_win_period, expected, warns
-):
+def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, expected, warns):
     lats, lons, dates = aground_check_test_data(selector)
     if warns:
         with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_aground_check(
-                lons, lats, dates, smooth_win, min_win_period, max_win_period
-            )
+            qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
     else:
-        qc_outcomes = tqc.do_aground_check(
-            lons, lats, dates, smooth_win, min_win_period, max_win_period
-        )
+        qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
     for i in range(len(lons)):
         assert qc_outcomes[i] == expected[i]
 
@@ -390,19 +383,13 @@ def test_generic_aground(
         ),  # test_error_not_time_sorted
     ],  # fmt: off
 )
-def test_new_generic_aground(
-    selector, smooth_win, min_win_period, max_win_period, expected, warns
-):
+def test_new_generic_aground(selector, smooth_win, min_win_period, max_win_period, expected, warns):
     lats, lons, dates = aground_check_test_data(selector)
     if warns:
         with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_new_aground_check(
-                lons, lats, dates, smooth_win, min_win_period
-            )
+            qc_outcomes = tqc.do_new_aground_check(lons, lats, dates, smooth_win, min_win_period)
     else:
-        qc_outcomes = tqc.do_new_aground_check(
-            lons, lats, dates, smooth_win, min_win_period
-        )
+        qc_outcomes = tqc.do_new_aground_check(lons, lats, dates, smooth_win, min_win_period)
     for i in range(len(lons)):
         assert qc_outcomes[i] == expected[i]
 
@@ -635,19 +622,13 @@ def speed_check_data(selector):
         ),  # test_error_not_time_sorted_a
     ],  # fmt: off
 )
-def test_generic_speed_tests(
-    selector, speed_limit, min_win_period, max_win_period, expected, warns
-):
+def test_generic_speed_tests(selector, speed_limit, min_win_period, max_win_period, expected, warns):
     lats, lons, dates = speed_check_data(selector)
     if warns:
         with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_speed_check(
-                lons, lats, dates, speed_limit, min_win_period, max_win_period
-            )
+            qc_outcomes = tqc.do_speed_check(lons, lats, dates, speed_limit, min_win_period, max_win_period)
     else:
-        qc_outcomes = tqc.do_speed_check(
-            lons, lats, dates, speed_limit, min_win_period, max_win_period
-        )
+        qc_outcomes = tqc.do_speed_check(lons, lats, dates, speed_limit, min_win_period, max_win_period)
     for i in range(len(qc_outcomes)):
         assert qc_outcomes[i] == expected[i]
 
@@ -670,7 +651,7 @@ def test_generic_speed_tests(
         (12, -2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_bad_input_parameter_a
         (13, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_missing_observation_a
         (14, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_not_time_sorted_a
-    ]
+    ],
     # fmt: on
 )
 def test_generic_new_speed_tests(
@@ -1305,19 +1286,110 @@ def tailcheck_vals(selector):
         (26, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1], False),  # test_one_long_and_one_short_tail
         (27, 3, 3.0, 3, 0.5, 1, 0.29, 1.0, 0.3, [1, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_too_short_for_short_tail
         (28, 3, 3.0, 1, 0.25, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_long_and_short_all_fail
-        (29, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_long_and_short_start_tail_with_bgvar
-        (30, 3, 3.0, 1, 0.25, 1, 0.29, 1.0, 0.3, [1, 1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_long_and_short_all_fail_with_bgvar
+        (
+            29,
+            3,
+            3.0,
+            1,
+            1.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_long_and_short_start_tail_with_bgvar
+        (
+            30,
+            3,
+            3.0,
+            1,
+            0.25,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_long_and_short_all_fail_with_bgvar
         (31, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_good_data
-        (32, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_long_and_short_start_tail_big_bgvar
+        (
+            32,
+            3,
+            3.0,
+            1,
+            1.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_long_and_short_start_tail_big_bgvar
         (33, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 2.0, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_noisy_big_bgvar
-        (34, 0, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_bad_input_parameter_tail_check
+        (
+            34,
+            0,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [untestable for x in range(9)],
+            [untestable for x in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_tail_check
         (36, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_invalid_ice_value
         (37, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_missing_ob_value
-        (38, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_not_time_sorted_tail_check
-        (39, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_invalid_background
-        (40, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_invalid_background_error_variance
+        (
+            38,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [untestable for x in range(9)],
+            [untestable for x in range(9)],
+            True,
+        ),  # test_error_not_time_sorted_tail_check
+        (
+            39,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [untestable for x in range(9)],
+            [untestable for x in range(9)],
+            True,
+        ),  # test_error_invalid_background
+        (
+            40,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [untestable for x in range(9)],
+            [untestable for x in range(9)],
+            True,
+        ),  # test_error_invalid_background_error_variance
         # fmt: on
-    ]
+    ],
 )
 def test_generic_tailcheck(
     selector,
@@ -1785,34 +1857,320 @@ def sst_biased_noisy_check_vals(selector):
     # fmt: off
     "selector, n_eval, bias_lim, drif_intra, drif_inter, err_std_n, n_bad, background_err_lim, expected_bias, expected_noisy, expected_short, warns",
     [
-        (1, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_daytime_bnc
-        (2, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_land_masked_bnc
-        (3, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_ice_bnc
-        (4, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_bgvar_exceeds_limit_bnc
-        (5, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [1, 1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_biased_warm_bnc
-        (6, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [1, 1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_biased_cool_bnc
-        (7, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_noisy_bnc
-        (8, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_biased_and_noisy_bnc
-        (9, 5, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [1, 1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_biased_warm_obs_missing_bnc
+        (
+            1,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_all_daytime_bnc
+        (
+            2,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_all_land_masked_bnc
+        (
+            3,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_all_ice_bnc
+        (
+            4,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_all_bgvar_exceeds_limit_bnc
+        (
+            5,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_biased_warm_bnc
+        (
+            6,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_biased_cool_bnc
+        (
+            7,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_noisy_bnc
+        (
+            8,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_biased_and_noisy_bnc
+        (
+            9,
+            5,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_biased_warm_obs_missing_bnc
         (10, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], False),  # test_short_record_one_bad_bnc
         (11, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1], False),  # test_short_record_two_bad_bnc
-        (12, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 1, 1], False),  # test_short_record_two_bad_obs_missing_bnc
-        (13, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_record_two_bad_obs_missing_with_bgvar_bnc
-        (14, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_good_data_bnc_14
+        (
+            12,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            False,
+        ),  # test_short_record_two_bad_obs_missing_bnc
+        (
+            13,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_short_record_two_bad_obs_missing_with_bgvar_bnc
+        (
+            14,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_good_data_bnc_14
         (15, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], False),  # test_short_record_good_data_bnc
-        (16, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_record_obs_missing_good_data_bnc
-        (17, 9, 1.10, 1.0, 0.29, 3.0, 2, 4.0, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_noisy_big_bgvar_bnc
-        (18, 9, 1.10, 1.0, 0.29, 3.0, 2, 4.0, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_record_two_bad_obs_missing_big_bgvar_bnc
-        (19, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_good_data_bnc_19
-        (20, 0, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_bad_input_parameter_bnc
+        (
+            16,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_short_record_obs_missing_good_data_bnc
+        (
+            17,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            4.0,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_noisy_big_bgvar_bnc
+        (
+            18,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            4.0,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_short_record_two_bad_obs_missing_big_bgvar_bnc
+        (
+            19,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            False,
+        ),  # test_good_data_bnc_19
+        (
+            20,
+            0,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc
         # Missing on purpose - test is no longer relevant after refactoring
-        (22, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_invalid_ice_value_bnc
-        (23, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_missing_ob_value_bnc
-        (24, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_not_time_sorted_bnc
-        (25, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_invalid_background_bnc
-        (26, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [untestable for _ in range(9)], [untestable for _ in range(9)], [untestable for _ in range(9)], True),  # test_error_invalid_background_error_variance_bnc
-    # fmt: on
-    ]
+        (
+            22,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_invalid_ice_value_bnc
+        (
+            23,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_missing_ob_value_bnc
+        (
+            24,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_not_time_sorted_bnc
+        (
+            25,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_invalid_background_bnc
+        (
+            26,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_invalid_background_error_variance_bnc
+        # fmt: on
+    ],
 )
 def test_sst_biased_noisy_check_generic(
     selector,

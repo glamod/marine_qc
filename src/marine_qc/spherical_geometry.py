@@ -11,12 +11,13 @@ import numpy as np
 from pyproj import Geod
 
 from .auxiliary import (
-    earths_radius,
-    isvalid,
     convert_to,
+    earths_radius,
     inspect_arrays,
+    isvalid,
     post_format_return_type,
 )
+
 
 radians_per_degree = np.pi / 180.0
 geod = Geod(a=earths_radius, b=earths_radius)
@@ -31,7 +32,8 @@ def _geod_inv(lon1, lat1, lon2, lat2):
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def angular_distance(lat1, lon1, lat2, lon2):
-    """Calculate distance between two points on a sphere  input latitudes and longitudes should be in degrees
+    """
+    Calculate distance between two points on a sphere  input latitudes and longitudes should be in degrees
     output is in radians
 
     Parameters
@@ -59,16 +61,15 @@ def angular_distance(lat1, lon1, lat2, lon2):
 
     result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
 
-    result[valid] = (
-        _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / earths_radius
-    )
+    result[valid] = _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / earths_radius
     return result
 
 
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def sphere_distance(lat1, lon1, lat2, lon2):
-    """Calculate the great circle distance between two points on the sphere designated
+    """
+    Calculate the great circle distance between two points on the sphere designated
     by their latitude and longitude
 
     The great circle distance is the shortest distance between any two points on the Earths surface.
@@ -96,18 +97,15 @@ def sphere_distance(lat1, lon1, lat2, lon2):
 
     result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
 
-    result[valid] = (
-        _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / 1000.0
-    )
+    result[valid] = _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / 1000.0
     return result
 
 
-@post_format_return_type(
-    ["lat1", "lon1", "lat2", "lon2", "f"], dtype=float, multiple=True
-)
+@post_format_return_type(["lat1", "lon1", "lat2", "lon2", "f"], dtype=float, multiple=True)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2", "f"])
 def intermediate_point(lat1, lon1, lat2, lon2, f):
-    """Given two lat,lon point find the latitude and longitude that are a fraction f
+    """
+    Given two lat,lon point find the latitude and longitude that are a fraction f
     of the great circle distance between them https://edwilliams.org/avform147.htm formerly
     williams.best.vwh.net/avform.htm#Intermediate
 
@@ -140,16 +138,15 @@ def intermediate_point(lat1, lon1, lat2, lon2, f):
     fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
     distance_at_f = dist * f
 
-    lon_f[valid], lat_f[valid], _ = geod.fwd(
-        lon1[valid], lat1[valid], fwd_az[valid], distance_at_f[valid]
-    )
+    lon_f[valid], lat_f[valid], _ = geod.fwd(lon1[valid], lat1[valid], fwd_az[valid], distance_at_f[valid])
     return lat_f, lon_f
 
 
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def course_between_points(lat1, lon1, lat2, lon2):
-    """Given two points find the initial true course at point1 inputs are in degrees and output is in degrees
+    """
+    Given two points find the initial true course at point1 inputs are in degrees and output is in degrees
 
     Parameters
     ----------
@@ -208,9 +205,7 @@ def lat_lon_from_course_and_distance(lat1, lon1, tc, d):
     dr = d / earths_radius * 1000
 
     lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
-    dlon = np.arctan2(
-        np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat)
-    )
+    dlon = np.arctan2(np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat))
     lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
 
     lat = convert_to(lat, "rad", "deg")

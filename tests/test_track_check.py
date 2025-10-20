@@ -122,12 +122,8 @@ def test_set_speed_limits(amode, expected):
 
 @pytest.mark.parametrize("angle", [0, 45, 90, 135, 180, 225, 270, 315, 360])
 def test_just_pass_and_just_fail(angle):
-    assert 10 == direction_continuity(
-        dsi=angle, dsi_previous=angle, directions=angle + 60.1
-    )
-    assert 0 == direction_continuity(
-        dsi=angle, dsi_previous=angle, directions=angle + 59.9
-    )
+    assert 10 == direction_continuity(dsi=angle, dsi_previous=angle, directions=angle + 60.1)
+    assert 0 == direction_continuity(dsi=angle, dsi_previous=angle, directions=angle + 59.9)
 
 
 @pytest.mark.parametrize("angle", [0, 45, 90, 135, 180, 225, 270, 315, 360])
@@ -158,9 +154,7 @@ def test_direction_continuity_nan():
     ],
 )
 def test_speed_continuity(vsi, vsi_previous, speeds, expected):
-    assert (
-        speed_continuity(vsi=vsi, vsi_previous=vsi_previous, speeds=speeds) == expected
-    )
+    assert speed_continuity(vsi=vsi, vsi_previous=vsi_previous, speeds=speeds) == expected
 
 
 def test_speed_continuity_array():

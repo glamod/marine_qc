@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -122,7 +122,7 @@ jobs:
 
       - name: Minimise uv cache
         run: uv cache prune --ci
-        
+
   finish:
     needs:
       - test-pypi
@@ -136,4 +136,4 @@ jobs:
       - name: Coveralls Finished
         uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
-          parallel-finished: true        
+          parallel-finished: true

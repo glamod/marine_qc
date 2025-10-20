@@ -1,15 +1,14 @@
 """Module to read external climatology files."""
 
 from __future__ import annotations
-
 import inspect
 import warnings
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import datetime
-from typing import Literal, Sequence, TypeAlias
+from typing import Literal, TypeAlias
 
-import cf_xarray  # noqa
+import cf_xarray  # noqa: F401
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -47,16 +46,13 @@ def _select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
 
 
 def _empty_dataarray():
-
     lat = xr.DataArray(
         [],
         dims="latitude",
         coords={"latitude": []},
         attrs={"standard_name": "latitude", "units": "degrees_north"},
     )
-    time = xr.DataArray(
-        [], dims="time", coords={"time": []}, attrs={"standard_name": "time"}
-    )
+    time = xr.DataArray([], dims="time", coords={"time": []}, attrs={"standard_name": "time"})
     lon = xr.DataArray(
         [],
         dims="longitude",
@@ -71,9 +67,7 @@ def _empty_dataarray():
     )
 
 
-def inspect_climatology(
-    *climatology_keys: str, optional: str | Sequence[str] = None
-) -> Callable:
+def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | None = None) -> Callable:
     """
     A decorator factory to preprocess function arguments that may be Climatology objects.
 
@@ -109,9 +103,7 @@ def inspect_climatology(
 
     def pre_handler(arguments: dict, **meta_kwargs):
         active_keys = list(climatology_keys)
-        for opt in optional:
-            if opt in arguments:
-                active_keys.append(opt)
+        active_keys.extend(opt for opt in optional if opt in arguments)
         for clim_key in active_keys:
             if clim_key not in arguments:
                 raise TypeError(
@@ -124,15 +116,15 @@ def inspect_climatology(
                 required_keys = {
                     name
                     for name, param in get_value_sig.parameters.items()
-                    if param.default is param.empty
-                    and param.kind in (param.POSITIONAL_OR_KEYWORD, param.KEYWORD_ONLY)
+                    if param.default is param.empty and param.kind in (param.POSITIONAL_OR_KEYWORD, param.KEYWORD_ONLY)
                 }
                 missing_in_kwargs = required_keys - meta_kwargs.keys()
                 if missing_in_kwargs:
                     warnings.warn(
                         f"The following required key-word arguments for 'Climatology.get_value' are missing "
                         f"in function '{pre_handler.__funcname__}': {missing_in_kwargs}. "
-                        f"Ensure all required arguments are passed via **kwargs."
+                        f"Ensure all required arguments are passed via **kwargs.",
+                        stacklevel=2,
                     )
 
                 try:
@@ -156,13 +148,12 @@ def open_xrdataset(
     data_vars: Literal["all", "minimal", "different"] = "minimal",
     chunks: int | dict | Literal["auto", "default"] | None = "default",
     coords: Literal["all", "minimal", "different"] | None = "minimal",
-    compat: Literal[
-        "identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"
-    ] = "override",
+    compat: Literal["identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"] = "override",
     combine: Literal["by_coords", "nested"] | None = "by_coords",
     **kwargs,
 ) -> xr.Dataset:
-    """Optimized function for opening large cf datasets.
+    """
+    Optimized function for opening large cf datasets.
 
     based on [open_xrdataset]_.
     decode_timedelta=False is added to leave variables and
@@ -230,7 +221,8 @@ def open_xrdataset(
 
 
 class Climatology:
-    """Class for dealing with climatologies, reading, extracting values etc.
+    """
+    Class for dealing with climatologies, reading, extracting values etc.
     Automatically detects if this is a single field, pentad or daily climatology.
 
     Parameters
@@ -266,8 +258,10 @@ class Climatology:
         lon_axis: str | None = None,
         source_units: str | None = None,
         target_units: str | None = None,
-        valid_ntime: int | list = [0, 1, 73, 365],
+        valid_ntime: int | list | None = None,
     ):
+        if valid_ntime is None:
+            valid_ntime = [0, 1, 73, 365]
         self.data = data
         self.convert_units_to(target_units, source_units=source_units)
         if time_axis is None:
@@ -286,9 +280,7 @@ class Climatology:
             valid_ntime = [valid_ntime]
         self.ntime = len(data[self.time_axis])
         if self.ntime not in valid_ntime:
-            raise ValueError(
-                f"Weird shaped field {self.ntime}. Use one of {valid_ntime}."
-            )
+            raise ValueError(f"Weird shaped field {self.ntime}. Use one of {valid_ntime}.")
 
     @classmethod
     def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:
@@ -298,11 +290,12 @@ class Climatology:
             da = ds[clim_name]
             return cls(da, **kwargs)
         except OSError:
-            warnings.warn(f"Could not open: {file_name}.")
+            warnings.warn(f"Could not open: {file_name}.", stacklevel=2)
         return cls(_empty_dataarray(), **kwargs)
 
     def convert_units_to(self, target_units, source_units=None) -> None:
-        """Convert units to user-specific units.
+        """
+        Convert units to user-specific units.
 
         Parameters
         ----------
@@ -396,9 +389,7 @@ class Climatology:
 
         lat_indices = Climatology.get_y_index(lat_arr[valid], lat_axis)
         lon_indices = Climatology.get_x_index(lon_arr[valid], lon_axis)
-        time_indices = Climatology.get_t_index(
-            month_arr[valid], day_arr[valid], self.ntime
-        )
+        time_indices = Climatology.get_t_index(month_arr[valid], day_arr[valid], self.ntime)
 
         lat_indices = np.array(lat_indices, dtype=int)
         lon_indices = np.array(lon_indices, dtype=int)
@@ -412,9 +403,7 @@ class Climatology:
         valid_indices = np.where(valid)[0]
         valid[valid_indices] &= coord_mask
 
-        result[valid] = self.data.values[
-            time_indices[coord_mask], lat_indices[coord_mask], lon_indices[coord_mask]
-        ]
+        result[valid] = self.data.values[time_indices[coord_mask], lat_indices[coord_mask], lon_indices[coord_mask]]
 
         return result
 
@@ -445,9 +434,7 @@ class Climatology:
             elif lat_axis_0 == 90 + lat_axis_delta / 2.0:
                 lat_axis_0 = 90.0
             else:
-                raise RuntimeError(
-                    "I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)"
-                )
+                raise RuntimeError("I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)")
 
         y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
 
@@ -482,9 +469,7 @@ class Climatology:
             elif lon_axis_0 == 180 + lon_axis_delta / 2.0:
                 lon_axis_0 = 180.0
             else:
-                raise RuntimeError(
-                    "I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)"
-                )
+                raise RuntimeError("I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)")
 
         x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
 
@@ -532,7 +517,8 @@ class Climatology:
         month: int | None | Sequence[int | None] | np.ndarray = None,
         day: int | None | Sequence[int | None] | np.ndarray = None,
     ) -> ndarray | pd.Series:
-        """Get the value from a climatology at the give position and time.
+        """
+        Get the value from a climatology at the give position and time.
 
         Parameters
         ----------
@@ -592,19 +578,15 @@ class Climatology:
         for tindex, indices in grouped.items():
             da_slice = data.isel({self.time_axis: tindex})
 
-            results = Parallel(n_jobs=-1)(
-                delayed(_select_point)(
-                    i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis
-                )
-                for i in indices
-            )
+            results = Parallel(n_jobs=-1)(delayed(_select_point)(i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis) for i in indices)
             for idx, value in results:
                 result[idx] = value
 
         return _format_output(result, lat)
 
     def get_tindex(self, month: int, day: int) -> int:
-        """Get the time index of the input month and day.
+        """
+        Get the time index of the input month and day.
 
         Parameters
         ----------
@@ -627,7 +609,8 @@ class Climatology:
 
 @inspect_climatology("climatology")
 def get_climatological_value(climatology: Climatology, **kwargs) -> ndarray:
-    """Get the value from a climatology.
+    """
+    Get the value from a climatology.
 
     Parameters
     ----------
