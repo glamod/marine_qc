@@ -6,17 +6,37 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import marine_qc.Climatology as clim
+import xarray as xr
+
+import marine_qc.external_clim as clim
 from marine_qc import do_bayesian_buddy_check, do_mds_buddy_check
 from marine_qc.auxiliary import (
     failed,
     passed,
     untestable,
+    untested,
 )
 from marine_qc.qc_grouped_reports import (
     SuperObsGrid,
     get_threshold_multiplier,
 )
+
+
+def _create_dataarray(array, name):
+    time_len, lat_len, lon_len = array.shape
+    time = np.arange(time_len)
+    lat = np.linspace(-89.5, 89.5, lat_len)
+    lon = np.linspace(-179.5, 179.5, lon_len)
+    da = xr.DataArray(
+        array,
+        dims=("time", "lat", "lon"),
+        coords={"time": time, "lat": lat, "lon": lon},
+        name=name,
+    )
+    da.coords["time"].attrs["standard_name"] = "time"
+    da.coords["lat"].attrs["standard_name"] = "latitude"
+    da.coords["lon"].attrs["standard_name"] = "longitude"
+    return da
 
 
 @pytest.fixture
@@ -138,12 +158,14 @@ def reps3():
 
 @pytest.fixture
 def dummy_pentad_stdev():
-    return clim.Climatology(np.full([73, 180, 360], 1.5))
+    data = _create_dataarray(np.full([73, 180, 360], 1.5), "stdev")
+    return clim.Climatology(data)
 
 
 @pytest.fixture
 def dummy_pentad_stdev_empty():
-    return clim.Climatology(np.full([73, 180, 360], np.nan))
+    data = _create_dataarray(np.full([73, 180, 360], np.nan), "stdev")
+    return clim.Climatology(data)
 
 
 @pytest.fixture
@@ -190,7 +212,7 @@ def test_eight_near_neighbours_missing_stdev_defaults_to_one(
 ):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps["LAT"], reps["LON"], reps["DATE"], reps["SST"] - reps["SST_CLIM"]
+        reps["LAT"], reps["LON"], reps["SST"] - reps["SST_CLIM"], date=reps["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev_empty,
@@ -208,7 +230,7 @@ def test_eight_near_neighbours_missing_stdev_defaults_to_one(
 def test_eight_near_neighbours(dummy_pentad_stdev, reps):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps["LAT"], reps["LON"], reps["DATE"], reps["SST"] - reps["SST_CLIM"]
+        reps["LAT"], reps["LON"], reps["SST"] - reps["SST_CLIM"], date=reps["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -226,7 +248,7 @@ def test_eight_near_neighbours(dummy_pentad_stdev, reps):
 def test_eight_distant_near_neighbours(dummy_pentad_stdev, reps2):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2["LAT"], reps2["LON"], reps2["DATE"], reps2["SST"] - reps2["SST_CLIM"]
+        reps2["LAT"], reps2["LON"], reps2["SST"] - reps2["SST_CLIM"], date=reps2["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -244,7 +266,7 @@ def test_eight_distant_near_neighbours(dummy_pentad_stdev, reps2):
 def test_eight_even_more_distant_near_neighbours(dummy_pentad_stdev, reps3):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps3["LAT"], reps3["LON"], reps3["DATE"], reps3["SST"] - reps3["SST_CLIM"]
+        reps3["LAT"], reps3["LON"], reps3["SST"] - reps3["SST_CLIM"], date=reps3["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -261,7 +283,7 @@ def test_eight_even_more_distant_near_neighbours(dummy_pentad_stdev, reps3):
 def test_eight_too_distant_neighbours(dummy_pentad_stdev, reps4):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps4["LAT"], reps4["LON"], reps4["DATE"], reps4["SST"] - reps4["SST_CLIM"]
+        reps4["LAT"], reps4["LON"], reps4["SST"] - reps4["SST_CLIM"], date=reps4["DATE"]
     )
     g.get_buddy_limits_with_parameters(
         dummy_pentad_stdev,
@@ -541,13 +563,17 @@ def buddy_reps_singleton():
 
 @pytest.fixture
 def dummy_pentad_stdev_():
-    return clim.Climatology(np.full([73, 180, 360], 1.0))
+    data = _create_dataarray(np.full([73, 180, 360], 1.0), "stdev")
+    return clim.Climatology(data)
 
 
 def test_get_neighbour_anomalies(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2_["LAT"], reps2_["LON"], reps2_["DATE"], reps2_["SST"] - reps2_["SST_CLIM"]
+        reps2_["LAT"],
+        reps2_["LON"],
+        reps2_["SST"] - reps2_["SST_CLIM"],
+        date=reps2_["DATE"],
     )
     temp_anom, temp_nobs = g.get_neighbour_anomalies([2, 2, 2], 180, 89, 0)
 
@@ -564,7 +590,10 @@ def test_get_neighbour_anomalies(reps2_):
 def test_get_neighbour_anomalies_raises(reps2_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps2_["LAT"], reps2_["LON"], reps2_["DATE"], reps2_["SST"] - reps2_["SST_CLIM"]
+        reps2_["LAT"],
+        reps2_["LON"],
+        reps2_["SST"] - reps2_["SST_CLIM"],
+        date=reps2_["DATE"],
     )
 
     with pytest.raises(ValueError):
@@ -642,7 +671,7 @@ def test_add_single_observation_raises():
 def test_add_multiple(reps_, dummy_pentad_stdev_):
     g = SuperObsGrid()
     g.add_multiple_observations(
-        reps_["LAT"], reps_["LON"], reps_["DATE"], reps_["SST"] - reps_["SST_CLIM"]
+        reps_["LAT"], reps_["LON"], reps_["SST"] - reps_["SST_CLIM"], date=reps_["DATE"]
     )
     g.get_new_buddy_limits(
         dummy_pentad_stdev_,
@@ -687,6 +716,27 @@ def test_buddy_check(reps_, dummy_pentad_stdev_):
     )
 
     assert np.all(result == [passed, passed, passed, passed])
+
+
+def test_buddy_check_ignore_indexes(reps_, dummy_pentad_stdev_):
+    limits = [[1, 1, 2], [2, 2, 2], [1, 1, 4], [2, 2, 4]]
+    number_of_obs_thresholds = [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]]
+    multipliers = [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]]
+
+    result = do_mds_buddy_check(
+        reps_["LAT"],
+        reps_["LON"],
+        reps_["DATE"],
+        reps_["SST"],
+        reps_["SST_CLIM"],
+        dummy_pentad_stdev_,
+        limits,
+        number_of_obs_thresholds,
+        multipliers,
+        ignore_indexes=[1, 2],
+    )
+
+    assert np.all(result == [passed, untested, untested, passed])
 
 
 def test_buddy_check_single_ob_flagged_untestable(
@@ -856,6 +906,63 @@ def test_bayesian_buddy_check(reps_, dummy_pentad_stdev_):
     )
 
     assert np.all(result == [passed, passed, passed, passed])
+
+
+@pytest.mark.parametrize(
+    ["p0", "q", "sigma_m", "r_hi"],
+    [
+        [-0.05, 0.1, 1.0, 8.0],
+        [2.0, 0.1, 1.0, 8.0],
+        [0.05, -0.1, 1.0, 8.0],
+        [0.05, 0.1, 1.0, -8.0],
+        [0.05, 0.1, -1.0, 8.0],
+    ],
+)
+def test_bayesian_buddy_check_untestable(
+    reps_, dummy_pentad_stdev_, p0, q, sigma_m, r_hi
+):
+    result = do_bayesian_buddy_check(
+        reps_["LAT"],
+        reps_["LON"],
+        reps_["DATE"],
+        reps_["SST"],
+        reps_["SST_CLIM"],
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        p0,
+        q,
+        sigma_m,
+        [2, 2, 4],
+        3.0,
+        r_hi,
+        0.3,
+    )
+
+    assert np.all(result == [untestable, untestable, untestable, untestable])
+
+
+def test_bayesian_buddy_check_ignore_indexes(reps_, dummy_pentad_stdev_):
+    result = do_bayesian_buddy_check(
+        reps_["LAT"],
+        reps_["LON"],
+        reps_["DATE"],
+        reps_["SST"],
+        reps_["SST_CLIM"],
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        dummy_pentad_stdev_,
+        0.05,
+        0.1,
+        1.0,
+        [2, 2, 4],
+        3.0,
+        8.0,
+        0.3,
+        ignore_indexes=[1, 2],
+    )
+
+    assert np.all(result == [passed, untested, untested, passed])
 
 
 def test_bayesian_buddy_check_again(buddy_reps, dummy_pentad_stdev_):

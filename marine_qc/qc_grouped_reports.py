@@ -20,6 +20,7 @@ from .auxiliary import (
     convert_units,
     failed,
     inspect_arrays,
+    isvalid,
     passed,
     post_format_return_type,
     untestable,
@@ -33,12 +34,15 @@ from .external_clim import (
 )
 from .location_control import (
     mds_lat_to_yindex,
+    mds_lat_to_yindex_fast,
     mds_lon_to_xindex,
+    mds_lon_to_xindex_fast,
 )
 from .statistics import p_gross
 from .time_control import (
     pentad_to_month_day,
     which_pentad,
+    convert_date,
 )
 
 
@@ -107,13 +111,16 @@ class SuperObsGrid:
         self.buddy_stdev = np.zeros((360, 180, 73))  # type: np.ndarray
         self.nobs = np.zeros((360, 180, 73))  # type: np.ndarray
 
-    @inspect_arrays(["lats", "lons", "values"])
+    @convert_date(["month", "day"])
+    @inspect_arrays(["lats", "lons", "values", "month", "day"])
     def add_multiple_observations(
         self,
         lats: SequenceFloatType,
         lons: SequenceFloatType,
-        dates: SequenceDatetimeType,
         values: SequenceFloatType,
+        date: SequenceDatetimeType = None,
+        month: SequenceFloatType = None,
+        day: SequenceFloatType = None,
     ) -> None:
         """Add a series of observations to the grid and take the grid average. The observations should be
         anomalies.
@@ -132,13 +139,57 @@ class SuperObsGrid:
         values : array-like of float, shape (n,)
             1-dimensional anomaly array.
         """
-        n_obs = len(lats)
-        for i in range(n_obs):
-            date = pd.Timestamp(dates[i])
-            self.add_single_observation(
-                lats[i], lons[i], date.month, date.day, values[i]
-            )
-        self.take_average()
+        value_arr = np.atleast_1d(values)  # type: np.ndarray
+        value_arr = np.where(value_arr is None, np.nan, value_arr).astype(float)
+
+        lat_arr = np.atleast_1d(lats)  # type: np.ndarray
+        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
+
+        lon_arr = np.atleast_1d(lons)  # type: np.ndarray
+        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
+
+        month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+
+        day_arr = np.atleast_1d(day)  # type: np.ndarray
+        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
+
+        valid = (
+            isvalid(lats)
+            & isvalid(lons)
+            & isvalid(month)
+            & isvalid(day)
+            & isvalid(values)
+        )
+        valid &= (month_arr >= 1) & (month_arr <= 12)
+
+        y_index = mds_lat_to_yindex_fast(lat_arr[valid], res=1)
+        x_index = mds_lon_to_xindex_fast(lon_arr[valid], res=1)
+        t_index = Climatology.get_t_index(month_arr[valid], day_arr[valid], 73)
+
+        unique_index = t_index * 1000000 + y_index * 1000 + x_index
+
+        df = pd.DataFrame(
+            {
+                "uid": unique_index,
+                "value": value_arr[valid],
+                "x": x_index,
+                "y": y_index,
+                "t": t_index,
+            }
+        )
+        means = df.groupby("uid")["value"].mean().values
+        nobs = df.groupby("uid")["value"].count().values
+        x = df.groupby("uid")["x"].first().values
+        y = df.groupby("uid")["y"].first().values
+        t = df.groupby("uid")["t"].first().values
+
+        self.grid[x, y, t] = means[:]
+        self.nobs[x, y, t] = nobs[:]
+
+        return
 
     def add_single_observation(
         self, lat: float, lon: float, month: int, day: int, anom: float
@@ -282,7 +333,7 @@ class SuperObsGrid:
             m, d = pentad_to_month_day(pindex + 1)
 
             # Originally get_value_mds_style - note: might be a mismatch
-            stdev = pentad_stdev.get_value(
+            stdev = pentad_stdev.get_value_fast(
                 lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d
             )
 
@@ -368,9 +419,15 @@ class SuperObsGrid:
 
             m, d = pentad_to_month_day(pindex + 1)
 
-            stdev1_ex = stdev1.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
-            stdev2_ex = stdev2.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
-            stdev3_ex = stdev3.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev1_ex = stdev1.get_value_fast(
+                89.5 - yindex, -179.5 + xindex, month=m, day=d
+            )
+            stdev2_ex = stdev2.get_value_fast(
+                89.5 - yindex, -179.5 + xindex, month=m, day=d
+            )
+            stdev3_ex = stdev3.get_value_fast(
+                89.5 - yindex, -179.5 + xindex, month=m, day=d
+            )
 
             if stdev1_ex is None or stdev1_ex < 0.0 or np.isnan(stdev1_ex):
                 stdev1_ex = 1.0
@@ -480,6 +537,7 @@ def do_mds_buddy_check(
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
     multipliers: list[list[float]],
+    ignore_indexes: list[int] | None = None,
 ):
     """Do the old style buddy check. The buddy check compares an observation to the average of its near neighbours
     (called the buddy mean). Depending on how many neighbours there are and their proximity to the observation being
@@ -520,6 +578,8 @@ def do_mds_buddy_check(
     multipliers : list[list]
         multiplier, x, used for buddy check mu +- x * sigma. The list should have the same structure as
         `number_of_obs_threshold`.
+    ignore_indexes: list[int]
+        List of row numbers to be skipped.
 
     Returns
     -------
@@ -560,7 +620,7 @@ def do_mds_buddy_check(
 
     # calculate superob averages and numbers of observations
     grid = SuperObsGrid()
-    grid.add_multiple_observations(lat, lon, date, anoms)
+    grid.add_multiple_observations(lat, lon, anoms, date=date)
     grid.get_buddy_limits_with_parameters(
         standard_deviation, limits, number_of_obs_thresholds, multipliers
     )
@@ -568,8 +628,17 @@ def do_mds_buddy_check(
     numobs = len(lat)
     qc_outcomes = np.zeros(numobs) + untested
 
+    if ignore_indexes is None:
+        ignore_indexes = []
+
     # finally loop over all reports and update buddy QC
     for i in range(numobs):
+        if i in ignore_indexes:
+            continue
+
+        if not isvalid(anoms[i]):
+            continue
+
         lat_ = lat[i]
         lon_ = lon[i]
         mon = pd.Timestamp(date[i]).month
@@ -611,6 +680,7 @@ def do_bayesian_buddy_check(
     noise_scaling: float,
     maximum_anomaly: float,
     fail_probability: float,
+    ignore_indexes: list[int] | None = None,
 ) -> Sequence[int]:
     """Do the Bayesian buddy check. The bayesian buddy check assigns a
     probability of gross error to each observation, which is rounded down to the
@@ -669,6 +739,8 @@ def do_bayesian_buddy_check(
     fail_probability : float
         Probability of gross error that corresponds to a failed test. Anything with a probability of gross error
         greater than fail_probability will be considered failing.
+    ignore_indexes: list[int], optional
+        List of row numbers to be skipped.
 
     Returns
     -------
@@ -688,8 +760,7 @@ def do_bayesian_buddy_check(
     * maximum_anomaly = 8.0
     * fail_probability = 0.3
     """
-    anoms = value - climatology
-
+    numobs = len(lat)
     p0 = prior_probability_of_gross_error
     q = quantization_interval
     sigma_m = one_sigma_measurement_uncertainty
@@ -701,14 +772,28 @@ def do_bayesian_buddy_check(
     r_hi = maximum_anomaly
     r_lo = -1.0 * r_hi  # previous lower QC limit set
 
+    # Return untestable if any parameters is invalid
+    if p0 < 0.0 or p0 > 1.0 or q <= 0.0 or r_hi < r_lo or sigma_m < 0.0:
+        return np.zeros(numobs) + untestable
+
+    anoms = value - climatology
+
     grid = SuperObsGrid()
-    grid.add_multiple_observations(lat, lon, date, anoms)
+    grid.add_multiple_observations(lat, lon, anoms, date=date)
     grid.get_new_buddy_limits(stdev1, stdev2, stdev3, limits, sigma_m, noise_scaling)
 
-    numobs = len(lat)
     qc_outcomes = np.zeros(numobs) + untested
 
+    if ignore_indexes is None:
+        ignore_indexes = []
+
     for i in range(numobs):
+        if i in ignore_indexes:
+            continue
+
+        if not isvalid(anoms[i]):
+            continue
+
         lat_ = lat[i]
         lon_ = lon[i]
         mon = pd.Timestamp(date[i]).month
@@ -716,15 +801,20 @@ def do_bayesian_buddy_check(
 
         # Calculate the probability of gross error given the set-up
         buddy_stdev = grid.get_buddy_stdev(lat_, lon_, mon, day)
-        ppp = p_gross(
-            p0,
-            q,
-            r_hi,
-            r_lo,
-            anoms[i],
-            grid.get_buddy_mean(lat_, lon_, mon, day),
-            buddy_stdev,
-        )
+
+        try:
+            ppp = p_gross(
+                p0,
+                q,
+                r_hi,
+                r_lo,
+                anoms[i],
+                grid.get_buddy_mean(lat_, lon_, mon, day),
+                buddy_stdev,
+            )
+        except (ValueError, ZeroDivisionError):
+            qc_outcomes[i] = failed
+            continue
 
         # QC outcome is based on the probability of gross error. If the probability of gross error is larger than
         # the fail_probability then it is considered a fail.

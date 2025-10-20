@@ -7,8 +7,6 @@ Module containing main QC functions which could be applied on a DataBundle.
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 
 from .astronomical_geometry import sunangle
@@ -27,6 +25,11 @@ from .auxiliary import (
 )
 from .external_clim import ClimFloatType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
+
+vectorized_day_in_year = np.vectorize(day_in_year)
+vectorized_sunangle = np.vectorize(
+    sunangle, otypes=[float, float, float, float, float, float]
+)
 
 
 @post_format_return_type(["value"])
@@ -129,31 +132,31 @@ def do_date_check(
         - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    result = np.full(year.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(year.shape, untestable, dtype=int)
+    valid = isvalid(year) & isvalid(month) & isvalid(day)
 
-    valid_indices = isvalid(year) & isvalid(month) & isvalid(day)
+    year_valid = year[valid].astype(int)
+    month_valid = month[valid].astype(int)
+    day_valid = day[valid].astype(int)
 
-    for i in range(len(result)):
-        if not valid_indices[i]:
-            continue
+    result_valid = np.full(year_valid.shape, failed, dtype=int)
 
-        y_ = int(year[i])
-        m_ = int(month[i])
-        d_ = int(day[i])
+    year_ok = (year_valid >= 1850) & (year_valid <= 2025)
+    month_ok = (month_valid >= 1) & (month_valid <= 12)
 
-        month_lengths = get_month_lengths(y_)
+    unique_years = np.unique(year_valid)
+    month_length_map = {y: get_month_lengths(y) for y in unique_years}
+    max_days = np.array(
+        [month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid)]
+    )
 
-        if (
-            (y_ > 2025)
-            | (y_ < 1850)
-            | (m_ < 1)
-            | (m_ > 12)
-            | (d_ < 1)
-            | (d_ > month_lengths[m_ - 1])
-        ):
-            result[i] = failed
-            continue
-        result[i] = passed
+    day_ok = (day_valid >= 1) & (day_valid <= max_days)
+
+    passed_mask = year_ok & month_ok & day_ok
+
+    result_valid[passed_mask] = passed
+
+    result[valid] = result_valid
 
     return result
 
@@ -202,14 +205,11 @@ def _do_daytime_check(
     if mode not in ["day", "night"]:
         raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
 
-    p_check = do_position_check(lat, lon)
-    p_check = np.atleast_1d(p_check)  # type: np.ndarray
-    d_check = do_date_check(year=year, month=month, day=day)
-    d_check = np.atleast_1d(d_check)  # type: np.ndarray
-    t_check = do_time_check(hour=hour)
-    t_check = np.atleast_1d(t_check)  # type: np.ndarray
+    p_check = np.atleast_1d(do_position_check(lat, lon))
+    d_check = np.atleast_1d(do_date_check(year=year, month=month, day=day))
+    t_check = np.atleast_1d(do_time_check(hour=hour))
 
-    result = np.full(year.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(year.shape, untestable, dtype=int)
 
     if mode == "day":
         _failed = failed
@@ -218,54 +218,60 @@ def _do_daytime_check(
         _failed = passed
         _passed = failed
 
-    for i in range(len(year)):
-        if failed in [p_check[i], d_check[i], t_check[i]]:
-            result[i] = failed
-            continue
-        if (
-            (p_check[i] == untestable)
-            or (d_check[i] == untestable)
-            or (t_check[i] == untestable)
-        ):
-            continue
+    failed_mask = (p_check == failed) | (d_check == failed) | (t_check == failed)
+    result[failed_mask] = failed
 
-        lat_ = lat[i]
-        lon_ = lon[i]
-        y_ = int(year[i])
-        m_ = int(month[i])
-        d_ = int(day[i])
-        h_ = hour[i]
-        y2 = y_
-        d2 = day_in_year(y_, m_, d_)
-        h2 = math.floor(h_)
-        m2 = (h_ - h2) * 60.0
+    valid_mask = (
+        (~failed_mask)
+        & (p_check != untestable)
+        & (d_check != untestable)
+        & (t_check != untestable)
+    )
+    if not np.any(valid_mask):
+        return result
 
-        # go back one hour and test if the sun was above the horizon
-        if time_since_sun_above_horizon is not None:
-            h2 = h2 - time_since_sun_above_horizon
-        if h2 < 0:
-            h2 = h2 + 24.0
-            d2 = d2 - 1
-            if d2 <= 0:
-                y2 = y2 - 1
-                d2 = day_in_year(y2, 12, 31)
+    valid_indices = np.where(valid_mask)[0]
 
-        lat2 = lat_
-        lon2 = lon_
-        if lat_ == 0:
-            lat2 = 0.0001
-        if lon_ == 0:
-            lon2 = 0.0001
+    year_valid = year[valid_indices].astype(int)
+    month_valid = month[valid_indices].astype(int)
+    day_valid = day[valid_indices].astype(int)
+    hour_valid = hour[valid_indices]
 
-        _azimuth, elevation, _rta, _hra, _sid, _dec = sunangle(
-            y2, d2, h2, m2, 0, 0, 0, lat2, lon2
-        )
+    doy = vectorized_day_in_year(year_valid, month_valid, day_valid)
+    hour_whole = np.floor(hour_valid)
+    minute_valid = (hour_valid - hour_whole) * 60.0
 
-        if elevation > 0:
-            result[i] = _passed
-            continue
+    if time_since_sun_above_horizon is not None:
+        hour_whole -= time_since_sun_above_horizon
 
-        result[i] = _failed
+    lat_fixed = lat[valid_indices]
+    lat_fixed[lat_fixed == 0] = 0.0001
+    lon_fixed = lon[valid_indices]
+    lon_fixed[lon_fixed == 0] = 0.0001
+
+    underflow = hour_whole < 0
+    hour_whole[underflow] += 24
+    doy[underflow] -= 1
+
+    fix_indices = underflow & (doy <= 0)
+    if np.any(fix_indices):
+        year_valid[fix_indices] -= 1
+        doy[fix_indices] = vectorized_day_in_year(year_valid[fix_indices], 12, 31)
+
+    _azimuths, elevations, _rtas, _hras, _sids, _decs = vectorized_sunangle(
+        year_valid,
+        doy.astype(int),
+        hour_whole.astype(int),
+        minute_valid,
+        0,
+        0,
+        0,
+        lat_fixed,
+        lon_fixed,
+    )
+
+    # Assign results in one go
+    result[valid_indices] = np.where(elevations > 0, _passed, _failed)
 
     return result
 

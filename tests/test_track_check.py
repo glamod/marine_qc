@@ -122,15 +122,30 @@ def test_set_speed_limits(amode, expected):
 
 @pytest.mark.parametrize("angle", [0, 45, 90, 135, 180, 225, 270, 315, 360])
 def test_just_pass_and_just_fail(angle):
-    assert 10 == direction_continuity(angle, angle, angle + 60.1)
-    assert 0 == direction_continuity(angle, angle, angle + 59.9)
+    assert 10 == direction_continuity(
+        dsi=angle, dsi_previous=angle, directions=angle + 60.1
+    )
+    assert 0 == direction_continuity(
+        dsi=angle, dsi_previous=angle, directions=angle + 59.9
+    )
 
 
-def test_direction_continuity():
-    with pytest.raises(ValueError):
-        direction_continuity(1, 0, 0 + 60.1)
-    with pytest.raises(ValueError):
-        direction_continuity(0, 1, 0 + 60.1)
+@pytest.mark.parametrize("angle", [0, 45, 90, 135, 180, 225, 270, 315, 360])
+def test_direction_continuity_array(angle):
+    dsi = np.zeros(10) + angle
+    ship_directions = np.zeros(10) + angle + 60.1
+    result = direction_continuity(dsi=dsi, directions=ship_directions)
+    assert np.all(result == 10.0)
+
+    dsi = np.zeros(10) + angle
+    ship_directions = np.zeros(10) + angle + 59.9
+    result = direction_continuity(dsi=dsi, directions=ship_directions)
+    assert np.all(result == 0.0)
+
+
+def test_direction_continuity_nan():
+    assert np.isnan(direction_continuity(dsi=1, dsi_previous=0, directions=0 + 60.1))
+    assert np.isnan(direction_continuity(dsi=0, dsi_previous=1, directions=0 + 60.1))
 
 
 @pytest.mark.parametrize(
@@ -143,7 +158,18 @@ def test_direction_continuity():
     ],
 )
 def test_speed_continuity(vsi, vsi_previous, speeds, expected):
-    assert speed_continuity(vsi, vsi_previous, speeds) == expected
+    assert (
+        speed_continuity(vsi=vsi, vsi_previous=vsi_previous, speeds=speeds) == expected
+    )
+
+
+def test_speed_continuity_array():
+    vsi = np.array([12, 12, 12, 12])
+    speeds = np.array([12, 12 + 10.01, 12 + 9.9, np.nan])
+    expected = np.array([0, 10, 0, 0])
+
+    result = speed_continuity(vsi=vsi, speeds=speeds)
+    assert np.all(result == expected)
 
 
 @pytest.mark.parametrize(
@@ -167,10 +193,23 @@ def test_check_distance_from_estimate(
     expected,
 ):
     result = check_distance_from_estimate(
-        vsi,
-        vsi_previous,
-        time_differences,
-        fwd_diff_from_estimated,
-        rev_diff_from_estimated,
+        vsi=vsi,
+        vsi_previous=vsi_previous,
+        time_differences=time_differences,
+        fwd_diff_from_estimated=fwd_diff_from_estimated,
+        rev_diff_from_estimated=rev_diff_from_estimated,
     )
     assert result == expected
+
+
+def test_check_distance_from_estimate_array():
+    vsi = np.array([np.nan, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0])
+    time_differences = np.array([5.0, 5.0, np.nan, 5.0, 5.0, 5.0, 1.0])
+    fwd_diff = np.array([5.0, 5.0, 5.0, np.nan, 5.0, 5.0, 20.0])
+    rev_diff = np.array([5.0, 5.0, 5.0, 5.0, np.nan, 5.0, 20.0])
+
+    expected = np.array([0, 0, 0, 0, 0, 0, 10])
+
+    result = check_distance_from_estimate(vsi, time_differences, fwd_diff, rev_diff)
+
+    assert np.all(result == expected)

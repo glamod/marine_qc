@@ -10,10 +10,12 @@ from marine_qc.time_control import (
     convert_date_to_hours,
     valid_month_day,
     day_in_year,
+    day_in_year_array,
     leap_year_correction,
     pentad_to_month_day,
     split_date,
     which_pentad,
+    which_pentad_array,
     jul_day,
     time_difference,
 )
@@ -199,6 +201,58 @@ def test_dayinyear_all():
             count += 1
 
 
+def test_dayinyear_array_all():
+    # First lets do non-leap years
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    months = []
+    days = []
+    day_number = []
+
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            months.append(m)
+            days.append(d)
+            day_number.append(count)
+
+            count += 1
+
+    months = np.array(months)
+    days = np.array(days)
+    day_number = np.array(day_number)
+
+    result = day_in_year_array(months, days)
+
+    assert np.all(result == day_number)
+
+
+def test_which_pentad_array_all():
+    # First lets do non-leap years
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    months = []
+    days = []
+    day_number = []
+
+    count = 1
+    for m in range(1, 13):
+        for d in range(1, month_lengths[m - 1] + 1):
+            months.append(m)
+            days.append(d)
+            day_number.append(count)
+
+            count += 1
+
+    months = np.array(months)
+    days = np.array(days)
+    pentad_number = ((np.array(day_number) - 1) / 5).astype(int) + 1
+
+    result = which_pentad_array(months, days)
+
+    assert np.all(result == pentad_number)
+
+
 def test_leap_year_correction():
     assert leap_year_correction(24, 1, 0) == 0
     assert leap_year_correction(24, 1, 4) == 1461
@@ -234,10 +288,22 @@ def test_jul_day_raises():
         jul_day(2005, 7, 32)
 
 
-def test_time_difference():
-    with pytest.raises(ValueError):
-        time_difference(2003, 1, 1, -1, 2003, 1, 1, 1)
-    with pytest.raises(ValueError):
-        time_difference(2003, 1, 1, 1, 2003, 1, 1, 25)
+@pytest.mark.parametrize(
+    "time1, time2, expected",
+    [
+        ("2003-01-01 01:00", "2003-01-01 01:01", 1.0 / 60.0),
+        ("2003-01-01 01:00", "2003-01-01 01:30", 0.5),
+        ("2003-01-01 01:00", "2003-01-01 02:00", 1.0),
+        ("2003-01-01 01:00", "2003-13-01 02:00", np.nan),
+        ("2003-01-01 01:00", "2003-01-01 25:00", np.nan),
+        ("2003-01-01 01:00", "2003-01-32 02:00", np.nan),
+        ("2003-01--01 01:00", "2003-01-30 02:00", np.nan),
+    ],
+)
+def test_time_difference(time1, time2, expected):
+    result = time_difference(time1, time2)
 
-    assert np.isnan(time_difference(2003, 1, 1, 1, 2003, None, 1, 2))
+    if np.isnan(expected):
+        assert np.isnan(result)
+    else:
+        assert result == expected

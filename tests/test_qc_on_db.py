@@ -108,11 +108,11 @@ def climdata_buddy():
     }
     buddy_data = {
         "stdev": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_stdev_climatology.nc",
+            "external_files/HadSST2_pentad_stdev_climatology.nc",
             **kwargs,
         ),
         "mean": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_climatology.nc",
+            "external_files/HadSST2_pentad_climatology.nc",
             **kwargs,
         ),
     }
@@ -127,19 +127,19 @@ def climdata_bayesian():
     }
     buddy_data = {
         "ostia1": load_file(
-            "metoffice_qc/external_files/OSTIA_buddy_range_sampling_error.nc",
+            "external_files/OSTIA_buddy_range_sampling_error.nc",
             **kwargs,
         ),
         "ostia2": load_file(
-            "metoffice_qc/external_files/OSTIA_compare_1x1x5box_to_buddy_average.nc",
+            "external_files/OSTIA_compare_1x1x5box_to_buddy_average.nc",
             **kwargs,
         ),
         "ostia3": load_file(
-            "metoffice_qc/external_files/OSTIA_compare_one_ob_to_1x1x5box.nc",
+            "external_files/OSTIA_compare_one_ob_to_1x1x5box.nc",
             **kwargs,
         ),
         "mean": load_file(
-            "metoffice_qc/external_files/HadSST2_pentad_climatology.nc",
+            "external_files/HadSST2_pentad_climatology.nc",
             **kwargs,
         ),
     }
@@ -206,37 +206,37 @@ def climdata():
     clim_dict = {}
     clim_dict["AT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/AT_pentad_climatology.nc",
+            "external_files/AT_pentad_climatology.nc",
             **kwargs,
         ),
         "stdev": load_file(
-            "metoffice_qc/external_files/AT_pentad_stdev_climatology.nc",
+            "external_files/AT_pentad_stdev_climatology.nc",
             **kwargs,
         ),
     }
     clim_dict["DPT"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/DPT_pentad_climatology.nc",
+            "external_files/DPT_pentad_climatology.nc",
             **kwargs,
         ),
         "stdev": load_file(
-            "metoffice_qc/external_files/DPT_pentad_stdev_climatology.nc",
+            "external_files/DPT_pentad_stdev_climatology.nc",
             **kwargs,
         ),
     }
     clim_dict["SLP"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/SLP_pentad_climatology.nc",
+            "external_files/SLP_pentad_climatology.nc",
             **kwargs,
         ),
         "stdev": load_file(
-            "metoffice_qc/external_files/SLP_pentad_stdev_climatology.nc",
+            "external_files/SLP_pentad_stdev_climatology.nc",
             **kwargs,
         ),
     }
     clim_dict["SST"] = {
         "mean": load_file(
-            "metoffice_qc/external_files/SST_daily_climatology_january.nc",
+            "external_files/SST_daily_climatology_january.nc",
             **kwargs,
         ),
     }
@@ -1032,6 +1032,7 @@ def test_do_sst_missing_value_clim_check(testdata, climdata, apply_func):
         "sst",
         valid_ntime=31,
     )
+    climatology.ntime = 365
     if apply_func is True:
         results = db_.apply(
             lambda row: do_missing_value_clim_check(
@@ -1077,6 +1078,7 @@ def test_do_sst_climatology_check(testdata, climdata, apply_func):
         "sst",
         valid_ntime=31,
     )
+    climatology.ntime = 365
     if apply_func is True:
         results = db_.apply(
             lambda row: do_climatology_check(
@@ -1315,6 +1317,39 @@ def test_do_spike_check(testdata_track):
 
 
 def test_do_track_check(testdata_track):
+    db_ = testdata_track.copy()
+    db_.data.loc[2, ("header", "latitude")] = -23.0
+    db_.data.loc[12, ("header", "latitude")] = -23.0
+    db_.data.loc[24, ("header", "latitude")] = -23.0
+    db_.data.loc[48, ("header", "latitude")] = -23.0
+
+    groups = db_.groupby(
+        [("header", "primary_station_id")], group_keys=False, sort=False
+    )
+    results = groups.apply(
+        lambda track: do_track_check(
+            vsi=track[("header", "station_speed")],
+            dsi=track[("header", "station_course")],
+            lat=track[("header", "latitude")],
+            lon=track[("header", "longitude")],
+            date=track[("header", "report_timestamp")],
+            max_direction_change=60.0,
+            max_speed_change=10.0,
+            max_absolute_speed=40.0,
+            max_midpoint_discrepancy=150.0,
+        ),
+        include_groups=False,
+    ).squeeze()
+
+    expected = pd.Series([passed] * len(results))
+    expected.iloc[2] = 1
+    expected.iloc[12] = 1
+    expected.iloc[24] = 1
+    expected.iloc[48] = 1
+    pd.testing.assert_series_equal(results, expected, check_names=False)
+
+
+def test_do_track_check_array(testdata_track):
     db_ = testdata_track.copy()
     db_.data.loc[2, ("header", "latitude")] = -23.0
     db_.data.loc[12, ("header", "latitude")] = -23.0
@@ -1842,9 +1877,8 @@ def test_buddy_check(climdata_buddy, testdata_track):
         number_of_obs_thresholds=number_of_obs_thresholds,
         multipliers=multipliers,
     )
-
     for i, flag in enumerate(result):
-        if i in [7, 8, 9, 10, 12, 13, 14, 15, 45]:
+        if i in [7, 8, 9, 10, 11, 12, 13, 14, 15, 45]:
             assert flag == failed
         else:
             assert flag == passed
