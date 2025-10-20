@@ -1,23 +1,21 @@
 from __future__ import annotations
-
 from datetime import datetime
 
-import pytest  # noqa
-
 import numpy as np
+import pytest
 
 from marine_qc.time_control import (
     convert_date_to_hours,
-    valid_month_day,
     day_in_year,
     day_in_year_array,
+    jul_day,
     leap_year_correction,
     pentad_to_month_day,
     split_date,
+    time_difference,
+    valid_month_day,
     which_pentad,
     which_pentad_array,
-    jul_day,
-    time_difference,
 )
 
 
@@ -39,8 +37,7 @@ def test_split_date(date, expected_year, expected_month, expected_day, expected_
         assert result[key] == expected[key]
 
 
-class pseudo_datetime:
-
+class PseudoDatetime:
     def __init__(self, attributes):
         self.attribs = attributes
         for a in attributes:
@@ -58,11 +55,10 @@ class pseudo_datetime:
 
 
 def test_split_date_exceptions():
-
     for v in ["year", "month", "day", "hour"]:
         list_of_variables = ["year", "month", "day", "hour", "minute", "second"]
         list_of_variables.remove(v)
-        psd = pseudo_datetime(list_of_variables)
+        psd = PseudoDatetime(list_of_variables)
         result = split_date(psd)
         for key in result:
             if key == v:

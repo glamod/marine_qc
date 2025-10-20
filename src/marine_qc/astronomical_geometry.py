@@ -1,7 +1,6 @@
 """Some generally helpful astronomical geometry functions for base QC."""
 
 from __future__ import annotations
-
 import math
 
 import numpy as np
@@ -12,12 +11,14 @@ from .time_control import (
     relative_year_number,
 )
 
+
 # Conversion factor between degrees and radians
 degrad = np.pi / 180.0
 
 
 def sun_position(time: float) -> float:
-    """Find position of sun in celestial sphere, assuming circular orbit (radians).
+    """
+    Find position of sun in celestial sphere, assuming circular orbit (radians).
 
     Parameters
     ----------
@@ -32,7 +33,8 @@ def sun_position(time: float) -> float:
 
 
 def mean_earth_anomaly(time: float, theta: float) -> float:
-    """Calculate mean anomaly of earth (g).
+    """
+    Calculate mean anomaly of earth (g).
 
     Parameters
     ----------
@@ -48,7 +50,8 @@ def mean_earth_anomaly(time: float, theta: float) -> float:
 
 
 def sun_longitude(time: float) -> float:
-    """Get longitude of sun.
+    """
+    Get longitude of sun.
 
     Parameters
     ----------
@@ -61,17 +64,12 @@ def sun_longitude(time: float) -> float:
     """
     theta = sun_position(time)
     mean_anomaly = mean_earth_anomaly(time, theta)
-    return (
-        4.900968
-        + 3.6747e-7 * time
-        + (0.033434 - 2.3e-9 * time) * math.sin(mean_anomaly)
-        + 0.000349 * math.sin(2.0 * mean_anomaly)
-        + theta
-    )
+    return 4.900968 + 3.6747e-7 * time + (0.033434 - 2.3e-9 * time) * math.sin(mean_anomaly) + 0.000349 * math.sin(2.0 * mean_anomaly) + theta
 
 
 def elliptic_angle(time: float) -> float:
-    """Get angle plane of elliptic to plane of celestial equator.
+    """
+    Get angle plane of elliptic to plane of celestial equator.
 
     Parameters
     ----------
@@ -85,10 +83,9 @@ def elliptic_angle(time: float) -> float:
     return 0.409140 - 6.2149e-9 * time
 
 
-def sun_ascension(
-    long_of_sun: float, sin_long_of_sun: float, angle_of_elliptic: float
-) -> float:
-    """Calculate right ascension.
+def sun_ascension(long_of_sun: float, sin_long_of_sun: float, angle_of_elliptic: float) -> float:
+    """
+    Calculate right ascension.
 
     Parameters
     ----------
@@ -112,7 +109,8 @@ def sun_ascension(
 
 
 def sun_declination(sin_long_of_sun: float, angle_of_elliptic: float) -> float:
-    """Calculate declination of sun.
+    """
+    Calculate declination of sun.
 
     Parameters
     ----------
@@ -128,7 +126,8 @@ def sun_declination(sin_long_of_sun: float, angle_of_elliptic: float) -> float:
 
 
 def calculate_sun_parameters(time: float) -> tuple[float, float]:
-    """Calculate both right ascension and declination of sun.
+    """
+    Calculate both right ascension and declination of sun.
 
     Parameters
     ----------
@@ -148,7 +147,8 @@ def calculate_sun_parameters(time: float) -> tuple[float, float]:
 
 
 def to_siderial_time(time: float, delyear: int) -> float:
-    """Convert to siderial time.
+    """
+    Convert to siderial time.
 
     Parameters
     ----------
@@ -166,10 +166,9 @@ def to_siderial_time(time: float, delyear: int) -> float:
     return sid
 
 
-def to_local_siderial_time(
-    time: float, time_in_hours: float, delyear: int, lon: float
-) -> float:
-    """Convert to local siderial time.
+def to_local_siderial_time(time: float, time_in_hours: float, delyear: int, lon: float) -> float:
+    """
+    Convert to local siderial time.
 
     Parameters
     ----------
@@ -191,7 +190,8 @@ def to_local_siderial_time(
 
 
 def sun_hour_angle(local_siderial_time: float, right_ascension: float) -> float:
-    """Get hour angle.
+    """
+    Get hour angle.
 
     Parameters
     ----------
@@ -210,7 +210,8 @@ def sun_hour_angle(local_siderial_time: float, right_ascension: float) -> float:
 
 
 def sin_of_elevation(phi: float, declination: float, hour_angle: float) -> float:
-    """Get sinus of geometric elevation.
+    """
+    Get sinus of geometric elevation.
 
     Parameters
     ----------
@@ -223,16 +224,15 @@ def sin_of_elevation(phi: float, declination: float, hour_angle: float) -> float
     float
         Sinus of geometric elevation.
     """
-    sin_elevation = math.sin(phi) * math.sin(declination) + math.cos(phi) * math.cos(
-        declination
-    ) * math.cos(hour_angle)
+    sin_elevation = math.sin(phi) * math.sin(declination) + math.cos(phi) * math.cos(declination) * math.cos(hour_angle)
     sin_elevation = min(sin_elevation, 1.0)
     sin_elevation = max(sin_elevation, -1.0)
     return sin_elevation
 
 
 def sun_azimuth(phi: float, declination: float) -> float:
-    """Get azimuth.
+    """
+    Get azimuth.
 
     Parameters
     ----------
@@ -250,7 +250,8 @@ def sun_azimuth(phi: float, declination: float) -> float:
 
 
 def convert_degrees(deg: float) -> float:
-    """Convert degrees.
+    """
+    Convert degrees.
 
     Parameters
     ----------
@@ -266,10 +267,9 @@ def convert_degrees(deg: float) -> float:
     return deg
 
 
-def calculate_azimuth(
-    declination: float, hour_angle: float, elevation: float, phi: float
-) -> float:
-    """Calculate azimuth.
+def calculate_azimuth(declination: float, hour_angle: float, elevation: float, phi: float) -> float:
+    """
+    Calculate azimuth.
 
     Parameters
     ----------
@@ -293,10 +293,9 @@ def calculate_azimuth(
     return 180.0 + azimuth
 
 
-def azimuth_elevation(
-    lat: float, declination: float, hour_angle: float
-) -> tuple[float, float]:
-    """Get both azimuth and geometric elevation of sun.
+def azimuth_elevation(lat: float, declination: float, hour_angle: float) -> tuple[float, float]:
+    """
+    Get both azimuth and geometric elevation of sun.
 
     Parameters
     ----------
@@ -405,9 +404,7 @@ def sunangle(
     declination = declination / degrad  # Convert declination to degrees
 
     if not (-180 <= elevation <= 180):
-        raise ValueError(
-            f"Invalid elevation: {elevation}. Must be between -180 and 180."
-        )
+        raise ValueError(f"Invalid elevation: {elevation}. Must be between -180 and 180.")
 
     rta = right_ascension / degrad
     sid = local_siderial_time / degrad

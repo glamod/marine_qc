@@ -1,7 +1,6 @@
 """Auxiliary functions for QC."""
 
 from __future__ import annotations
-
 import inspect
 from collections.abc import Callable, Sequence
 from datetime import datetime
@@ -12,6 +11,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from xclim.core.units import convert_units_to, units
+
 
 passed = 0
 failed = 1
@@ -24,27 +24,19 @@ PandasNaTType: TypeAlias = type(pd.NaT)
 # --- Scalars ---
 ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
-ScalarDatetimeType: TypeAlias = (
-    datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
-)
+ScalarDatetimeType: TypeAlias = datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
 
 # --- Sequences ---
 SequenceIntType: TypeAlias = (
-    Sequence[ScalarIntType]
-    | npt.NDArray[np.integer]
-    | pd.Series  # optionally: pd.Series[np.integer] or pd.Series[pd.Int64Dtype]
+    Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series  # optionally: pd.Series[np.integer] or pd.Series[pd.Int64Dtype]
 )
 
 SequenceFloatType: TypeAlias = (
-    Sequence[ScalarFloatType]
-    | npt.NDArray[np.floating]
-    | pd.Series  # optionally: pd.Series[np.floating] or pd.Series[pd.Float64Dtype]
+    Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series  # optionally: pd.Series[np.floating] or pd.Series[pd.Float64Dtype]
 )
 
 SequenceDatetimeType: TypeAlias = (
-    Sequence[ScalarDatetimeType]
-    | npt.NDArray[np.datetime64]
-    | pd.Series  # optionally: pd.Series[pd.DatetimeTZDtype] or similar
+    Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series  # optionally: pd.Series[pd.DatetimeTZDtype] or similar
 )
 
 # --- Value Types (Scalar or Sequence) ---
@@ -81,7 +73,8 @@ def is_scalar_like(x: Any) -> bool:
 
 
 def isvalid(inval: ValueFloatType) -> bool | np.ndarray:
-    """Check if a value(s) are numerically valid (not None or NaN).
+    """
+    Check if a value(s) are numerically valid (not None or NaN).
 
     Parameters
     ----------
@@ -136,10 +129,9 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype=int) 
     return result_array  # np.ndarray or fallback
 
 
-def convert_to(
-    value: float | None | Sequence[float | None], source_units: str, target_units: str
-):
-    """Convert a float or sequence from source units to target units.
+def convert_to(value: float | None | Sequence[float | None], source_units: str, target_units: str):
+    """
+    Convert a float or sequence from source units to target units.
 
     Parameters
     ----------
@@ -251,9 +243,7 @@ def generic_decorator(
             current_func = wrapper
             visited = set()
 
-            while (
-                hasattr(current_func, "__wrapped__") and id(current_func) not in visited
-            ):
+            while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
                 visited.add(id(current_func))
                 for handler in getattr(current_func, "_decorator_handlers", []):
                     if not callable(handler):
@@ -268,11 +258,7 @@ def generic_decorator(
                 current_func = current_func.__wrapped__
 
             sig = inspect.signature(func)
-            meta_kwargs = {
-                k: kwargs.pop(k) if k not in sig.parameters else kwargs[k]
-                for k in reserved_keys
-                if k in kwargs
-            }
+            meta_kwargs = {k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] for k in reserved_keys if k in kwargs}
 
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
@@ -291,7 +277,7 @@ def generic_decorator(
 
             return result
 
-        setattr(wrapper, "_decorator_handlers", handlers)
+        wrapper._decorator_handlers = handlers
 
         return wrapper
 
@@ -336,16 +322,13 @@ def post_format_return_type(params: list[str], dtype=int, multiple=False) -> Cal
     """
 
     def post_handler(result, arguments: dict, **original_call):
-
         input_values = []
         for param in params:
             if param in original_call:
                 input_values.append(original_call[param])
                 continue
         if multiple:
-            return tuple(
-                format_return_type(r, *input_values, dtype=dtype) for r in result
-            )
+            return tuple(format_return_type(r, *input_values, dtype=dtype) for r in result)
         else:
             return format_return_type(result, *input_values, dtype=dtype)
 
@@ -390,7 +373,6 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable:
     >>> @inspect_arrays(["a", "b"])
     ... def add_arrays(a, b):
     ...     return a + b
-    ...
 
     >>> add_arrays([1, 2, 3], [4, 5, 6])
     array([5, 7, 9])
@@ -473,7 +455,6 @@ def convert_units(**units_by_name) -> Callable:
     >>> @convert_units(temperature="K")
     ... def func_single(temperature):
     ...     print(f"Temperature: {temperature:.2f} K")
-    ...
 
     >>> func_single(25.0, units={"temperature": "degC"})
     Temperature: 298.15 K
@@ -481,7 +462,6 @@ def convert_units(**units_by_name) -> Callable:
     >>> @convert_units(speed="m/s", altitude="m")
     ... def func_multiple(speed, altitude):
     ...     print(f"Speed: {speed:.1f} m/s, Altitude: {altitude:.0f} m")
-    ...
 
     >>> func_multiple(72.0, 0.5, units={"speed": "km/h", "altitude": "km"})
     Speed: 20.0 m/s, Altitude: 500 m
@@ -489,7 +469,6 @@ def convert_units(**units_by_name) -> Callable:
     >>> @convert_units(distance="unknown")
     ... def func_base(distance):
     ...     print(f"Distance in SI units: {distance} m")
-    ...
 
     >>> func_base(1.2, units={"distance": "km"})
     Distance in SI units: 1200.0 m
@@ -505,9 +484,7 @@ def convert_units(**units_by_name) -> Callable:
 
         for param, target_units in units_by_name.items():
             if param not in arguments:
-                raise ValueError(
-                    f"Parameter '{param}' not found in function arguments."
-                )
+                raise ValueError(f"Parameter '{param}' not found in function arguments.")
             if param not in units_dict:
                 continue
 

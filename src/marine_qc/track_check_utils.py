@@ -8,32 +8,34 @@ assumed.
 """
 
 from __future__ import annotations
-
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
-from . import spherical_geometry as sph, spherical_geometry as sg, time_control
+from . import spherical_geometry as sg
+from . import spherical_geometry as sph
+from . import time_control
 from .auxiliary import (
-    convert_to,
-    isvalid,
-    inspect_arrays,
-    convert_units,
-    post_format_return_type,
-    SequenceFloatType,
     SequenceDatetimeType,
+    SequenceFloatType,
+    convert_to,
+    convert_units,
+    inspect_arrays,
+    isvalid,
+    post_format_return_type,
 )
 from .spherical_geometry import (
-    sphere_distance,
     course_between_points,
     intermediate_point,
+    sphere_distance,
 )
 from .time_control import time_difference
 
 
 def modal_speed(speeds: list) -> float:
-    """Calculate the modal speed from the input array in 3 knot bins. Returns the
+    """
+    Calculate the modal speed from the input array in 3 knot bins. Returns the
     bin-centre for the modal group.
 
     The data are binned into 3-knot bins with the first from 0-3 knots having a
@@ -88,7 +90,8 @@ def modal_speed(speeds: list) -> float:
 
 
 def set_speed_limits(amode: float) -> (float, float, float):
-    """Takes a modal speed and calculates speed limits for the track checker
+    """
+    Takes a modal speed and calculates speed limits for the track checker
 
     Parameters
     ----------
@@ -121,7 +124,8 @@ def increment_position(
     ads: np.ndarray,
     timediff: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
+    """
+    Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
     increments of latitude and longitude which correspond to half the time difference.
 
     Parameters
@@ -164,7 +168,8 @@ def direction_continuity(
     dsi_previous: np.ndarray | None = None,
     max_direction_change: float = 60.0,
 ) -> np.ndarray:
-    """Check that the reported direction at the previous time step and the actual
+    """
+    Check that the reported direction at the previous time step and the actual
     direction taken are within max_direction_change degrees of one another.
 
     Parameters
@@ -224,7 +229,8 @@ def speed_continuity(
     vsi_previous: np.ndarray | None = None,
     max_speed_change: float | None = 10.0,
 ) -> np.ndarray:
-    """Check if reported speed at this and previous time step is within max_speed_change
+    """
+    Check if reported speed at this and previous time step is within max_speed_change
     knots of calculated speed between those two time steps
 
     Parameters
@@ -272,9 +278,7 @@ def speed_continuity(
 
 
 @post_format_return_type(["vsi"], dtype=float)
-@inspect_arrays(
-    ["vsi", "time_differences", "fwd_diff_from_estimated", "rev_diff_from_estimated"]
-)
+@inspect_arrays(["vsi", "time_differences", "fwd_diff_from_estimated", "rev_diff_from_estimated"])
 def check_distance_from_estimate(
     vsi: np.ndarray,
     time_differences: np.ndarray,
@@ -282,7 +286,8 @@ def check_distance_from_estimate(
     rev_diff_from_estimated: np.ndarray,
     vsi_previous: np.ndarray | None = None,
 ):
-    """Check that distances from estimated positions (calculated forward and backwards in time) are less than
+    """
+    Check that distances from estimated positions (calculated forward and backwards in time) are less than
     time difference multiplied by the average reported speeds
 
     Parameters
@@ -347,7 +352,8 @@ def calculate_course_parameters(
     date_later: datetime,
     date_earlier: datetime,
 ) -> tuple[float, float, float, float]:
-    """Calculate course parameters.
+    """
+    Calculate course parameters.
 
     Parameters
     ----------
@@ -423,13 +429,9 @@ def calculate_speed_course_distance_time_difference(
         A tuple containing four one-dimensional arrays representing: speed, distance, course, and time difference.
     """
     if alternating:
-        distance = sphere_distance(
-            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
-        )
+        distance = sphere_distance(np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1))
         timediff = time_difference(np.roll(date, 1), np.roll(date, -1))
-        course = course_between_points(
-            np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1)
-        )
+        course = course_between_points(np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1))
         # Alternating estimates are unavailable for the first and last elements
         distance[0] = np.nan
         distance[-1] = np.nan
@@ -463,7 +465,8 @@ def forward_discrepancy(
     vsi: SequenceFloatType,
     dsi: SequenceFloatType,
 ) -> SequenceFloatType:
-    """Calculate what the distance is between the projected position (based on the reported
+    """
+    Calculate what the distance is between the projected position (based on the reported
     speed and heading at the current and previous time steps) and the actual position. The
     observations are taken in time order.
 
@@ -505,9 +508,7 @@ def forward_discrepancy(
         If either input is not 1-dimensional or if their lengths do not match.
     """
     timediff = time_difference(np.roll(date, 1), date)
-    lat1, lon1 = increment_position(
-        np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff
-    )
+    lat1, lon1 = increment_position(np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff)
 
     lat2, lon2 = increment_position(lat, lon, vsi, dsi, timediff)
 
@@ -515,9 +516,7 @@ def forward_discrepancy(
     updated_longitude = np.roll(lon, 1) + lon1 + lon2
 
     # calculate distance between calculated position and the second reported position
-    distance_from_est_location = sphere_distance(
-        lat, lon, updated_latitude, updated_longitude
-    )
+    distance_from_est_location = sphere_distance(lat, lon, updated_latitude, updated_longitude)
 
     distance_from_est_location[0] = np.nan
 
@@ -534,7 +533,8 @@ def backward_discrepancy(
     vsi: SequenceFloatType,
     dsi: SequenceFloatType,
 ) -> SequenceFloatType:
-    """Calculate what the distance is between the projected position (based on the reported speed and
+    """
+    Calculate what the distance is between the projected position (based on the reported speed and
     heading at the current and previous time steps) and the actual position. The calculation proceeds from the
     final, later observation to the first (in contrast to distr1 which runs in time order)
 
@@ -589,9 +589,7 @@ def backward_discrepancy(
     updated_longitude = lon + lon1 + lon2
 
     # calculate distance between calculated position and the second reported position
-    distance_from_est_location = sphere_distance(
-        np.roll(lat, 1), np.roll(lon, 1), updated_latitude, updated_longitude
-    )
+    distance_from_est_location = sphere_distance(np.roll(lat, 1), np.roll(lon, 1), updated_latitude, updated_longitude)
 
     distance_from_est_location[-1] = np.nan
 
@@ -606,7 +604,8 @@ def calculate_midpoint(
     lon: np.ndarray,
     timediff: np.ndarray,
 ) -> np.ndarray:
-    """Interpolate between alternate reports and compare the interpolated location to the actual location. e.g.
+    """
+    Interpolate between alternate reports and compare the interpolated location to the actual location. e.g.
     take difference between reports 2 and 4 and interpolate to get an estimate for the position at the time
     of report 3. Then compare the estimated and actual positions at the time of report 3.
 
@@ -660,8 +659,6 @@ def calculate_midpoint(
     est_midpoint_lon[0] = np.nan
     est_midpoint_lon[-1] = np.nan
 
-    midpoint_discrepancies = sphere_distance(
-        lat, lon, est_midpoint_lat, est_midpoint_lon
-    )
+    midpoint_discrepancies = sphere_distance(lat, lon, est_midpoint_lat, est_midpoint_lon)
 
     return midpoint_discrepancies

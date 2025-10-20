@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-
 from scipy.ndimage import label
 
 from .auxiliary import (
@@ -24,19 +23,19 @@ from .auxiliary import (
     post_format_return_type,
 )
 from .spherical_geometry import sphere_distance
+from .time_control import time_difference
 from .track_check_utils import (
-    calculate_course_parameters,
-    calculate_speed_course_distance_time_difference,
-    forward_discrepancy,
     backward_discrepancy,
+    calculate_course_parameters,
     calculate_midpoint,
-    modal_speed,
-    set_speed_limits,
+    calculate_speed_course_distance_time_difference,
     check_distance_from_estimate,
     direction_continuity,
+    forward_discrepancy,
+    modal_speed,
+    set_speed_limits,
     speed_continuity,
 )
-from .time_control import time_difference
 
 
 @post_format_return_type(["value"])
@@ -52,7 +51,8 @@ def do_spike_check(
     delta_t: float,
     n_neighbours: int,
 ) -> SequenceIntType:
-    """Perform IQUAM-like spike check.
+    """
+    Perform IQUAM-like spike check.
 
     Parameters
     ----------
@@ -116,7 +116,6 @@ def do_spike_check(
     spike_qc = np.asarray([passed] * number_of_obs)  # type: np.ndarray
 
     for t1 in range(number_of_obs):
-
         violations_for_this_report = []
         count_violations_this_report = 0.0
 
@@ -124,7 +123,6 @@ def do_spike_check(
         hi = min(number_of_obs, t1 + n_neighbours + 1)
 
         for t2 in range(lo, hi):
-
             if not isvalid(value[t1]) or not isvalid(value[t2]):
                 continue
 
@@ -176,7 +174,8 @@ def do_track_check(
     max_absolute_speed: float,
     max_midpoint_discrepancy: float,
 ) -> SequenceIntType:
-    """Perform one pass of the track check.  This is an implementation of the MDS track check code
+    """
+    Perform one pass of the track check.  This is an implementation of the MDS track check code
     which was originally written in the 1990s. I don't know why this piece of historic trivia so exercises
     my mind, but it does: the 1990s! I wish my code would last so long.
 
@@ -248,20 +247,16 @@ def do_track_check(
         return np.asarray([passed] * number_of_obs)
 
     # work out speeds and distances between alternating points
-    speed_alt, _distance_alt, _course_alt, _timediff_alt = (
-        calculate_speed_course_distance_time_difference(
-            lat=lat,
-            lon=lon,
-            date=date,
-            alternating=True,
-        )
+    speed_alt, _distance_alt, _course_alt, _timediff_alt = calculate_speed_course_distance_time_difference(
+        lat=lat,
+        lon=lon,
+        date=date,
+        alternating=True,
     )
-    speed, _distance, course, timediff = (
-        calculate_speed_course_distance_time_difference(
-            lat=lat,
-            lon=lon,
-            date=date,
-        )
+    speed, _distance, course, timediff = calculate_speed_course_distance_time_difference(
+        lat=lat,
+        lon=lon,
+        date=date,
     )
 
     # what are the mean and mode speeds?
@@ -317,23 +312,15 @@ def do_track_check(
 
     # Quality-control by examining the distance
     # between the calculated and reported second position.
-    thisqc_b += check_distance_from_estimate(
-        vsi, timediff, forward_diff_from_estimated, reverse_diff_from_estimated
-    )
+    thisqc_b += check_distance_from_estimate(vsi, timediff, forward_diff_from_estimated, reverse_diff_from_estimated)
     # Check for continuity of direction
-    thisqc_b += direction_continuity(
-        dsi, course, max_direction_change=max_direction_change
-    )
+    thisqc_b += direction_continuity(dsi, course, max_direction_change=max_direction_change)
     # Check for continuity of speed.
     thisqc_b += speed_continuity(vsi, speed, max_speed_change=max_speed_change)
 
     thisqc_b[speed > max_absolute_speed] = thisqc_b[speed > max_absolute_speed] + 10.0
 
-    fails = (
-        (midpoint_diff_from_estimated > max_midpoint_discrepancy)
-        & (thisqc_a > 0)
-        & (thisqc_b > 0)
-    )
+    fails = (midpoint_diff_from_estimated > max_midpoint_discrepancy) & (thisqc_a > 0) & (thisqc_b > 0)
 
     trk = np.where(fails, failed, passed)
 
@@ -345,7 +332,8 @@ def do_track_check(
 def do_few_check(
     value: SequenceFloatType,
 ) -> SequenceIntType:
-    """Checks if number of observations is less than 3.
+    """
+    Checks if number of observations is less than 3.
 
     Parameters
     ----------
@@ -390,7 +378,8 @@ def find_saturated_runs(
     min_time_threshold: float,
     shortest_run: int,
 ) -> SequenceIntType:
-    """Perform checks on persistence of 100% rh while going through the voyage.
+    """
+    Perform checks on persistence of 100% rh while going through the voyage.
     While going through the voyage repeated strings of 100 %rh (AT == DPT) are noted.
     If a string extends beyond 20 reports and two days/48 hrs in time then all values are set to
     fail the repsat qc flag.
@@ -470,10 +459,9 @@ def find_saturated_runs(
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def find_multiple_rounded_values(
-    value: SequenceFloatType, min_count: int, threshold: float
-) -> SequenceIntType:
-    """Find instances when more than "threshold" of the observations are
+def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
+    """
+    Find instances when more than "threshold" of the observations are
     whole numbers and set the 'round' flag. Used in the humidity QC
     where there are times when the values are rounded and this may
     have caused a bias.
@@ -505,9 +493,7 @@ def find_multiple_rounded_values(
     * threshold = 0.5
     """
     if not (0.0 <= threshold <= 1.0):
-        raise ValueError(
-            f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0."
-        )
+        raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
     number_of_obs = len(value)
 
@@ -532,10 +518,9 @@ def find_multiple_rounded_values(
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def find_repeated_values(
-    value: SequenceFloatType, min_count: int, threshold: float
-) -> SequenceIntType:
-    """Find cases where more than a given proportion of SSTs have the same value
+def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
+    """
+    Find cases where more than a given proportion of SSTs have the same value
 
     This function goes through a voyage and finds any cases where more than a threshold fraction of
     the observations have the same values for a specified variable.
@@ -568,9 +553,7 @@ def find_repeated_values(
     * threshold = 0.7
     """
     if not (0.0 <= threshold <= 1.0):
-        raise ValueError(
-            f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0."
-        )
+        raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
     number_of_obs = len(value)
 
@@ -585,9 +568,7 @@ def find_repeated_values(
     if allcount <= min_count:
         return rep
 
-    _, unique_inverse, counts = np.unique(
-        value[valid_indices], return_inverse=True, return_counts=True
-    )
+    _, unique_inverse, counts = np.unique(value[valid_indices], return_inverse=True, return_counts=True)
     cutoff = threshold * allcount
     exceedances = counts > cutoff
     exceedances = np.where(exceedances, failed, passed)
@@ -609,7 +590,8 @@ def do_iquam_track_check(
     delta_t: float,
     n_neighbours: int,
 ) -> SequenceIntType:
-    """Perform the IQUAM track check as detailed in Xu and Ignatov 2013
+    """
+    Perform the IQUAM track check as detailed in Xu and Ignatov 2013
 
     The track check calculates speeds between pairs of observations and
     counts how many exceed a threshold speed. The ob with the most
@@ -683,7 +665,6 @@ def do_iquam_track_check(
         hi = min(number_of_obs, t1 + n_neighbours + 1)
 
         for t2 in range(lo, hi):
-
             _, distance, _, timediff = calculate_course_parameters(
                 lat_later=lat[t2],
                 lat_earlier=lat[t1],
@@ -693,9 +674,7 @@ def do_iquam_track_check(
                 date_earlier=date[t1],
             )
 
-            iquam_condition = max([abs(distance) - delta_d, 0.0]) / (
-                abs(timediff) + delta_t
-            )
+            iquam_condition = max([abs(distance) - delta_d, 0.0]) / (abs(timediff) + delta_t)
 
             if iquam_condition > speed_limit:
                 violations_for_this_report.append(t2)

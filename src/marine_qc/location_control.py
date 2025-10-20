@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from .auxiliary import isvalid, ValueFloatType, ValueIntType
+from .auxiliary import ValueFloatType, ValueIntType, isvalid
 from .statistics import missing_mean
 
 
 def yindex_to_lat(yindex: int, res: float) -> float:
-    """Convert yindex to latitude.
+    """
+    Convert yindex to latitude.
 
     Parameters
     ----------
@@ -35,7 +36,8 @@ def yindex_to_lat(yindex: int, res: float) -> float:
 
 
 def mds_lat_to_yindex(lat: float, res: float) -> int:
-    """For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
+    """
+    For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
@@ -74,7 +76,8 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
 
 
 def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
-    """For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
+    """
+    For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
@@ -114,7 +117,8 @@ def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
 
 
 def lat_to_yindex(lat: float, res: float) -> int:
-    """For a given latitude return the y index in a 1x1x5-day global grid.
+    """
+    For a given latitude return the y index in a 1x1x5-day global grid.
 
     Parameters
     ----------
@@ -145,7 +149,8 @@ def lat_to_yindex(lat: float, res: float) -> int:
 
 
 def xindex_to_lon(xindex: int, res: float) -> float:
-    """Convert xindex to longitude.
+    """
+    Convert xindex to longitude.
 
     Parameters
     ----------
@@ -171,7 +176,8 @@ def xindex_to_lon(xindex: int, res: float) -> float:
 
 
 def mds_lon_to_xindex(lon: float, res: float) -> int:
-    """For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
+    """
+    For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
@@ -207,7 +213,8 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
 
 
 def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
-    """For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
+    """
+    For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
@@ -238,18 +245,15 @@ def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
 
     index = np.zeros_like(long_local.astype(int))
 
-    index[lon > 0.0] = ((long_local[lon > 0.0] / res).astype(int) + 180 / res).astype(
-        int
-    )
-    index[lon <= 0.0] = (
-        (long_local[lon <= 0.0] / res).astype(int) + 180 / res - 1
-    ).astype(int)
+    index[lon > 0.0] = ((long_local[lon > 0.0] / res).astype(int) + 180 / res).astype(int)
+    index[lon <= 0.0] = ((long_local[lon <= 0.0] / res).astype(int) + 180 / res - 1).astype(int)
 
     return index
 
 
 def lon_to_xindex(lon: float, res: float) -> int:
-    """For a given longitude return the x index in a 1x1x5-day global grid.
+    """
+    For a given longitude return the x index in a 1x1x5-day global grid.
 
     Parameters
     ----------
@@ -286,7 +290,8 @@ def lon_to_xindex(lon: float, res: float) -> int:
 
 
 def filler(value_to_fill, neighbour1, neighbour2, opposite):
-    """If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
+    """
+    If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
     it is replaced with the value from the opposite member.
 
     Parameters
@@ -314,9 +319,7 @@ def filler(value_to_fill, neighbour1, neighbour2, opposite):
     return value_to_fill
 
 
-def fill_missing_vals(
-    q11: float, q12: float, q21: float, q22: float
-) -> tuple[float, float, float, float]:
+def fill_missing_vals(q11: float, q12: float, q21: float, q22: float) -> tuple[float, float, float, float]:
     """
     For a group of four neighbouring grid boxes which form a square, with values q11, q12, q21, q22,
     fill gaps using means of neighbours.
@@ -350,9 +353,7 @@ def fill_missing_vals(
     return outq11, outq12, outq21, outq22
 
 
-def get_four_surrounding_points(
-    lat: float, lon: float, res: int, max90: bool = True
-) -> tuple[float, float, float, float]:
+def get_four_surrounding_points(lat: float, lon: float, res: int, max90: bool = True) -> tuple[float, float, float, float]:
     """
     Get the four surrounding points of a specified latitude and longitude point.
 

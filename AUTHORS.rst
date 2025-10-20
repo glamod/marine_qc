@@ -1,4 +1,3 @@
-
 =======
 Credits
 =======
@@ -23,6 +22,8 @@ Contributors
 * Richard Cornes <richard.cornes@noc.ac.uk> `@rcornes <https://github.com/rcornes>`_
 
 * Elizabeth Kent <eck@noc.ac.uk> `@lizkent <https://github.com/lizkent>`_
+
+* Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre <https://github.com/Zeitsperre>`_
 
 Previous Contributors
 ---------------------

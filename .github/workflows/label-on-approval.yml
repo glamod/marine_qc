@@ -1,4 +1,3 @@
-# Copied from https://github.com/Ouranosinc/xclim
 name: Label Pull Request on Pull Request review approval
 
 on:

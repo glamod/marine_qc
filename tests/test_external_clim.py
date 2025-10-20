@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import pytest
-
 import numpy as np
 import pandas as pd
-
+import pytest
 from cdm_reader_mapper.common.getting_files import load_file
 
 from marine_qc.external_clim import (
@@ -87,9 +85,7 @@ def external_sst(external_clim):
         valid_ntime=31,
     )
     ds = clim_sst.data
-    full_year = pd.date_range(
-        f"{ds.time.dt.year[0].item()}-01-01", periods=365, freq="D"
-    )
+    full_year = pd.date_range(f"{ds.time.dt.year[0].item()}-01-01", periods=365, freq="D")
     ds_full = ds.isel(time=(np.arange(365) % len(ds.time)))
     clim_sst.data = ds_full.assign_coords(time=full_year)
     clim_sst.ntime = len(full_year)
@@ -308,7 +304,6 @@ def test_inspect_climatology_warns(external_at):
     ],
 )
 def test_get_y_index(lats, lat0, delta, expected):
-
     n_lat_axis = int(180 / abs(delta))
     lat_axis = np.arange(n_lat_axis) * delta + lat0
     lats = np.array(lats)
@@ -341,7 +336,6 @@ def test_get_y_index(lats, lat0, delta, expected):
     ],
 )
 def test_get_x_index(lats, lat0, delta, expected):
-
     n_lat_axis = int(360 / abs(delta))
     lat_axis = np.arange(n_lat_axis) * delta + lat0
     lats = np.array(lats)
@@ -353,20 +347,14 @@ def test_get_x_index(lats, lat0, delta, expected):
 
 
 def test_get_t_index():
-
     month = np.array([1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12])
     day = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 31])
 
     result = Climatology.get_t_index(month, day, 365)
-    assert np.all(
-        result
-        == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364])
-    )
+    assert np.all(result == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364]))
 
     result = Climatology.get_t_index(month, day, 73)
-    assert np.all(
-        result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72])
-    )
+    assert np.all(result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72]))
 
     result = Climatology.get_t_index(month, day, 1)
     assert np.all(result == np.zeros(len(result)))

@@ -5,6 +5,11 @@ Installation
 
 The **marine_qc**  toolbox is a pure Python package, but it has a few dependencies that rely in a specific python and module version.
 
+If you don't have `pip`_ installed, this `Python installation guide`_ can guide you through the process.
+
+.. _pip: https://pip.pypa.io
+.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
+
 Stable release
 ~~~~~~~~~~~~~~
 
@@ -12,7 +17,7 @@ To install the **marine_qc** toolbox in your current environment, run this comma
 
 .. code-block:: console
 
-  pip install marine_qc
+  python -m pip install marine_qc
 
 This is the preferred method to install the **marine_qc** toolbox, as it will always install the most recent stable release.
 
@@ -20,7 +25,7 @@ Alternatively, it can be installed using the `uv`_ package manager:
 
 .. code-block:: console
 
-    uv add marine_qc
+    python -m uv add marine_qc
 
 .. include:: hyperlinks.rst
 
@@ -31,29 +36,31 @@ From source
 
 The source for the **marine_qc** can be downloaded from the `GitHub repository`_ via git_.
 
-You can either clone the public repository:
+#. Download the source code from the `Github repo`_ using one of the following methods:
+
+    * Clone the public repository:
+
+        .. code-block:: console
+
+            git clone git@github.com:ludwiglierhammer/Marine_Quality_Control.git
+
+    * Download the `tarball <https://github.com/ludwiglierhammer/Marine-Quality-Control/tarball/main>`_:
+
+        .. code-block:: console
+
+            curl -OJL https://github.com/ludwiglierhammer/Marine-Quality-Control/tarball/main
+
+#. Once you have a copy of the source, you can install it with pip_:
 
 .. code-block:: console
 
-    git clone https://github.com/glamod/marine_qc
-
-or download th tarball_:
-
-.. code-block:: console
-
-   curl -OJL https://github.com/glamod/marine_qc/tarball/master
-
-Once you have a copy of the source, you can install it with pip_:
-
-.. code-block:: console
-
-   pip install -e .
+   python -m pip install -e .
 
 Or using the `uv`_ package manager to install marine_qc:
 
 .. code-block:: console
 
-    uv add .
+    python -m uv add .
 
 Development mode
 ~~~~~~~~~~~~~~~~
@@ -62,9 +69,9 @@ If you're interested in participating in the development of the **marine_qc** to
 
 .. code-block:: console
 
-    pip install -e .[dev]      # Install optional development dependencies in addition
-    pip install -e .[docs]     # Install optional dependencies for the documentation in addition
-    pip install -e .[all]      # Install all the above for complete dependency version
+    python -m pip install -e .[dev]      # Install optional development dependencies in addition
+    python -m pip install -e .[docs]     # Install optional dependencies for the documentation in addition
+    python -m pip install -e .[all]      # Install all the above for complete dependency version
 
 Alternatively, you can use the uv package manager:
 
@@ -83,7 +90,7 @@ To create a conda environment including **marine_qc**'s dependencies and and dev
 
     $ conda env create -n my_qc_env python=3.12 --file=environment.yml
     $ conda activate my_qc_env
-    (my_qc_env) $ python -m pip install -e --no-deps .
+    (my_qc_env) $ make dev
 
 .. include:: ../README.rst
     :start-after: hyperlinks

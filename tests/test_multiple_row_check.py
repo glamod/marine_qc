@@ -46,9 +46,7 @@ def test_is_in_data():
     assert _is_in_data("test_name", data_series)
     assert not _is_in_data("wrong_test_name", data_series)
 
-    data_series = pd.DataFrame(
-        {"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]}
-    )
+    data_series = pd.DataFrame({"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]})
     assert _is_in_data("test_name", data_series)
     assert _is_in_data("different_name", data_series)
     assert not _is_in_data("wrong_test_name", data_series)
@@ -61,17 +59,13 @@ def test_is_in_data_raises():
 
 def test_get_requests_from_params():
     test_params = {"in_param": "test_name"}
-    data_series = pd.DataFrame(
-        {"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]}
-    )
+    data_series = pd.DataFrame({"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]})
     result = _get_requests_from_params(test_params, simple_test_function, data_series)
     assert "in_param" in result
     assert np.all(result["in_param"] == data_series["test_name"])
 
     test_params = {"in_param": "test_name", "second_param": "different_name"}
-    data_series = pd.DataFrame(
-        {"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]}
-    )
+    data_series = pd.DataFrame({"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]})
     result = _get_requests_from_params(test_params, simple_test_function, data_series)
     assert "in_param" in result
     assert "second_param" in result
@@ -81,26 +75,17 @@ def test_get_requests_from_params():
 
 def test_get_requests_from_params_raises():
     test_params = {"wrong_param": "test_name"}
-    data_series = pd.DataFrame(
-        {"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]}
-    )
+    data_series = pd.DataFrame({"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]})
     with pytest.raises(ValueError):
-        _get_requests_from_params(
-            test_params, simple_test_function_no_kwargs, data_series
-        )
+        _get_requests_from_params(test_params, simple_test_function_no_kwargs, data_series)
 
     test_params = {"in_param": "wrong_name"}
-    data_series = pd.DataFrame(
-        {"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]}
-    )
+    data_series = pd.DataFrame({"test_name": [1, 3, 5, 7], "different_name": [2, 4, 6, 8]})
     with pytest.raises(NameError):
-        _get_requests_from_params(
-            test_params, simple_test_function_no_kwargs, data_series
-        )
+        _get_requests_from_params(test_params, simple_test_function_no_kwargs, data_series)
 
 
 def test_get_preprocessed_args():
-
     test_arguments = {"var1": "filename", "var2": "__preprocessed__"}
 
     test_preprocessed = {"var2": 99}

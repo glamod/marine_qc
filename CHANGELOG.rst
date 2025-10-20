@@ -1,9 +1,8 @@
-
 =========
 Changelog
 =========
 
-0.0.1 (unreleased)
+0.1.0 (unreleased)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John Kennedy (:user:`jjk-code-otter`)
 
@@ -15,6 +14,10 @@ License and Legal
 ^^^^^^^^^^^^^^^^^
 * Update copyright statements in LICENSE (:pull:`23`, :pull:`43`)
 * Update author list for publishing on zendodo and readthedocs (:issue:`20`, :issue:`25`, :pull:`23`, :pull:`43`)
+
+CI changes
+^^^^^^^^^^
+* Use `cruft` and cookicutter template `https://github.com/Ouranosinc/cookiecutter-pypackage` (:issue:`13`, :pull:`30`, :pull:`55`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

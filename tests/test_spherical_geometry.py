@@ -87,9 +87,7 @@ def test_going_nowhere():
 
 def test_heading_north_from_pole_to_pole():
     """Heading north from the southpole for an angular distance of pi takes you to the north pole"""
-    lat, lon = sg.lat_lon_from_course_and_distance(
-        -90.0, 0.0, 0.0, np.pi * earths_radius / 1000.0
-    )
+    lat, lon = sg.lat_lon_from_course_and_distance(-90.0, 0.0, 0.0, np.pi * earths_radius / 1000.0)
     assert lat == 90.0
     assert lon == 0.0
 
@@ -97,24 +95,18 @@ def test_heading_north_from_pole_to_pole():
 def test_heading_north_from_pole_to_pole_on_different_headings():
     """Heading north from the southpole for an angular distance of pi takes you to the north pole"""
     for i in range(0, 100):
-        lat, _lon = sg.lat_lon_from_course_and_distance(
-            -90.0, 0.0, i * 360.0 / 100.0, np.pi * earths_radius / 1000.0
-        )
+        lat, _lon = sg.lat_lon_from_course_and_distance(-90.0, 0.0, i * 360.0 / 100.0, np.pi * earths_radius / 1000.0)
         assert lat == 90.0
 
 
 def test_heading_east_round_equator():
-    lat, lon = sg.lat_lon_from_course_and_distance(
-        0.0, 0.0, 90.0, 2 * np.pi * earths_radius / 1000.0
-    )
+    lat, lon = sg.lat_lon_from_course_and_distance(0.0, 0.0, 90.0, 2 * np.pi * earths_radius / 1000.0)
     assert pytest.approx(lat, 0.00000001) == 0.0
     assert pytest.approx(lon, 0.00000001) == 0.0
 
 
 def test_heading_eastish_round_equator():
-    lat, lon = sg.lat_lon_from_course_and_distance(
-        0.0, 0.0, 45.0, np.pi * earths_radius / 1000.0
-    )
+    lat, lon = sg.lat_lon_from_course_and_distance(0.0, 0.0, 45.0, np.pi * earths_radius / 1000.0)
     assert pytest.approx(lat, 0.00000001) == 0.0
     assert lon in [-180, 180]
 
@@ -137,10 +129,7 @@ def test_heading_cos_lat_near_zero():
 def test_heading_just_west_of_north():
     """Just west of north heading should be 360.0"""
     heading = sg.course_between_points(0.0, 0.0, 1.3, -0.0000001)
-    assert (
-        pytest.approx(heading, abs=0.0001) == 360.0
-        or pytest.approx(heading, abs=0.0001) == 0.0
-    )
+    assert pytest.approx(heading, abs=0.0001) == 360.0 or pytest.approx(heading, abs=0.0001) == 0.0
 
 
 def test_heading_east():
@@ -152,10 +141,7 @@ def test_heading_east():
 def test_heading_west():
     """Heading due west should be course of 90degrees"""
     heading = sg.course_between_points(0.0, 0.0, 0.0, -23.2)
-    assert (
-        pytest.approx(heading, 0.0000001) == 270.0
-        or pytest.approx(heading, 0.0000001) == -90.0
-    )
+    assert pytest.approx(heading, 0.0000001) == 270.0 or pytest.approx(heading, 0.0000001) == -90.0
 
 
 def test_heading_south():

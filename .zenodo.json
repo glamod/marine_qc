@@ -35,12 +35,25 @@
       "orcid": "0000-0002-6209-4247"
     },
     {
+      "name": "Smith, Trevor James",
+      "affiliation": "Ouranos, Montréal, Québec, Canada",
+      "orcid": "0000-0001-5393-8359"
+    },
+    {
       "name": "Andersson, Axel",
       "affiliation": "Deutscher Wetterdienst, Hamburg, Germany",
       "orcid": "0000-0002-6956-0298"
     }
   ],
-  "keywords": ["quality control", "observations", "ship", "buoys", "climatology", "marine climatology", "climate change"],
+  "keywords": [
+    "quality control",
+    "observations",
+    "ship",
+    "buoys",
+    "climatology",
+    "marine climatology",
+    "climate change"
+  ],
   "license": "Apache-2.0",
   "language": "eng",
   "upload_type": "software",
