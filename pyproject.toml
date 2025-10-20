@@ -49,6 +49,7 @@ dependencies = [
 dev = [
   # Dev tools and testing
   "bump-my-version >=1.2.3",
+  "codespell ==2.4.1",
   "coverage >=7.5.0",
   "deptry >=0.23.1",
   "flake8 >=7.3.0",
