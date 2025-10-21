@@ -84,7 +84,7 @@ If you would like to contribute code or documentation (which is greatly apprecia
 How to cite this library
 ========================
 
-If you wish to cite `marine_qc` in a research publication, we kindly ask that you refer to Zenodo: .
+If you wish to cite `marine_qc` in a research publication, we kindly ask that you refer to Zenodo: https://doi.org/10.5281/zenodo.17404319.
 
 License
 =======
