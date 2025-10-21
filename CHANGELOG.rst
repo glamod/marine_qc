@@ -8,11 +8,11 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
 Announcements
 ^^^^^^^^^^^^^
-* First release on zenodo (:pull:`56`)
+* First release on zenodo (:pull:`66`)
 
 0.1.0 (2025-10-21)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`) and John Kennedy (:user:`jjk-code-otter`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`).
 
 Announcements
 ^^^^^^^^^^^^^
