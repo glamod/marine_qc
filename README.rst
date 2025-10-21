@@ -178,6 +178,6 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://pypi.python.org/pypi/marine_qc
         :alt: Supported Python Versions
 
-.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo..svg
-        :target: https://doi.org/10.5281/zenodo.
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17404319.svg
+        :target: https://doi.org/10.5281/zenodo.17404319
         :alt: DOI
