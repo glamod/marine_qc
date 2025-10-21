@@ -170,9 +170,9 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://bestpractices.coreinfrastructure.org/projects/10980
         :alt: OpenSSf Best Practices
 
-.. |status| image:: https://www.repostatus.org/badges/latest/concept.svg
-        :target: https://www.repostatus.org/#concept
-        :alt: Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.
+.. |status| image:: https://www.repostatus.org/badges/latest/active.svg
+        :target: https://www.repostatus.org/#active
+        :alt: Project Status: Active – The project has reached a stable, usable state and is being actively developed.
 
 .. |versions| image:: https://img.shields.io/pypi/pyversions/marine_qc.svg
         :target: https://pypi.python.org/pypi/marine_qc
