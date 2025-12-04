@@ -179,6 +179,72 @@ def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
     return args
 
 
+def _prepare_preprocessed_vars(preproc_dict, data):
+    """Run preprocessing functions and return a {var_name: preprocessed_var} dict."""
+    preprocessed = {}
+
+    for var_name, params in preproc_dict.items():
+        func = _get_function(params["func"])
+        requests = _get_requests_from_params(params.get("names"), func, data)
+
+        inputs = params.get("inputs")
+        if not isinstance(inputs, list):
+            inputs = [inputs]
+
+        preprocessed[var_name] = func(*inputs, **requests)
+
+    return preprocessed
+
+
+def _prepare_qc_functions(qc_dict, preprocessed, data):
+    """Return a {qc_name: {function, requests, kwargs}} dictionary."""
+    qc_inputs = {}
+
+    for qc_name, params in qc_dict.items():
+        func = _get_function(params["func"])
+        requests = _get_requests_from_params(params.get("names"), func, data)
+        kwargs = _get_preprocessed_args(params.get("arguments", {}), preprocessed)
+
+        qc_inputs[qc_name] = {"function": func, "requests": requests, "kwargs": kwargs}
+
+    return qc_inputs
+
+
+def _apply_qc_to_masked_rows(qc_func, args, kwargs, data_index, mask):
+    """
+    Execute QC function, align its output to data_index, and
+    return full_result (Series with correct shape).
+    """
+    partial = qc_func(**args, **kwargs)
+
+    partial = pd.Series(partial, index=data_index)
+
+    full = pd.Series(untested, index=data_index)
+
+    full.loc[mask] = partial.loc[mask]
+
+    return full
+
+
+def _normalize_groupby(data, groupby):
+    """Return iterable of (name, group_df) pairs, trimming invalid rows."""
+    if groupby is None:
+        return [(None, data)]
+
+    if not isinstance(groupby, pd.core.groupby.generic.DataFrameGroupBy):
+        return list(data.groupby(groupby, group_keys=False, sort=False))
+
+    valid = data.index
+    groups = []
+
+    for name, group in groupby:
+        idx = group.index.intersection(valid)
+        if len(idx) > 0:
+            groups.append((name, group.loc[idx]))
+
+    return groups
+
+
 def do_multiple_individual_check(
     data: pd.Series | pd.DataFrame,
     qc_dict: dict | None = None,
@@ -323,69 +389,44 @@ def do_multiple_individual_check(
         )
 
     """
-    if qc_dict is None:
-        qc_dict = {}
-
-    if preproc_dict is None:
-        preproc_dict = {}
+    qc_dict = qc_dict or {}
+    preproc_dict = preproc_dict or {}
 
     if return_method not in ("all", "passed", "failed"):
-        raise ValueError(f"'return_method' has to be one of ['all', 'passed', 'failed']: {return_method}")
-
-    # Firstly, check if all functions are callable and all requested input variables are available!
-    preprocessed = {}
-    for var_name, preproc_params in preproc_dict.items():
-        func_name = preproc_params.get("func")
-        func = _get_function(func_name)
-
-        requests = _get_requests_from_params(preproc_params.get("names"), func, data)
-
-        inputs = preproc_params.get("inputs")
-        if not isinstance(inputs, list):
-            inputs = [inputs]
-
-        preprocessed[var_name] = func(*inputs, **requests)
-
-    qc_inputs = {}
-    for qc_name, qc_params in qc_dict.items():
-        func_name = qc_params.get("func")
-        func = _get_function(func_name)
-        requests = _get_requests_from_params(qc_params.get("names"), func, data)
-
-        qc_inputs[qc_name] = {}
-        qc_inputs[qc_name]["function"] = func
-        qc_inputs[qc_name]["requests"] = requests
-        qc_inputs[qc_name]["kwargs"] = {}
-
-        if "arguments" in qc_params.keys():
-            qc_inputs[qc_name]["kwargs"] = _get_preprocessed_args(qc_params["arguments"], preprocessed)
+        raise ValueError("'return_method' must be 'all','passed', or 'failed'.")
 
     is_series = isinstance(data, pd.Series)
     if is_series:
         data = pd.DataFrame([data.values], columns=data.index)
 
+    preprocessed = _prepare_preprocessed_vars(preproc_dict, data)
+    qc_inputs = _prepare_qc_functions(qc_dict, preprocessed, data)
+
     mask = pd.Series(True, index=data.index)
     results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
 
-    for qc_name, qc_params in qc_inputs.items():
+    for qc_name, qc in qc_inputs.items():
         if not mask.any():
-            continue
+            break
 
-        args = {k: (v[mask] if isinstance(v, pd.Series) else v) for k, v in qc_params["requests"].items()}
-        kwargs = {k: (v[mask] if isinstance(v, pd.Series) else v) for k, v in qc_params["kwargs"].items()}
+        full = _apply_qc_to_masked_rows(
+            qc_func=qc["function"],
+            args={k: (v[mask] if isinstance(v, pd.Series) else v) for k, v in qc["requests"].items()},
+            kwargs={k: (v[mask] if isinstance(v, pd.Series) else v) for k, v in qc["kwargs"].items()},
+            data_index=data.index,
+            mask=mask,
+        )
 
-        partial_result = qc_params["function"](**args, **kwargs)
-        full_result = pd.Series(untested, index=data.index)
-        full_result.loc[mask] = partial_result
-        results[qc_name] = full_result
+        results[qc_name] = full
 
         if return_method == "failed":
-            mask &= full_result != failed
+            mask &= full != failed
         elif return_method == "passed":
-            mask &= full_result != passed
+            mask &= full != passed
 
-    if is_series is True:
+    if is_series:
         return results.iloc[0]
+
     return results
 
 
@@ -491,85 +532,54 @@ def do_multiple_sequential_check(
         )
 
     """
-    if qc_dict is None:
-        qc_dict = {}
-
-    if preproc_dict is None:
-        preproc_dict = {}
+    qc_dict = qc_dict or {}
+    preproc_dict = preproc_dict or {}
 
     if return_method not in ("all", "passed", "failed"):
-        raise ValueError(f"'return_method' has to be one of ['all', 'passed', 'failed']: {return_method}")
-
-    # Firstly, check if all functions are callable and all requested input variables are available!
-    preprocessed = {}
-    for var_name, preproc_params in preproc_dict.items():
-        func_name = preproc_params.get("func")
-        func = _get_function(func_name)
-
-        requests = _get_requests_from_params(preproc_params.get("names"), func, data)
-
-        inputs = preproc_params.get("inputs")
-        if not isinstance(inputs, list):
-            inputs = [inputs]
-
-        preprocessed[var_name] = func(*inputs, **requests)
-
-    qc_inputs = {}
-    for qc_name, qc_params in qc_dict.items():
-        func_name = qc_params.get("func")
-        func = _get_function(func_name)
-        requests = _get_requests_from_params(qc_params.get("names"), func, data)
-
-        qc_inputs[qc_name] = {}
-        qc_inputs[qc_name]["function"] = func
-        qc_inputs[qc_name]["requests"] = requests
-        qc_inputs[qc_name]["kwargs"] = {}
-
-        if "arguments" in qc_params.keys():
-            qc_inputs[qc_name]["kwargs"] = _get_preprocessed_args(qc_params["arguments"], preprocessed)
+        raise ValueError("'return_method' must be 'all','passed','failed'.")
 
     is_series = isinstance(data, pd.Series)
     if is_series:
         data = pd.DataFrame([data.values], columns=data.index)
 
+    preprocessed = _prepare_preprocessed_vars(preproc_dict, data)
+    qc_inputs = _prepare_qc_functions(qc_dict, preprocessed, data)
+
     mask = pd.Series(True, index=data.index)
     results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
 
-    if groupby is None:
-        groupby = [(None, data)]
-    elif not isinstance(groupby, pd.core.groupby.generic.DataFrameGroupBy):
-        groupby = data.groupby(groupby, group_keys=False, sort=False)
-    else:
-        valid_indexes = data.index
-        groupby = [
-            (name, group.loc[group.index.intersection(valid_indexes)]) for name, group in groupby if group.index.intersection(valid_indexes).size > 0
-        ]
+    groups = _normalize_groupby(data, groupby)
 
-    for _, gdf in groupby:
+    for _, gdf in groups:
         group_mask = mask.loc[gdf.index].copy()
 
-        for qc_name, qc_params in qc_inputs.items():
+        for qc_name, qc in qc_inputs.items():
             if not group_mask.any():
-                continue
+                break
 
-            args = {k: v.loc[gdf.index] if isinstance(v, pd.Series) else v for k, v in qc_params["requests"].items()}
-            kwargs = {k: (v.loc[gdf.index] if isinstance(v, pd.Series) else v) for k, v in qc_params["kwargs"].items()}
+            req = {k: (v.loc[gdf.index] if isinstance(v, pd.Series) else v) for k, v in qc["requests"].items()}
+            kwa = {k: (v.loc[gdf.index] if isinstance(v, pd.Series) else v) for k, v in qc["kwargs"].items()}
 
-            partial_result = qc_params["function"](**args, **kwargs)
+            full = _apply_qc_to_masked_rows(
+                qc_func=qc["function"],
+                args=req,
+                kwargs=kwa,
+                data_index=gdf.index,
+                mask=group_mask,
+            )
 
-            full_result = pd.Series(untested, index=gdf.index)
-            full_result.loc[group_mask] = partial_result
-            results.loc[gdf.index, qc_name] = full_result
+            results.loc[gdf.index, qc_name] = full
 
             if return_method == "failed":
-                group_mask &= full_result != failed
-                mask.loc[gdf.index] &= full_result != failed
+                group_mask &= full != failed
+                mask.loc[gdf.index] &= full != failed
             elif return_method == "passed":
-                group_mask &= full_result != passed
-                mask.loc[gdf.index] &= full_result != passed
+                group_mask &= full != passed
+                mask.loc[gdf.index] &= full != passed
 
-    if is_series is True:
+    if is_series:
         return results.iloc[0]
+
     return results
 
 
@@ -598,52 +608,42 @@ def do_multiple_grouped_check(
     pd.DataFrame
         DataFrame with columns for each QC check and rows aligned with `data`.
     """
-    if qc_dict is None:
-        qc_dict = {}
-    if preproc_dict is None:
-        preproc_dict = {}
+    qc_dict = qc_dict or {}
+    preproc_dict = preproc_dict or {}
+
     if return_method not in ("all", "passed", "failed"):
-        raise ValueError(f"'return_method' must be one of ['all','passed','failed']: {return_method}")
+        raise ValueError("'return_method' must be 'all','passed','failed'.")
 
-    # Preprocess inputs
-    preprocessed = {}
-    for var_name, preproc_params in preproc_dict.items():
-        func = _get_function(preproc_params["func"])
-        requests = _get_requests_from_params(preproc_params.get("names"), func, data)
-        inputs = preproc_params.get("inputs")
-        if not isinstance(inputs, list):
-            inputs = [inputs]
-        preprocessed[var_name] = func(*inputs, **requests)
+    is_series = isinstance(data, pd.Series)
+    if is_series:
+        data = pd.DataFrame([data.values], columns=data.index)
 
-    # Prepare QC functions
-    qc_inputs = {}
-    for qc_name, qc_params in qc_dict.items():
-        func = _get_function(qc_params["func"])
-        requests = _get_requests_from_params(qc_params.get("names"), func, data)
-        kwargs = _get_preprocessed_args(qc_params.get("arguments", {}), preprocessed)
-        qc_inputs[qc_name] = {"function": func, "requests": requests, "kwargs": kwargs}
+    preprocessed = _prepare_preprocessed_vars(preproc_dict, data)
+    qc_inputs = _prepare_qc_functions(qc_dict, preprocessed, data)
 
     mask = pd.Series(True, index=data.index)
     results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
 
-    # Apply each QC function to the entire dataset
-    for qc_name, qc_params in qc_inputs.items():
+    for qc_name, qc in qc_inputs.items():
         if not mask.any():
-            continue
+            break
 
-        args = {k: v for k, v in qc_params["requests"].items()}
-        kwargs = {k: v for k, v in qc_params["kwargs"].items()}
+        full = _apply_qc_to_masked_rows(
+            qc_func=qc["function"],
+            args=qc["requests"],
+            kwargs=qc["kwargs"],
+            data_index=data.index,
+            mask=mask,
+        )
 
-        partial_result = qc_params["function"](**args, **kwargs)
-        partial_result = pd.Series(partial_result, index=data.index)
-
-        full_result = pd.Series(untested, index=data.index)
-        full_result.loc[mask] = partial_result.loc[mask]
-        results[qc_name] = full_result
+        results[qc_name] = full
 
         if return_method == "failed":
-            mask &= full_result != failed
+            mask &= full != failed
         elif return_method == "passed":
-            mask &= full_result != passed
+            mask &= full != passed
+
+    if is_series:
+        return results.iloc[0]
 
     return results
