@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from marine_qc import do_multiple_row_check
-from marine_qc.multiple_row_checks import (
+from marine_qc import do_multiple_individual_check, do_multiple_sequential_check
+from marine_qc.multiple_checks import (
     _get_function,
     _get_preprocessed_args,
     _get_requests_from_params,
@@ -96,26 +96,26 @@ def test_get_preprocessed_args():
     assert result["var2"] == 99
 
 
-def test_multiple_row_check_raises_return_method():
+def test_multiple_individual_check_raises_return_method():
     with pytest.raises(ValueError):
-        do_multiple_row_check(
+        do_multiple_individual_check(
             data=pd.Series(),
             qc_dict=None,
             return_method="false",
         )
 
 
-def test_multiple_row_check_raises_func():
+def test_multiple_individual_check_raises_func():
     with pytest.raises(NameError):
-        do_multiple_row_check(
+        do_multiple_individual_check(
             data=pd.Series(),
             qc_dict={"test_QC": {"func": "do_test_qc"}},
         )
 
 
-def test_multiple_row_check_raises_3():
+def test_multiple_individual_check_raises_3():
     with pytest.raises(NameError):
-        do_multiple_row_check(
+        do_multiple_individual_check(
             data=pd.Series(),
             qc_dict={
                 "MISSVAL": {
@@ -126,9 +126,9 @@ def test_multiple_row_check_raises_3():
         )
 
 
-def test_multiple_row_check_raises_4():
+def test_multiple_individual_check_raises_4():
     with pytest.raises(ValueError):
-        do_multiple_row_check(
+        do_multiple_individual_check(
             data=pd.Series(),
             qc_dict={
                 "MISSVAL": {

@@ -16,7 +16,8 @@ from marine_qc import (
     do_mds_buddy_check,
     do_missing_value_check,
     do_missing_value_clim_check,
-    do_multiple_row_check,
+    do_multiple_individual_check,
+    do_multiple_sequential_check,
     do_night_check,
     do_position_check,
     do_spike_check,
@@ -1343,6 +1344,7 @@ def test_do_track_check_array(testdata_track):
         ),
         include_groups=False,
     ).squeeze()
+    exit()
 
     expected = pd.Series([passed] * len(results))
     expected.iloc[2] = 1
@@ -1709,7 +1711,7 @@ def test_find_multiple_rounded_values(testdata_track):
     ],
 )
 @pytest.mark.parametrize("apply_func", [False, True])
-def test_multiple_row_check(testdata, climdata, return_method, expected, apply_func):
+def test_multiple_individual_check(testdata, climdata, return_method, expected, apply_func):
     db_ = testdata["observations-at"].copy()
     climatology = Climatology.open_netcdf_file(
         climdata["AT"]["mean"],
@@ -1785,7 +1787,7 @@ def test_multiple_row_check(testdata, climdata, return_method, expected, apply_f
     }
     if apply_func is True:
         results = db_.apply(
-            lambda row: do_multiple_row_check(
+            lambda row: do_multiple_individual_check(
                 data=row,
                 qc_dict=qc_dict,
                 preproc_dict=preproc_dict,
@@ -1794,13 +1796,181 @@ def test_multiple_row_check(testdata, climdata, return_method, expected, apply_f
             axis=1,
         )
     else:
-        results = do_multiple_row_check(
+        results = do_multiple_individual_check(
             data=db_.data,
             qc_dict=qc_dict,
             preproc_dict=preproc_dict,
             return_method=return_method,
         )
     expected = pd.DataFrame(expected)
+    pd.testing.assert_frame_equal(results, expected)
+
+
+@pytest.mark.parametrize("return_method", ["passed", "failed"])
+@pytest.mark.parametrize("apply_func", [True, False])
+def test_multiple_sequential_check_header(testdata_track, return_method, apply_func):
+    data = testdata_track["header"].copy()
+    data.loc[2, "latitude"] = -23.0
+    data.loc[12, "latitude"] = -23.0
+    data.loc[24, "latitude"] = -23.0
+    data.loc[48, "latitude"] = -23.0
+
+    groupby = data.groupby("primary_station_id", group_keys=False, sort=False)
+
+    qc_dict = {
+        "TRACK": {
+            "func": "do_track_check",
+            "names": {
+                "vsi": "station_speed",
+                "dsi": "station_course",
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "report_timestamp",
+            },
+            "arguments": {
+                "max_direction_change": 60.0,
+                "max_speed_change": 10.0,
+                "max_absolute_speed": 40.0,
+                "max_midpoint_discrepancy": 150.0,
+            },
+        },
+        "IQUAM": {
+            "func": "do_iquam_track_check",
+            "names": {
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "report_timestamp",
+            },
+            "arguments": {
+                "speed_limit": 60.0,
+                "delta_d": 1.11,
+                "delta_t": 0.01,
+                "n_neighbours": 5,
+            },
+        },
+    }
+    if apply_func is True:
+        results = groupby.apply(
+            lambda g: do_multiple_sequential_check(
+                data=g,
+                groupby=None,
+                qc_dict=qc_dict,
+                return_method=return_method,
+            )
+        )
+    else:
+        results = do_multiple_sequential_check(
+            data=data,
+            groupby=groupby,
+            qc_dict=qc_dict,
+            return_method=return_method,
+        )
+
+    if return_method == "failed":
+        base = passed
+        correction = untested
+    elif return_method == "passed":
+        base = untested
+        correction = failed
+
+    expected = pd.DataFrame(
+        {
+            "TRACK": [passed] * len(results),
+            "IQUAM": [base] * len(results),
+        }
+    )
+    expected.loc[2, "TRACK"] = failed
+    expected.loc[12, "TRACK"] = failed
+    expected.loc[24, "TRACK"] = failed
+    expected.loc[48, "TRACK"] = failed
+    expected.loc[2, "IQUAM"] = correction
+    expected.loc[12, "IQUAM"] = correction
+    expected.loc[24, "IQUAM"] = correction
+    expected.loc[48, "IQUAM"] = correction
+
+    pd.testing.assert_frame_equal(results, expected)
+
+
+@pytest.mark.parametrize("return_method", ["passed", "failed"])
+def test_multiple_sequential_check_obs(testdata_track, return_method):
+    header = testdata_track["header"].copy()
+    data = testdata_track["observations-at"].dropna(how="all")
+
+    data.loc[152, "observation_value"] = 1000.0
+    data.loc[162, "observation_value"] = 1000.0
+    data.loc[174, "observation_value"] = 1000.0
+    data.loc[198, "observation_value"] = 1000.0
+
+    repeated = data.loc[120, "observation_value"]
+    for i in range(121, 141):
+        data.loc[i, "observation_value"] = repeated
+
+    groupby = header.groupby("primary_station_id", group_keys=False, sort=False)
+
+    qc_dict = {
+        "SPIKE": {
+            "func": "do_spike_check",
+            "names": {
+                "value": "observation_value",
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "date_time",
+            },
+            "arguments": {
+                "max_gradient_space": 0.5,
+                "max_gradient_time": 1.0,
+                "delta_t": 1.0,
+                "n_neighbours": 5,
+            },
+        },
+        "REPEAT": {
+            "func": "find_repeated_values",
+            "names": {
+                "value": "observation_value",
+            },
+            "arguments": {
+                "min_count": 10,
+                "threshold": 0.2,
+            },
+        },
+    }
+
+    results = do_multiple_sequential_check(
+        data=data,
+        groupby=groupby,
+        qc_dict=qc_dict,
+        return_method=return_method,
+    )
+
+    if return_method == "failed":
+        base = passed
+        correction = untested
+        second = failed
+    elif return_method == "passed":
+        base = untested
+        correction = passed
+        second = untested
+
+    expected = pd.DataFrame(
+        {
+            "SPIKE": [passed] * len(results),
+            "REPEAT": [base] * len(results),
+        },
+        index=results.index,
+    )
+
+    expected.loc[152, "SPIKE"] = failed
+    expected.loc[162, "SPIKE"] = failed
+    expected.loc[174, "SPIKE"] = failed
+    expected.loc[198, "SPIKE"] = failed
+    expected.loc[152, "REPEAT"] = correction
+    expected.loc[162, "REPEAT"] = correction
+    expected.loc[174, "REPEAT"] = correction
+    expected.loc[198, "REPEAT"] = correction
+
+    for i in range(120, 141):
+        expected.loc[i, "REPEAT"] = second
+
     pd.testing.assert_frame_equal(results, expected)
 
 

@@ -23,6 +23,16 @@ from .qc_individual_reports import (  # noqa: F401
     do_time_check,
     do_wind_consistency_check,
 )
+from .qc_sequential_reports import (  # noqa: F401
+    do_track_check,
+    do_iquam_track_check,
+    do_spike_check,
+    do_few_check,
+    find_saturated_runs,
+    find_multiple_rounded_values,
+    find_repeated_values,
+    do_iquam_track_check,
+)
 
 
 def _get_function(name: str) -> Callable:
@@ -71,7 +81,7 @@ def _is_func_param(func: Callable, param: str) -> bool:
     return param in sig.parameters
 
 
-def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
+def _is_in_data(name: str, data: Union[pd.Series, pd.DataFrame]) -> bool:
     """
     Return True if named column or variable, name, is in data
 
@@ -99,7 +109,7 @@ def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     raise TypeError(f"Unsupported data type: {type(data)}")
 
 
-def _get_requests_from_params(params: dict | None, func: Callable, data: pd.Series | pd.DataFrame) -> dict:
+def _get_requests_from_params(params: Optional[dict], func: Callable, data: Union[pd.Series, pd.DataFrame]) -> dict:
     """
     Given a dictionary of key value pairs where the keys are parameters in the function, func, and the values
     are columns or variables in data, create a new dictionary in which the keys are the parameter names (as in the
@@ -166,14 +176,14 @@ def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
     return args
 
 
-def do_multiple_row_check(
-    data: pd.Series | pd.DataFrame,
-    qc_dict: dict | None = None,
-    preproc_dict: dict | None = None,
+def do_multiple_individual_check(
+    data: Union[pd.Series, pd.DataFrame],
+    qc_dict: Optional[dict] = None,
+    preproc_dict: Optional[dict] = None,
     return_method: Literal["all", "passed", "failed"] = "all",
-) -> pd.Series | pd.DataFrame:
+) -> Union[pd.Series, pd.DataFrame]:
     """
-    Basic row-by-row QC by using multiple QC functions.
+     Apply one or more quality-control (QC) functions to a DataFrame or Series.
 
     Parameters
     ----------
@@ -202,10 +212,10 @@ def do_multiple_row_check(
 
     Returns
     -------
-    pd.Series
-        Columns represent arbitrary names of the check (taken from `qc_dict.keys()`).
-        Values representing corresponding QC flags.
-        For information to QC flags see QC functions.
+    pd.DataFrame or pd.Series
+        A DataFrame (or Series if the input was a Series) whose columns correspond
+        to the QC names in ``qc_dict`` and whose values contain the QC flags for
+        each row of each group. Flags depend on the QC functions used.
 
     Raises
     ------
@@ -297,6 +307,17 @@ def do_multiple_row_check(
                 },
             },
         }
+        
+    Applying a individual QC test:
+
+    .. code-block:: python
+
+        results = do_multiple_individual_check(
+            data=df,
+            qc_dict=qc_dict,
+            preproc_dict=preproc_dict,
+            return_method="failed",
+        )        
 
     """
     if qc_dict is None:
@@ -305,7 +326,7 @@ def do_multiple_row_check(
     if preproc_dict is None:
         preproc_dict = {}
 
-    if return_method not in ["all", "passed", "failed"]:
+    if return_method not in ("all", "passed", "failed"):
         raise ValueError(f"'return_method' has to be one of ['all', 'passed', 'failed']: {return_method}")
 
     # Firstly, check if all functions are callable and all requested input variables are available!
@@ -363,3 +384,195 @@ def do_multiple_row_check(
     if is_series is True:
         return results.iloc[0]
     return results
+    
+def do_multiple_sequential_check(
+    data: Union[pd.DataFrame, pd.Series],
+    groupby: Optional[Union[str, Iterable[str], pd.core.groupby.generic.DataFrameGroupBy]] = None,
+    qc_dict: Optional[dict] = None,
+    preproc_dict: Optional[dict] = None,
+    return_method: Literal["all", "passed", "failed"] = "all",
+) -> Union[pd.Series, pd.DataFrame]:   
+    """
+    Apply one or more quality-control (QC) functions to groups of a DataFrame or Series.
+
+    Parameters
+    ----------
+    data : pd.DataFrame or pd.Series
+        Hashable input data.
+    groupby : str, iterable of str, or pandas GroupBy, optional
+        Specifies how the data should be grouped before applying QC functions.
+        If a string or iterable of strings, ``data.groupby`` is called on those keys.
+        If a ``pandas.DataFrameGroupBy`` object is provided, its groups are used
+        directly. Any groups that contain indices not present in ``data`` are
+        automatically trimmed.
+        If ``None``, the entire input ``data`` is treated as a single group.
+    qc_dict : dict, optional
+        Nested QC dictionary.
+        Keys represent arbitrary user-specified names for the checks.
+        The values are dictionaries which contain the keys "func" (name of the QC function),
+        "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
+        if necessary, "arguments" (the corresponding keyword arguments).
+        For more information see Examples.
+    preproc_dict : dict, optional
+        Nested pre-processing dictionary.
+        Keys represent variable names that can be used by `qc_dict`.
+        The values are dictionaries which contain the keys "func" (name of the pre-processing function),
+        "names" (input data names as keyword arguments, that will be retrieved from `data`), and "inputs"
+        (list of input-given variables).
+        For more information see Examples.
+    return_method: {"all", "passed", "failed"}, default: "all"
+        If "all", return QC dictionary containing all requested QC check flags.
+        If "passed": return QC dictionary containing all requested QC check flags until the first check passes.
+        Other QC checks are flagged as unstested (3).
+        If "failed": return QC dictionary containing all requested QC check flags until the first check fails.
+        Other QC checks are flagged as unstested (3).
+
+    Returns
+    -------
+    pd.DataFrame or pd.Series
+        A DataFrame (or Series if the input was a Series) whose columns correspond
+        to the QC names in ``qc_dict`` and whose values contain the QC flags for
+        each row of each group. Flags depend on the QC functions used.
+
+    Raises
+    ------
+    NameError
+        If a function listed in `qc_dict` or `preproc_dict` is not defined.
+        If columns listed in `qc_dict` or `preproc_dict` are not available in `data`.
+    ValueError
+        If `return_method` is not one of ["all", "passed", "failed"]
+        If variable names listed in `qc_dict` or `preproc_dict` are not valid parameters of the QC function.
+
+    Notes
+    -----
+    If a variable is pre-processed using `preproc_dict`, mark the variable name as "__preprocessed__" in `qc_dict`.
+    E.g. `"climatology": "__preprocessed__"`.
+    Groups containing rows not present in ``data`` are automatically trimmed.
+    If ``groupby=None`` the entire dataset is treated as a single group.
+
+    Examples
+    --------
+    Example ``qc_dict`` for a sequential track check:
+
+    .. code-block:: python
+
+        qc_dict = {
+            "track_check": {
+                "func": "do_track_check",
+                "names": {
+                    "vsi":  "station_speed",
+                    "dsi":  "station_course",
+                    "lat":  "latitude",
+                    "lon":  "longitude",
+                    "date": "report_timestamp",
+                },
+                "arguments": {
+                    "max_direction_change":     60.0,
+                    "max_speed_change":         10.0,
+                    "max_absolute_speed":       40.0,
+                    "max_midpoint_discrepancy": 150.0,
+                },
+            },
+        }
+
+    Applying a sequential QC test:
+
+    .. code-block:: python
+
+        results = do_multiple_sequential_check(
+            data=df,
+            groupby="primary_station_id",
+            qc_dict=qc_dict,
+            return_method="failed",
+        )
+
+    """
+    if qc_dict is None:
+        qc_dict = {}
+
+    if preproc_dict is None:
+        preproc_dict = {}
+
+    if return_method not in ("all", "passed", "failed"):
+        raise ValueError(f"'return_method' has to be one of ['all', 'passed', 'failed']: {return_method}")
+ 
+ 
+    # Firstly, check if all functions are callable and all requested input variables are available!
+    preprocessed = {}
+    for var_name, preproc_params in preproc_dict.items():
+        func_name = preproc_params.get("func")
+        func = _get_function(func_name)
+
+        requests = _get_requests_from_params(preproc_params.get("names"), func, data)
+
+        inputs = preproc_params.get("inputs")
+        if not isinstance(inputs, list):
+            inputs = [inputs]
+
+        preprocessed[var_name] = func(*inputs, **requests)
+
+    qc_inputs = {}
+    for qc_name, qc_params in qc_dict.items():
+        func_name = qc_params.get("func")
+        func = _get_function(func_name)
+        requests = _get_requests_from_params(qc_params.get("names"), func, data)
+
+        qc_inputs[qc_name] = {}
+        qc_inputs[qc_name]["function"] = func
+        qc_inputs[qc_name]["requests"] = requests
+        qc_inputs[qc_name]["kwargs"] = {}
+
+        if "arguments" in qc_params.keys():
+            qc_inputs[qc_name]["kwargs"] = _get_preprocessed_args(qc_params["arguments"], preprocessed)
+
+    is_series = isinstance(data, pd.Series)
+    if is_series:
+        data = pd.DataFrame([data.values], columns=data.index)  
+        
+    mask = pd.Series(True, index=data.index)
+    results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
+    
+    if groupby is None:
+        groupby = [(None, data)]
+    elif not isinstance(groupby, pd.core.groupby.generic.DataFrameGroupBy):
+        groupby = data.groupby(groupby, group_keys=False, sort=False)
+    else:
+        valid_indexes = data.index
+        groupby = [
+            (name, group.loc[group.index.intersection(valid_indexes)])
+            for name, group in groupby
+            if group.index.intersection(valid_indexes).size > 0
+        ]
+
+    for _, gdf in groupby:
+
+        group_mask = mask.loc[gdf.index].copy()
+
+        for qc_name, qc_params in qc_inputs.items():
+
+            if not group_mask.any():
+                continue
+
+            func = qc_params["function"]
+            
+            args = {k: v.loc[gdf.index] if isinstance(v, pd.Series) else v for k, v in qc_params["requests"].items()}
+            kwargs = {k: (v.loc[gdf.index] if isinstance(v, pd.Series) else v) for k, v in qc_params["kwargs"].items()}
+
+            partial = func(**args, **kwargs)
+
+            full = pd.Series(untested, index=gdf.index)
+            full.loc[group_mask] = partial
+            results.loc[gdf.index, qc_name] = full
+
+            if return_method == "failed":
+                group_mask &= full != failed
+                mask.loc[gdf.index] &= (full != failed)
+            elif return_method == "passed":
+                group_mask &= full != passed
+                mask.loc[gdf.index] &= (full != passed)
+
+    if is_series is True:
+        return results.iloc[0]
+    return results    
+                  
+            
