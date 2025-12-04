@@ -13,7 +13,7 @@ from .buoy_tracking_qc import (
     do_sst_noisy_check,
     do_sst_start_tail_check,
 )
-from .multiple_row_checks import do_multiple_row_check
+from .multiple_checks import do_multiple_individual_check, do_multiple_sequential_check
 from .qc_grouped_reports import do_bayesian_buddy_check, do_mds_buddy_check
 from .qc_individual_reports import (
     do_climatology_check,
