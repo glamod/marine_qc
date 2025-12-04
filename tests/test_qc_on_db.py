@@ -16,6 +16,7 @@ from marine_qc import (
     do_mds_buddy_check,
     do_missing_value_check,
     do_missing_value_clim_check,
+    do_multiple_grouped_check,
     do_multiple_individual_check,
     do_multiple_sequential_check,
     do_night_check,
@@ -1710,8 +1711,7 @@ def test_find_multiple_rounded_values(testdata_track):
         ),
     ],
 )
-@pytest.mark.parametrize("apply_func", [False, True])
-def test_multiple_individual_check(testdata, climdata, return_method, expected, apply_func):
+def test_multiple_individual_check(testdata, climdata, return_method, expected):
     db_ = testdata["observations-at"].copy()
     climatology = Climatology.open_netcdf_file(
         climdata["AT"]["mean"],
@@ -1785,30 +1785,20 @@ def test_multiple_individual_check(testdata, climdata, return_method, expected, 
             },
         },
     }
-    if apply_func is True:
-        results = db_.apply(
-            lambda row: do_multiple_individual_check(
-                data=row,
-                qc_dict=qc_dict,
-                preproc_dict=preproc_dict,
-                return_method=return_method,
-            ),
-            axis=1,
-        )
-    else:
-        results = do_multiple_individual_check(
-            data=db_.data,
-            qc_dict=qc_dict,
-            preproc_dict=preproc_dict,
-            return_method=return_method,
-        )
+
+    results = do_multiple_individual_check(
+        data=db_.data,
+        qc_dict=qc_dict,
+        preproc_dict=preproc_dict,
+        return_method=return_method,
+    )
+
     expected = pd.DataFrame(expected)
     pd.testing.assert_frame_equal(results, expected)
 
 
 @pytest.mark.parametrize("return_method", ["passed", "failed"])
-@pytest.mark.parametrize("apply_func", [True, False])
-def test_multiple_sequential_check_header(testdata_track, return_method, apply_func):
+def test_multiple_sequential_check_header(testdata_track, return_method):
     data = testdata_track["header"].copy()
     data.loc[2, "latitude"] = -23.0
     data.loc[12, "latitude"] = -23.0
@@ -1849,22 +1839,13 @@ def test_multiple_sequential_check_header(testdata_track, return_method, apply_f
             },
         },
     }
-    if apply_func is True:
-        results = groupby.apply(
-            lambda g: do_multiple_sequential_check(
-                data=g,
-                groupby=None,
-                qc_dict=qc_dict,
-                return_method=return_method,
-            )
-        )
-    else:
-        results = do_multiple_sequential_check(
-            data=data,
-            groupby=groupby,
-            qc_dict=qc_dict,
-            return_method=return_method,
-        )
+
+    results = do_multiple_sequential_check(
+        data=data,
+        groupby=groupby,
+        qc_dict=qc_dict,
+        return_method=return_method,
+    )
 
     if return_method == "failed":
         base = passed
@@ -2002,6 +1983,7 @@ def test_buddy_check(climdata_buddy, testdata_track):
         number_of_obs_thresholds=number_of_obs_thresholds,
         multipliers=multipliers,
     )
+
     for i, flag in enumerate(result):
         if i in [7, 8, 9, 10, 11, 12, 13, 14, 15, 45]:
             assert flag == failed
@@ -2047,3 +2029,98 @@ def test_bayesian_buddy_check(climdata_bayesian, testdata_track):
             assert flag == failed
         else:
             assert flag == passed
+
+
+@pytest.mark.parametrize("return_method", ["passed", "failed"])
+def test_multiple_grouped_check(climdata_buddy, climdata_bayesian, testdata_track, return_method):
+    sst_climatology_mds = Climatology.open_netcdf_file(
+        climdata_buddy["mean"],
+        "sst",
+        time_axis="time",
+        source_units="degC",
+        target_units="K",
+    )
+    sst_climatology_bayesian = Climatology.open_netcdf_file(
+        climdata_bayesian["mean"],
+        "sst",
+        time_axis="time",
+        source_units="degC",
+        target_units="K",
+    )
+    stdev_climatology_mds = Climatology.open_netcdf_file(climdata_buddy["stdev"], "sst", time_axis="time")
+    ostia1_climatology = Climatology.open_netcdf_file(climdata_bayesian["ostia1"], "sst", time_axis="time")
+    ostia2_climatology = Climatology.open_netcdf_file(climdata_bayesian["ostia2"], "sst", time_axis="time")
+    ostia3_climatology = Climatology.open_netcdf_file(climdata_bayesian["ostia3"], "sst", time_axis="time")
+
+    data = testdata_track["observations-sst"].copy()
+    data.dropna(subset=["observation_value"], inplace=True, ignore_index=True)
+
+    qc_dict = {
+        "MDS": {
+            "func": "do_mds_buddy_check",
+            "names": {
+                "value": "observation_value",
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "date_time",
+            },
+            "arguments": {
+                "climatology": sst_climatology_mds,
+                "standard_deviation": stdev_climatology_mds,
+                "limits": [[1, 1, 2], [2, 2, 2], [1, 1, 4], [2, 2, 4]],
+                "number_of_obs_thresholds": [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]],
+                "multipliers": [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]],
+            },
+        },
+        "BAYESIAN": {
+            "func": "do_bayesian_buddy_check",
+            "names": {
+                "value": "observation_value",
+                "lat": "latitude",
+                "lon": "longitude",
+                "date": "date_time",
+            },
+            "arguments": {
+                "climatology": sst_climatology_bayesian,
+                "stdev1": ostia1_climatology,
+                "stdev2": ostia2_climatology,
+                "stdev3": ostia3_climatology,
+                "prior_probability_of_gross_error": 0.05,
+                "quantization_interval": 0.1,
+                "one_sigma_measurement_uncertainty": 1.0,
+                "limits": [2, 2, 4],
+                "noise_scaling": 3.0,
+                "maximum_anomaly": 8.0,
+                "fail_probability": 0.3,
+            },
+        },
+    }
+
+    result = do_multiple_grouped_check(
+        data=data,
+        qc_dict=qc_dict,
+        return_method=return_method,
+    )
+
+    if return_method == "failed":
+        base = passed
+        correction = untested
+        second = untested
+    if return_method == "passed":
+        base = untested
+        correction = failed
+        second = passed
+
+    for i, flag in enumerate(result["MDS"]):
+        if i in [7, 8, 9, 10, 11, 12, 13, 14, 15, 45]:
+            assert flag == failed
+        else:
+            assert flag == passed
+
+    for i, flag in enumerate(result["BAYESIAN"]):
+        if i in [7, 8, 9, 10, 11]:
+            assert flag == correction
+        elif i in [12, 13, 14, 15, 45]:
+            assert flag == second
+        else:
+            assert flag == base

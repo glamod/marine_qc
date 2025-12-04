@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from marine_qc import do_multiple_individual_check, do_multiple_sequential_check
+from marine_qc import do_multiple_individual_check
 from marine_qc.multiple_checks import (
     _get_function,
     _get_preprocessed_args,
