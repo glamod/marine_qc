@@ -29,7 +29,7 @@ diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
 @@ -122,6 +123,13 @@ replace = """\
  -------------------------------------------------------------------------------------------------
  """
- 
+
 +[[tool.bumpversion.files]]
 +filename = "CITATION.cff"
 +include_bumps = ["release"]
