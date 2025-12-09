@@ -3,7 +3,7 @@
 from __future__ import annotations
 import inspect
 from collections.abc import Callable, Iterable
-from typing import Literal
+from typing import Any, Literal, Optional
 
 import pandas as pd
 
@@ -106,7 +106,7 @@ def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
         If data type is not pd.Series or pd.DataFrame
     """
     if isinstance(data, pd.Series):
-        return name in data
+        return data.name == name
     if isinstance(data, pd.DataFrame):
         return name in data.columns
     raise TypeError(f"Unsupported data type: {type(data)}")
@@ -179,25 +179,58 @@ def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
     return args
 
 
-def _prepare_preprocessed_vars(preproc_dict, data):
-    """Run preprocessing functions and return a {var_name: preprocessed_var} dict."""
+def _prepare_preprocessed_vars(preproc_dict: dict, data: pd.DataFrame | pd.Series) -> dict:
+    """
+    Runs all preprocessing steps defined in ``preproc_dict`` and return their results.
+
+    Parameters
+    ----------
+    preproc_dict: dict
+        Preprocessing configuration dictionary.
+    data: pd.DataFrame or pd.Series
+        DataFrame used to extract request parameters.
+
+    Returns
+    -------
+    dict
+        A dict mapping variable names to their preprocessed values.
+    """
     preprocessed = {}
 
     for var_name, params in preproc_dict.items():
         func = _get_function(params["func"])
         requests = _get_requests_from_params(params.get("names"), func, data)
 
-        inputs = params.get("inputs")
+        inputs = params.get("inputs", [])
         if not isinstance(inputs, list):
             inputs = [inputs]
 
-        preprocessed[var_name] = func(*inputs, **requests)
+        arguments = params.get("arguments", {})
+
+        preprocessed[var_name] = func(*inputs, **requests, **arguments)
 
     return preprocessed
 
 
-def _prepare_qc_functions(qc_dict, preprocessed, data):
-    """Return a {qc_name: {function, requests, kwargs}} dictionary."""
+def _prepare_qc_functions(qc_dict: dict, preprocessed: dict, data: pd.DataFrame | pd.Series) -> dict:
+    """
+    Builds QC function inputs from ``qc_dict`` and return a structured mapping.
+
+    Parameters
+    ----------
+    qc_dict : dict
+        Configuration describing QC functions, their input names, and arguments.
+    preprocessed : dict
+        Previously computed preprocessed variables available for argument resolution.
+    data : pd.DataFrame or pd.Series
+        DataFrame used to extract requested parameters for QC functions.
+
+    Returns
+    -------
+    dict
+        A mapping of QC names to dictionaries containing:
+        ``{"function": callable, "requests": dict, "kwargs": dict}``.
+    """
     qc_inputs = {}
 
     for qc_name, params in qc_dict.items():
@@ -210,10 +243,28 @@ def _prepare_qc_functions(qc_dict, preprocessed, data):
     return qc_inputs
 
 
-def _apply_qc_to_masked_rows(qc_func, args, kwargs, data_index, mask):
+def _apply_qc_to_masked_rows(qc_func: Callable[..., Any], args: dict, kwargs: dict, data_index: pd.Index, mask: pd.Series) -> pd.Series:
     """
-    Execute QC function, align its output to data_index, and
-    return full_result (Series with correct shape).
+    Applies a QC function to masked rows and return a Series aligned to ``data_index``.
+
+    Parameters
+    ----------
+    qc_func : Callable
+        QC function to execute.
+    args : Mapping[str, Any]
+        Keyword arguments constructed from requests.
+    kwargs : Mapping[str, Any]
+        Additional keyword arguments, typically from preprocessed variables.
+    data_index : pandas.Index
+        Full index of the dataset for aligning the QC result.
+    mask : pandas.Series
+        Boolean mask indicating which rows the QC function applies to.
+
+    Returns
+    -------
+    pandas.Series
+        A Series indexed by ``data_index`` containing QC results for masked rows
+        and default values elsewhere.
     """
     partial = qc_func(**args, **kwargs)
 
@@ -226,8 +277,22 @@ def _apply_qc_to_masked_rows(qc_func, args, kwargs, data_index, mask):
     return full
 
 
-def _normalize_groupby(data, groupby):
-    """Return iterable of (name, group_df) pairs, trimming invalid rows."""
+def _normalize_groupby(data: pd.DataFrame | pd.Series, groupby: Optional(str, pd.core.groupby.generic.DataFrameGroupBy)) -> list[tuple]:
+    """
+    Returns iterable of (name, group_df) pairs, trimming invalid rows.
+
+    Parameters
+    ----------
+    data : pd.Series or pd.DataFrame
+        Hashable input data.
+    groupby : DataFrameGroupBy or object
+        A groupby object or column(s) to group by. If None, the full DataFrame is returned as a single group.
+
+    Returns
+    -------
+    list[tuple[Any, pd.DataFrame]]
+        A list of tuples containing the group name (or None) and the corresponding DataFrame slice.
+    """
     if groupby is None:
         return [(None, data)]
 
@@ -250,25 +315,56 @@ def _validate_and_normalize_input(
     return_method: Literal["all", "passed", "failed"],
 ) -> tuple[pd.DataFrame, bool]:
     """
-    Validate the return method and convert a Series into a single-row DataFrame
-    while keeping track of whether the original input was a Series.
+    Validates the return method and ensure the input is a DataFrame.
+
+    Converts a Series to a single-column DataFrame and tracks if the original
+    input was a Series.
+
+    Parameters
+    ----------
+    data : pd.Series or pd.DataFrame
+        Hashable input data.
+    return_method : {'all', 'passed', 'failed'}
+        Specifies which rows to return; must be one of 'all', 'passed', or 'failed'.
+
+    Returns
+    -------
+    tuple[pd.DataFrame, bool]
+        - Normalized DataFrame version of the input.
+        - Boolean indicating if the original input was a Series.
     """
     if return_method not in ("all", "passed", "failed"):
         raise ValueError("'return_method' must be 'all','passed','failed'.")
     is_series = isinstance(data, pd.Series)
     if is_series:
-        data = pd.DataFrame([data.values], columns=data.index)
+        data = data.to_frame()
     return data, is_series
 
 
 def _prepare_all_inputs(
-    data: pd.DataFrame,
+    data: pd.DataFrame | pd.Series,
     qc_dict: dict | None,
     preproc_dict: dict | None,
 ) -> tuple[dict, pd.Series, pd.DataFrame]:
     """
-    Build all inputs required for QC execution, including preporcessed variables,
+    Builds all inputs required for QC execution, including preporcessed variables,
     resolved QC function arguments, an initial boolean mask, and an empty results table.
+
+    Parameters
+    ----------
+    data : pd.Series or pd.DataFrame
+        Hashable input data.
+    qc_dict : dict or None
+        Dictionary defining QC functions and their arguments.
+    preproc_dict : dict or None
+        Dictionary defining preprocessing steps.
+
+    Returns
+    -------
+    tuple[dict, pd.Series, pd.DataFrame]
+        - QC inputs dictionary: {qc_name: {function, requests, kwargs}}.
+        - Initial boolean mask Series (all True).
+        - Empty results DataFrame with shape (n_rows, n_qcs).
     """
     qc_dict = qc_dict or {}
     preproc_dict = preproc_dict or {}
@@ -283,13 +379,28 @@ def _prepare_all_inputs(
 
 
 def _group_iterator(
-    data: pd.DataFrame,
+    data: pd.DataFrame | pd.Series,
     groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None,
 ):
     """
-    Returns an iterator of (key, group DataFrame).
-    If groupby is None, yields the whole DataFrame as a single group.
-    Otherwise, yields each group according to _normalize_groupby.
+    Yield groups of a DataFrame as (group_name, group_df) pairs.
+
+    If `groupby` is None, yields the entire DataFrame as a single group.
+    Otherwise, yields each group as returned by `_normalize_groupby`.
+
+    Parameters
+    ----------
+    data : pd.DataFrame or pd.Series
+        The DataFrame to iterate over in groups.
+    groupby : str, iterable of str, DataFrameGroupBy, or None
+        Column(s) or a groupby object to split `data` into groups. If None,
+        the full DataFrame is returned as a single group.
+
+    Yields
+    ------
+    tuple[Any, pd.DataFrame]
+        Tuples containing the group key (or None) and the corresponding
+        DataFrame for that group.
     """
     if groupby is None:
         yield None, data
@@ -298,14 +409,39 @@ def _group_iterator(
 
 
 def _run_qc_engine(
-    data: pd.DataFrame,
+    data: pd.DataFrame | pd.Series,
     qc_inputs: dict,
     groups: Iterable,
     return_method: Literal["all", "passed", "failed"],
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """
-    Execute all QC checks over the provided groups using shared mask-based
-    pass/fail propagation and collect the resulting QC flags.
+    Executes QC checks on the provided data groups and collect the results.
+
+    Each QC function is applied to the corresponding group, respecting a
+    shared mask that propagates pass/fail status. The results are stored
+    in a DataFrame aligned with the original data.
+
+    Parameters
+    ----------
+    data : pd.Series or pd.DataFrame
+        Hashable input data.
+    qc_inputs : dict
+        Dictionary of QC inputs, each containing:
+        {"function": callable, "requests": dict, "kwargs": dict}.
+    groups : Iterable
+        Iterable of (group_name, group_df) pairs, as returned by `_group_iterator`.
+    return_method: {"all", "passed", "failed"}, default: "all"
+        If "all", return QC dictionary containing all requested QC check flags.
+        If "passed": return QC dictionary containing all requested QC check flags until the first check passes.
+        Other QC checks are flagged as unstested (3).
+        If "failed": return QC dictionary containing all requested QC check flags until the first check fails.
+        Other QC checks are flagged as unstested (3).
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame of QC results with the same index as `data` and columns
+        corresponding to QC names.
     """
     mask = pd.Series(True, index=data.index)
     results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
@@ -348,8 +484,49 @@ def _do_multiple_check(
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame | pd.Series:
     """
-    Unified internal entry point for performing individual, sequential, or grouped
-    QC checks by preparing inputs, constructing groups, and running the QC engine.
+    Internal entry point for performing QC checks on data.
+
+    Prepares inputs, constructs groups, and executes the QC engine
+    for individual, sequential, or grouped checks.
+
+    Parameters
+    ----------
+    data : pd.Series or pd.DataFrame
+        Hashable input data.
+    groupby : str, iterable of str, or pandas GroupBy, optional
+        Specifies how the data should be grouped before applying QC functions.
+        If a string or iterable of strings, ``data.groupby`` is called on those keys.
+        If a ``pandas.DataFrameGroupBy`` object is provided, its groups are used
+        directly. Any groups that contain indices not present in ``data`` are
+        automatically trimmed.
+        If ``None``, the entire input ``data`` is treated as a single group.
+    qc_dict : dict, optional
+        Nested QC dictionary.
+        Keys represent arbitrary user-specified names for the checks.
+        The values are dictionaries which contain the keys "func" (name of the QC function),
+        "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
+        if necessary, "arguments" (the corresponding keyword arguments).
+        For more information see Examples.
+    preproc_dict : dict, optional
+        Nested pre-processing dictionary.
+        Keys represent variable names that can be used by `qc_dict`.
+        The values are dictionaries which contain the keys "func" (name of the pre-processing function),
+        "names" (input data names as keyword arguments, that will be retrieved from `data`), and "inputs"
+        (list of input-given variables).
+        For more information see Examples.
+    return_method: {"all", "passed", "failed"}, default: "all"
+        If "all", return QC dictionary containing all requested QC check flags.
+        If "passed": return QC dictionary containing all requested QC check flags until the first check passes.
+        Other QC checks are flagged as unstested (3).
+        If "failed": return QC dictionary containing all requested QC check flags until the first check fails.
+        Other QC checks are flagged as unstested (3).
+
+    Returns
+    -------
+    pd.DataFrame or pd.Series
+        A DataFrame (or Series if the input was a Series) whose columns correspond
+        to the QC names in ``qc_dict`` and whose values contain QC flags for each row.
+        Flags depend on the QC functions used.
     """
     data, is_series = _validate_and_normalize_input(data, return_method)
     qc_inputs, mask, results = _prepare_all_inputs(data, qc_dict, preproc_dict)
