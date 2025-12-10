@@ -1,8 +1,10 @@
 .. marine QC documentation master file
 
----------------------------------------------------
-Overview of QC functions for additional buoy QC
----------------------------------------------------
+.. _overview_buoy:
+
+----------------------------------------------------
+Overview of QC functions for additional buoy reports
+----------------------------------------------------
 
 This page gives a brief overview of each of the buoy-specific QC functions currently implemented. These routines
 were specifically designed for the QC of sea-surface temperatures from drifting buoys and are intended to be run

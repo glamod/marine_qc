@@ -19,6 +19,14 @@ Main QC functions
    api/api_main_grp
    api/api_main_buoy
 
+Main plotting functions
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
+   api/api_main_plt
+
 For developers
 ==============
 
@@ -39,3 +47,4 @@ For developers
    api/api_tc
    api/api_trk
    api/api_aux
+   api/api_hlp

@@ -1,5 +1,7 @@
 .. marine QC documentation master file
 
+.. _overview_ind:
+
 ---------------------------------------------------
 Overview of QC functions for individual reports
 ---------------------------------------------------
@@ -118,10 +120,12 @@ be set to zero also. If the wind speed is greater than zero then the wind direct
 of these constraints is violated then the flag is set to 1, fail, otherwise it is set to 0. If either of the inputs
 is numerically valid then the flag is set to 2, untestable.
 
-Running Multiple Individual Report Checks
------------------------------------------
+.. _running_multiple_ind:
 
-Multiple individual report checks can be run simultaneously using the :func:`.do_multiple_row_check` function. Aside from the
+:func:`.do_multiple_individual_check`
+=====================================
+
+Multiple individual report checks can be run simultaneously. Aside from the
 input dataframe, two additional arguments can be specified: `qc_dict` and `preproc_dict`. The `qc_dict` is a
 dictionary that specifies the names of the qc function to be run, the variables used as input and the values of the
 arguments. The `preproc_dict` is a dictionary that specifies any pre-processing functions such as a function to
@@ -150,7 +154,7 @@ The function is called like so:
 
 .. code-block:: python
 
-    result = do_multiple_row_check(data, qc_dict, preproc_dict)
+    result = do_multiple_individual_check(data, qc_dict, preproc_dict)
 
 An example `qc_dict` for a hard limit test:
 

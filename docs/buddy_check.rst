@@ -1,5 +1,7 @@
 .. marine QC documentation master file
 
+.. _buddy_check:
+
 Buddy check
 ===========
 
