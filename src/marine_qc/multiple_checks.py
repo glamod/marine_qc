@@ -755,7 +755,7 @@ def do_multiple_sequential_check(
     If a variable is pre-processed using `preproc_dict`, mark the variable name as
     "__preprocessed__" in `qc_dict`. For example: `"climatology": "__preprocessed__"`.
 
-    For more information, see `do_multiple_individual_checks`.
+    For more information, see :py:func:`do_multiple_individual_checks`.
     """
     return _do_multiple_check(
         data=data,
@@ -823,7 +823,7 @@ def do_multiple_grouped_check(
     If a variable is pre-processed using `preproc_dict`, mark the variable name as
     "__preprocessed__" in `qc_dict`. For example: `"climatology": "__preprocessed__"`.
 
-    For more information, see `do_multiple_individual_checks`.
+    For more information, see :py:func:`do_multiple_individual_checks`.
     """
     return _do_multiple_check(
         data=data,
