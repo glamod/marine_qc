@@ -14,6 +14,10 @@ from .buoy_tracking_qc import (
     do_sst_start_tail_check,
 )
 from .multiple_checks import do_multiple_grouped_check, do_multiple_individual_check, do_multiple_sequential_check
+from .plot_qc_outcomes import (
+    latitude_longitude_plot,
+    latitude_variable_plot,
+)
 from .qc_grouped_reports import do_bayesian_buddy_check, do_mds_buddy_check
 from .qc_individual_reports import (
     do_climatology_check,
