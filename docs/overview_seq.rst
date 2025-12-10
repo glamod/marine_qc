@@ -1,5 +1,7 @@
 .. marine QC documentation master file
 
+.. _overview_seq:
+
 ---------------------------------------------------
 Overview of QC functions for sequential reports
 ---------------------------------------------------
@@ -18,7 +20,7 @@ Tests that the locations of a series of reports form a plausible ship track.
 The track check uses the location and datetime information from the reports as well as the ship speed and direction
 information, if available, to determine if any of the reported locations and times are likely to be erroneous.
 
-For a detailed description see :doc:`track_check`
+For a detailed description see :ref:`track_check`
 
 :func:`.do_few_check`
 =====================
@@ -88,3 +90,19 @@ Tests whether there are implausibly large number of repeated values in a sequenc
 A sequence of reports is checked for values which are repeated many times. If more than a specified fraction of
 reports have the same value and the total number of reports of that value exceeds a specified threshold then
 all the flags for all reports with that value are set to 1, fail. The flags for all other reports are set to 0, pass.
+
+:func:`.do_multiple_sequential_check`
+=====================================
+
+Multiple sequential report checks can be run simultaneously.
+For more information how to use the function see :ref:`running_multiple_ind`.
+
+Currently, the following QC checks can be used:
+
+    * :func:`.do_few_check`
+    * :func:`.do_iquam_track_check`
+    * :func:`.do_spike_check`
+    * :func:`.do_track_check`
+    * :func:`.find_multiple_rounded_values`
+    * :func:`.find_repeated_values`
+    * :func:`.find_saturated_runs`

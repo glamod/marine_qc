@@ -1,5 +1,7 @@
 .. marine QC documentation master file
 
+.. _track_check:
+
 do_track_check
 ==============
 
