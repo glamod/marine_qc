@@ -1345,7 +1345,6 @@ def test_do_track_check_array(testdata_track):
         ),
         include_groups=False,
     ).squeeze()
-    exit()
 
     expected = pd.Series([passed] * len(results))
     expected.iloc[2] = 1
