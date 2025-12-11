@@ -18,7 +18,7 @@ Breaking changes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* make multiple checks more flexible using several helper functions (:pull:`95`)
+* make multiple checks more flexible using several helper functions (:issue:`14`, :pull:`95`)
 * add plotting routines to documentation's API reference (:pull:`95`)
 * add helper functions to documentation's API reference (:pull:`95`)
 * add section "More theoretical information" to documentation (:pull:`95`)
