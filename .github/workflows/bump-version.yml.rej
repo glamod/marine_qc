@@ -15,6 +15,6 @@ diff a/.github/workflows/bump-version.yml b/.github/workflows/bump-version.yml	(
          with:
 -          python-version: "3.x"
 +          python-version: ${{ matrix.python-version }}
- 
+
        - name: Config Commit Bot
          run: |
