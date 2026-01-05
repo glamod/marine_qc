@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage.git",
-  "commit": "66708e5e15f00caaaaf1748bf0a7e041bc5c6243",
+  "commit": "bbd7482f87958794382f0f12dccaeead0915c960",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -21,9 +21,9 @@
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",
       "generated_with_cruft": "n",
-      "__gh_slug": "https://github.com/glamod/marine_qc",
+      "__gh_slug": "https://github.com/ludwiglierhammer/Marine-Quality-Control",
       "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage.git",
-      "_commit": "66708e5e15f00caaaaf1748bf0a7e041bc5c6243"
+      "_commit": "bbd7482f87958794382f0f12dccaeead0915c960"
     }
   },
   "directory": null
