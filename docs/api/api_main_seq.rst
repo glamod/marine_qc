@@ -1,5 +1,7 @@
 .. currentmodule:: marine_qc
 
+.. _api_qc_seq:
+
 QC checks on sequential reports
 -------------------------------
 
@@ -13,3 +15,4 @@ QC checks on sequential reports
     find_saturated_runs
     find_multiple_rounded_values
     find_repeated_values
+    do_multiple_sequential_check

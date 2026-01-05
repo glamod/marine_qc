@@ -1,5 +1,7 @@
 .. currentmodule:: marine_qc
 
+.. _api_qc_ind:
+
 QC checks on individual reports
 -------------------------------
 
@@ -18,4 +20,4 @@ QC checks on individual reports
     do_supersaturation_check
     do_sst_freeze_check
     do_wind_consistency_check
-    do_multiple_row_check
+    do_multiple_individual_check

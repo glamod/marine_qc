@@ -23,10 +23,11 @@ modular way via a standardised interface.
    installation
    usage
    introduction
-   overview
+   overview_ind
    overview_seq
    overview_grp
    overview_buoy_tracking
+   theoreticals
    contributing
    releasing
    dev_guide

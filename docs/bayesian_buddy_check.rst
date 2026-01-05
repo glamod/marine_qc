@@ -1,5 +1,7 @@
 .. marine QC documentation master file
 
+.. _bayesian_buddy_check:
+
 Bayesian buddy check
 ====================
 
