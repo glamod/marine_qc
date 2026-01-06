@@ -76,7 +76,7 @@ docs = [
   "myst-nb >=1.2.0",
   "nbconvert >=7.16.4",
   "numpydoc >=1.9.0",
-  "sphinx >=7.1.0,<8.2",
+  "sphinx >=7.1.0,<9.2",
   "sphinx-autodoc-typehints",
   "sphinx-copybutton",
   "sphinx-book-theme >=1.0"
