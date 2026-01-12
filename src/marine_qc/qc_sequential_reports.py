@@ -437,7 +437,7 @@ def find_saturated_runs(
     labeled_array, num_features = label(saturated)
 
     # Initialize result array
-    qc_flags = np.zeros_like(at, dtype=int)
+    qc_flags = np.zeros_like(at, dtype=int) + passed
 
     for run_id in range(1, num_features + 1):
         indices = np.where(labeled_array == run_id)[0]
@@ -452,7 +452,7 @@ def find_saturated_runs(
         tdiff = time_difference(date[i_start], date[i_end])
 
         if tdiff >= min_time_threshold:
-            qc_flags[indices] = 1
+            qc_flags[indices] = failed
 
     return qc_flags
 

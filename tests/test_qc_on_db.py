@@ -1285,10 +1285,10 @@ def test_do_spike_check(testdata_track):
         include_groups=False,
     )
     expected = pd.Series([passed] * len(results), index=results.index)
-    expected.iloc[152] = 1
-    expected.iloc[162] = 1
-    expected.iloc[174] = 1
-    expected.iloc[198] = 1
+    expected.iloc[152] = failed
+    expected.iloc[162] = failed
+    expected.iloc[174] = failed
+    expected.iloc[198] = failed
     pd.testing.assert_series_equal(results, expected, check_names=False)
 
 
@@ -1316,10 +1316,10 @@ def test_do_track_check(testdata_track):
     ).squeeze()
 
     expected = pd.Series([passed] * len(results))
-    expected.iloc[2] = 1
-    expected.iloc[12] = 1
-    expected.iloc[24] = 1
-    expected.iloc[48] = 1
+    expected.iloc[2] = failed
+    expected.iloc[12] = failed
+    expected.iloc[24] = failed
+    expected.iloc[48] = failed
     pd.testing.assert_series_equal(results, expected, check_names=False)
 
 
@@ -1347,10 +1347,10 @@ def test_do_track_check_array(testdata_track):
     ).squeeze()
 
     expected = pd.Series([passed] * len(results))
-    expected.iloc[2] = 1
-    expected.iloc[12] = 1
-    expected.iloc[24] = 1
-    expected.iloc[48] = 1
+    expected.iloc[2] = failed
+    expected.iloc[12] = failed
+    expected.iloc[24] = failed
+    expected.iloc[48] = failed
     pd.testing.assert_series_equal(results, expected, check_names=False)
 
 
@@ -1417,7 +1417,7 @@ def test_find_repeated_values(testdata_track):
     )
     expected = pd.Series([passed] * len(results), index=results.index)
     for i in range(160, 201):
-        expected.iloc[i] = 1
+        expected.iloc[i] = failed
     pd.testing.assert_series_equal(results, expected, check_names=False)
 
 
@@ -1441,7 +1441,8 @@ def test_find_saturated_runs(testdata_track):
     )
     expected = pd.Series([passed] * len(results), index=results.index)
     for i in range(161, 201):
-        expected.iloc[i] = 1
+        expected.iloc[i] = failed
+
     pd.testing.assert_series_equal(results, expected, check_names=False)
 
 

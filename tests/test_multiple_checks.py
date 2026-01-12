@@ -9,6 +9,7 @@ from marine_qc import (
     do_multiple_individual_check,
     do_multiple_sequential_check,
 )
+from marine_qc.auxiliary import failed, passed, untested
 from marine_qc.multiple_checks import (
     _apply_qc_to_masked_rows,
     _do_multiple_check,
@@ -188,7 +189,7 @@ def test_prepare_preprocessed_vars(df_ind):
     }
     result = _prepare_preprocessed_vars(preproc_dict, df_ind)
 
-    expected = pd.Series([1, 0, 0, 1])
+    expected = pd.Series([failed, passed, passed, failed])
     pd.testing.assert_series_equal(result["test"], expected)
 
 
@@ -210,7 +211,7 @@ def test_apply_qc_to_masked_rows():
     result = _apply_qc_to_masked_rows(
         do_hard_limit_check, {"value": pd.Series([1, 2, 3, 4])}, {"limits": [2, 3]}, [0, 1, 2, 3], [True, False, True, True]
     )
-    expected = pd.Series([1, 3, 0, 1])
+    expected = pd.Series([failed, untested, passed, failed])
     pd.testing.assert_series_equal(result, expected)
 
 
@@ -307,7 +308,9 @@ def test_prepare_all_inputs(df_ind, qc_dict):
 
     pd.testing.assert_series_equal(result[1], pd.Series([True, True, True, True]))
 
-    pd.testing.assert_frame_equal(result[2], pd.DataFrame({"test1": [3, 3, 3, 3], "test2": [3, 3, 3, 3]}))
+    pd.testing.assert_frame_equal(
+        result[2], pd.DataFrame({"test1": [untested, untested, untested, untested], "test2": [untested, untested, untested, untested]})
+    )
 
 
 def test_group_iterator(df_ind):
@@ -362,9 +365,9 @@ def test_group_iterator(df_ind):
 @pytest.mark.parametrize(
     "return_method, exp",
     [
-        ("all", {"test1": [1, 0, 0, 1], "test2": [1, 1, 0, 0]}),
-        ("passed", {"test1": [1, 0, 0, 1], "test2": [1, 3, 3, 0]}),
-        ("failed", {"test1": [1, 0, 0, 1], "test2": [3, 1, 0, 3]}),
+        ("all", {"test1": [failed, passed, passed, failed], "test2": [failed, failed, passed, passed]}),
+        ("passed", {"test1": [failed, passed, passed, failed], "test2": [failed, untested, untested, passed]}),
+        ("failed", {"test1": [failed, passed, passed, failed], "test2": [untested, failed, passed, untested]}),
     ],
 )
 def test_run_qc_engine(df_ind, return_method, exp):
@@ -394,9 +397,9 @@ def test_run_qc_engine(df_ind, return_method, exp):
 @pytest.mark.parametrize(
     "return_method, exp",
     [
-        ("all", {"test1": [1, 0, 0, 1], "test2": [1, 1, 0, 0]}),
-        ("passed", {"test1": [1, 0, 0, 1], "test2": [1, 3, 3, 0]}),
-        ("failed", {"test1": [1, 0, 0, 1], "test2": [3, 1, 0, 3]}),
+        ("all", {"test1": [failed, passed, passed, failed], "test2": [failed, failed, passed, passed]}),
+        ("passed", {"test1": [failed, passed, passed, failed], "test2": [failed, untested, untested, passed]}),
+        ("failed", {"test1": [failed, passed, passed, failed], "test2": [untested, failed, passed, untested]}),
     ],
 )
 def test_do_multiple_check(df_ind, qc_dict, return_method, exp):
@@ -408,9 +411,9 @@ def test_do_multiple_check(df_ind, qc_dict, return_method, exp):
 @pytest.mark.parametrize(
     "return_method, exp",
     [
-        ("all", {"test1": [1, 0, 0, 1], "test2": [1, 1, 0, 0]}),
-        ("passed", {"test1": [1, 0, 0, 1], "test2": [1, 3, 3, 0]}),
-        ("failed", {"test1": [1, 0, 0, 1], "test2": [3, 1, 0, 3]}),
+        ("all", {"test1": [failed, passed, passed, failed], "test2": [failed, failed, passed, passed]}),
+        ("passed", {"test1": [failed, passed, passed, failed], "test2": [failed, untested, untested, passed]}),
+        ("failed", {"test1": [failed, passed, passed, failed], "test2": [untested, failed, passed, untested]}),
     ],
 )
 def test_do_multiple_individual_check(df_ind, qc_dict, return_method, exp):
@@ -469,9 +472,27 @@ def test_multiple_individual_check_raises_4():
 @pytest.mark.parametrize(
     "return_method, exp",
     [
-        ("all", {"test1": [0, 1, 0, 0, 0, 0, 0, 1, 0, 0], "test2": [0, 1, 0, 0, 0, 0, 0, 1, 0, 0]}),
-        ("passed", {"test1": [0, 1, 0, 0, 0, 0, 0, 1, 0, 0], "test2": [3, 1, 3, 3, 3, 3, 3, 1, 3, 3]}),
-        ("failed", {"test1": [0, 1, 0, 0, 0, 0, 0, 1, 0, 0], "test2": [0, 3, 0, 0, 0, 0, 0, 3, 0, 0]}),
+        (
+            "all",
+            {
+                "test1": [passed, failed, passed, passed, passed, passed, passed, failed, passed, passed],
+                "test2": [passed, failed, passed, passed, passed, passed, passed, failed, passed, passed],
+            },
+        ),
+        (
+            "passed",
+            {
+                "test1": [passed, failed, passed, passed, passed, passed, passed, failed, passed, passed],
+                "test2": [untested, failed, untested, untested, untested, untested, untested, failed, untested, untested],
+            },
+        ),
+        (
+            "failed",
+            {
+                "test1": [passed, failed, passed, passed, passed, passed, passed, failed, passed, passed],
+                "test2": [passed, untested, passed, passed, passed, passed, passed, untested, passed, passed],
+            },
+        ),
     ],
 )
 def test_multiple_sequential_check(df_seq, qc_dict_seq, return_method, exp):
