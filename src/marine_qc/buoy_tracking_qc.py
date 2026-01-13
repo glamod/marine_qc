@@ -1,6 +1,5 @@
 """
-Buoy tracking QC module
-=======================
+Buoy tracking QC module.
 
 Module containing QC functions for sequential reports from a single drifting buoy.
 """
@@ -53,7 +52,6 @@ def track_day_test(
 ) -> bool:
     """
     Given date, time, lat and lon calculate if the sun elevation is > elevdlim.
-    If so return daytime is True
 
     This is the "day" test used by tracking QC to decide whether an SST measurement is night or day.
     This is important because daytime diurnal heating can affect comparison with an SST background.
@@ -62,20 +60,20 @@ def track_day_test(
 
     Parameters
     ----------
-    year: int
-        Year
-    month: int
-        Month
-    day: int
-        Day
-    hour: float
-        Hour expressed as decimal fraction (e.g. 20.75 = 20:45 pm)
-    lat: float
-        Latitude in degrees
-    lon: float
-        Longitude in degrees
-    elevdlim: float, default: -2.5
-        Elevation day/night delimiter in degrees above horizon
+    year : int
+        Year.
+    month : int
+        Month.
+    day : int
+        Day.
+    hour : float
+        Hour expressed as decimal fraction (e.g. 20.75 = 20:45 pm).
+    lat : float
+        Latitude in degrees.
+    lon : float
+        Longitude in degrees.
+    elevdlim : float, default: -2.5
+        Elevation day/night delimiter in degrees above horizon.
 
     Returns
     -------
@@ -132,18 +130,19 @@ def track_day_test(
 
 def is_monotonic(inarr: Sequence[float]) -> bool:
     """
-    Tests if elements in an array are increasing monotonically. i.e. each element
-    is greater than or equal to the preceding element.
+    Test if elements in an array are increasing monotonically.
+
+    I.e. each element is greater than or equal to the preceding element.
 
     Parameters
     ----------
-    inarr: array-like of datetime, shape (n,)
+    inarr : array-like of datetime, shape (n,)
         1-dimensional date array.
 
     Returns
     -------
     bool
-        True if array is increasing monotonically, False otherwise
+        True if array is increasing monotonically, False otherwise.
     """
     for i in range(1, len(inarr)):
         if inarr[i] < inarr[i - 1]:
@@ -153,7 +152,7 @@ def is_monotonic(inarr: Sequence[float]) -> bool:
 
 class SpeedChecker:
     """
-    Class used to carry out :py:func:`.do_speed_check`
+    Class used to carry out :py:func:`.do_speed_check`.
 
     The check identifies whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
     precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
@@ -178,6 +177,24 @@ class SpeedChecker:
     confuse such a simple check (e.g. pausing at sea, crisscrossing its own path) and once some erroneous
     movement is detected it is likely a human operator can then better pick out the actual bad data. False
     fails caused by positional errors (particularly in fast ocean currents) will also need reinstating.
+
+    Parameters
+    ----------
+    lons : array-like of float, shape (n,)
+            1-dimensional longitude array in degrees.
+    lats : array-like of float, shape (n,)
+            1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
+            1-dimensional date array.
+    speed_limit : float
+            Maximum allowable speed for an in situ drifting buoy (metres per second).
+    min_win_period : float
+            Minimum period of time in days over which position is assessed for speed estimates (see
+            description).
+    max_win_period : float
+            Maximum period of time in days over which position is assessed for speed estimates
+            (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
+            min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
     """
 
     def __init__(
@@ -194,19 +211,19 @@ class SpeedChecker:
 
         Parameters
         ----------
-        lons: array-like of float, shape (n,)
+        lons : array-like of float, shape (n,)
             1-dimensional longitude array in degrees.
-        lats: array-like of float, shape (n,)
+        lats : array-like of float, shape (n,)
             1-dimensional latitude array in degrees.
-        dates: array-like of datetime, shape (n,)
+        dates : array-like of datetime, shape (n,)
             1-dimensional date array.
-        speed_limit: float
-            maximum allowable speed for an in situ drifting buoy (metres per second)
-        min_win_period: float
-            minimum period of time in days over which position is assessed for speed estimates (see
-            description)
-        max_win_period: float
-            maximum period of time in days over which position is assessed for speed estimates
+        speed_limit : float
+            Maximum allowable speed for an in situ drifting buoy (metres per second).
+        min_win_period : float
+            Minimum period of time in days over which position is assessed for speed estimates (see
+            description).
+        max_win_period : float
+            Maximum period of time in days over which position is assessed for speed estimates
             (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
             min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
         """
@@ -222,12 +239,33 @@ class SpeedChecker:
         # Initialise QC outcomes with untested
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
-    def get_qc_outcomes(self):
-        """Return the QC outcomes"""
+    def get_qc_outcomes(self) -> np.ndarray:
+        """
+        Retrieve the QC outcomes for all observations.
+
+        Returns
+        -------
+        np.ndarray
+            Array of QC flags for each observation (0 = passed, 1 = failed, untested otherwise).
+        """
         return self.qc_outcomes
 
     def valid_parameters(self) -> bool:
-        """Check the parameters are valid. Raises a warning and returns False if not valid"""
+        """
+        Validate the QC parameters to ensure they are sensible.
+
+        Checks that:
+        - `speed_limit` is non-negative.
+        - `min_win_period` is non-negative.
+        - `max_win_period` is greater than or equal to `min_win_period`.
+
+        Warnings are raised for any invalid parameters.
+
+        Returns
+        -------
+        bool
+            True if all parameters are valid, False otherwise.
+        """
         valid = False
 
         if not (self.speed_limit >= 0):
@@ -244,7 +282,20 @@ class SpeedChecker:
         return valid
 
     def valid_arrays(self) -> bool:
-        """Check the input arrays are valid. Raises a warning and returns False if not valid"""
+        """
+        Validate the input observation arrays (longitude, latitude, and time differences).
+
+        Checks for:
+        - NaN values in longitude, latitude, or time arrays.
+        - Monotonicity of the time array (`self.hrs`).
+
+        Warnings are raised for any issues detected.
+
+        Returns
+        -------
+        bool
+            True if all arrays are valid, False otherwise.
+        """
         valid = False
 
         if any(np.isnan(self.lon)):
@@ -261,7 +312,7 @@ class SpeedChecker:
         return valid
 
     def do_speed_check(self):
-        """Perform the actual speed check"""
+        """Perform the actual speed check."""
         nrep = self.nreps
         min_win_period_hours = self.min_win_period * 24.0
         max_win_period_hours = self.max_win_period * 24.0
@@ -305,12 +356,10 @@ class SpeedChecker:
             i += 1
             time_to_end = self.hrs[-1] - self.hrs[i]
 
-        return
-
 
 class NewSpeedChecker:
     """
-    Class used to carry out :py:func:`.do_new_speed_check`
+    Class used to carry out :py:func:`.do_new_speed_check`.
 
     Check to see whether a drifter has been picked up by a ship (out of water) based on 1/100th degree
     precision positions. A flag is set for each input report: flag=1 for reports deemed picked up,
@@ -346,6 +395,29 @@ class NewSpeedChecker:
     * speed_limit: maximum allowable speed for an in situ drifting buoy (metres per second)
     * min_win_period: minimum period of time in days over which position is assessed for speed estimates (see
       description)
+
+    Parameters
+    ----------
+    lons : array-like of float, shape (n,)
+            1-dimensional longitude array in degrees.
+    lats : array-like of float, shape (n,)
+            1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
+            1-dimensional date array.
+    speed_limit : float
+            Maximum allowable speed for an in situ drifting buoy (metres per second).
+    min_win_period : float
+            Minimum period of time in days over which position is assessed for speed estimates (see description).
+    ship_speed_limit : float
+            Ship speed limit for the IQUAM track check.
+    delta_d : float
+            The smallest increment in distance that can be resolved. For 0.01 degrees of lat-lon this is 1.11 km.
+            Used in the IQUAM track check.
+    delta_t : float
+            The smallest increment in time that can be resolved. For hourly data expressed as a float this is 0.01
+            hours. Used in the IQUAM track check.
+    n_neighbours : int
+            Number of neighbours considered in the IQUAM track check.
     """
 
     def __init__(
@@ -361,30 +433,31 @@ class NewSpeedChecker:
         n_neighbours: int,
     ):
         """
-        Object used to perform the new speed check
+        Object used to perform the new speed check.
 
         Parameters
         ----------
-        lons: array-like of float, shape (n,)
+        lons : array-like of float, shape (n,)
             1-dimensional longitude array in degrees.
-        lats: array-like of float, shape (n,)
+        lats : array-like of float, shape (n,)
             1-dimensional latitude array in degrees.
-        dates: array-like of datetime, shape (n,)
+        dates : array-like of datetime, shape (n,)
             1-dimensional date array.
-        speed_limit: float
-            maximum allowable speed for an in situ drifting buoy (metres per second)
-        min_win_period: float
-            minimum period of time in days over which position is assessed for speed estimates (see description)
-        ship_speed_limit: float
-            Ship speed limit for the IQUAM track check
-        delta_d: float
-            The smallest increment in distance that can be resolved. For 0.01 degrees of lat-lon this is 1.11 km. Used
-            in the IQUAM track check
-        delta_t: float
-            The smallest increment in time that can be resolved. For hourly data expressed as a float this is 0.01
-            hours. Used in the IQUAM track check
-        n_neighbours: int
-            Number of neighbours considered in the IQUAM track check
+        speed_limit : float
+            Maximum allowable speed for an in situ drifting buoy (metres per second).
+        min_win_period : float
+            Minimum period of time in days over which position is assessed for speed estimates (see description).
+        ship_speed_limit : float
+            Ship speed limit for the IQUAM track check.
+        delta_d : float
+            The smallest increment in distance that can be resolved. For 0.01 degrees of lat-lon this is 1.11 km.
+            Used in the IQUAM track check.
+        delta_t : float
+            The smallest increment in time that can be resolved.
+            For hourly data expressed as a float this is 0.01 hours.
+            Used in the IQUAM track check.
+        n_neighbours : int
+            Number of neighbours considered in the IQUAM track check.
         """
         self.lon = lons
         self.lat = lats
@@ -405,12 +478,32 @@ class NewSpeedChecker:
         # Initialise QC outcomes with untested
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
-    def get_qc_outcomes(self):
-        """Return the QC outcomes"""
+    def get_qc_outcomes(self) -> np.ndarray:
+        """
+        Retrieve the QC outcomes for all observations.
+
+        Returns
+        -------
+        np.ndarray
+            Array of QC flags for each observation (0 = valid, 1 = flagged, untested otherwise).
+        """
         return self.qc_outcomes
 
     def valid_parameters(self) -> bool:
-        """Check the parameters are valid. Raises a warning and returns False if not valid"""
+        """
+        Validate the QC parameters to ensure they are sensible.
+
+        Checks that:
+        - `speed_limit` is non-negative.
+        - `min_win_period` is non-negative.
+
+        Warnings are raised for any invalid parameters.
+
+        Returns
+        -------
+        bool
+            True if all parameters are valid, False otherwise.
+        """
         valid = False
         if not (self.speed_limit >= 0):
             warnings.warn(UserWarning(f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."), stacklevel=2)
@@ -422,7 +515,20 @@ class NewSpeedChecker:
         return valid
 
     def valid_arrays(self) -> bool:
-        """Check the input arrays are valid. Raises a warning and returns False if not valid"""
+        """
+        Validate the input arrays (longitude, latitude, and time differences).
+
+        Checks for:
+        - NaN values in longitude, latitude, or time arrays.
+        - Monotonicity of the time array (`self.hrs`).
+
+        Warnings are raised for any issues detected.
+
+        Returns
+        -------
+        bool
+            True if all arrays are valid, False otherwise.
+        """
         valid = False
 
         if any(np.isnan(self.lon)):
@@ -440,8 +546,10 @@ class NewSpeedChecker:
 
     def perform_iquam_track_check(self):
         """
-        Perform iQuam track check as if reports are from a ship. A deep copy of reps is made so metadata can be
-        safely modified ahead of iQuam check an array of qc flags (iquam_track_ship) is the result
+        Perform iQuam track check as if reports are from a ship.
+
+        A deep copy of reps is made so metadata can be safely modified ahead of iQuam check an array
+        of qc flags (iquam_track_ship) is the result.
         """
         self.iquam_track_ship = do_iquam_track_check(
             self.lat,
@@ -454,7 +562,7 @@ class NewSpeedChecker:
         )
 
     def do_new_speed_check(self) -> None:
-        """Perform the actual new speed check"""
+        """Perform the actual new speed check."""
         nrep = self.nreps
         min_win_period_hours = self.min_win_period * 24.0
 
@@ -496,7 +604,7 @@ class NewSpeedChecker:
 
 class AgroundChecker:
     """
-    Class used to carry out :py:func:`.do_aground_check`
+    Class used to carry out :py:func:`.do_aground_check`.
 
     Check to see whether a drifter has run aground based on 1/100th degree precision positions.
     A flag is set for each input report: flag=1 for reports deemed aground, else flag=0.
@@ -523,6 +631,23 @@ class AgroundChecker:
     * max_win_period: maximum period of time in days over which position is assessed for no movement (this should be
       greater than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
       up to 2-days in sampling).
+
+    Parameters
+    ----------
+    lons : array-like of float, shape (n,)
+            1-dimensional longitude array in degrees.
+    lats : array-like of float, shape (n,)
+            1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
+            1-dimensional date array.
+    smooth_win : int
+            Length of window (odd number) in datapoints used for smoothing lon/lat.
+    min_win_period : int
+            Minimum period of time in days over which position is assessed for no movement (see description).
+    max_win_period : int or None
+            Maximum period of time in days over which position is assessed for no movement (this should be greater
+            than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
+            up to 2-days in sampling).
     """
 
     # displacement resulting from 1/100th deg 'position-jitter' at the equator (km)
@@ -542,18 +667,18 @@ class AgroundChecker:
 
         Parameters
         ----------
-        lons: array-like of float, shape (n,)
+        lons : array-like of float, shape (n,)
             1-dimensional longitude array in degrees.
-        lats: array-like of float, shape (n,)
+        lats : array-like of float, shape (n,)
             1-dimensional latitude array in degrees.
-        dates: array-like of datetime, shape (n,)
+        dates : array-like of datetime, shape (n,)
             1-dimensional date array.
-        smooth_win: int
-            length of window (odd number) in datapoints used for smoothing lon/lat
-        min_win_period: int
-            minimum period of time in days over which position is assessed for no movement (see description)
-        max_win_period: int or None
-            maximum period of time in days over which position is assessed for no movement (this should be greater
+        smooth_win : int
+            Length of window (odd number) in datapoints used for smoothing lon/lat.
+        min_win_period : int
+            Minimum period of time in days over which position is assessed for no movement (see description).
+        max_win_period : int or None
+            Maximum period of time in days over which position is assessed for no movement (this should be greater
             than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
             up to 2-days in sampling).
         """
@@ -574,11 +699,11 @@ class AgroundChecker:
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
     def get_qc_outcomes(self) -> Sequence[int]:
-        """Return the QC outcomes"""
+        """Return the QC outcomes."""
         return self.qc_outcomes
 
     def valid_parameters(self) -> bool:
-        """Check the parameters are valid. Raises a warning and returns False if not valid"""
+        """Check the parameters are valid. Raises a warning and returns False if not valid."""
         valid = False
         if self.smooth_win < 1:
             warnings.warn(UserWarning("Invalid smooth_win: {self.smooth_win}. Must be positive."), stacklevel=2)
@@ -598,7 +723,7 @@ class AgroundChecker:
         return valid
 
     def valid_arrays(self) -> bool:
-        """Check the input arrays are valid. Raises a warning and returns False if not valid"""
+        """Check the input arrays are valid. Raises a warning and returns False if not valid."""
         valid = False
 
         if any(np.isnan(self.lon)):
@@ -615,7 +740,7 @@ class AgroundChecker:
         return valid
 
     def smooth_arrays(self):
-        """Perform the preprocessing of the lat lon and time arrays"""
+        """Perform the preprocessing of the lat lon and time arrays."""
         half_win = int((self.smooth_win - 1) / 2)
         # create smoothed lon/lat timeseries  # length of series after smoothing
         nrep_smooth = self.nreps - self.smooth_win + 1
@@ -636,7 +761,7 @@ class AgroundChecker:
         self.hrs_smooth = hrs_smooth
 
     def do_aground_check(self):
-        """Perform the actual aground check"""
+        """Perform the actual aground check."""
         half_win = (self.smooth_win - 1) / 2
         min_win_period_hours = self.min_win_period * 24.0
         if self.max_win_period is not None:
@@ -735,24 +860,39 @@ class SSTTailChecker:
 
     Parameters
     ----------
-    long_win_len: int
-        Length of window (in data-points) over which to make long tail-check (must be an odd number)
-    long_err_std_n: float
-        Number of standard deviations of combined background and drifter bias error, beyond which
-        data fail bias check
-    short_win_len: int
-        Length of window (in data-points) over which to make the short tail-check
-    short_err_std_n: float
-        Number of standard deviations of combined background and drifter error, beyond which data
-        are deemed suspicious
-    short_win_n_bad: int
-        Minimum number of suspicious data points required for failure of short check window
-    drif_inter: float
-        spread of biases expected in drifter data (standard deviation, degC)
-    drif_intra: float
-        Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC)
-    background_err_lim: float
-        Background error variance beyond which the SST background is deemed unreliable (degC squared)
+    lat : array-like of float, shape (n,)
+            1-dimensional latitude array in degrees.
+    lon : array-like of float, shape (n,)
+            1-dimensional longitude array in degrees.
+    sst : array-like of float, shape (n,)
+            1-dimensional array of sea surface temperatures in K.
+    ostia : array-like of float, shape (n,)
+            1-dimensional array of background field sea surface temperatures in K.
+    ice : array-like of float, shape (n,)
+            1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+    bgvar : array-like of float, shape (n,)
+            1-dimensional array of background sea surface temperature fields variances in K^2.
+    dates : array-like of datetime, shape (n,)
+            1-dimensional date array.
+    long_win_len : int
+            Length of window (in data-points) over which to make long tail-check (must be an odd number).
+    long_err_std_n : float
+            Number of standard deviations of combined background and drifter bias error, beyond which
+            data fail bias check.
+    short_win_len : int
+            Length of window (in data-points) over which to make the short tail-check.
+    short_err_std_n : float
+            Number of standard deviations of combined background and drifter error, beyond which data
+            are deemed suspicious.
+    short_win_n_bad : int
+            Minimum number of suspicious data points required for failure of short check window.
+    drif_inter : float
+            Spread of biases expected in drifter data (standard deviation, degC or K).
+    drif_intra : float
+            Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
+            degC or K).
+    background_err_lim : float
+            Background error variance beyond which the SST background is deemed unreliable (degC squared).
     """
 
     def __init__(
@@ -774,43 +914,44 @@ class SSTTailChecker:
         background_err_lim: float,
     ):
         """
-        Create SSTTailChecker object to perform the SST Tail QC Check
+        Create SSTTailChecker object to perform the SST Tail QC Check.
 
         Parameters
         ----------
-        lat: array-like of float, shape (n,)
+        lat : array-like of float, shape (n,)
             1-dimensional latitude array in degrees.
-        lon: array-like of float, shape (n,)
+        lon : array-like of float, shape (n,)
             1-dimensional longitude array in degrees.
-        sst: array-like of float, shape (n,)
+        sst : array-like of float, shape (n,)
             1-dimensional array of sea surface temperatures in K.
-        ostia: array-like of float, shape (n,)
-            1-dimensional array of background field sea surface temperatures in K
-        ice: array-like of float, shape (n,)
-            1-dimensional array of ice concentrations in the range 0.0 to 1.0
-        bgvar: array-like of float, shape (n,)
-            1-dimensional array of background sea surface temperature fields variances in K^2
-        dates: array-like of datetime, shape (n,)
+        ostia : array-like of float, shape (n,)
+            1-dimensional array of background field sea surface temperatures in K.
+        ice : array-like of float, shape (n,)
+            1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+        bgvar : array-like of float, shape (n,)
+            1-dimensional array of background sea surface temperature fields variances in K^2.
+        dates : array-like of datetime, shape (n,)
             1-dimensional date array.
-        long_win_len: int
-            length of window (in data-points) over which to make long tail-check (must be an odd number)
-        long_err_std_n: float
-            number of standard deviations of combined background and drifter bias error, beyond which
-            data fail bias check
-        short_win_len: int
-            length of window (in data-points) over which to make the short tail-check
-        short_err_std_n: float
-            number of standard deviations of combined background and drifter error, beyond which data
-            are deemed suspicious
-        short_win_n_bad: int
-            minimum number of suspicious data points required for failure of short check window
-        drif_inter: float
-            spread of biases expected in drifter data (standard deviation, degC or K)
-        drif_intra: float
-            maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
-            degC or K)
-        background_err_lim: background error variance beyond which the SST background is deemed unreliable (degC
-            squared)
+        long_win_len : int
+            Length of window (in data-points) over which to make long tail-check (must be an odd number).
+        long_err_std_n : float
+            Number of standard deviations of combined background and drifter bias error, beyond which
+            data fail bias check.
+        short_win_len : int
+            Length of window (in data-points) over which to make the short tail-check.
+        short_err_std_n : float
+            Number of standard deviations of combined background and drifter error, beyond which data
+            are deemed suspicious.
+        short_win_n_bad : int
+            Minimum number of suspicious data points required for failure of short check window.
+        drif_inter : float
+            Spread of biases expected in drifter data (standard deviation, degC or K).
+        drif_intra : float
+            Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
+            degC or K).
+        background_err_lim : float
+            Background error variance beyond which the SST background is deemed unreliable (degC
+            squared).
         """
         self.nreps = len(sst)
 
@@ -842,11 +983,11 @@ class SSTTailChecker:
         self.background_err_lim = background_err_lim
 
     def get_qc_outcomes(self):
-        """Return the QC outcomes"""
+        """Return the QC outcomes."""
         return self.qc_outcomes
 
     def valid_parameters(self):
-        """Check the parameters are valid. Raises a warning and returns False if not valid"""
+        """Check the parameters are valid. Raises a warning and returns False if not valid."""
         valid = False
 
         if self.long_win_len < 1:
@@ -873,7 +1014,7 @@ class SSTTailChecker:
         return valid
 
     def do_sst_tail_check(self, start_tail: bool):
-        """Perform the actual SST tail check"""
+        """Perform the actual SST tail check."""
         if not self.valid_parameters():
             self.qc_outcomes[:] = untestable
             return
@@ -925,28 +1066,28 @@ class SSTTailChecker:
     @staticmethod
     def _parse_rep(lat, lon, ostia, ice, bgvar, dates) -> (float, float, float, bool):
         """
-        Process a report
+        Process a report.
 
         Parameters
         ----------
-        lat: float
-            Latitude
-        lon: float
-            Longitude
-        ostia: float
-            OSTIA value matched to this observation
-        ice: float
-            Ice concentration value matched to this observation
-        bgvar: float
-            Background variance value matched to this observation
-        dates: np.datetime
-            Date and time of the observation
+        lat : float
+            Latitude.
+        lon : float
+            Longitude.
+        ostia : float
+            OSTIA value matched to this observation.
+        ice : float
+            Ice concentration value matched to this observation.
+        bgvar : float
+            Background variance value matched to this observation.
+        dates : np.datetime
+            Date and time of the observation.
 
         Returns
         -------
         (float, float, float, bool)
             Background value, ice concentration, background variance, and a boolean variable indicating whether the
-            report is "good"
+            report is "good".
         """
         invalid_ob = False
 
@@ -981,7 +1122,7 @@ class SSTTailChecker:
         return bg_val, ice, bgvar, good_match, invalid_ob
 
     def _preprocess_reps(self) -> bool:
-        """Process the reps and calculate the values used in the QC check"""
+        """Process the reps and calculate the values used in the QC check."""
         invalid_series = False
         # test and filter out obs with unsuitable background matches
         reps_ind = []  # type: list
@@ -1025,12 +1166,12 @@ class SSTTailChecker:
 
     def _do_long_tail_check(self, forward: bool = True) -> None:
         """
-        Perform the long tail check
+        Perform the long tail check.
 
         Parameters
         ----------
-        forward: bool
-            Flag to set for a forward (True) or backward (False) pass of the long tail check
+        forward : bool
+            Flag to set for a forward (True) or backward (False) pass of the long tail check.
 
         Returns
         -------
@@ -1072,12 +1213,12 @@ class SSTTailChecker:
 
         Parameters
         ----------
-        first_pass_ind: int
-            Index
-        last_pass_ind: int
-            Index
-        forward: bool
-            Flag to set for a forward (True) or backward (False) pass of the short tail check
+        first_pass_ind : int
+            Index.
+        last_pass_ind : int
+            Index.
+        forward : bool
+            Flag to set for a forward (True) or backward (False) pass of the short tail check.
 
         Returns
         -------
@@ -1125,8 +1266,7 @@ class SSTTailChecker:
 
 class SSTBiasedNoisyChecker:
     """
-    Class used to perform the :py:func:`.do_sst_biased_check`,
-    :py:func:`.do_sst_noisy_check`, and :py:func:`.do_sst_biased_noisy_short_check`.
+    Class used to perform the :py:func:`.do_sst_biased_check`, :py:func:`.do_sst_noisy_check`, and :py:func:`.do_sst_biased_noisy_short_check`.
 
     Check to see whether a drifter sea surface temperature record is unacceptably biased or noisy as a whole.
 
@@ -1155,6 +1295,38 @@ class SSTBiasedNoisyChecker:
     chosen based on histograms of drifter-background bias. An alternative approach would be to treat the background
     error as entirely correlated across a long-record, which maximises its possible impact on the bias assessment. In
     this case the histogram approach was used as the limit could be tuned to give better results.
+
+    Parameters
+    ----------
+    lat : array-like of float, shape (n,)
+            1-dimensional latitude array in degrees.
+    lon : array-like of float, shape (n,)
+            1-dimensional longitude array in degrees.
+    dates : array-like of datetime, shape (n,)
+            1-dimensional date array.
+    sst : array-like of float, shape (n,)
+            1-dimensional sea surface temperature array in K.
+    ostia : array-like of float, shape (n,)
+            1-dimensional background field sea surface temperature array in K.
+    bgvar : array-like of float, shape (n,)
+            1-dimensional background variance array in K^2.
+    ice : array-like of float, shape (n,)
+            1-dimensional ice concentration array in range 0,1.
+    n_eval : int
+            The minimum number of drifter observations required to be assessed by the long-record check.
+    bias_lim : float
+            Maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K).
+    drif_intra : float
+            Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K).
+    drif_inter : float
+            Spread of biases expected in drifter data (standard deviation, degC or K).
+    err_std_n : float
+            Number of standard deviations of combined background and drifter error, beyond which
+            short-record data are deemed suspicious.
+    n_bad : int
+            Minimum number of suspicious data points required for failure of short-record check.
+    background_err_lim : float
+            Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
     """
 
     def __init__(
@@ -1174,41 +1346,6 @@ class SSTBiasedNoisyChecker:
         n_bad: int,
         background_err_lim: float,
     ):
-        """
-        Create an object for performing the SST Biased, Noisy and Short Checks.
-
-        Parameters
-        ----------
-        lat: array-like of float, shape (n,)
-            1-dimensional latitude array in degrees.
-        lon: array-like of float, shape (n,)
-            1-dimensional longitude array in degrees.
-        dates: array-like of datetime, shape (n,)
-            1-dimensional date array.
-        sst: array-like of float, shape (n,)
-            1-dimensional sea surface temperature array in K
-        ostia: array-like of float, shape (n,)
-            1-dimensional background field sea surface temperature array in K.
-        bgvar: array-like of float, shape (n,)
-            1-dimensional background variance array in K^2
-        ice: array-like of float, shape (n,)
-            1-dimensional ice concentration array in range 0,1
-        n_eval: int
-            the minimum number of drifter observations required to be assessed by the long-record check
-        bias_lim: float
-            maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K)
-        drif_intra: float
-            maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K)
-        drif_inter: float
-            spread of biases expected in drifter data (standard deviation, degC or K)
-        err_std_n: float
-            number of standard deviations of combined background and drifter error, beyond which
-            short-record data are deemed suspicious
-        n_bad: int
-            minimum number of suspicious data points required for failure of short-record check
-        background_err_lim: float
-            background error variance beyond which the SST background is deemed unreliable (degC squared or K squared)
-        """
         self.lat = lat
         self.lon = lon
         self.dates = dates
@@ -1237,7 +1374,7 @@ class SSTBiasedNoisyChecker:
         self.qc_outcomes_short = np.zeros(self.nreps) + untested
 
     def valid_parameters(self) -> bool:
-        """Check the parameters are valid. Raises a warning and returns False if not valid"""
+        """Check the parameters are valid. Raises a warning and returns False if not valid."""
         valid = False
         if self.n_eval < 1:
             warnings.warn(UserWarning("Invalid n_eval: {self.n_eval}. Must be positive."), stacklevel=2)
@@ -1259,19 +1396,19 @@ class SSTBiasedNoisyChecker:
         return valid
 
     def get_qc_outcomes_bias(self):
-        """Return the QC outcomes for the bias check"""
+        """Return the QC outcomes for the bias check."""
         return self.qc_outcomes_bias
 
     def get_qc_outcomes_noise(self):
-        """Return the QC outcomes for the noisy check"""
+        """Return the QC outcomes for the noisy check."""
         return self.qc_outcomes_noise
 
     def get_qc_outcomes_short(self):
-        """Return the QC outcomes for the short check"""
+        """Return the QC outcomes for the short check."""
         return self.qc_outcomes_short
 
     def set_all_qc_outcomes_to(self, input_state):
-        """Set all the QC outcomes to the specified input_state"""
+        """Set all the QC outcomes to the specified input_state."""
         if input_state not in [
             passed,
             failed,
@@ -1284,7 +1421,7 @@ class SSTBiasedNoisyChecker:
         self.qc_outcomes_bias[:] = input_state
 
     def do_sst_biased_noisy_check(self):
-        """Perform the bias/noise check QC"""
+        """Perform the bias/noise check QC."""
         if not self.valid_parameters():
             self.set_all_qc_outcomes_to(untestable)
             return
@@ -1307,31 +1444,31 @@ class SSTBiasedNoisyChecker:
     @staticmethod
     def _parse_rep(lat, lon, ostia, ice, bgvar, dates, background_err_lim) -> (float, float, float, bool, bool, bool):
         """
-        Extract QC-relevant variables from a marine report and
+        Extract QC-relevant variables from a marine report.
 
         Parameters
         ----------
-        lat: float
-            Latitude of the observation to be parsed
-        lon: float
-            Longitude of the observation to be parsed
-        ostia: float
-            Background SST field value
-        ice: float
-            Ice concentration field value
-        bgvar: float
-            Background variance field value
-        dates: datetime
+        lat : float
+            Latitude of the observation to be parsed.
+        lon : float
+            Longitude of the observation to be parsed.
+        ostia : float
+            Background SST field value.
+        ice : float
+            Ice concentration field value.
+        bgvar : float
+            Background variance field value.
+        dates : datetime
             Date and time of the observation to be parsed.
-        background_err_lim: float
-            background error variance beyond which the SST background is deemed unreliable (degC squared or K squared)
+        background_err_lim : float
+            Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
 
         Returns
         -------
         float, float, float, bool, bool, bool
             Returns the background SST value, ice value, background SST variance, a flag that indicates a good match,
-            and a flag that indicates if the background variance is valid, and a flag that indicates if the observation
-            is valid overall
+            and a flag that indicates if the background variance is valid, and a flag that indicates if
+            the observation is valid overall.
         """
         invalid_ob = False
         bg_val = ostia
@@ -1367,8 +1504,12 @@ class SSTBiasedNoisyChecker:
 
     def _preprocess_reps(self) -> bool:
         """
-        Fill SST anomalies and background errors used in the QC checks, as well as a flag
-        indicating missing or invalid background values.
+        Fill SST anomalies, background errors, and flags for invalid background values.
+
+        This method processes each observation to compute sea surface temperature (SST)
+        anomalies, background error standard deviations, and flags any missing or invalid
+        background values. It also checks whether the time series is sorted and sets
+        a mask flag if any background variances are masked.
         """
         invalid_series = False
         # test and filter out obs with unsuitable background matches
@@ -1418,7 +1559,7 @@ class SSTBiasedNoisyChecker:
         return invalid_series
 
     def _long_record_qc(self) -> None:
-        """Perform the long record check"""
+        """Perform the long record check."""
         sst_anom_avg = np.mean(self.sst_anom)
         sst_anom_stdev = np.std(self.sst_anom)
         bgerr_rms = np.sqrt(np.mean(self.bgerr**2))
@@ -1432,7 +1573,7 @@ class SSTBiasedNoisyChecker:
             self.qc_outcomes_noise[:] = failed
 
     def _short_record_qc(self) -> None:
-        """Perform the short record check"""
+        """Perform the short record check."""
         # Calculate the limit based on the combined uncertainties (background error, drifter inter and drifter intra
         # error) and then multiply by the err_std_n
         limit = self.err_std_n * np.sqrt(self.bgerr**2 + self.drif_inter**2 + self.drif_intra**2)
@@ -1454,23 +1595,23 @@ def do_speed_check(
     max_win_period: float,
 ) -> Sequence[int]:
     """
-    Perform the Track QC speed check
+    Perform the Track QC speed check.
 
     Parameters
     ----------
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    lats: array-like of float, shape (n,)
+    lats : array-like of float, shape (n,)
         1-dimensional latitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    speed_limit: float
-        maximum allowable speed for an in situ drifting buoy (metres per second)
-    min_win_period: float
-        minimum period of time in days over which position is assessed for speed estimates (see
-        description)
-    max_win_period: float
-        maximum period of time in days over which position is assessed for speed estimates
+    speed_limit : float
+        Maximum allowable speed for an in situ drifting buoy (metres per second).
+    min_win_period : float
+        Minimum period of time in days over which position is assessed for speed estimates (see
+        description).
+    max_win_period : float
+        Maximum period of time in days over which position is assessed for speed estimates
         (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
         min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
 
@@ -1480,8 +1621,8 @@ def do_speed_check(
         1-dimensional array containing QC flags.
         1 if speed check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * speed_limit = 2.5
@@ -1506,38 +1647,38 @@ def do_new_speed_check(
     n_neighbours: int,
 ):
     """
-    Perform the new speed check
+    Perform the new speed check.
 
     Parameters
     ----------
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    lats: array-like of float, shape (n,)
+    lats : array-like of float, shape (n,)
         1-dimensional latitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    speed_limit: float
-        maximum allowable speed for an in situ drifting buoy (metres per second)
-    min_win_period: float
-        minimum period of time in days over which position is assessed for speed estimates (see description)
-    ship_speed_limit: float
-        Ship speed limit for the IQUAM track check
-    delta_d: float
+    speed_limit : float
+        Maximum allowable speed for an in situ drifting buoy (metres per second).
+    min_win_period : float
+        Minimum period of time in days over which position is assessed for speed estimates (see description).
+    ship_speed_limit : float
+        Ship speed limit for the IQUAM track check.
+    delta_d : float
         The smallest increment in distance that can be resolved. For 0.01 degrees of lat-lon this is 1.11 km. Used
-        in the IQUAM track check
-    delta_t: float
+        in the IQUAM track check.
+    delta_t : float
         The smallest increment in time that can be resolved. For hourly data expressed as a float this is 0.01 hours.
-        Used in the IQUAM track check
-    n_neighbours: int
-        Number of neighbours considered in the IQUAM track check
+        Used in the IQUAM track check.
+    n_neighbours : int
+        Number of neighbours considered in the IQUAM track check.
 
     Returns
     -------
     array-like of int, shape (n,)
-        Array containing the QC outcomes for the new speed check
+        Array containing the QC outcomes for the new speed check.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * speed_limit = 3.0
@@ -1575,22 +1716,22 @@ def do_aground_check(
     max_win_period: int,
 ):
     """
-    Perform the aground check
+    Perform the aground check.
 
     Parameters
     ----------
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    lats: array-like of float, shape (n,)
+    lats : array-like of float, shape (n,)
         1-dimensional latitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    smooth_win: int
-        length of window (odd number) in datapoints used for smoothing lon/lat
-    min_win_period: int
-        minimum period of time in days over which position is assessed for no movement (see description)
-    max_win_period: int or None
-        maximum period of time in days over which position is assessed for no movement (this should be greater
+    smooth_win : int
+        Length of window (odd number) in datapoints used for smoothing lon/lat.
+    min_win_period : int
+        Minimum period of time in days over which position is assessed for no movement (see description).
+    max_win_period : int or None
+        Maximum period of time in days over which position is assessed for no movement (this should be greater
         than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
         up to 2-days in sampling).
 
@@ -1600,8 +1741,8 @@ def do_aground_check(
         1-dimensional array containing QC flags.
         1 if aground check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * smooth_win = 41
@@ -1622,20 +1763,20 @@ def do_new_aground_check(
     min_win_period: int,
 ):
     """
-    Perform the new aground check
+    Perform the new aground check.
 
     Parameters
     ----------
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    lats: array-like of float, shape (n,)
+    lats : array-like of float, shape (n,)
         1-dimensional latitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    smooth_win: int
-        length of window (odd number) in datapoints used for smoothing lon/lat
-    min_win_period: int
-        minimum period of time in days over which position is assessed for no movement (see description)
+    smooth_win : int
+        Length of window (odd number) in datapoints used for smoothing lon/lat.
+    min_win_period : int
+        Minimum period of time in days over which position is assessed for no movement (see description).
 
     Returns
     -------
@@ -1643,8 +1784,8 @@ def do_new_aground_check(
         1-dimensional array containing QC flags.
         1 if new aground check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * smooth_win = 41
@@ -1674,43 +1815,44 @@ def do_sst_start_tail_check(
     background_err_lim: float,
 ):
     """
-    Perform the SST Start Tail Check
+    Perform the SST Start Tail Check.
 
     Parameters
     ----------
-    lats: array-like of float, shape (n,)
-        1-dimensional latitude array in degrees.
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    sst: array-like of float, shape (n,)
-        1-dimensional array of sea surface temperatures in K.
-    ostia: array-like of float, shape (n,)
-        1-dimensional array of background field sea surface temperatures in K
-    ice: array-like of float, shape (n,)
-        1-dimensional array of ice concentrations in the range 0.0 to 1.0
-    bgvar: array-like of float, shape (n,)
-        1-dimensional array of background sea surface temperature fields variances in K^2
-    dates: array-like of datetime, shape (n,)
+    lats : array-like of float, shape (n,)
+        1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    long_win_len: int
-        length of window (in data-points) over which to make long tail-check (must be an odd number)
-    long_err_std_n: float
-        number of standard deviations of combined background and drifter bias error, beyond which
-        data fail bias check
-    short_win_len: int
-        length of window (in data-points) over which to make the short tail-check
-    short_err_std_n: float
-        number of standard deviations of combined background and drifter error, beyond which data
-        are deemed suspicious
-    short_win_n_bad: int
-        minimum number of suspicious data points required for failure of short check window
-    drif_inter: float
-        spread of biases expected in drifter data (standard deviation, degC or K)
-    drif_intra: float
-        maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
-        degC or K)
-    background_err_lim: background error variance beyond which the SST background is deemed unreliable (degC
-        squared)
+    sst : array-like of float, shape (n,)
+        1-dimensional array of sea surface temperatures in K.
+    ostia : array-like of float, shape (n,)
+        1-dimensional array of background field sea surface temperatures in K.
+    ice : array-like of float, shape (n,)
+        1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+    bgvar : array-like of float, shape (n,)
+        1-dimensional array of background sea surface temperature fields variances in K^2.
+    long_win_len : int
+        Length of window (in data-points) over which to make long tail-check (must be an odd number).
+    long_err_std_n : float
+        Number of standard deviations of combined background and drifter bias error, beyond which
+        data fail bias check.
+    short_win_len : int
+        Length of window (in data-points) over which to make the short tail-check.
+    short_err_std_n : float
+        Number of standard deviations of combined background and drifter error, beyond which data
+        are deemed suspicious.
+    short_win_n_bad : int
+        Minimum number of suspicious data points required for failure of short check window.
+    drif_inter : float
+        Spread of biases expected in drifter data (standard deviation, degC or K).
+    drif_intra : float
+        Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
+        degC or K).
+    background_err_lim : float
+        Background error variance beyond which the SST background is deemed unreliable (degC
+        squared).
 
     Returns
     -------
@@ -1718,8 +1860,8 @@ def do_sst_start_tail_check(
     1-dimensional array containing QC flags.
     1 if SST start tail check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * long_win_len = 121
@@ -1771,43 +1913,44 @@ def do_sst_end_tail_check(
     background_err_lim: float,
 ):
     """
-    Perform the SST Start Tail Check
+    Perform the SST Start Tail Check.
 
     Parameters
     ----------
-    lats: array-like of float, shape (n,)
-        1-dimensional latitude array in degrees.
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    sst: array-like of float, shape (n,)
-        1-dimensional array of sea surface temperatures in K.
-    ostia: array-like of float, shape (n,)
-        1-dimensional array of background field sea surface temperatures in K
-    ice: array-like of float, shape (n,)
-        1-dimensional array of ice concentrations in the range 0.0 to 1.0
-    bgvar: array-like of float, shape (n,)
-        1-dimensional array of background sea surface temperature fields variances in K^2
-    dates: array-like of datetime, shape (n,)
+    lats : array-like of float, shape (n,)
+        1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    long_win_len: int
-        length of window (in data-points) over which to make long tail-check (must be an odd number)
-    long_err_std_n: float
-        number of standard deviations of combined background and drifter bias error, beyond which
-        data fail bias check
-    short_win_len: int
-        length of window (in data-points) over which to make the short tail-check
-    short_err_std_n: float
-        number of standard deviations of combined background and drifter error, beyond which data
-        are deemed suspicious
-    short_win_n_bad: int
-        minimum number of suspicious data points required for failure of short check window
-    drif_inter: float
-        spread of biases expected in drifter data (standard deviation, degC or K)
-    drif_intra: float
-        maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
-        degC or K)
-    background_err_lim: background error variance beyond which the SST background is deemed unreliable (degC
-        squared)
+    sst : array-like of float, shape (n,)
+        1-dimensional array of sea surface temperatures in K.
+    ostia : array-like of float, shape (n,)
+        1-dimensional array of background field sea surface temperatures in K.
+    ice : array-like of float, shape (n,)
+        1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+    bgvar : array-like of float, shape (n,)
+        1-dimensional array of background sea surface temperature fields variances in K^2.
+    long_win_len : int
+        Length of window (in data-points) over which to make long tail-check (must be an odd number).
+    long_err_std_n : float
+        Number of standard deviations of combined background and drifter bias error, beyond which
+        data fail bias check.
+    short_win_len : int
+        Length of window (in data-points) over which to make the short tail-check.
+    short_err_std_n : float
+        Number of standard deviations of combined background and drifter error, beyond which data
+        are deemed suspicious.
+    short_win_n_bad : int
+        Minimum number of suspicious data points required for failure of short check window.
+    drif_inter : float
+        Spread of biases expected in drifter data (standard deviation, degC or K).
+    drif_intra : float
+        Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation,
+        degC or K).
+    background_err_lim : float
+        Background error variance beyond which the SST background is deemed unreliable (degC
+        squared).
 
     Returns
     -------
@@ -1815,8 +1958,8 @@ def do_sst_end_tail_check(
     1-dimensional array containing QC flags.
     1 if SST start tail check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * long_win_len = 121
@@ -1867,39 +2010,39 @@ def do_sst_biased_check(
     background_err_lim: float,
 ):
     """
-    Perform the SST bias check
+    Perform the SST bias check.
 
     Parameters
     ----------
-    lats: array-like of float, shape (n,)
-        1-dimensional latitude array in degrees.
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    lats : array-like of float, shape (n,)
+        1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    sst: array-like of float, shape (n,)
+    sst : array-like of float, shape (n,)
         1-dimensional sea surface temperature array in K.
-    ostia: array-like of float, shape (n,)
+    ostia : array-like of float, shape (n,)
         1-dimensional background sea surface temperature array in K.
-    bgvar: array-like of float, shape (n,)
-        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
-    ice: array-like of float, shape (n,)
+    ice : array-like of float, shape (n,)
         1-dimensional sea ice concentration array in range 0.0 to 1.0.
-    n_eval: int
-        the minimum number of drifter observations required to be assessed by the long-record check
-    bias_lim: float
-        maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K)
-    drif_intra: float
-        maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K)
-    drif_inter: float
-        spread of biases expected in drifter data (standard deviation, degC or K)
-    err_std_n: float
-        number of standard deviations of combined background and drifter error, beyond which short-record data are
-        deemed suspicious
-    n_bad: int
-        minimum number of suspicious data points required for failure of short-record check.
-    background_err_lim: float
-        background error variance beyond which the SST background is deemed unreliable (degC squared or K squared)
+    bgvar : array-like of float, shape (n,)
+        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
+    n_eval : int
+        The minimum number of drifter observations required to be assessed by the long-record check.
+    bias_lim : float
+        Maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K).
+    drif_intra : float
+        Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K).
+    drif_inter : float
+        Spread of biases expected in drifter data (standard deviation, degC or K).
+    err_std_n : float
+        Number of standard deviations of combined background and drifter error, beyond which short-record data are
+        deemed suspicious.
+    n_bad : int
+        Minimum number of suspicious data points required for failure of short-record check.
+    background_err_lim : float
+        Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
 
     Returns
     -------
@@ -1907,8 +2050,8 @@ def do_sst_biased_check(
         1-dimensional array containing QC flags.
         1 if SST bias check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * n_eval = 30
@@ -1957,39 +2100,39 @@ def do_sst_noisy_check(
     background_err_lim: float,
 ):
     """
-    Perform the SST noise check
+    Perform the SST noise check.
 
     Parameters
     ----------
-    lats: array-like of float, shape (n,)
-        1-dimensional latitude array in degrees.
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    lats : array-like of float, shape (n,)
+        1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    sst: array-like of float, shape (n,)
+    sst : array-like of float, shape (n,)
         1-dimensional sea surface temperature array in K.
-    ostia: array-like of float, shape (n,)
+    ostia : array-like of float, shape (n,)
         1-dimensional background sea surface temperature array in K.
-    bgvar: array-like of float, shape (n,)
-        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
-    ice: array-like of float, shape (n,)
+    ice : array-like of float, shape (n,)
         1-dimensional sea ice concentration array in range 0.0 to 1.0.
-    n_eval: int
-        the minimum number of drifter observations required to be assessed by the long-record check
-    bias_lim: float
-        maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K)
-    drif_intra: float
-        maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K)
-    drif_inter: float
-        spread of biases expected in drifter data (standard deviation, degC or K)
-    err_std_n: float
-        number of standard deviations of combined background and drifter error, beyond which short-record data are
-        deemed suspicious
-    n_bad: int
-        minimum number of suspicious data points required for failure of short-record check.
-    background_err_lim: float
-        background error variance beyond which the SST background is deemed unreliable (degC squared or K squared)
+    bgvar : array-like of float, shape (n,)
+        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
+    n_eval : int
+        The minimum number of drifter observations required to be assessed by the long-record check.
+    bias_lim : float
+        Maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K).
+    drif_intra : float
+        Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K).
+    drif_inter : float
+        Spread of biases expected in drifter data (standard deviation, degC or K).
+    err_std_n : float
+        Number of standard deviations of combined background and drifter error, beyond which short-record data are
+        deemed suspicious.
+    n_bad : int
+        Minimum number of suspicious data points required for failure of short-record check.
+    background_err_lim : float
+        Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
 
     Returns
     -------
@@ -1997,8 +2140,8 @@ def do_sst_noisy_check(
         1-dimensional array containing QC flags.
         1 if SST noise check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * n_eval = 30
@@ -2047,39 +2190,39 @@ def do_sst_biased_noisy_short_check(
     background_err_lim: float,
 ):
     """
-    Perform the SST short check
+    Perform the SST short check.
 
     Parameters
     ----------
-    lats: array-like of float, shape (n,)
-        1-dimensional latitude array in degrees.
-    lons: array-like of float, shape (n,)
+    lons : array-like of float, shape (n,)
         1-dimensional longitude array in degrees.
-    dates: array-like of datetime, shape (n,)
+    lats : array-like of float, shape (n,)
+        1-dimensional latitude array in degrees.
+    dates : array-like of datetime, shape (n,)
         1-dimensional date array.
-    sst: array-like of float, shape (n,)
+    sst : array-like of float, shape (n,)
         1-dimensional sea surface temperature array in K.
-    ostia: array-like of float, shape (n,)
+    ostia : array-like of float, shape (n,)
         1-dimensional background sea surface temperature array in K.
-    bgvar: array-like of float, shape (n,)
-        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
-    ice: array-like of float, shape (n,)
+    ice : array-like of float, shape (n,)
         1-dimensional sea ice concentration array in range 0.0 to 1.0.
-    n_eval: int
-        the minimum number of drifter observations required to be assessed by the long-record check
-    bias_lim: float
-        maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K)
-    drif_intra: float
-        maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K)
-    drif_inter: float
-        spread of biases expected in drifter data (standard deviation, degC or K)
-    err_std_n: float
-        number of standard deviations of combined background and drifter error, beyond which short-record data are
-        deemed suspicious
-    n_bad: int
-        minimum number of suspicious data points required for failure of short-record check.
-    background_err_lim: float
-        background error variance beyond which the SST background is deemed unreliable (degC squared or K squared)
+    bgvar : array-like of float, shape (n,)
+        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
+    n_eval : int
+        The minimum number of drifter observations required to be assessed by the long-record check.
+    bias_lim : float
+        Maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K).
+    drif_intra : float
+        Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K).
+    drif_inter : float
+        Spread of biases expected in drifter data (standard deviation, degC or K).
+    err_std_n : float
+        Number of standard deviations of combined background and drifter error, beyond which short-record data are
+        deemed suspicious.
+    n_bad : int
+        Minimum number of suspicious data points required for failure of short-record check.
+    background_err_lim : float
+        Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
 
     Returns
     -------
@@ -2087,8 +2230,8 @@ def do_sst_biased_noisy_short_check(
         1-dimensional array containing QC flags.
         1 if SST short check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * n_eval = 30

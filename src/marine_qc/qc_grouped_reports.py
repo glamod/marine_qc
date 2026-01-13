@@ -1,6 +1,5 @@
 """
-QC of grouped reports
-=====================
+QC of grouped reports.
 
 Module containing QC functions for quality control of grouped marine reports.
 """
@@ -47,25 +46,23 @@ from .time_control import (
 
 def get_threshold_multiplier(total_nobs: int, nob_limits: list[int], multiplier_values: list[float]) -> float:
     """
-    Find the highest value of i such that total_nobs is greater than nob_limits[i] and return multiplier_values[i]
+    Find the highest value of i such that total_nobs is greater than nob_limits[i] and return multiplier_values[i].
 
     This routine is used by the buddy check. It's a bit niche.
 
     Parameters
     ----------
     total_nobs : int
-        total number of neighbour observations
-
+        Total number of neighbour observations.
     nob_limits : list[int]
-        list containing the limiting numbers of observations in ascending order first element must be zero
-
+        List containing the limiting numbers of observations in ascending order first element must be zero.
     multiplier_values : list[float]
-        list containing the multiplier values associated.
+        List containing the multiplier values associated..
 
     Returns
     -------
     float
-        the multiplier value
+        The multiplier value.
     """
     if len(nob_limits) != len(multiplier_values):
         raise ValueError(f"Length mismatch: nob_limits has {len(nob_limits)}, but multiplier_values has{len(multiplier_values)}.")
@@ -97,7 +94,7 @@ class SuperObsGrid:
     """Class for gridding data in buddy check, based on numpy arrays."""
 
     def __init__(self):
-        """Initialise empty grid"""
+        """Initialise empty grid."""
         self.grid = np.zeros((360, 180, 73))  # type: np.ndarray
         self.buddy_mean = np.zeros((360, 180, 73))  # type: np.ndarray
         self.buddy_stdev = np.zeros((360, 180, 73))  # type: np.ndarray
@@ -115,22 +112,28 @@ class SuperObsGrid:
         day: SequenceFloatType = None,
     ) -> None:
         """
-        Add a series of observations to the grid and take the grid average. The observations should be
-        anomalies.
+        Add a series of observations to the grid and take the grid average.
 
         Parameters
         ----------
         lats : array-like of float, shape (n,)
             1-dimensional latitude array.
-
         lons : array-like of float, shape (n,)
             1-dimensional longitude array.
-
-        dates : array-like of datetime, shape (n,)
-            1-dimensional date array.
-
         values : array-like of float, shape (n,)
             1-dimensional anomaly array.
+        date : array-like of datetime, shape (n,), optional
+            1-dimensional datetime array.
+        month : array-like of int, shape (n,), optional
+            1-dimensional month array.
+            Used if date is not provided.
+        day : array-like of int, shape (n,), optional
+            1-dimensional day array.
+            Used if date is not provided.
+
+        Notes
+        -----
+        The observations should be anomalies.
         """
         value_arr = np.atleast_1d(values)  # type: np.ndarray
         value_arr = np.where(value_arr is None, np.nan, value_arr).astype(float)
@@ -176,8 +179,6 @@ class SuperObsGrid:
         self.grid[x, y, t] = means[:]
         self.nobs[x, y, t] = nobs[:]
 
-        return
-
     def add_single_observation(self, lat: float, lon: float, month: int, day: int, anom: float) -> None:
         """
         Add an anomaly to the grid from specified lat lon and date.
@@ -185,23 +186,20 @@ class SuperObsGrid:
         Parameters
         ----------
         lat : float
-            Latitude of the observation in degrees
-
+            Latitude of the observation in degrees.
         lon : float
-            Longitude of the observation in degrees
-
+            Longitude of the observation in degrees.
         month : int
-            Month of the observation
-
+            Month of the observation.
         day : int
-            Day of the observation
-
+            Day of the observation.
         anom : float
-            Value to be added to the grid
+            Value to be added to the grid.
 
         Returns
         -------
         None
+            The function performs its operations in-place and does not return anything.
         """
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
@@ -219,32 +217,29 @@ class SuperObsGrid:
             self.nobs[xindex, yindex, pindex] += 1
 
     def take_average(self) -> None:
-        """Take the average of a grid to which reps have been added using add_rep"""
+        """Take the average of a grid to which reps have been added using add_rep."""
         nonmiss = np.nonzero(self.nobs)
         self.grid[nonmiss] = self.grid[nonmiss] / self.nobs[nonmiss]
 
     def get_neighbour_anomalies(self, search_radius: list, xindex: int, yindex: int, pindex: int) -> (list[float], list[float]):
         """
-        Search within a specified search radius of the given point and extract the neighbours for buddy check
+        Search within a specified search radius of the given point and extract the neighbours for buddy check.
 
         Parameters
         ----------
         search_radius : list
-            three element array search radius in which to look lon, lat, time
-
+            Three element array search radius in which to look lon, lat, time.
         xindex : int
-            the xindex of the gridcell to start from
-
+            The xindex of the gridcell to start from.
         yindex : int
-            the yindex of the gridcell to start from
-
+            The yindex of the gridcell to start from.
         pindex : int
-            the pindex of the gridcell to start from
+            The pindex of the gridcell to start from.
 
         Returns
         -------
         list[float]
-            anomalies and numbers of observations in two lists
+            Anomalies and numbers of observations in two lists.
         """
         if len(search_radius) != 3:
             raise ValueError(f"Length mismatch (search_radius): {len(search_radius)}. Must be 3.")
@@ -295,19 +290,17 @@ class SuperObsGrid:
         ----------
         pentad_stdev : :py:class:`.Climatology`
             :py:class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
-
         limits : list[list[int]]
-            list of the limits
-
+            List of the limits.
         number_of_obs_thresholds : list[list[int]]
-            list containing the number of obs thresholds
-
+            List containing the number of obs thresholds.
         multipliers : list[list[float]]
-            list containing the multipliers to be applied
+            List containing the multipliers to be applied.
 
         Returns
         -------
         None
+            The function performs its operations in-place and does not return anything.
         """
         nonmiss = np.nonzero(self.nobs)
         for i in range(len(nonmiss[0])):
@@ -357,31 +350,27 @@ class SuperObsGrid:
         ----------
         stdev1 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between target
-            gridcell and complete neighbour average (grid area to neighbourhood difference)
-
+            gridcell and complete neighbour average (grid area to neighbourhood difference).
         stdev2 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between a single
-            observation and the target gridcell average (point to grid area difference)
-
+            observation and the target gridcell average (point to grid area difference).
         stdev3 : :py:class:`.Climatology`
             Field of standard deviations representing standard deviation of difference between random
-            neighbour gridcell and full neighbour average (uncertainty in neighbour average)
-
+            neighbour gridcell and full neighbour average (uncertainty in neighbour average).
         limits : list[int, int, int]
-            three membered list of number of degrees in latitude and longitude and number of pentads
-
+            Three membered list of number of degrees in latitude and longitude and number of pentads.
         sigma_m : float
-            Estimated measurement error uncertainty
-
+            Estimated measurement error uncertainty.
         noise_scaling : float
-            scale noise by a factor of noise_scaling used to match observed variability
+            Scale noise by a factor of noise_scaling used to match observed variability.
 
         Returns
         -------
         None
+            The function performs its operations in-place and does not return anything.
 
-        Note
-        ----
+        Notes
+        -----
         The original default values for limits, sigma_m, and noise_scaling originally defaulted to:
 
         * limits = (2, 2, 4)
@@ -435,26 +424,23 @@ class SuperObsGrid:
 
     def get_buddy_mean(self, lat: float, lon: float, month: int, day: int) -> float:
         """
-        Get the buddy mean from the grid for a specified time and place
+        Get the buddy mean from the grid for a specified time and place.
 
         Parameters
         ----------
         lat : float
-            latitude of the location for which the buddy mean is desired
-
+            Latitude of the location for which the buddy mean is desired.
         lon : float
-            longitude of the location for which the buddy mean is desired
-
+            Longitude of the location for which the buddy mean is desired.
         month : int
-            month for which the buddy mean is desired
-
+            Month for which the buddy mean is desired.
         day : int
-            day for which the buddy mean is desired
+            Day for which the buddy mean is desired.
 
         Returns
         -------
         float
-            Buddy mean at the specified location
+            Buddy mean at the specified location.
         """
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
@@ -463,26 +449,23 @@ class SuperObsGrid:
 
     def get_buddy_stdev(self, lat: float, lon: float, month: int, day: int) -> float:
         """
-        Get the buddy standard deviation from the grid for a specified time and place
+        Get the buddy standard deviation from the grid for a specified time and place.
 
         Parameters
         ----------
         lat : float
-            latitude of the location for which the buddy standard deviation is desired
-
+            Latitude of the location for which the buddy standard deviation is desired.
         lon : float
-            longitude of the location for which the buddy standard deviation is desired
-
+            Longitude of the location for which the buddy standard deviation is desired.
         month : int
-            month for which the buddy standard deviation is desired
-
+            Month for which the buddy standard deviation is desired.
         day : int
-            day for which the buddy standard deviation is desired
+            Day for which the buddy standard deviation is desired.
 
         Returns
         -------
         float
-            Buddy standard deviation at the specified location
+            Buddy standard deviation at the specified location.
         """
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
@@ -507,8 +490,10 @@ def do_mds_buddy_check(
     ignore_indexes: list[int] | None = None,
 ):
     """
-    Do the old style buddy check. The buddy check compares an observation to the average of its near neighbours
-    (called the buddy mean). Depending on how many neighbours there are and their proximity to the observation being
+    Do the old style buddy check.
+
+    The buddy check compares an observation to the average of its near neighbours (called the buddy mean).
+    Depending on how many neighbours there are and their proximity to the observation being
     tested a multiplier is set. If the difference between the observation and the buddy mean is larger than the
     multiplier times the standard deviation then the observation fails the buddy check. If no buddy observations are
     found within the specified limits, then the limits are expanded until the check runs out of specified limits or
@@ -518,35 +503,27 @@ def do_mds_buddy_check(
     ----------
     lat : array-like of float, shape (n,)
         1-dimensional latitude array.
-
     lon : array-like of float, shape (n,)
         1-dimensional longitude array.
-
     date : array-like of datetime, shape (n,)
         1-dimensional date array.
-
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
-
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) used to calculate anomalies.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     standard_deviation : :py:class:`.Climatology`
-        Field of standard deviations of 1x1xpentad standard deviations
-
+        Field of standard deviations of 1x1xpentad standard deviations.
     limits : list[list]
-        limits a list of lists. Each list member is a three-membered list specifying the longitudinal, latitudinal,
+        Limits a list of lists. Each list member is a three-membered list specifying the longitudinal, latitudinal,
         and time range within which buddies are sought at each level of search.
-
     number_of_obs_thresholds : list[list]
-        number of observations corresponding to each multiplier in `multipliers`. The initial list should be
+        Number of observations corresponding to each multiplier in `multipliers`. The initial list should be
         the same length as the limits list.
-
     multipliers : list[list]
-        multiplier, x, used for buddy check mu +- x * sigma. The list should have the same structure as
+        Multiplier, x, used for buddy check mu +- x * sigma. The list should have the same structure as
         `number_of_obs_threshold`.
-    ignore_indexes: list[int]
+    ignore_indexes : list[int], optional
         List of row numbers to be skipped.
 
     Returns
@@ -555,8 +532,8 @@ def do_mds_buddy_check(
         1-dimensional array containing QC flags.
         1 if buddy check fails, 0 otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     The limits, number_of_obs_thresholds, and multipliers parameters are rather complex. The buddy check basically
     looks within a lat-lon-time range specified by the first element in limits. If there are more than zero
     observations in the search range then a multiplier is chosen based on how many observations there are.
@@ -647,64 +624,51 @@ def do_bayesian_buddy_check(
     ignore_indexes: list[int] | None = None,
 ) -> Sequence[int]:
     """
-    Do the Bayesian buddy check. The bayesian buddy check assigns a
-    probability of gross error to each observation, which is rounded down to the
-    tenth and then multiplied by 10 to yield a flag between 0 and 9.
+    Do the Bayesian buddy check.
+
+    The bayesian buddy check assigns a probability of gross error to each observation,
+    which is rounded down to the tenth and then multiplied by 10 to yield a flag between 0 and 9.
 
     Parameters
     ----------
     lat : array-like of float, shape (n,)
         1-dimensional latitude array.
-
     lon : array-like of float, shape (n,)
         1-dimensional longitude array.
-
     date : array-like of datetime, shape (n,)
         1-dimensional date array.
-
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
-
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) used to calculate anomalies.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     stdev1 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
-        target gridcell and complete neighbour average (grid area to neighbourhood difference)
-
+        target gridcell and complete neighbour average (grid area to neighbourhood difference).
     stdev2 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
-        a single observation and the target gridcell average (point to grid area difference)
-
+        a single observation and the target gridcell average (point to grid area difference).
     stdev3 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
-        random neighbour gridcell and full neighbour average (uncertainty in neighbour average)
-
+        random neighbour gridcell and full neighbour average (uncertainty in neighbour average).
     prior_probability_of_gross_error : float
         Prior probability of gross error, which is the background rate of gross errors.
-
     quantization_interval : float
         Smallest possible increment in the input values.
-
     one_sigma_measurement_uncertainty : float
-        Estimated one sigma measurement uncertainty
-
+        Estimated one sigma measurement uncertainty.
     limits : list[int]
-        List with three members which specify the search range for the buddy check
-
+        List with three members which specify the search range for the buddy check.
     noise_scaling : float
         Tuning parameter used to multiply stdev2. This was determined to be approximately 3.0 by comparison with
         observed point data. stdev2 was estimated from OSTIA data and typically underestimates the point to
         area-average difference by this factor.
-
     maximum_anomaly : float
-        Largest absolute anomaly, assumes that the maximum and minimum anomalies have the same magnitude
-
+        Largest absolute anomaly, assumes that the maximum and minimum anomalies have the same magnitude.
     fail_probability : float
         Probability of gross error that corresponds to a failed test. Anything with a probability of gross error
         greater than fail_probability will be considered failing.
-    ignore_indexes: list[int], optional
+    ignore_indexes : list[int], optional
         List of row numbers to be skipped.
 
     Returns
@@ -713,8 +677,8 @@ def do_bayesian_buddy_check(
         1-dimensional array containing passed, failed or untestable flags. Untestable flags will be set if there
         are no buddies in the specified limits.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions the default values for the parameters were:
 
     * prior_probability_of_gross_error = 0.05
