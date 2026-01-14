@@ -22,7 +22,8 @@ def sun_position(time: float) -> float:
 
     Parameters
     ----------
-    time: float
+    time : float
+        Time value.
 
     Returns
     -------
@@ -38,13 +39,15 @@ def mean_earth_anomaly(time: float, theta: float) -> float:
 
     Parameters
     ----------
-    time: float
-    theta: float
+    time : float
+        Time value.
+    theta : float
+        Position of the sun.
 
     Returns
     -------
     float
-        Mean anomaly of earth (g).
+        Mean anomaly of the earth (g).
     """
     return -0.031271 - 4.5396e-7 * time + theta
 
@@ -55,12 +58,13 @@ def sun_longitude(time: float) -> float:
 
     Parameters
     ----------
-    time: float
+    time : float
+        Time value.
 
     Returns
     -------
     float
-        Longitude of sun.
+        Longitude of the sun.
     """
     theta = sun_position(time)
     mean_anomaly = mean_earth_anomaly(time, theta)
@@ -73,7 +77,8 @@ def elliptic_angle(time: float) -> float:
 
     Parameters
     ----------
-    time: float
+    time : float
+        Time value.
 
     Returns
     -------
@@ -89,11 +94,14 @@ def sun_ascension(long_of_sun: float, sin_long_of_sun: float, angle_of_elliptic:
 
     Parameters
     ----------
-    long_of_sun: float
+    long_of_sun : float
+        Longitude of the sun.
 
-    sin_long_of_sun: float
+    sin_long_of_sun : float
+        Sinus of the longitude of the sun.
 
-    angle_of_elliptic: float
+    angle_of_elliptic : float
+        Angle of elliptic.
 
     Returns
     -------
@@ -114,8 +122,10 @@ def sun_declination(sin_long_of_sun: float, angle_of_elliptic: float) -> float:
 
     Parameters
     ----------
-    sin_long_of_sun: float
-    angle_of_elliptic: float
+    sin_long_of_sun : float
+        Sinus of the longitude of the sun.
+    angle_of_elliptic : float
+        Angle of elliptic.
 
     Returns
     -------
@@ -131,7 +141,8 @@ def calculate_sun_parameters(time: float) -> tuple[float, float]:
 
     Parameters
     ----------
-    time: float
+    time : float
+        Time value.
 
     Returns
     -------
@@ -152,8 +163,10 @@ def to_siderial_time(time: float, delyear: int) -> float:
 
     Parameters
     ----------
-    time: float
-    delyear: int
+    time : float
+        Time value.
+    delyear : int
+        Relative year number.
 
     Returns
     -------
@@ -172,10 +185,14 @@ def to_local_siderial_time(time: float, time_in_hours: float, delyear: int, lon:
 
     Parameters
     ----------
-    time: float
-    time_in_hours: float
-    delyear: int
-    lon: float
+    time : float
+        Time value.
+    time_in_hours : float
+        Time value in hours.
+    delyear : int
+        Relative year number.
+    lon : float
+        Longitude value in degrees.
 
     Returns
     -------
@@ -195,8 +212,10 @@ def sun_hour_angle(local_siderial_time: float, right_ascension: float) -> float:
 
     Parameters
     ----------
-    local_siderial_time: float
-    right_ascension: float
+    local_siderial_time : float
+        Local siderial time value.
+    right_ascension : float
+        Right ascension.
 
     Returns
     -------
@@ -215,9 +234,12 @@ def sin_of_elevation(phi: float, declination: float, hour_angle: float) -> float
 
     Parameters
     ----------
-    phi: float
-    declination: float
-    hour_angle: float
+    phi : float
+        Latitude value in rad.
+    declination : float
+        Declination.
+    hour_angle : float
+        Hour angle.
 
     Returns
     -------
@@ -236,8 +258,10 @@ def sun_azimuth(phi: float, declination: float) -> float:
 
     Parameters
     ----------
-    phi: float
-    declination: float
+    phi : float
+        Latitude value in rad.
+    declination : float
+        Declination.
 
     Returns
     -------
@@ -255,7 +279,8 @@ def convert_degrees(deg: float) -> float:
 
     Parameters
     ----------
-    deg: float
+    deg : float
+        Value in degrees.
 
     Returns
     -------
@@ -273,10 +298,14 @@ def calculate_azimuth(declination: float, hour_angle: float, elevation: float, p
 
     Parameters
     ----------
-    declination: float
-    hour_angle: float
-    elevation: float
-    phi: float
+    declination : float
+        Declination.
+    hour_angle : float
+        Hour angle.
+    elevation : float
+        Elevation.
+    phi : float
+        Latitude value in rad.
 
     Returns
     -------
@@ -299,9 +328,12 @@ def azimuth_elevation(lat: float, declination: float, hour_angle: float) -> tupl
 
     Parameters
     ----------
-    lat: float
-    declination: float
-    hour_angle: float
+    lat : float
+        Latitude value in degrees.
+    declination : float
+        Declination.
+    hour_angle : float
+        Hour angle.
 
     Returns
     -------
@@ -335,23 +367,23 @@ def sunangle(
 
     Parameters
     ----------
-    year: int
+    year : int
         Year.
-    day: int
+    day : int
         Day number of year starting with 1 for Jan 1st and running up to 365/6.
-    hour: int
+    hour : int
         Hour.
-    minute: int
+    minute : int
         Minute.
-    sec: int
+    sec : int
         Second.
-    zone: int
+    zone : int
         The local international time zone, counted westward from Greenwich.
-    dasvtm: int
+    dasvtm : int
         1 if daylight saving time is in effect, otherwise 0.
-    lat: float
+    lat : float
         Latitude in degrees, north is positive.
-    lon: float
+    lon : float
         Longitude in degrees, east is positive.
 
     Returns
@@ -359,10 +391,10 @@ def sunangle(
     tuple of float
         A tuple of six floats representing Azimuth angle of the sun (degrees east of north), Elevation of sun (degrees),
         Right ascension of sun (degrees), Hour angle of sun (degrees), Hour angle of
-        local siderial time (degrees) and Declination of sun (degrees)
+        local siderial time (degrees) and Declination of sun (degrees).
 
-    Note
-    ----
+    Notes
+    -----
     Copied from Rob Hackett's area 28 Apr 1998 by J.Arnott.
     Add protection for ASIN near +/- 90 degrees 07 Jan 2002 by J.Arnott.
     Pythonised 25/09/2015 by J.J. Kennedy

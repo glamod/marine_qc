@@ -17,6 +17,7 @@ from numpy import ndarray
 from xclim.core.units import convert_units_to
 
 from .auxiliary import (
+    SequenceFloatType,
     ValueFloatType,
     generic_decorator,
     isvalid,
@@ -32,7 +33,25 @@ from .time_control import (
 )
 
 
-def _format_output(result, lat):
+def _format_output(
+    result: np.ndarray,
+    lat: ValueFloatType,
+) -> ValueFloatType:
+    """
+    Format output to match the input latitude type.
+
+    Parameters
+    ----------
+    result : np.ndarray
+        Array of result values.
+    lat : ValueFloatType
+        Latitude input used to determine output format.
+
+    Returns
+    -------
+    ValueFloatType
+        Result formatted to match the type of `lat`.
+    """
     if np.isscalar(lat):
         return result[0]
     if isinstance(lat, pd.Series):
@@ -40,12 +59,50 @@ def _format_output(result, lat):
     return result
 
 
-def _select_point(i, da_slice, lat_arr, lon_arr, lat_axis, lon_axis):
+def _select_point(
+    i: int,
+    da_slice: xr.DataArray,
+    lat_arr: SequenceFloatType,
+    lon_arr: SequenceFloatType,
+    lat_axis: str,
+    lon_axis: str,
+) -> tuple[int, float]:
+    """
+    Select nearest grid point value for a single lat/lon pair.
+
+    Parameters
+    ----------
+    i : int
+        Index of the latitude/longitude pair.
+    da_slice : xr.DataArray
+        DataArray slice to sample from.
+    lat_arr : SequenceFloatType
+        Array of latitude values.
+    lon_arr : SequenceFloatType
+        Array of longitude values.
+    lat_axis : str
+        Name of the latitude dimension in `da_slice`.
+    lon_axis : str
+        Name of the longitude dimension in `da_slice`.
+
+    Returns
+    -------
+    tuple of (int, float)
+        Index i and the selected grid-point value.
+    """
     sel = da_slice.sel({lat_axis: lat_arr[i], lon_axis: lon_arr[i]}, method="nearest")
     return i, float(sel.values)
 
 
 def _empty_dataarray():
+    """
+    Create an empty 3D DataArray with latitude, time, and longitude dimensions.
+
+    Returns
+    -------
+    xr.DataArray
+        Empty 3D DataArray with latitude, time, and longitude dimensions.
+    """
     lat = xr.DataArray(
         [],
         dims="latitude",
@@ -68,7 +125,7 @@ def _empty_dataarray():
 
 
 def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | None = None) -> Callable:
-    """
+    r"""
     A decorator factory to preprocess function arguments that may be Climatology objects.
 
     This decorator inspects the specified function arguments and, if any are instances of
@@ -76,7 +133,7 @@ def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | 
 
     Parameters
     ----------
-    climatology_keys : str
+    \*climatology_keys : str
         Names of required function arguments to be inspected. These should be arguments that may be
         either a float or a `Climatology` object. If a `Climatology` object is detected, it will be
         replaced with the resolved value.
@@ -102,6 +159,21 @@ def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | 
         optional = []
 
     def pre_handler(arguments: dict, **meta_kwargs):
+        r"""
+        Preprocess specified arguments, resoling Climatology objects to concrete values.
+
+        Parameters
+        ----------
+        arguments : dict
+            Function arguments as a dictionary.
+        \**meta_kwargs : dict
+            Additional keyword arguments to pass to `Climatology.get_value_fast()`.
+
+        Returns
+        -------
+        None
+            Updates `arguments` in place.
+        """
         active_keys = list(climatology_keys)
         active_keys.extend(opt for opt in optional if opt in arguments)
         for clim_key in active_keys:
@@ -152,8 +224,8 @@ def open_xrdataset(
     combine: Literal["by_coords", "nested"] | None = "by_coords",
     **kwargs,
 ) -> xr.Dataset:
-    """
-    Optimized function for opening large cf datasets.
+    r"""
+    Optimized function for opening large CF-compliant datasets with xarray.
 
     based on [open_xrdataset]_.
     decode_timedelta=False is added to leave variables and
@@ -163,41 +235,56 @@ def open_xrdataset(
 
     Parameters
     ----------
-    files: str or list
-        See [open_mfdataset]_
-    use_cftime: bool, default: True
-        See [decode_cf]_
-    decode_cf: bool, default: True
-        See [decode_cf]_
-    decode_times: bool, default: False
-        See [decode_cf]_
-    parallel: bool, default: False
-        See [open_mfdataset]_
-    data_vars: {"minimal", "different", "all"} or list of str, default: "minimal"
-        See [open_mfdataset]
-    chunks: int, dict, "auto" or None, optional, default: "default"
+    files : str or list
+        See [open_mfdataset].
+    use_cftime : bool, default: True
+        See [decode_cf].
+    decode_cf : bool, default: True
+        See [decode_cf].
+    decode_times : bool, default: False
+        See [decode_cf].
+    parallel : bool, default: False
+        See [open_mfdataset].
+    data_vars : {"minimal", "different", "all"} or list of str, default: "minimal"
+        See [open_mfdataset].
+    chunks : int, dict, "auto" or None, optional, default: "default"
         If chunks is "default", set chunks to {"time": 1}
-        See [open_mfdataset]
-    coords: {"minimal", "different", "all"} or list of str, optional, default: "minimal"
-        See [open_mfdataset]
-    compat: {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"}, default: "override"
-        See [open_mfdataset]
-    combine: {"by_coords", "nested"}, optional, default: "by_coords"
-        See [open_mfdataset]_
+        See [open_mfdataset].
+    coords : {"minimal", "different", "all"} or list of str, optional, default: "minimal"
+        See [open_mfdataset].
+    compat : {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"}, default: "override"
+        See [open_mfdataset].
+    combine : {"by_coords", "nested"}, optional, default: "by_coords"
+        See [open_mfdataset].
+    \**kwargs : dict
+        Additional keyword arguments passed to xarray.open_mfdataset.
 
     Returns
     -------
     xarray.Dataset
+        Opened xarray Dataset, optimized for large CF datasets.
 
     References
     ----------
     .. [open_xrdataset] https://github.com/pydata/xarray/issues/1385#issuecomment-561920115
     .. [open_mfdataset] https://docs.xarray.dev/en/stable/generated/xarray.open_mfdataset.html
     .. [decode_cf] https://docs.xarray.dev/en/stable/generated/xarray.decode_cf.html
-
     """
 
     def drop_all_coords(ds):
+        """
+        Drop all non-dimension coordinates from an xarray Dataset.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+          Input Dataset from which all coordinates will be removed.
+
+        Returns
+        -------
+        xr.Dataset
+            Dataset with all coordinates dropped.
+        """
         return ds.reset_coords(drop=True)
 
     if chunks == "default":
@@ -223,31 +310,32 @@ def open_xrdataset(
 class Climatology:
     """
     Class for dealing with climatologies, reading, extracting values etc.
+
     Automatically detects if this is a single field, pentad or daily climatology.
 
     Parameters
     ----------
-    data: xr.DataArray
-        Climatology data
-    time_axis: str, optional
+    data : xr.DataArray
+        Climatology data.
+    time_axis : str, optional
         Name of time axis.
         Set if time axis in `data` is not CF compatible.
-    lat_axis: str, optional
+    lat_axis : str, optional
         Name of latitude axis.
         Set if latitude axis in `data` is not CF compatible.
-    lon_axis: str, optional
+    lon_axis : str, optional
         Name of longitude axis.
         Set if longitude axis in `data` is not CF compatible.
-    source_units: str, optional
+    source_units : str, optional
         Name of units in `data`.
         Set if units are not defined in `data`.
-    target_units: str, optional
+    target_units : str, optional
         Name of target units to which units must conform.
-    valid_ntime: int or list, default: [1, 73, 365]
+    valid_ntime : int or list, default: [1, 73, 365]
         Number of valid time steps:
-        1: single field climatology
-        73: pentad climatology
-        365: daily climatology
+        - 1: single field climatology
+        - 73: pentad climatology
+        - 365: daily climatology
     """
 
     def __init__(
@@ -260,6 +348,42 @@ class Climatology:
         target_units: str | None = None,
         valid_ntime: int | list | None = None,
     ):
+        """
+        Initialize a Climatology object from an xarray DataArray.
+
+        The climatology type (single-field, pentad, or daily) is inferred from
+        the length of the time dimension.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+          Climatology data.
+        time_axis : str, optional
+          Name of time axis.
+          Set if time axis in `data` is not CF compatible.
+        lat_axis : str, optional
+          Name of latitude axis.
+          Set if latitude axis in `data` is not CF compatible.
+        lon_axis : str, optional
+          Name of longitude axis.
+          Set if longitude axis in `data` is not CF compatible.
+        source_units : str, optional
+          Name of units in `data`.
+          Set if units are not defined in `data`.
+        target_units : str, optional
+          Name of target units to which units must conform.
+        valid_ntime : int or list, default: [1, 73, 365]
+          Number of valid time steps:
+          - 1: single field climatology
+          - 73: pentad climatology
+          - 365: daily climatology
+
+        Raises
+        ------
+        ValueError
+          If the length of the time dimension does not match one of the
+          allowed values in ``valid_ntime``.
+        """
         if valid_ntime is None:
             valid_ntime = [0, 1, 73, 365]
         self.data = data
@@ -284,7 +408,25 @@ class Climatology:
 
     @classmethod
     def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:
-        """Open filename with xarray."""
+        r"""
+        Open a NetCDF climatology file and construct a Climatology instance.
+
+        Parameters
+        ----------
+        file_name : str or path-like
+            Path to the NetCDF file to open.
+        clim_name : str
+            Name of the climatology variable within the NetCDF file.
+        \**kwargs : dict
+            Additional keyword arguments passed to the Climatology constructor.
+
+        Returns
+        -------
+        Climatology
+          A Climatology instance constructed from the specified variable in
+          the NetCDF file. If the file cannot be opened, an empty climatology
+          object is returned.
+        """
         try:
             ds = open_xrdataset(file_name)
             da = ds[clim_name]
@@ -305,8 +447,8 @@ class Climatology:
         source_units : str, optional
             Source units if not specified in :py:class:`Climatology`.
 
-        Note
-        ----
+        Notes
+        -----
         For more information see: :py:func:`xclim.core.units.convert_units_to`
         """
         if target_units is None:
@@ -330,15 +472,15 @@ class Climatology:
 
         Parameters
         ----------
-        lat: float, optional
+        lat : float, optional
             Latitude of location to extract value from in degrees.
-        lon: float, optional
+        lon : float, optional
             Longitude of location to extract value from in degrees.
-        date: datetime-like, optional
+        date : datetime-like, optional
             Date for which the value is required.
-        month: int, optional
+        month : int, optional
             Month for which the value is required.
-        day: int, optional
+        day : int, optional
             Day for which the value is required.
 
         Returns
@@ -346,8 +488,8 @@ class Climatology:
         ndarray or pd.Series
             Climatology value at specified location and time.
 
-        Note
-        ----
+        Notes
+        -----
         Assumes that the grid is a regular latitude longitude grid. The alternative method `get_value`
         works with non-regular grids.
         """
@@ -380,10 +522,6 @@ class Climatology:
 
         lat_axis = self.data.coords[self.lat_axis].data
         lon_axis = self.data.coords[self.lon_axis].data
-        # print('------------------------------------------')
-        # print(lat_axis)
-        # print(lon_axis)
-        # print('------------------------------------------')
         if lat_axis.size == 0 or lon_axis.size == 0:
             return result
 
@@ -414,9 +552,9 @@ class Climatology:
 
         Parameters
         ----------
-        lat_arr: ndarray
+        lat_arr :  ndarray
             Array of latitudes.
-        lat_axis: ndarray
+        lat_axis : ndarray
             Array containing the latitude axis.
 
         Returns
@@ -449,9 +587,9 @@ class Climatology:
 
         Parameters
         ----------
-        lon_arr: ndarray
+        lon_arr : ndarray
             Array of longitudes.
-        lon_axis: ndarray
+        lon_axis : ndarray
             Array containing the longitude axis.
 
         Returns
@@ -484,11 +622,11 @@ class Climatology:
 
         Parameters
         ----------
-        month: ndarray
+        month : ndarray
             Array of months.
-        day: ndarray
+        day : ndarray
             Array of days.
-        ntime: int
+        ntime : int
             Number of time points in the grid, valid values are 1, 73 (pentad resolution) and
             365 (daily resolution).
 
@@ -522,15 +660,15 @@ class Climatology:
 
         Parameters
         ----------
-        lat: float, optional
+        lat : float, optional
             Latitude of location to extract value from in degrees.
-        lon: float, optional
+        lon : float, optional
             Longitude of location to extract value from in degrees.
-        date: datetime-like, optional
+        date : datetime-like, optional
             Date for which the value is required.
-        month: int, optional
+        month : int, optional
             Month for which the value is required.
-        day: int, optional
+        day : int, optional
             Day for which the value is required.
 
         Returns
@@ -538,8 +676,8 @@ class Climatology:
         ndarray or pd.Series
             Climatology value at specified location and time.
 
-        Note
-        ----
+        Notes
+        -----
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
@@ -590,9 +728,9 @@ class Climatology:
 
         Parameters
         ----------
-        month: int
+        month : int
             Month for which the time index is required.
-        day: int
+        day : int
             Day for which the time index is required.
 
         Returns
@@ -609,15 +747,15 @@ class Climatology:
 
 @inspect_climatology("climatology")
 def get_climatological_value(climatology: Climatology, **kwargs) -> ndarray:
-    """
+    r"""
     Get the value from a climatology.
 
     Parameters
     ----------
-    climatology: Climatology
-        Climatology class
-    kwargs: dict
-        Pass keyword-arguments to :py:class:~Climatology.get_value`
+    climatology : Climatology
+        Climatology class.
+    \**kwargs : dict
+        Pass keyword-arguments to :py:class:~Climatology.get_value`.
 
     Returns
     -------

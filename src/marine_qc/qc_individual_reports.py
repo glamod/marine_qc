@@ -1,11 +1,11 @@
 """
-QC of individual reports
-========================
+QC of individual reports.
 
 Module containing main QC functions which could be applied on a DataBundle.
 """
 
 from __future__ import annotations
+from typing import Literal
 
 import numpy as np
 
@@ -60,9 +60,11 @@ def value_check(value: ValueFloatType) -> ValueIntType:
 @convert_units(lat="degrees", lon="degrees")
 def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
     """
-    Perform the positional QC check on the report. Simple check to make sure that the latitude and longitude are
-    within specified bounds: latitude is between -90 and 90. Longitude is between
-    -180 and 360
+    Perform the positional QC check on the report.
+
+    Simple check to make sure that the latitude and longitude are within specified bounds:
+    - Latitude is between -90 and 90.
+    - Longitude is between 180 and 360.
 
     Parameters
     ----------
@@ -97,17 +99,17 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
 @convert_date(["year", "month", "day"])
 @inspect_arrays(["year", "month", "day"])
 def do_date_check(
-    date: ValueDatetimeType = None,
-    year: ValueIntType = None,
-    month: ValueIntType = None,
-    day: ValueIntType = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
 ) -> ValueIntType:
     """
     Perform the date QC check on the report. Checks whether the given date or date components are valid.
 
     Parameters
     ----------
-    date: datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
@@ -157,16 +159,19 @@ def do_date_check(
 @post_format_return_type(["date", "hour"])
 @convert_date(["hour"])
 @inspect_arrays(["hour"])
-def do_time_check(date: ValueDatetimeType = None, hour: ValueFloatType = None) -> ValueIntType:
+def do_time_check(
+    date: ValueDatetimeType | None = None,
+    hour: ValueFloatType | None = None,
+) -> ValueIntType:
     """
     Check that the time is valid i.e. in the range 0.0 to 23.99999...
 
     Parameters
     ----------
-    date: datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    hour: float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
         Hour(s) of observation (minutes as decimal).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -190,7 +195,64 @@ def do_time_check(date: ValueDatetimeType = None, hour: ValueFloatType = None) -
     return result
 
 
-def _do_daytime_check(date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode):
+def _do_daytime_check(
+    date: ValueDatetimeType | None,
+    year: ValueIntType | None,
+    month: ValueIntType | None,
+    day: ValueIntType | None,
+    hour: ValueFloatType | None,
+    lat: ValueFloatType | None,
+    lon: ValueFloatType | None,
+    time_since_sun_above_horizon: float | None,
+    mode: Literal["day", "night"],
+) -> np.ndarray:
+    """
+    Determine if the sun was above the horizon a specified time before the report.
+
+    Parameters
+    ----------
+    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+        Date(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+        Year(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+        Month(s) of observation (1-12).
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+        Day(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+        Hour(s) of observation (minutes as decimal).
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude() of observation in degree.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    time_since_sun_above_horizon : float
+        Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
+        to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
+    mode : {"day", "night"}
+        If "day", check if the sun is above the horizon.
+        If "night", check if the sun is below the horizon.
+
+    Returns
+    -------
+    np.ndarray of int
+        - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
+          returns 2.
+        - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
+          returns 1 or if it is night (sun below horizon an hour ago).
+        - Returns 0 if it is day (sun above horizon an hour ago).
+
+    Raises
+    ------
+    ValueError
+        If `mode` is not in valid list ["day", "night"].
+    """
     if mode not in ["day", "night"]:
         raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
 
@@ -265,27 +327,26 @@ def _do_daytime_check(date, year, month, day, hour, lat, lon, time_since_sun_abo
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
-    date: ValueDatetimeType = None,
-    year: ValueIntType = None,
-    month: ValueIntType = None,
-    day: ValueIntType = None,
-    hour: ValueFloatType = None,
-    lat: ValueFloatType = None,
-    lon: ValueFloatType = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
+    hour: ValueFloatType | None = None,
+    lat: ValueFloatType | None = None,
+    lon: ValueFloatType | None = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
-    Determine if the sun was above the horizon a specified time before the report (`time_since_sub_above_horizon`)
-    based on date, time, and position.
+    Determine if the sun was above the horizon a specified time before the report.
 
     This "day" test is used to classify Marine Air Temperature (MAT) measurements as either
     Night MAT (NMAT) or Day MAT, accounting for solar heating biases and a potential lag between sun rise and the
-    onset of significant warming. It calculates the sun's elevation using the `sunangle` function, offset by the
+    onset of significant warming. The function calculates the sun's elevation using the `sunangle` function, offset by the
     specified `time_since_sun_above_horizon`.
 
     Parameters
     ----------
-    date: datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
@@ -319,15 +380,15 @@ def do_day_check(
           returns 1 or if it is night (sun below horizon an hour ago).
         - Returns 0 if it is day (sun above horizon an hour ago).
 
-    Note
-    ----
-    In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
-    definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
-    than one hour after sunset and up to one hour after sunrise.
-
     See Also
     --------
     do_night_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
+
+    Notes
+    -----
+    In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
+    definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
+    than one hour after sunset and up to one hour after sunrise.
     """
     return _do_daytime_check(date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day")
 
@@ -337,27 +398,26 @@ def do_day_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
-    date: ValueDatetimeType = None,
-    year: ValueIntType = None,
-    month: ValueIntType = None,
-    day: ValueIntType = None,
-    hour: ValueFloatType = None,
-    lat: ValueFloatType = None,
-    lon: ValueFloatType = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
+    hour: ValueFloatType | None = None,
+    lat: ValueFloatType | None = None,
+    lon: ValueFloatType | None = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
-    Determine if the sun was below the horizon a specified time before the report (`time_since_sub_above_horizon`)
-    based on date, time, and position.
+    Determine if the sun was below the horizon a specified time before the report.
 
     This "night" test is used to classify Marine Air Temperature (MAT) measurements as either
     Night MAT (NMAT) or Day MAT, accounting for solar heating biases and a potential lag between sun rise and the
-    onset of significant warming. It calculates the sun's elevation using the `sunangle` function, offset by the
+    onset of significant warming. The function calculates the sun's elevation using the `sunangle` function, offset by the
     specified `time_since_sun_above_horizon`.
 
     Parameters
     ----------
-    date: datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
@@ -391,15 +451,15 @@ def do_night_check(
           returns 1 or if it is day (sun above horizon an hour ago).
         - Returns 0 if it is night (sun below horizon an hour ago).
 
-    Note
-    ----
-    In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
-    definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
-    than one hour after sunset and up to one hour after sunrise.
-
     See Also
     --------
     do_day_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
+
+    Notes
+    -----
+    In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
+    definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
+    than one hour after sunset and up to one hour after sunrise.
     """
     return _do_daytime_check(
         date,
@@ -435,7 +495,7 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
 
 @inspect_climatology("climatology")
 def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIntType:
-    """
+    r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
     Parameters
@@ -443,6 +503,8 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The input climatological value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    \**kwargs : dict
+        Additional keyword arguments passed by the decorator framework (unused).
 
     Returns
     -------
@@ -450,8 +512,8 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     If `climatology` is a :py:class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
     arguments to extract the relevant climatological value.
     """
@@ -470,10 +532,10 @@ def do_hard_limit_check(
 
     Parameters
     ----------
-    value: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         The value(s) to be tested against the limits.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    limits: tuple of float
+    limits : tuple of float
         A tuple of two floats representing the lower and upper limit.
 
     Returns
@@ -514,6 +576,7 @@ def do_climatology_check(
 ) -> ValueIntType:
     """
     Climatology check to compare a value with a climatological average within specified anomaly limits.
+
     This check supports optional parameters to customize the comparison.
 
     If ``standard_deviation`` is provided, the value is converted into a standardised anomaly. Optionally,
@@ -523,23 +586,22 @@ def do_climatology_check(
 
     Parameters
     ----------
-    value: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         Value(s) to be compared to climatology.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The climatological average(s) to which the values(s) will be compared.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    maximum_anomaly: float
+    maximum_anomaly : float
         Largest allowed anomaly.
         If ``standard_deviation`` is provided, this is interpreted as the largest allowed standardised anomaly.
-    standard_deviation: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float,
-        default: "default"
+    standard_deviation : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float, default: "default"
         The standard deviation(s) used to standardise the anomaly
         If set to "default", it is internally treated as 1.0.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    standard_deviation_limits: tuple of float, optional
+    standard_deviation_limits : tuple of float, optional
         A tuple of two floats representing the upper and lower limits for standard deviation used in the check.
-    lowbar: float, optional
+    lowbar : float, optional
         The anomaly must be greater than lowbar to fail regardless of standard deviation.
 
     Returns
@@ -551,8 +613,8 @@ def do_climatology_check(
         - Returns 1 (or array/sequence/Series of 1s) if the difference is outside the specified range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
     `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
@@ -603,7 +665,9 @@ def do_climatology_check(
 @convert_units(dpt="K", at2="K")
 def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueIntType:
     """
-    Perform the super saturation check. Check if a valid dewpoint temperature is greater than a valid air temperature
+    Perform the super saturation check.
+
+    Check if a valid dewpoint temperature is greater than a valid air temperature.
 
     Parameters
     ----------
@@ -668,7 +732,7 @@ def do_sst_freeze_check(
         Number of uncertainty standard deviations that sea surface temperature can be
         below the freezing point before the QC check fails.
     sst_uncertainty : float, optional, default: "default"
-        the uncertainty in the SST value
+        The uncertainty in the SST value.
 
     Returns
     -------
@@ -679,8 +743,8 @@ def do_sst_freeze_check(
           `n_sigma` times `sst_uncertainty`.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, some parameters had default values:
 
         * ``sst_uncertainty``: 0.0
@@ -713,9 +777,10 @@ def do_sst_freeze_check(
 @inspect_arrays(["wind_speed", "wind_direction"])
 def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueFloatType) -> ValueIntType:
     """
-    Test to compare windspeed to winddirection to check if they are consistent. Zero windspeed should correspond
-    to no particular direction (variable) and wind speeds above a threshold should correspond to a particular
-    direction.
+    Test to compare windspeed to winddirection to check if they are consistent.
+
+    Zero windspeed should correspond to no particular direction (variable) and
+    wind speeds above a threshold should correspond to a particular direction.
 
     Parameters
     ----------

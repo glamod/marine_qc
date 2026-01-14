@@ -10,34 +10,36 @@ import numpy as np
 
 def p_data_given_good(x: float, q: float, r_hi: float, r_lo: float, mu: float, sigma: float) -> float:
     """
+    Probability of an observed value assuming it comes from a "good" measurement.
+
     Calculate the probability of an observed value x given a normal distribution with mean mu
     standard deviation of sigma, where x is constrained to fall between R_hi and R_lo
     and is known only to an integer multiple of Q, the quantization level.
 
     Parameters
     ----------
-    x: float
+    x : float
         Observed value for which probability is required.
-    q: float
+    q : float
         Quantization of x, i.e. x is an integer multiple of Q.
-    r_hi: float
+    r_hi : float
         The upper limit on x imposed by previous QC choices.
-    r_lo: float
+    r_lo : float
         The lower limit on x imposed by previous QC choices.
-    mu: float
+    mu : float
         The mean of the distribution.
-    sigma: float
+    sigma : float
         The standard deviation of the distribution.
 
     Returns
     -------
     float
-        probability of the observed value given the specified distribution.
+        Probability of the observed value given the specified distribution.
 
     Raises
     ------
     ValueError
-        When inputs are incorrectly specified: q<=0, sigma<=0, r_lo > r_hi, x < r_lo or x > r_hi
+        When inputs are incorrectly specified: q<=0, sigma<=0, r_lo > r_hi, x < r_lo or x > r_hi.
     """
     if q <= 0.0:
         raise ValueError(f"Value is not positive: q = {q}.")
@@ -60,26 +62,30 @@ def p_data_given_good(x: float, q: float, r_hi: float, r_lo: float, mu: float, s
 
 def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
     """
+    Probability of an observed value assuming it is a gross error.
+
     Calculate the probability of the data given a gross error
     assuming gross errors are uniformly distributed between
     R_low and R_high and that the quantization, rounding level is Q
 
-    q: float
+    Parameters
+    ----------
+    q : float
         Quantization of x, i.e. x is an integer multiple of Q.
-    r_hi: float
+    r_hi : float
         The upper limit on x imposed by previous QC choices.
-    r_lo: float
+    r_lo : float
         The lower limit on x imposed by previous QC choices.
 
     Returns
     -------
     float
-        probability of the observed value given that it is a gross error.
+        Probability of the observed value given that it is a gross error.
 
     Raises
     ------
     ValueError
-        When limits are not ascending or q<=0
+        When limits are not ascending or q<=0.
     """
     if r_hi < r_lo:
         raise ValueError(f"Lower limit is greater than upper limit: r_hi = {r_hi}, r_lo = {r_lo}.")
@@ -92,6 +98,8 @@ def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
 
 def p_gross(p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, sigma: float) -> float:
     """
+    Posterior probability that an observation is a gross error.
+
     Calculate the posterior probability of a gross error given the prior probability p0,
     the quantization level of the observed value, Q, previous limits on the observed value,
     R_hi and R_lo, the observed value, x, and the mean (mu) and standard deviation (sigma) of the
@@ -100,30 +108,30 @@ def p_gross(p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, 
 
     Parameters
     ----------
-    p0: float
+    p0 : float
         Prior probability of gross error.
-    q: float
+    q : float
         Quantization of x, i.e. x is an integer multiple of Q.
-    r_hi: float
+    r_hi : float
         The upper limit on x imposed by previous QC choices.
-    r_lo: float
+    r_lo : float
         The lower limit on x imposed by previous QC choices.
-    x: float
+    x : float
         Observed value for which probability is required.
-    mu: float
+    mu : float
         The mean of the distribution of good obs.
-    sigma: float
+    sigma : float
         The standard deviation of the distribution of good obs.
 
     Returns
     -------
     float
-        probability of gross error given an observed value
+        Probability of gross error given an observed value.
 
     Raises
     ------
     ValueError
-        When inputs are incorrectly specified: p0 < 0, p0 > 1, q <= 0, r_hi < r_lo, x < r_lo, x > r_hi, sigma <= 0
+        When inputs are incorrectly specified: p0 < 0, p0 > 1, q <= 0, r_hi < r_lo, x < r_lo, x > r_hi, sigma <= 0.
     """
     if p0 < 0.0:
         raise ValueError(f"Value is not positive: p0 = {p0}.")
@@ -156,16 +164,16 @@ def winsorised_mean(inarr: list[float]) -> float:
 
     Parameters
     ----------
-    inarr: list of float
-        input array to be averaged
+    inarr : list of float
+        Input array to be averaged.
 
     Returns
     -------
     float
         The winsorised mean of the input array with a 25% trimming.
 
-    Note
-    ----
+    Notes
+    -----
     The winsorised mean is that which you get if you set the first quarter of
     the sorted input array to the 1st quartile value and the last quarter
     to the 3rd quartile and then take the mean. This is quite a heavy trimming of
@@ -194,17 +202,17 @@ def winsorised_mean(inarr: list[float]) -> float:
 
 def missing_mean(inarr: list[float]) -> float | None:
     """
-    Return mean of input array
+    Return mean of input array.
 
     Parameters
     ----------
     inarr : list of float
-        List of values for which mean is required. Missing values represented by None in list
+        List of values for which mean is required. Missing values represented by None in list.
 
     Returns
     -------
     float or None
-         Mean of non-missing values or None
+         Mean of non-missing values or None.
     """
     result = 0.0
     num = 0.0
@@ -218,7 +226,25 @@ def missing_mean(inarr: list[float]) -> float | None:
 
 
 def _trim_stat(inarr: Sequence[float], trim: int, stat: str) -> float:
-    """Calculate a resistant (aka robust) statistics of an input array given a trimming criteria."""
+    """
+    Calculate a resistant (aka robust) statistics of an input array given a trimming criteria.
+
+    Parameters
+    ----------
+    inarr : array-like of float, shape (n,)
+        1-dimensional value array.
+    trim : int
+        Trimming criteria.
+        A value of 10 trims one tenth of the values off each end of the sorted array
+        before calculating the mean.
+    stat : str
+        Name of the numpy statistic function to apply, e.g., "mean", "std".
+
+    Returns
+    -------
+    float
+        The trimmed statistic calculated on the array.
+    """
     arr = list(copy.deepcopy(inarr))
     stat_func = getattr(np, stat)
     if trim == 0:
@@ -238,16 +264,17 @@ def trim_mean(inarr: Sequence[float], trim: int) -> float:
 
     Parameters
     ----------
-    inarr: array-like of float, shape (n,)
+    inarr : array-like of float, shape (n,)
         1-dimensional value array.
-    trim: int
-        trimming criteria. A value of 10 trims one tenth of the values off each end of the sorted array
+    trim : int
+        Trimming criteria.
+        A value of 10 trims one tenth of the values off each end of the sorted array
         before calculating the mean.
 
     Returns
     -------
     float
-        Trimmed mean
+        Trimmed mean.
     """
     return _trim_stat(inarr, trim, "mean")
 
@@ -258,15 +285,16 @@ def trim_std(inarr: Sequence[float], trim: int) -> float:
 
     Parameters
     ----------
-    inarr: array-like of float, shape (n,)
+    inarr : array-like of float, shape (n,)
         1-dimensional value array.
-    trim: int
-        trimming criteria. A value of 10 trims one tenth of the values off each end of the sorted array before
+    trim : int
+        Trimming criteria.
+        A value of 10 trims one tenth of the values off each end of the sorted array before
         calculating the standard deviation.
 
     Returns
     -------
     float
-        Returns trimmed standard deviation
+        Trimmed standard deviation.
     """
     return _trim_stat(inarr, trim, "std")

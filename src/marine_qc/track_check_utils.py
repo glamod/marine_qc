@@ -1,6 +1,7 @@
 """
-The New Track Check QC module provides the functions needed to perform the
-track check. The main routine is mds_full_track_check which takes a
+The New Track Check QC module provides the functions needed to perform the track check.
+
+The main routine is mds_full_track_check which takes a
 list of class`.MarineReport` from a single ship and runs the track check on them.
 This is an update of the MDS system track check in that it assumes the Earth is a
 sphere. In practice, it gives similar results to the cylindrical earth formerly
@@ -35,8 +36,9 @@ from .time_control import time_difference
 
 def modal_speed(speeds: list) -> float:
     """
-    Calculate the modal speed from the input array in 3 knot bins. Returns the
-    bin-centre for the modal group.
+    Calculate the modal speed from the input array in 3 knot bins.
+
+    Returns thebin-centre for the modal group.
 
     The data are binned into 3-knot bins with the first from 0-3 knots having a
     bin centre of 1.5 and the highest containing all speed in excess of 33 knots
@@ -49,13 +51,13 @@ def modal_speed(speeds: list) -> float:
     Parameters
     ----------
     speeds : list
-        Input speeds in km/h
+        Input speeds in km/h.
 
     Returns
     -------
     float
         Bin-centre speed (expressed in km/h) for the 3 knot bin which contains most speeds in
-        input array, or 8.5, whichever is higher
+        input array, or 8.5, whichever is higher.
     """
     # if there is one or no observations then return None
     # if the speed is on a bin edge then it rounds up to higher bin
@@ -91,17 +93,17 @@ def modal_speed(speeds: list) -> float:
 
 def set_speed_limits(amode: float) -> (float, float, float):
     """
-    Takes a modal speed and calculates speed limits for the track checker
+    Take a modal speed and calculate speed limits for the track checker.
 
     Parameters
     ----------
     amode : float
-        modal speed in kmk/h
+        Modal speed in km/h.
 
     Returns
     -------
     (float, float, float)
-        max speed, maximum max speed and min speed
+        Max speed, maximum max speed and min speed.
     """
     amax = convert_to(15.0, "knots", "km/h")
     amaxx = convert_to(20.0, "knots", "km/h")
@@ -125,26 +127,28 @@ def increment_position(
     timediff: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Increment_position takes latitudes and longitude, a speed, a direction and a time difference and returns
-    increments of latitude and longitude which correspond to half the time difference.
+    Compute latitude and longitude increments over half a time interval.
+
+    This function takes latitudes and longitude, a speed, a direction and a time difference
+    and returns increments of latitude and longitude which correspond to half the time difference.
 
     Parameters
     ----------
     alat1 : 1D np.ndarray of float
       One-dimensional array of Latitude at starting point in degrees.
     alon1 : 1D np.ndarray of float
-      One-dimensional array of Longitude at starting point in degrees
+      One-dimensional array of Longitude at starting point in degrees.
     avs : 1D np.ndarray of float
       One-dimensional array of speed of ship in km/h.
     ads : 1D np.ndarray of float
       One-dimensional array of heading of ship in degrees.
-    timdiff : 1D np.ndarray of float
+    timediff : 1D np.ndarray of float
       One-dimensional array of time difference between the points in hours.
 
     Returns
     -------
     1D np.ndarray of float
-        Returns latitude and longitude increment or None and None if timediff is None
+        Returns latitude and longitude increment or None and None if timediff is None.
     """
     alat1 = alat1.astype(float)
     alon1 = alon1.astype(float)
@@ -169,26 +173,29 @@ def direction_continuity(
     max_direction_change: float = 60.0,
 ) -> np.ndarray:
     """
-    Check that the reported direction at the previous time step and the actual
-    direction taken are within max_direction_change degrees of one another.
+    Check if reported and calculated directions are within the allowed change.
+
+    This function compares the heading at the previous time step with the
+    calculated ship direction from reported positions, flagging differences
+    that exceed the maximum allowed direction change.
 
     Parameters
     ----------
     dsi : 1D np.ndarray of float
-        heading at current time step in degrees
+        Heading at current time step in degrees.
     directions : 1D np.ndarray of float
-        calculated ship direction from reported positions in degrees
+        Calculated ship direction from reported positions in degrees.
     dsi_previous : 1D np.ndarray of float
-        heading at previous time step in degrees
-        If None, get dsi_previous from dsi
+        Heading at previous time step in degrees.
+        If None, get dsi_previous from dsi.
     max_direction_change : float
-        Largest deviations that will not be flagged in degrees
+        Largest deviations that will not be flagged in degrees.
 
     Returns
     -------
     np.ndarray
         Returned array elements are 10.0 if the difference between reported and calculated direction is greater
-        than the max_direction_change (default, 60 degrees), 0.0 otherwise
+        than the max_direction_change (default, 60 degrees), 0.0 otherwise.
     """
     allowed_list = [0, 45, 90, 135, 180, 225, 270, 315, 360]
     result = np.zeros(len(dsi))
@@ -230,26 +237,30 @@ def speed_continuity(
     max_speed_change: float | None = 10.0,
 ) -> np.ndarray:
     """
-    Check if reported speed at this and previous time step is within max_speed_change
-    knots of calculated speed between those two time steps
+    Check if reported speeds are within the allowed change from calculated speeds.
+
+    This function compares the reported speed at the current and previous time steps
+    with the speed calculated from positions. Flags positions where the change
+    exceeds the maximum allowed speed change.
 
     Parameters
     ----------
     vsi : 1D np.ndarray of float
-        One-dimensional array of reported speed in km/h at current time step
+        One-dimensional array of reported speed in km/h at current time step.
     speeds : 1D np.ndarray of float
-        One-dimensional array of speed of ship calculated from locations at current and previous time steps in km/h
+        One-dimensional array of speed of ship calculated from locations
+        at current and previous time steps in km/h.
     vsi_previous : 1D np.ndarray of float, optional
-        One-dimensional array of reported speed in km/h at previous time step
-        If None, get vsi_previous from vsi
+        One-dimensional array of reported speed in km/h at previous time step.
+        If None, get vsi_previous from vsi.
     max_speed_change : float, optional
-        Largest change of speed that will not raise flag in km/h, default 10
+        Largest change of speed that will not raise flag in km/h, default 10 (km/h).
 
     Returns
     -------
     np.ndarray
         Returned array elements are 10 if the reported and calculated speeds differ by more than 10 knots,
-        0 otherwise
+        0 otherwise.
     """
     result = np.zeros(len(vsi))
     if not isvalid(max_speed_change):
@@ -287,28 +298,30 @@ def check_distance_from_estimate(
     vsi_previous: np.ndarray | None = None,
 ):
     """
-    Check that distances from estimated positions (calculated forward and backwards in time) are less than
-    time difference multiplied by the average reported speeds
+    Check that distances from estimated positions are less than calculated distance.
+
+    The estimated positions are calculated forward and backwards in time.
+    The calculated distance is the time difference multiplied by the average reported speeds.
 
     Parameters
     ----------
     vsi : 1D np.ndarray of float
-        reported speed in km/h at current time step
+        Reported speed in km/h at current time step.
     time_differences : 1D np.ndarray of float
-        calculated time differences between reports in hours
+        Calculated time differences between reports in hours.
     fwd_diff_from_estimated : 1D np.ndarray of float
-        distance in km from estimated position, estimates made forward in time
+        Distance in km from estimated position, estimates made forward in time.
     rev_diff_from_estimated : 1D np.ndarray of float
-        distance in km from estimated position, estimates made backward in time
+        Distance in km from estimated position, estimates made backward in time.
     vsi_previous : 1D np.ndarray of float, optional
-        One-dimensional array of reported speed in km/h at previous time step
-        If None, get vsi_previous from vsi
+        One-dimensional array of reported speed in km/h at previous time step.
+        If None, get vsi_previous from vsi.
 
     Returns
     -------
     np.ndarray
         Returned array elements set to 10 if estimated and reported positions differ by more than the reported
-        speed multiplied by the calculated time difference, 0 otherwise
+        speed multiplied by the calculated time difference, 0 otherwise.
     """
     valid = isvalid(vsi)
 
@@ -357,23 +370,23 @@ def calculate_course_parameters(
 
     Parameters
     ----------
-    lat_later: float
+    lat_later : float
         Latitude in degrees of later timestamp.
-    lat_earlier:float
+    lat_earlier : float
         Latitude in degrees of earlier timestamp.
-    lon_later: float
+    lon_later : float
         Longitude in degrees of later timestamp.
-    lon_earlier: float
+    lon_earlier : float
         Longitude in degrees of earlier timestamp.
-    date_later: datetime
+    date_later : datetime
         Date of later timestamp.
-    date_earlier: datetime
+    date_earlier : datetime
         Date of earlier timestamp.
 
     Returns
     -------
     tuple of float
-        A tuple of four floats representing the speed, distance, course and time difference
+        A tuple of four floats representing the speed, distance, course and time difference.
     """
     distance = sg.sphere_distance(lat_later, lon_later, lat_earlier, lon_earlier)
     date_earlier = pd.Timestamp(date_earlier)
@@ -404,7 +417,7 @@ def calculate_speed_course_distance_time_difference(
     alternating: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Calculates speeds, courses, distances and time differences using consecutive reports.
+    Calculate speeds, courses, distances and time differences using consecutive reports.
 
     Parameters
     ----------
@@ -466,9 +479,10 @@ def forward_discrepancy(
     dsi: SequenceFloatType,
 ) -> SequenceFloatType:
     """
-    Calculate what the distance is between the projected position (based on the reported
-    speed and heading at the current and previous time steps) and the actual position. The
-    observations are taken in time order.
+    Calculate the distance between the projected position and the actual position.
+
+    The projected position is based on the reported speed and heading at the current
+    and previous time steps. The observations are taken in time order.
 
     This takes the speed and direction reported by the ship and projects it forwards half a
     time step, it then projects it forwards another half time-step using the speed and
@@ -477,14 +491,6 @@ def forward_discrepancy(
 
     Parameters
     ----------
-    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
-        One-dimensional reported speed array in km/h.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
-        One-dimensional reported heading array in degrees.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
@@ -495,6 +501,14 @@ def forward_discrepancy(
 
     date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
         One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported speed array in km/h.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
@@ -534,8 +548,10 @@ def backward_discrepancy(
     dsi: SequenceFloatType,
 ) -> SequenceFloatType:
     """
-    Calculate what the distance is between the projected position (based on the reported speed and
-    heading at the current and previous time steps) and the actual position. The calculation proceeds from the
+    Calculate the distance between the projected position and the actual position.
+
+    The projected position is based on the reported speed and heading at the current
+    and previous time steps. The calculation proceeds from the
     final, later observation to the first (in contrast to distr1 which runs in time order)
 
     This takes the speed and direction reported by the ship and projects it forwards half a time step, it then
@@ -544,14 +560,6 @@ def backward_discrepancy(
 
     Parameters
     ----------
-    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
-        One-dimensional reported speed array in km/h.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
-        One-dimensional reported heading array in degrees.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
@@ -562,6 +570,14 @@ def backward_discrepancy(
 
     date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
         One-dimensional date array.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported speed array in km/h.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+        One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
@@ -605,9 +621,10 @@ def calculate_midpoint(
     timediff: np.ndarray,
 ) -> np.ndarray:
     """
-    Interpolate between alternate reports and compare the interpolated location to the actual location. e.g.
-    take difference between reports 2 and 4 and interpolate to get an estimate for the position at the time
-    of report 3. Then compare the estimated and actual positions at the time of report 3.
+    Interpolate between alternate reports and compare the interpolated location to the actual location.
+
+    E.g. take difference between reports 2 and 4 and interpolate to get an estimate for the position
+    at the time of report 3. Then compare the estimated and actual positions at the time of report 3.
 
     The calculation linearly interpolates the latitudes and longitudes (allowing for wrapping around the
     dateline and so on).

@@ -14,9 +14,9 @@ def yindex_to_lat(yindex: int, res: float) -> float:
 
     Parameters
     ----------
-    yindex: int
+    yindex : int
         Index of the latitude.
-    res: float
+    res : float
         Resolution of grid in degrees.
 
     Returns
@@ -24,8 +24,8 @@ def yindex_to_lat(yindex: int, res: float) -> float:
     float
         Latitude (degrees).
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, ``res`` had the default value 1.0.
     """
     if yindex < 0:
@@ -41,9 +41,9 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
 
     Parameters
     ----------
-    lat: float
+    lat : float
         Latitude of the point.
-    res: float
+    res : float
         Resolution of grid in degrees.
 
     Returns
@@ -51,16 +51,14 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
     int
         Grid box index.
 
-    Note
-    ----
+    Notes
+    -----
     In the northern hemisphere, borderline latitudes which fall on grid boundaries are pushed north, except
     90 which goes south. In the southern hemisphere, they are pushed south, except -90 which goes north.
     At 0 degrees they are pushed south.
 
     Expects that latitudes run from 90N to 90S
 
-    Note
-    ----
     In previous versions, ``res`` had the default value 1.0.
     """
     lat_local = lat  # round(lat,1)
@@ -81,10 +79,10 @@ def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
 
     Parameters
     ----------
-    lat: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    res: float
+    res : float
         Resolution of grid in degrees.
 
     Returns
@@ -92,16 +90,14 @@ def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
     Same type as input, but with integer values
         Grid box indexes.
 
-    Note
-    ----
+    Notes
+    -----
     In the northern hemisphere, borderline latitudes which fall on grid boundaries are pushed north, except
     90 which goes south. In the southern hemisphere, they are pushed south, except -90 which goes north.
     At 0 degrees they are pushed south.
 
     Expects that latitudes run from 90N to 90S
 
-    Note
-    ----
     In previous versions, ``res`` had the default value 1.0.
     """
     lat_local = lat
@@ -122,24 +118,22 @@ def lat_to_yindex(lat: float, res: float) -> int:
 
     Parameters
     ----------
-    lat: float
+    lat : float
         Latitude of the point.
-    res: float
+    res : float
         Resolution of grid in degrees.
 
     Returns
     -------
     int
-        Grid box index
+        Grid box index.
 
-    Note
-    ----
+    Notes
+    -----
     The routine assumes that the structure of the SST array is a grid that is 360 x 180 x 73
     i.e. one year of 1degree lat x 1degree lon data split up into pentads. The west-most box is at 180degrees with
     index 0 and the northernmost box also has index zero. Inputs on the border between grid cells are pushed south.
 
-    Note
-    ----
     In previous versions, ``res`` had the default value 1.0.
     """
     yindex = int((90 - lat) / res)
@@ -154,9 +148,9 @@ def xindex_to_lon(xindex: int, res: float) -> float:
 
     Parameters
     ----------
-    xindex: int
-        Index of the longitude
-    res: float
+    xindex : int
+        Index of the longitude.
+    res : float
         Resolution of grid in degrees.
 
     Returns
@@ -164,8 +158,8 @@ def xindex_to_lon(xindex: int, res: float) -> float:
     float
         Longitude (degrees).
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, ``res`` had the default value 1.0.
     """
     if xindex < 0:
@@ -181,9 +175,9 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
 
     Parameters
     ----------
-    lon: float
+    lon : float
         Longitude of the point.
-    res: float
+    res : float
         Resolution of grid in degrees.
 
     Returns
@@ -191,14 +185,12 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
     int
         Grid box index.
 
-    Note
-    ----
+    Notes
+    -----
     In the western hemisphere, borderline longitudes which fall on grid boundaries are pushed west, except
     -180 which goes east. In the eastern hemisphere, they are pushed east, except 180 which goes west.
     At 0 degrees they are pushed west.
 
-    Note
-    ----
     In previous versions, ``res`` had the default value 1.0.
     """
     long_local = lon  # round(lon,1)
@@ -218,10 +210,10 @@ def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
 
     Parameters
     ----------
-    lon: float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         Longitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    res: float
+    res : float
         Resolution of grid in degrees.
 
     Returns
@@ -229,14 +221,12 @@ def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
     Same type as input, but with integer values
         Grid box indexes.
 
-    Note
-    ----
+    Notes
+    -----
     In the western hemisphere, borderline longitudes which fall on grid boundaries are pushed west, except
     -180 which goes east. In the eastern hemisphere, they are pushed east, except 180 which goes west.
     At 0 degrees they are pushed west.
 
-    Note
-    ----
     In previous versions, ``res`` had the default value 1.0.
     """
     long_local = lon
@@ -257,25 +247,22 @@ def lon_to_xindex(lon: float, res: float) -> int:
 
     Parameters
     ----------
-    lon: float
+    lon : float
         Longitude of the point.
-    res: float
+    res : float
         Resolution of grid in degrees.
-
 
     Returns
     -------
     int
         Grid box index.
 
-    Note
-    ----
+    Notes
+    -----
     The routine assumes that the structure of the SST array is a grid that is 360 x 180 x 73
     i.e. one year of 1degree lat x 1degree lon data split up into pentads. The west-most box is at 180degrees W with
     index 0 and the northernmost box also has index zero. Inputs on the border between grid cells are pushed east.
 
-    Note
-    ----
     In previous versions, ``res`` had the default value 1.0.
     """
     inlon = lon
@@ -291,26 +278,29 @@ def lon_to_xindex(lon: float, res: float) -> int:
 
 def filler(value_to_fill, neighbour1, neighbour2, opposite):
     """
+    Fill invalid values.
+
     If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
     it is replaced with the value from the opposite member.
 
     Parameters
     ----------
-    value_to_fill: float
+    value_to_fill : float
         The value to fill.
 
-    neighbour1: float
+    neighbour1 : float
         The first neighbour.
 
-    neighbour2: float
+    neighbour2 : float
         The second neighbour.
 
-    opposite: float
+    opposite : float
         The opposite member.
 
     Returns
     -------
     float
+        Filled invalid input values.
     """
     if not isvalid(value_to_fill):
         value_to_fill = missing_mean([neighbour1, neighbour2])
@@ -321,19 +311,21 @@ def filler(value_to_fill, neighbour1, neighbour2, opposite):
 
 def fill_missing_vals(q11: float, q12: float, q21: float, q22: float) -> tuple[float, float, float, float]:
     """
+    Fill missing values.
+
     For a group of four neighbouring grid boxes which form a square, with values q11, q12, q21, q22,
     fill gaps using means of neighbours.
 
     Parameters
     ----------
     q11 : float
-        Value of first gridbox
+        Value of first gridbox.
     q12 : float
-        Value of second gridbox
+        Value of second gridbox.
     q21 : float
-        Value of third gridbox
+        Value of third gridbox.
     q22 : float
-        Value of fourth gridbox
+        Value of fourth gridbox.
 
     Returns
     -------
@@ -359,13 +351,13 @@ def get_four_surrounding_points(lat: float, lon: float, res: int, max90: bool = 
 
     Parameters
     ----------
-    lat: float
-        Latitude of point
-    lon: float
-        Longitude of point
-    res: int
+    lat : float
+        Latitude of point.
+    lon : float
+        Longitude of point.
+    res : int
         Resolution of the grid in degrees.
-    max90: bool, default: True
+    max90 : bool, default: True
         If True then cap latitude at 90.0, otherwise don't cap latitude.
 
     Returns

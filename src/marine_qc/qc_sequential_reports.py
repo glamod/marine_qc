@@ -1,6 +1,5 @@
 """
-QC of sequential reports
-========================
+QC of sequential reports.
 
 Module containing QC functions for track checking which could be applied on a DataBundle.
 """
@@ -99,8 +98,8 @@ def do_spike_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Note
-    ----
+    Notes
+    -----
     In previous versions, default values for the parameters were:
 
     * max_gradient_space: float = 0.5
@@ -175,9 +174,11 @@ def do_track_check(
     max_midpoint_discrepancy: float,
 ) -> SequenceIntType:
     """
-    Perform one pass of the track check.  This is an implementation of the MDS track check code
-    which was originally written in the 1990s. I don't know why this piece of historic trivia so exercises
-    my mind, but it does: the 1990s! I wish my code would last so long.
+    Perform one pass of the track check.
+
+    This is an implementation of the MDS track check code which was originally written in the 1990s.
+    I don't know why this piece of historic trivia so exercises my mind, but it does: the 1990s!
+    I wish my code would last so long.
 
     Parameters
     ----------
@@ -225,8 +226,8 @@ def do_track_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Note
-    ----
+    Notes
+    -----
     If number of observations is less than three, the track check always passes.
 
     In previous versions, the default values of the parameters were:
@@ -333,11 +334,11 @@ def do_few_check(
     value: SequenceFloatType,
 ) -> SequenceIntType:
     """
-    Checks if number of observations is less than 3.
+    Check if number of observations is less than 3.
 
     Parameters
     ----------
-    value: sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
         One-dimensional array of values to be analyzed.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -380,6 +381,7 @@ def find_saturated_runs(
 ) -> SequenceIntType:
     """
     Perform checks on persistence of 100% rh while going through the voyage.
+
     While going through the voyage repeated strings of 100 %rh (AT == DPT) are noted.
     If a string extends beyond 20 reports and two days/48 hrs in time then all values are set to
     fail the repsat qc flag.
@@ -424,8 +426,8 @@ def find_saturated_runs(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Note
-    ----
+    Notes
+    -----
     In previous version, default values for the parameters were:
 
     * min_time_threshold =  48.0
@@ -461,10 +463,9 @@ def find_saturated_runs(
 @inspect_arrays(["value"])
 def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
     """
-    Find instances when more than "threshold" of the observations are
-    whole numbers and set the 'round' flag. Used in the humidity QC
-    where there are times when the values are rounded and this may
-    have caused a bias.
+    Find instances when more than "threshold" of the observations are whole numbers and set the 'round' flag.
+
+    Used in the humidity QC where there are times when the values are rounded and this may have caused a bias.
 
     Parameters
     ----------
@@ -485,8 +486,8 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
       - Returns array/sequence/Series of 1s if the value is a whole number.
       - Returns array/sequence/Series of 0s otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     Previous versions had default values for the parameters of:
 
     * min_count = 20
@@ -520,11 +521,10 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
 @inspect_arrays(["value"])
 def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
     """
-    Find cases where more than a given proportion of SSTs have the same value
+    Find cases where more than a given proportion of SSTs have the same value.
 
     This function goes through a voyage and finds any cases where more than a threshold fraction of
     the observations have the same values for a specified variable.
-
 
     Parameters
     ----------
@@ -545,8 +545,8 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
       - Returns array/sequence/Series of 1s if the value is repeated.
       - Returns array/sequence/Series of 0s otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     Previous versions had default values for the parameters of:
 
     * min_count = 20
@@ -591,7 +591,7 @@ def do_iquam_track_check(
     n_neighbours: int,
 ) -> SequenceIntType:
     """
-    Perform the IQUAM track check as detailed in Xu and Ignatov 2013
+    Perform the IQUAM track check as detailed in Xu and Ignatov 2013.
 
     The track check calculates speeds between pairs of observations and
     counts how many exceed a threshold speed. The ob with the most
@@ -638,8 +638,8 @@ def do_iquam_track_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
-    Note
-    ----
+    Notes
+    -----
     Previous versions had default values for the parameters of:
 
     * speed_limit = 60.0 for ships and 15.0 for drifting buoys
