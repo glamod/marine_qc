@@ -699,11 +699,25 @@ class AgroundChecker:
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
     def get_qc_outcomes(self) -> Sequence[int]:
-        """Return the QC outcomes."""
+        """
+        Return the QC outcomes.
+        
+        Returns
+        -------
+        array-like of int, shape (n,)
+            1-dimensional array containing QC flags.
+        """
         return self.qc_outcomes
 
     def valid_parameters(self) -> bool:
-        """Check the parameters are valid. Raises a warning and returns False if not valid."""
+        """
+        Check the parameters are valid. Raises a warning and returns False if not valid.
+        
+        Returns
+        -------
+        bool
+            True if parameter is valid, otherwise False.
+        """
         valid = False
         if self.smooth_win < 1:
             warnings.warn(UserWarning("Invalid smooth_win: {self.smooth_win}. Must be positive."), stacklevel=2)
@@ -723,7 +737,14 @@ class AgroundChecker:
         return valid
 
     def valid_arrays(self) -> bool:
-        """Check the input arrays are valid. Raises a warning and returns False if not valid."""
+        """
+        Check the input arrays are valid. Raises a warning and returns False if not valid.
+        
+        Returns
+        -------
+        bool
+            True if array is valid, otherwise False.
+        """
         valid = False
 
         if any(np.isnan(self.lon)):
@@ -983,11 +1004,25 @@ class SSTTailChecker:
         self.background_err_lim = background_err_lim
 
     def get_qc_outcomes(self):
-        """Return the QC outcomes."""
+        """
+        Return the QC outcomes.
+        
+        Returns
+        -------
+        array-like of int, shape (n,)
+            1-dimensional array containing QC flags.
+        """
         return self.qc_outcomes
 
     def valid_parameters(self):
-        """Check the parameters are valid. Raises a warning and returns False if not valid."""
+        """
+        Check the parameters are valid. Raises a warning and returns False if not valid.
+        
+        Returns
+        -------
+        bool
+            True if parameter is valid, otherwise False.
+        """
         valid = False
 
         if self.long_win_len < 1:
@@ -1014,7 +1049,15 @@ class SSTTailChecker:
         return valid
 
     def do_sst_tail_check(self, start_tail: bool):
-        """Perform the actual SST tail check."""
+        """
+        Perform the actual SST tail check.
+        
+        Parameters
+        ----------
+        start_tail : bool
+            If True flag the start of the record as failed,
+            otherwise flag the end of the record as failed.
+        """
         if not self.valid_parameters():
             self.qc_outcomes[:] = untestable
             return
@@ -1122,7 +1165,15 @@ class SSTTailChecker:
         return bg_val, ice, bgvar, good_match, invalid_ob
 
     def _preprocess_reps(self) -> bool:
-        """Process the reps and calculate the values used in the QC check."""
+        """
+        Process the reps and calculate the values used in the QC check.
+        
+        Returns
+        -------
+        bool
+            True if any invalid observations or background values were encountered
+            during preprocessing, otherwise False.
+        """
         invalid_series = False
         # test and filter out obs with unsuitable background matches
         reps_ind = []  # type: list
@@ -1172,10 +1223,6 @@ class SSTTailChecker:
         ----------
         forward : bool
             Flag to set for a forward (True) or backward (False) pass of the long tail check.
-
-        Returns
-        -------
-        None
         """
         nrep = len(self.sst_anom)
         mid_win_ind = int((self.long_win_len - 1) / 2)
@@ -1219,10 +1266,6 @@ class SSTTailChecker:
             Index.
         forward : bool
             Flag to set for a forward (True) or backward (False) pass of the short tail check.
-
-        Returns
-        -------
-        None
         """
         npass = last_pass_ind - first_pass_ind + 1
         if npass <= 0:
@@ -1346,6 +1389,41 @@ class SSTBiasedNoisyChecker:
         n_bad: int,
         background_err_lim: float,
     ):
+        """
+        Create an object for performing the SST Biased, Noisy and Short Checks.
+        
+        Parameters
+        ----------
+        lat : array-like of float, shape (n,)
+            1-dimensional latitude array in degrees.
+        lon : array-like of float, shape (n,)
+            1-dimensional longitude array in degrees.
+        dates : array-like of datetime, shape (n,)
+            1-dimensional date array.
+        sst : array-like of float, shape (n,)
+            1-dimensional sea surface temperature array in K.
+        ostia : array-like of float, shape (n,)
+            1-dimensional background field sea surface temperature array in K.
+        bgvar : array-like of float, shape (n,)
+            1-dimensional background variance array in K^2.
+        ice : array-like of float, shape (n,)
+            1-dimensional ice concentration array in range 0,1.
+        n_eval : int
+            The minimum number of drifter observations required to be assessed by the long-record check.
+        bias_lim : float
+            Maximum allowable drifter-background bias, beyond which a record is considered biased (degC or K).
+        drif_intra : float
+            Maximum random measurement uncertainty reasonably expected in drifter data (standard deviation, degC or K).
+        drif_inter : float
+            Spread of biases expected in drifter data (standard deviation, degC or K).
+        err_std_n : float
+            Number of standard deviations of combined background and drifter error, beyond which
+            short-record data are deemed suspicious.
+        n_bad : int
+            Minimum number of suspicious data points required for failure of short-record check.
+        background_err_lim : float
+            Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
+        """
         self.lat = lat
         self.lon = lon
         self.dates = dates
@@ -1374,7 +1452,14 @@ class SSTBiasedNoisyChecker:
         self.qc_outcomes_short = np.zeros(self.nreps) + untested
 
     def valid_parameters(self) -> bool:
-        """Check the parameters are valid. Raises a warning and returns False if not valid."""
+        """
+        Check the parameters are valid. Raises a warning and returns False if not valid.
+        
+        Returns
+        -------
+        bool
+            True if parameter is valid, otherwise False.
+        """
         valid = False
         if self.n_eval < 1:
             warnings.warn(UserWarning("Invalid n_eval: {self.n_eval}. Must be positive."), stacklevel=2)
@@ -1396,19 +1481,47 @@ class SSTBiasedNoisyChecker:
         return valid
 
     def get_qc_outcomes_bias(self):
-        """Return the QC outcomes for the bias check."""
+        """
+        Return the QC outcomes for the bias check.
+        
+        Returns
+        -------
+        array-like of int, shape (n,)
+            1-dimensional array containing QC flags.
+        """        
         return self.qc_outcomes_bias
 
     def get_qc_outcomes_noise(self):
-        """Return the QC outcomes for the noisy check."""
+        """
+        Return the QC outcomes for the noisy check.
+        
+        Returns
+        -------
+        array-like of int, shape (n,)
+            1-dimensional array containing QC flags.
+        """        
         return self.qc_outcomes_noise
 
     def get_qc_outcomes_short(self):
-        """Return the QC outcomes for the short check."""
+        """
+        Return the QC outcomes for the short check.
+        
+        Returns
+        -------
+        array-like of int, shape (n,)
+            1-dimensional array containing QC flags.
+        """        
         return self.qc_outcomes_short
 
-    def set_all_qc_outcomes_to(self, input_state):
-        """Set all the QC outcomes to the specified input_state."""
+    def set_all_qc_outcomes_to(self, input_state: int):
+        """
+        Set all the QC outcomes to the specified input_state.
+        
+        Parameters
+        ----------
+        input_state : int
+            QC flag to map to the QC outcomes.
+        """
         if input_state not in [
             passed,
             failed,
@@ -1510,6 +1623,12 @@ class SSTBiasedNoisyChecker:
         anomalies, background error standard deviations, and flags any missing or invalid
         background values. It also checks whether the time series is sorted and sets
         a mask flag if any background variances are masked.
+        
+        Returns
+        -------
+        bool
+            True if any invalid observations or background values were encountered
+            during preprocessing, otherwise False.
         """
         invalid_series = False
         # test and filter out obs with unsuitable background matches
@@ -1857,8 +1976,8 @@ def do_sst_start_tail_check(
     Returns
     -------
     array-like of int, shape (n,)
-    1-dimensional array containing QC flags.
-    1 if SST start tail check fails, 0 otherwise.
+        1-dimensional array containing QC flags.
+        1 if SST start tail check fails, 0 otherwise.
 
     Notes
     -----
@@ -1955,8 +2074,8 @@ def do_sst_end_tail_check(
     Returns
     -------
     array-like of int, shape (n,)
-    1-dimensional array containing QC flags.
-    1 if SST start tail check fails, 0 otherwise.
+        1-dimensional array containing QC flags.
+        1 if SST start tail check fails, 0 otherwise.
 
     Notes
     -----

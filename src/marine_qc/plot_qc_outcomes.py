@@ -1,6 +1,5 @@
 """
-Plot QC outcomes
-================
+Plot QC outcomes.
 
 Some plotting routines for QC outcomes
 """
@@ -10,7 +9,20 @@ import numpy as np
 from matplotlib.lines import Line2D
 
 
-def _get_colours_labels(qc_outcomes):
+def _get_colours_labels(qc_outcomes: np.ndarray) -> Tuple[list[str], list[Line2D]]:
+    """
+    Get color lebels.
+    
+    Parameters
+    ----------
+    qc_outcomes : np.ndarray
+        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
+        
+    Returns
+    -------
+    tuple of (list of str, list of Line2D)
+        Color names and legend elements.
+    """
     colours = []
     colour_passed = "#55ff55"
     colour_failed = "#ff5555"
@@ -58,7 +70,38 @@ def _get_colours_labels(qc_outcomes):
     return colours, legend_elements
 
 
-def _make_plot(xvalue, yvalue, flags, xlim, ylim, xlabel, ylabel, filename):
+def _make_plot(
+    xvalue: np.ndarray, 
+    yvalue: np.ndarray, 
+    flags: np.ndarray, 
+    xlim: List[float] | None, 
+    ylim: List[float] | None, 
+    xlabel: str, 
+    ylabel: str, 
+    filename: str | None,
+):
+    """
+    Make plot.
+    
+    Parameters
+    ----------
+    xvalue : np.ndarray
+        Array of x values.
+    yvalue : np.ndarray
+        Array of y values.
+    flags : np.ndarray
+        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
+    xlim : list of float or None
+        If not None: set xlim for plotting.
+    ylim : list of float or None
+        If not None: set ylim for plotting.
+    xlabel : str
+        Name of the x axis.
+    ylabel : str
+        Name of the y axis.
+    filename : str or None
+        Filename to save the figure to. If None, the figure is saved with a standard name.
+    """
     colours, legend_elements = _get_colours_labels(flags)
 
     colours = np.array(colours)
@@ -102,25 +145,20 @@ def _make_plot(xvalue, yvalue, flags, xlim, ylim, xlabel, ylabel, filename):
     plt.close()
 
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: Optional[str] = None):
     """
-    Plot a graph of points showing the latitude and value of a set of observations coloured according to
-    the QC oucomes.
+    Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
 
     Parameters
     ----------
-    lat: np.ndarray
-        Array of latitude values in degrees
-    value: np.ndarray
-        Array of observed values for the variable
-    qc_outcomes: np.ndarray
-        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure
-    filename: str or None
-        Filename to save the figure to. If None, the figure is saved with a standard name
-
-    Returns
-    -------
-    None
+    lat : np.ndarray
+        Array of latitude values in degrees.
+    value : np.ndarray
+        Array of observed values for the variable.
+    qc_outcomes : np.ndarray
+        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
+    filename : str or None
+        Filename to save the figure to. If None, the figure is saved with a standard name.
     """
     _make_plot(
         xvalue=value,
@@ -134,25 +172,20 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
     )
 
 
-def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> None:
+def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
     """
-    Plot a graph of points showing the latitude and longitude of a set of observations coloured according to
-    the QC outcomes.
+    Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 
     Parameters
     ----------
-    lat: np.ndarray
-        array of latitude values in degrees
-    lon: np.ndarray
-        array of longitude values in degrees
-    qc_outcomes: np.ndarray
-        array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure
-    filename: str or None
-        Filename to save the figure to. If None, the figure is saved with a standard name
-
-    Returns
-    -------
-    None
+    lat : np.ndarray
+        Array of latitude values in degrees.
+    lon : np.ndarray
+        Array of longitude values in degrees.
+    qc_outcomes : np.ndarray
+        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
+    filename : str or None
+        Filename to save the figure to. If None, the figure is saved with a standard name.
     """
     _make_plot(
         xvalue=lon,

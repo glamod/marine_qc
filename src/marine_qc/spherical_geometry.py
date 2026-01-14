@@ -11,6 +11,7 @@ import numpy as np
 from pyproj import Geod
 
 from .auxiliary import (
+    SequenceFloatType,
     convert_to,
     earths_radius,
     inspect_arrays,
@@ -23,39 +24,74 @@ radians_per_degree = np.pi / 180.0
 geod = Geod(a=earths_radius, b=earths_radius)
 
 
-def _geod_inv(lon1, lat1, lon2, lat2):
-    """Returns forward azimuth, back azimuth, and distance  using the ellipsoidal model."""
+def _geod_inv(
+    lat1: SequenceFloatType, 
+    lon1: SequenceFloatType, 
+    lat2: SequenceFloatType, 
+    lon2: SequenceFloatType,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute forward azimuth, back azimuth, and distance between two points using an ellipsoidal model.
+    
+    Parameters
+    ----------
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
+    lon1 : SequenceFloatType
+        Longitude of the first point in degrees.
+    lat2 : SequenceFloatType
+        Latitude of the second point in degrees.
+    lon2 : SequenceFloatType
+        Longitude of the second point in degrees.
+        
+    Returns
+    -------
+    tuple of (np.ndarray, np.ndarray, np.ndarray) 
+        A tuple containing:
+        - Forward azimuth(s) from point 1 to point 2 in degrees.     
+        - Back azimuth(s) from point 2 to point 1 in degrees.
+        - Distance(s) between the points in meters.
+        The outputs have the same shape as the broadcasted inputs.
+    """
     fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_az, back_az, dist
 
 
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
-def angular_distance(lat1, lon1, lat2, lon2):
+def angular_distance(
+    lat1: SequenceFloatType, 
+    lon1: SequenceFloatType, 
+    lat2: SequenceFloatType, 
+    lon2: SequenceFloatType,
+) -> np.ndarray:
     """
-    Calculate distance between two points on a sphere  input latitudes and longitudes should be in degrees
-    output is in radians
+    Calculate the great-circle angular distance between two points on a sphere.
+
+    Input latitudes and longitudes should be in degrees.
+    Output distance is returned in radians.
 
     Parameters
     ----------
-    lat1 : float
-        latitude of first point
-    lon1 : float
-        longitude of first point
-    lat2 : float
-        latitude of second point
-    lon2 : float
-        longitude of second point
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
+    lon1 : SequenceFloatType
+        Longitude of the first point in degrees.
+    lat2 : SequenceFloatType
+        Latitude of the second point in degrees.
+    lon2 : SequenceFloatType
+        Longitude of the second point in degrees.
 
     Returns
     -------
-    float
-        Return the angular great circle distance between the two points in radians
+    np.ndarray
+        Angular great-circle distance between the two points in radians.
+        NaN is returned for any invalid input values.
 
     Raises
     ------
     ValueError
-        If either lat1, lat2, lon1 or lon2 is numerically invalid or None.
+        If any of lat1, lat2, lon1, or lon2 is numerically invalid or None.
     """
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -67,10 +103,17 @@ def angular_distance(lat1, lon1, lat2, lon2):
 
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
-def sphere_distance(lat1, lon1, lat2, lon2):
+def sphere_distance(
+    lat1: SequenceFloatType, 
+    lon1: SequenceFloatType, 
+    lat2: SequenceFloatType, 
+    lon2: SequenceFloatType,
+) -> np.ndarray:
     """
-    Calculate the great circle distance between two points on the sphere designated
-    by their latitude and longitude
+    Calculate the great circle angular distance between two points on a sphere.
+    
+    Input latitudes and longitudes should be in degrees.
+    Output distance is returned in radians.
 
     The great circle distance is the shortest distance between any two points on the Earths surface.
     The calculation is done by first calculating the angular distance between the points and then
@@ -79,19 +122,19 @@ def sphere_distance(lat1, lon1, lat2, lon2):
 
     Parameters
     ----------
-    lat1 : float
-        latitude of first point
-    lon1 : float
-        longitude of first point
-    lat2 : float
-        latitude of second point
-    lon2 : float
-        longitude of second point
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
+    lon1 : SequenceFloatType
+        Longitude of the first point in degrees.
+    lat2 : SequenceFloatType
+        Latitude of the second point in degrees.
+    lon2 : SequenceFloatType
+        Longitude of the second point in degrees.
 
     Returns
     -------
-    float
-        Return the great circle distance in kilometres between the two points
+    np.ndarray
+        Angular great-circle distance between the two points in kilometres.
     """
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -103,30 +146,40 @@ def sphere_distance(lat1, lon1, lat2, lon2):
 
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2", "f"], dtype=float, multiple=True)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2", "f"])
-def intermediate_point(lat1, lon1, lat2, lon2, f):
+def intermediate_point(
+    lat1: SequenceFloatType, 
+    lon1: SequenceFloatType, 
+    lat2: SequenceFloatType, 
+    lon2: SequenceFloatType, 
+    f: float,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Given two lat,lon point find the latitude and longitude that are a fraction f
+    Compute the intermediate point along the great-circle path between two points.
+    
+    Given two lat,lon points find the latitude and longitude that are a fraction f
     of the great circle distance between them https://edwilliams.org/avform147.htm formerly
     williams.best.vwh.net/avform.htm#Intermediate
 
     Parameters
     ----------
-    lat1 : float
-        latitude of first point
-    lon1 : float
-        longitude of first point
-    lat2 : float
-        latitude of second point
-    lon2 : float
-        longitude of second point
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
+    lon1 : SequenceFloatType
+        Longitude of the first point in degrees.
+    lat2 : SequenceFloatType
+        Latitude of the second point in degrees.
+    lon2 : SequenceFloatType
+        Longitude of the second point in degrees.
     f : float
-        fraction of distance between the two points
+        Fraction of distance between the two points.
 
     Returns
     -------
-    float, float
-        return the latitude and longitude of the point a fraction f along the great circle between the
-        first and second points.
+    tuple of (np.ndarray, np.ndarray)
+        A tuple containing:
+        - Latitude(s) of the intermediate point(s) in degrees.
+        - Longitude(s) of the intermediate point(s) in degrees.
+        The outputs have the same shape as the broadcasted inputs.
     """
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
@@ -144,26 +197,31 @@ def intermediate_point(lat1, lon1, lat2, lon2, f):
 
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
-def course_between_points(lat1, lon1, lat2, lon2):
+def course_between_points(
+    lat1: SequenceFloatType, 
+    lon1: SequenceFloatType, 
+    lat2: SequenceFloatType, 
+    lon2: SequenceFloatType, 
+) -> SequenceFloatType:
     """
-    Given two points find the initial true course at point1 inputs are in degrees and output is in degrees
+    Given two points find the initial true course at point1 inputs are in degrees and output is in degrees.
 
     Parameters
     ----------
-    lat1 : float
-        latitude of first point
-    lon1 : float
-        longitude of first point
-    lat2 : float
-        latitude of second point
-    lon2 : float
-        longitude of second point
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
+    lon1 : SequenceFloatType
+        Longitude of the first point in degrees.
+    lat2 : SequenceFloatType
+        Latitude of the second point in degrees.
+    lon2 : SequenceFloatType
+        Longitude of the second point in degrees.
 
     Returns
     -------
-    float
-        return the initial true course in degrees at point one along the great circle between point
-        one and point two
+    SequenceFloatType
+        Initial true course in degrees at point one along the great circle between point
+        one and point two.
     """
     fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
@@ -176,27 +234,37 @@ def course_between_points(lat1, lon1, lat2, lon2):
         "lon1",
     ]
 )
-def lat_lon_from_course_and_distance(lat1, lon1, tc, d):
+def lat_lon_from_course_and_distance(
+    lat1: SequenceFloatType, 
+    lon1: SequenceFloatType, 
+    tc: float, 
+    d: float,
+) -> Tuple[SequenceFloatType, SequenceFloatType]:
     """
-    Calculate a latitude and longitude given a starting point, course (in radians) and
-    angular distance (also in radians) from https://edwilliams.org/avform147.htm
-    formerly williams.best.vwh.net/avform.htm#LL
+    Calculate latitude and longitude given a starting point, true course and distance.
+    
+    Uses spherical trigonometry formulas from https://edwilliams.org/avform147.htm
+    to compute the endpoint given a starting latitude and longitude, a true coure
+    (bearing), and a distance traveled along a great-circle path. 
 
     Parameters
     ----------
-    lat1 : float
-        latitude of first point in degrees
-    lon1 : float
-        longitude of first point in degrees
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
+    lon1 : SequenceFloatType
+        Longitude of the first point in degrees.
     tc : float
-        true course measured clockwise from north in degrees
+        True course measured clockwise from north in degrees.
     d : float
-        distance travelled in kilometres
+        Distance travelled in kilometres.
 
     Returns
     -------
-    float, float
-        return the new latitude and longitude
+    tuple of (SequenceFloatType, SequenceFloatType)
+        A tuple containing:
+        - Latitude(s) of the intermediate point(s) in degrees.
+        - Longitude(s) of the intermediate point(s) in degrees.
+        The outputs have the same shape as the broadcasted inputs.
     """
     lat1 = convert_to(lat1, "deg", "rad")
     lon1 = convert_to(lon1, "deg", "rad")
