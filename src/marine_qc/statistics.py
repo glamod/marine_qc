@@ -18,7 +18,7 @@ def p_data_given_good(x: float, q: float, r_hi: float, r_lo: float, mu: float, s
 
     Parameters
     ----------
-    x : float
+    x: float
         Observed value for which probability is required.
     q : float
         Quantization of x, i.e. x is an integer multiple of Q.
