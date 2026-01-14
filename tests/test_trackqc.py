@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 import marine_qc.buoy_tracking_qc as tqc
-from marine_qc.auxiliary import untestable
+from marine_qc.auxiliary import failed, passed, untestable
 
 
 @pytest.mark.parametrize(
@@ -261,53 +261,17 @@ def aground_check_test_data(selector):
     return reps["LAT"], reps["LON"], reps["DATE"]
 
 
-@pytest.mark.parametrize(
-    # fmt: off
-    "selector, smooth_win, min_win_period, max_win_period, expected, warns",
-    [
-        (1, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary
-        (2, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary jitter spikes
-        (3, 3, 1, 2, [0, 0, 0, 0, 1, 1, 1], False),  # test stationary big remaining jitter
-        (4, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary_small_remaining_jitter
-        (5, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_moving_west
-        (6, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_moving_north
-        (7, 3, 1, 2, [0, 0, 0, 0, 1, 1, 1], False),  # test_moving_north_then_stop
-        (8, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_stationary_high_freq_sampling
-        (9, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_stationary_low_freq_sampling
-        (10, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary_mid_freq_sampling
-        (11, 3, 1, 2, [0, 0, 1, 1, 1, 1, 1], False),  # test_stationary_low_to_mid_freq_sampling
-        (12, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_moving_slowly_northwest
-        (13, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_moving_slowly_west_in_arctic
-        (14, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_stop_then_moving_north
-        (15, 3, 1, 2, [0, 0], False),  # test_too_short_for_qc
-        (16, 0, 1, 2, [untestable for x in range(7)], True),  # test_error_bad_input_parameter
-        (17, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_missing_observation
-        (18, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_not_time_sorted
-        # fmt: off
-    ],
-)
-def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, expected, warns):
-    lats, lons, dates = aground_check_test_data(selector)
-    if warns:
-        with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
-    else:
-        qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
-    for i in range(len(lons)):
-        assert qc_outcomes[i] == expected[i]
-
-
 @pytest.mark.parametrize(  # fmt: off
     "selector, smooth_win, min_win_period, max_win_period, expected, warns",
     [
-        (1, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary
-        (2, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary jitter spikes
+        (1, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary
+        (2, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary jitter spikes
         (
             3,
             3,
             1,
             2,
-            [0, 0, 0, 0, 1, 1, 1],
+            [passed, passed, passed, passed, failed, failed, failed],
             False,
         ),  # test stationary big remaining jitter
         (
@@ -315,27 +279,27 @@ def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, e
             3,
             1,
             2,
-            [1, 1, 1, 1, 1, 1, 1],
+            [failed, failed, failed, failed, failed, failed, failed],
             False,
         ),  # test_stationary_small_remaining_jitter
-        (5, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_moving_west
-        (6, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_moving_north
-        (7, 3, 1, 2, [0, 0, 0, 0, 1, 1, 1], False),  # test_moving_north_then_stop
+        (5, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_moving_west
+        (6, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_moving_north
+        (7, 3, 1, 2, [passed, passed, passed, passed, failed, failed, failed], False),  # test_moving_north_then_stop
         (
             8,
             3,
             1,
             2,
-            [0, 0, 0, 0, 0, 0, 0],
+            [passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_stationary_high_freq_sampling
-        (9, 3, 1, 2, [1, 1, 1, 1, 1, 1, 1], False),  # test_stationary_low_freq_sampling
+        (9, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_low_freq_sampling
         (
             10,
             3,
             1,
             2,
-            [1, 1, 1, 1, 1, 1, 1],
+            [failed, failed, failed, failed, failed, failed, failed],
             False,
         ),  # test_stationary_mid_freq_sampling
         (
@@ -343,20 +307,20 @@ def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, e
             3,
             1,
             2,
-            [1, 1, 1, 1, 1, 1, 1],
+            [failed, failed, failed, failed, failed, failed, failed],
             False,
         ),  # test_stationary_low_to_mid_freq_sampling
-        (12, 3, 1, 2, [0, 0, 0, 1, 1, 1, 1], False),  # test_moving_slowly_northwest
+        (12, 3, 1, 2, [passed, passed, passed, failed, failed, failed, failed], False),  # test_moving_slowly_northwest
         (
             13,
             3,
             1,
             2,
-            [1, 1, 1, 1, 1, 1, 1],
+            [failed, failed, failed, failed, failed, failed, failed],
             False,
         ),  # test_moving_slowly_west_in_arctic
-        (14, 3, 1, 2, [0, 0, 0, 0, 0, 0, 0], False),  # test_stop_then_moving_north
-        (15, 3, 1, 2, [0, 0], False),  # test_too_short_for_qc
+        (14, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_stop_then_moving_north
+        (15, 3, 1, 2, [passed, passed], False),  # test_too_short_for_qc
         (
             16,
             0,
@@ -571,31 +535,31 @@ def speed_check_data(selector):
 @pytest.mark.parametrize(  # fmt: off
     "selector, speed_limit, min_win_period, max_win_period, expected, warns",
     [
-        (1, 2.5, 0.5, 1.0, [0, 0, 0, 0, 0, 0, 0], False),  # test stationary
-        (2, 2.5, 0.5, 1.0, [1, 1, 1, 1, 1, 1, 1], False),  # test_fast_drifter
-        (3, 2.5, 0.5, 1.0, [0, 0, 0, 0, 0, 0, 0], False),  # test_slow_drifter
-        (4, 2.5, 0.5, 1.0, [0, 0, 1, 1, 1, 0, 0], False),  # test_slow_fast_slow_drifter
-        (5, 2.5, 0.5, 1.0, [0, 0, 0, 0, 0, 0, 0], False),  # test_high_freqency_sampling
-        (6, 2.5, 0.5, 1.0, [0, 0, 0, 0, 0, 0, 0], False),  # test_low_freqency_sampling
+        (1, 2.5, 0.5, 1.0, [passed, passed, passed, passed, passed, passed, passed], False),  # test stationary
+        (2, 2.5, 0.5, 1.0, [failed, failed, failed, failed, failed, failed, failed], False),  # test_fast_drifter
+        (3, 2.5, 0.5, 1.0, [passed, passed, passed, passed, passed, passed, passed], False),  # test_slow_drifter
+        (4, 2.5, 0.5, 1.0, [passed, passed, failed, failed, failed, passed, passed], False),  # test_slow_fast_slow_drifter
+        (5, 2.5, 0.5, 1.0, [passed, passed, passed, passed, passed, passed, passed], False),  # test_high_freqency_sampling
+        (6, 2.5, 0.5, 1.0, [passed, passed, passed, passed, passed, passed, passed], False),  # test_low_freqency_sampling
         (
             7,
             2.5,
             0.5,
             1.0,
-            [0, 1, 1, 1, 1, 1, 0],
+            [passed, failed, failed, failed, failed, failed, passed],
             False,
         ),  # test_slow_fast_slow_mid_freqency_sampling
-        (8, 2.5, 0.5, 1.0, [1, 1, 0, 0, 0, 1, 1], False),  # test_irregular_sampling
-        (9, 2.5, 0.5, 1.0, [1, 1, 1, 1, 1, 1, 1], False),  # test_fast_arctic_drifter
+        (8, 2.5, 0.5, 1.0, [failed, failed, passed, passed, passed, failed, failed], False),  # test_irregular_sampling
+        (9, 2.5, 0.5, 1.0, [failed, failed, failed, failed, failed, failed, failed], False),  # test_fast_arctic_drifter
         (
             10,
             2.5,
             0.5,
             1.0,
-            [0, 1, 1, 1, 1, 1, 1],
+            [passed, failed, failed, failed, failed, failed, failed],
             False,
         ),  # test_stationary_gross_error
-        (11, 2.5, 0.5, 1.0, [0, 0], False),  # test_too_short_for_qc_a
+        (11, 2.5, 0.5, 1.0, [passed, passed], False),  # test_too_short_for_qc_a
         (
             12,
             -2.5,
@@ -637,17 +601,27 @@ def test_generic_speed_tests(selector, speed_limit, min_win_period, max_win_peri
     # fmt: off
     "selector, speed_limit, min_win_period, ship_speed_limit, delta_d, delta_t, n_neighbours, expected, warns",
     [
-        (1, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0, 0, 0, 0, 0, 0], False),  # test_new_stationary_a
-        (2, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [1, 1, 1, 1, 1, 1, 1], False),  # test_new_fast_drifter
-        (3, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0, 0, 0, 0, 0, 0], False),  # test_new_slow_drifter
-        (4, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0, 1, 1, 1, 0, 0], False),  # test_new_slow_fast_slow_drifter
-        (5, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0, 0, 0, 0, 0, 0], False),  # test_new_high_freqency_sampling
-        (6, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [1, 1, 1, 1, 1, 1, 1], False),  # test_new_low_freqency_sampling
-        (7, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0, 1, 1, 1, 0, 0], False),  # test_new_slow_fast_slow_mid_freqency_sampling
-        (8, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [1, 1, 1, 0, 0, 1, 1], False),  # test_new_irregular_sampling
-        (9, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [1, 1, 1, 1, 1, 1, 1], False),  # test_new_fast_arctic_drifter
-        (10, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0, 0, 0, 0, 0, 0], False),  # test_new_stationary_gross_error
-        (11, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [0, 0], False),  # test_new_too_short_for_qc_a
+        (1, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed, passed, passed, passed, passed, passed], False),  # test_new_stationary_a
+        (2, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [failed, failed, failed, failed, failed, failed, failed], False),  # test_new_fast_drifter
+        (3, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed, passed, passed, passed, passed, passed], False),  # test_new_slow_drifter
+        (4, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed, failed, failed, failed, passed, passed], False),  # test_new_slow_fast_slow_drifter
+        (5, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed, passed, passed, passed, passed, passed], False),  # test_new_high_freqency_sampling
+        (6, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [failed, failed, failed, failed, failed, failed, failed], False),  # test_new_low_freqency_sampling
+        (
+            7,
+            2.5,
+            0.5,
+            60.0,
+            1.11,
+            0.01,
+            5,
+            [passed, passed, failed, failed, failed, passed, passed],
+            False,
+        ),  # test_new_slow_fast_slow_mid_freqency_sampling
+        (8, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [failed, failed, failed, passed, passed, failed, failed], False),  # test_new_irregular_sampling
+        (9, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [failed, failed, failed, failed, failed, failed, failed], False),  # test_new_fast_arctic_drifter
+        (10, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed, passed, passed, passed, passed, passed], False),  # test_new_stationary_gross_error
+        (11, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed], False),  # test_new_too_short_for_qc_a
         (12, -2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_bad_input_parameter_a
         (13, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_missing_observation_a
         (14, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_not_time_sorted_a
@@ -1258,34 +1232,203 @@ def tailcheck_vals(selector):
     # fmt: off
     "selector, long_win_len, long_err_std_n, short_win_len, short_err_std_n, short_win_n_bad, drif_inter, drif_intra, background_err_lim, expected1, expected2, warns",
     [
-        (1, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_daytime
-        (2, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_land_masked
-        (3, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_ice
-        (4, 3, 3.0, 2, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_one_usable_value
-        (5, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_bias
-        (6, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_negative_bias
-        (7, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_bias_obs_missing
-        (8, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1], False),  # test_end_tail_bias
-        (9, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 1, 1], False),  # test_end_tail_bias_obs_missing
-        (10, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_noisy
-        (11, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1], False),  # test_end_tail_noisy
-        (12, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1], False),  # test_two_tails
-        (13, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_biased
-        (14, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_all_noisy
-        (15, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_bias_with_bgvar
-        (16, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1], False),  # test_all_biased_with_bgvar
-        (17, 7, 3.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_start_tail
-        (18, 7, 3.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1], False),  # test_short_end_tail
-        (19, 7, 3.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1], False),  # test_short_two_tails
-        (20, 7, 9.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_all_fail
-        (21, 7, 3.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_short_start_tail_with_bgvar
-        (22, 7, 9.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1], False),  # test_short_all_fail_with_bgvar
-        (23, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_long_and_short_start_tail
-        (24, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 1, 1], False),  # test_long_and_short_end_tail
-        (25, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 1, 1], False),  # test_long_and_short_two_tails
-        (26, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1], False),  # test_one_long_and_one_short_tail
-        (27, 3, 3.0, 3, 0.5, 1, 0.29, 1.0, 0.3, [1, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_too_short_for_short_tail
-        (28, 3, 3.0, 1, 0.25, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_long_and_short_all_fail
+        (1, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_all_daytime
+        (2, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_all_land_masked
+        (3, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_all_ice
+        (4, 3, 3.0, 2, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_one_usable_value
+        (
+            5,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, passed, passed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_start_tail_bias
+        (
+            6,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, passed, passed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_start_tail_negative_bias
+        (
+            7,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, failed, failed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_start_tail_bias_obs_missing
+        (8, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 6 + [failed] * 3, False),  # test_end_tail_bias
+        (9, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 4 + [failed] * 5, False),  # test_end_tail_bias_obs_missing
+        (
+            10,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, passed, passed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_start_tail_noisy
+        (11, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 6 + [failed] * 3, False),  # test_end_tail_noisy
+        (
+            12,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, passed, passed, passed, passed, passed, passed],
+            [passed] * 6 + [failed] * 3,
+            False,
+        ),  # test_two_tails
+        (13, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_all_biased
+        (14, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_all_noisy
+        (
+            15,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, passed, passed, passed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_start_tail_bias_with_bgvar
+        (
+            16,
+            3,
+            3.0,
+            1,
+            3.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, passed, passed, passed, passed, passed, passed],
+            [passed] * 6 + [failed] * 3,
+            False,
+        ),  # test_all_biased_with_bgvar
+        (
+            17,
+            7,
+            3.0,
+            3,
+            2.0,
+            2,
+            0.29,
+            1.0,
+            0.3,
+            [failed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_short_start_tail
+        (18, 7, 3.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 8 + [failed], False),  # test_short_end_tail
+        (
+            19,
+            7,
+            3.0,
+            3,
+            2.0,
+            2,
+            0.29,
+            1.0,
+            0.3,
+            [failed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed] * 8 + [failed],
+            False,
+        ),  # test_short_two_tails
+        (20, 7, 9.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_short_all_fail
+        (21, 7, 3.0, 3, 2.0, 2, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_short_start_tail_with_bgvar
+        (
+            22,
+            7,
+            9.0,
+            3,
+            2.0,
+            2,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, passed, passed, passed, passed, passed, passed, passed],
+            [passed] * 7 + [failed, failed],
+            False,
+        ),  # test_short_all_fail_with_bgvar
+        (
+            23,
+            3,
+            3.0,
+            1,
+            1.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, failed, passed, passed, passed, passed, passed],
+            [passed] * 9,
+            False,
+        ),  # test_long_and_short_start_tail
+        (24, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 5 + [failed] * 4, False),  # test_long_and_short_end_tail
+        (
+            25,
+            3,
+            3.0,
+            1,
+            1.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, failed, failed, passed, passed, passed, passed, passed],
+            [passed] * 5 + [failed] * 4,
+            False,
+        ),  # test_long_and_short_two_tails
+        (
+            26,
+            3,
+            3.0,
+            1,
+            1.0,
+            1,
+            0.29,
+            1.0,
+            0.3,
+            [failed, failed, passed, passed, passed, passed, passed, passed, passed],
+            [passed] * 8 + [failed],
+            False,
+        ),  # test_one_long_and_one_short_tail
+        (27, 3, 3.0, 3, 0.5, 1, 0.29, 1.0, 0.3, [failed] * 7 + [passed] * 2, [passed] * 9, False),  # test_too_short_for_short_tail
+        (28, 3, 3.0, 1, 0.25, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_long_and_short_all_fail
         (
             29,
             3,
@@ -1296,98 +1439,20 @@ def tailcheck_vals(selector):
             0.29,
             1.0,
             0.3,
-            [1, 1, 1, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [failed, failed, failed, passed, passed, passed, passed, passed, passed],
+            [passed] * 9,
             False,
         ),  # test_long_and_short_start_tail_with_bgvar
-        (
-            30,
-            3,
-            3.0,
-            1,
-            0.25,
-            1,
-            0.29,
-            1.0,
-            0.3,
-            [1, 1, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            False,
-        ),  # test_long_and_short_all_fail_with_bgvar
-        (31, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_good_data
-        (
-            32,
-            3,
-            3.0,
-            1,
-            1.0,
-            1,
-            0.29,
-            1.0,
-            0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            False,
-        ),  # test_long_and_short_start_tail_big_bgvar
-        (33, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 2.0, [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], False),  # test_start_tail_noisy_big_bgvar
-        (
-            34,
-            0,
-            3.0,
-            1,
-            3.0,
-            1,
-            0.29,
-            1.0,
-            0.3,
-            [untestable for x in range(9)],
-            [untestable for x in range(9)],
-            True,
-        ),  # test_error_bad_input_parameter_tail_check
-        (36, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_invalid_ice_value
-        (37, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable for x in range(9)], [untestable for x in range(9)], True),  # test_error_missing_ob_value
-        (
-            38,
-            3,
-            3.0,
-            1,
-            3.0,
-            1,
-            0.29,
-            1.0,
-            0.3,
-            [untestable for x in range(9)],
-            [untestable for x in range(9)],
-            True,
-        ),  # test_error_not_time_sorted_tail_check
-        (
-            39,
-            3,
-            3.0,
-            1,
-            3.0,
-            1,
-            0.29,
-            1.0,
-            0.3,
-            [untestable for x in range(9)],
-            [untestable for x in range(9)],
-            True,
-        ),  # test_error_invalid_background
-        (
-            40,
-            3,
-            3.0,
-            1,
-            3.0,
-            1,
-            0.29,
-            1.0,
-            0.3,
-            [untestable for x in range(9)],
-            [untestable for x in range(9)],
-            True,
-        ),  # test_error_invalid_background_error_variance
+        (30, 3, 3.0, 1, 0.25, 1, 0.29, 1.0, 0.3, [failed] * 8 + [passed], [passed] * 9, False),  # test_long_and_short_all_fail_with_bgvar
+        (31, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_good_data
+        (32, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_long_and_short_start_tail_big_bgvar
+        (33, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 2.0, [passed] * 9, [passed] * 9, False),  # test_start_tail_noisy_big_bgvar
+        (34, 0, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check
+        (36, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_invalid_ice_value
+        (37, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_missing_ob_value
+        (38, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_not_time_sorted_tail_check
+        (39, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_invalid_background
+        (40, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_invalid_background_error_variance
         # fmt: on
     ],
 )
@@ -1866,9 +1931,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_all_daytime_bnc
         (
@@ -1880,9 +1945,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_all_land_masked_bnc
         (
@@ -1894,9 +1959,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_all_ice_bnc
         (
@@ -1908,9 +1973,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_all_bgvar_exceeds_limit_bnc
         (
@@ -1922,9 +1987,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [failed, failed, failed, failed, failed, failed, failed, failed, failed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_biased_warm_bnc
         (
@@ -1936,9 +2001,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [failed, failed, failed, failed, failed, failed, failed, failed, failed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_biased_cool_bnc
         (
@@ -1950,9 +2015,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [failed, failed, failed, failed, failed, failed, failed, failed, failed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_noisy_bnc
         (
@@ -1964,9 +2029,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [failed, failed, failed, failed, failed, failed, failed, failed, failed],
+            [failed, failed, failed, failed, failed, failed, failed, failed, failed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_biased_and_noisy_bnc
         (
@@ -1978,13 +2043,14 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [failed, failed, failed, failed, failed, failed, failed, failed, failed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
+            [passed, passed, passed, passed, passed, passed, passed, passed, passed],
             False,
         ),  # test_biased_warm_obs_missing_bnc
-        (10, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], False),  # test_short_record_one_bad_bnc
-        (11, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1], False),  # test_short_record_two_bad_bnc
+        # Shorter records
+        (10, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [passed] * 5, [passed] * 5, [passed] * 5, False),  # test_short_record_one_bad_bnc
+        (11, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [passed] * 5, [passed] * 5, [failed] * 5, False),  # test_short_record_two_bad_bnc
         (
             12,
             9,
@@ -1994,9 +2060,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [passed] * 9,
+            [passed] * 9,
+            [failed] * 9,
             False,
         ),  # test_short_record_two_bad_obs_missing_bnc
         (
@@ -2008,9 +2074,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed] * 9,
+            [passed] * 9,
+            [passed] * 9,
             False,
         ),  # test_short_record_two_bad_obs_missing_with_bgvar_bnc
         (
@@ -2022,12 +2088,12 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed] * 9,
+            [passed] * 9,
+            [passed] * 9,
             False,
         ),  # test_good_data_bnc_14
-        (15, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], False),  # test_short_record_good_data_bnc
+        (15, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [passed] * 5, [passed] * 5, [passed] * 5, False),  # test_short_record_good_data_bnc
         (
             16,
             9,
@@ -2037,9 +2103,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed] * 9,
+            [passed] * 9,
+            [passed] * 9,
             False,
         ),  # test_short_record_obs_missing_good_data_bnc
         (
@@ -2051,9 +2117,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             4.0,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed] * 9,
+            [passed] * 9,
+            [passed] * 9,
             False,
         ),  # test_noisy_big_bgvar_bnc
         (
@@ -2065,9 +2131,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             4.0,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed] * 9,
+            [passed] * 9,
+            [passed] * 9,
             False,
         ),  # test_short_record_two_bad_obs_missing_big_bgvar_bnc
         (
@@ -2079,9 +2145,9 @@ def sst_biased_noisy_check_vals(selector):
             3.0,
             2,
             0.3,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [passed] * 9,
+            [passed] * 9,
+            [passed] * 9,
             False,
         ),  # test_good_data_bnc_19
         (
@@ -2098,7 +2164,7 @@ def sst_biased_noisy_check_vals(selector):
             [untestable for _ in range(9)],
             True,
         ),  # test_error_bad_input_parameter_bnc
-        # Missing on purpose - test is no longer relevant after refactoring
+        # Skipping irrelevant tests after refactoring
         (
             22,
             9,

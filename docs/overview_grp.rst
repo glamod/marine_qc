@@ -1,5 +1,7 @@
 .. marine QC documentation master file
 
+.. _overview_grp:
+
 ------------------------------------------------
 Overview of QC functions for grouped reports
 ------------------------------------------------
@@ -23,7 +25,7 @@ report and the "buddy" mean must be less than the multiplier times the standard 
 location taken from a climatology. If the difference is less the flag for that report is set to 0, pass otherwise it
 is set to 1, failed.
 
-For a detailed description see :doc:`buddy_check`
+For a detailed description see :ref:`buddy_check`
 
 :func:`.do_bayesian_buddy_check`
 ================================
@@ -34,4 +36,15 @@ The bayesian buddy check works in a similar way to `do_mds_buddy_check`. The pri
 compared to the average of nearby reports - but the determination of whether it is too far away is based on an
 explicit estimate of the probability of gross error.
 
-For a detailed description see :doc:`bayesian_buddy_check`
+For a detailed description see :ref:`bayesian_buddy_check`
+
+:func:`.do_multiple_grouped_check`
+==================================
+
+Multiple sequential report checks can be run simultaneously using the :func:`.do_multiple_grouped_check` function.
+For more information how to use the function see :ref:`running_multiple_ind`.
+
+Currently, the following QC checks can be used:
+
+    * :func:`.do_bayesian_buddy_check`
+    * :func:`.do_mds_buddy_check`

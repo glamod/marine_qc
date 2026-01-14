@@ -2,6 +2,27 @@
 Changelog
 =========
 
+0.3.0 (unreleased)
+------------------
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* New functions ``do_multiple_sequential_check`` and ``do_multiple_grouped_check`` analog to ``do_multiple_individual_check`` to run multiple checks at once (:issue:`32`, :pull:`95`)
+* Call both plotting functions ``latitude_longitude_plot`` and ``latitude_variable_plot`` directly from ``marine_qc`` (:pull:`95`)
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* rename function ``do_multiple_row_check`` to ``multiple_individual_check`` (:pull:`95`)
+* rename module ``marine_qc.multiple_row_checks`` to ``marine_qc.multiple_checks`` (:pull:`95`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* make multiple checks more flexible using several helper functions (:issue:`14`, :pull:`95`)
+* add plotting routines to documentation's API reference (:pull:`95`)
+* add helper functions to documentation's API reference (:pull:`95`)
+* add section "More theoretical information" to documentation (:pull:`95`)
+
 0.2.0 (2025-10-21)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
