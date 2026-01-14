@@ -55,7 +55,7 @@ clean-test: ## remove test and coverage artifacts
 lint/flake8: ## check style with flake8
 	python -m ruff check src/marine_qc tests
 	python -m flake8 --config=.flake8 src/marine_qc tests
-	# python -m numpydoc lint src/marine_qc/**.py
+	python -m numpydoc lint src/marine_qc/**.py
 
 lint: lint/flake8 ## check style
 
