@@ -46,4 +46,4 @@ from .qc_sequential_reports import (
 
 __author__ = """Ludwig Lierhammer"""
 __email__ = "ludwig.lierhammer@dwd.de"
-__version__ = "0.2.1-dev.0"
+__version__ = "0.2.1-dev.1"
