@@ -4,9 +4,9 @@ from __future__ import annotations
 import inspect
 import warnings
 from collections import defaultdict
-from collections.abc import Callable, Sequence
+
 from datetime import datetime
-from typing import Literal, TypeAlias
+from typing import Literal, TypeAlias, Callable, Sequence, Any
 
 import cf_xarray  # noqa: F401
 import numpy as np
@@ -14,7 +14,7 @@ import pandas as pd
 import xarray as xr
 from joblib import Parallel, delayed
 from numpy import ndarray
-from pathlin import Path
+from pathlib import Path
 from xclim.core.units import convert_units_to
 
 from .auxiliary import (
@@ -411,7 +411,7 @@ class Climatology:
             raise ValueError(f"Weird shaped field {self.ntime}. Use one of {valid_ntime}.")
 
     @classmethod
-    def open_netcdf_file(cls, file_name: Union(str, Path), clim_name: str, **kwargs) -> Climatology:
+    def open_netcdf_file(cls, file_name: Union[str, Path], clim_name: str, **kwargs) -> Climatology:
         r"""
         Open a NetCDF climatology file and construct a Climatology instance.
 
@@ -439,7 +439,7 @@ class Climatology:
             warnings.warn(f"Could not open: {file_name}.", stacklevel=2)
         return cls(_empty_dataarray(), **kwargs)
 
-    def convert_units_to(self, target_units: str, source_unitsOptional[str]=None) -> None:
+    def convert_units_to(self, target_units: str, source_units: Optional[str]=None) -> None:
         """
         Convert units to user-specific units.
 

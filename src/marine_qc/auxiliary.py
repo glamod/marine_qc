@@ -15,10 +15,10 @@ import pandas as pd
 from xclim.core.units import convert_units_to, units
 
 
-passed = 0
-failed = 1
-untestable = 2
-untested = 3
+passed: int = 0
+failed: int = 1
+untestable: int = 2
+untested: int = 3
 
 PandasNAType: TypeAlias = NAType
 PandasNaTType: TypeAlias = NaTType

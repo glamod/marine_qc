@@ -10,7 +10,7 @@ from typing import Optional
 
 import itertools
 import math
-from collections.abc import Sequence
+from typing import Sequence, cast
 
 import numpy as np
 import pandas as pd
@@ -564,6 +564,11 @@ def do_mds_buddy_check(
     * number_of_obs_thresholds = [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]]
     * multipliers = [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]]
     """
+    lat = cast(np.ndarray, lat)
+    lon = cast(np.ndarray, lon)
+    value = cast(np.ndarray, value)
+    climatology = cast(np.ndarray, climatology)
+    
     anoms = value - climatology
 
     if len(limits) != len(number_of_obs_thresholds) and len(limits) != len(multipliers):
@@ -584,17 +589,17 @@ def do_mds_buddy_check(
     if ignore_indexes is None:
         ignore_indexes = []
         
-    valid_mask = isvalid(anom)
+    valid_mask: np.ndarray = isvalid(anoms)
 
     # finally loop over all reports and update buddy QC
     for i in range(numobs):
         if i in ignore_indexes or not valid_mask[i]:
             continue
 
-        lat_ = lat[i]
-        lon_ = lon[i]
-        mon = pd.Timestamp(date[i]).month
-        day = pd.Timestamp(date[i]).day
+        lat_: float = lat[i]
+        lon_: float = lon[i]
+        mon: pd.Timestamp = pd.Timestamp(date[i]).month
+        day: pd.Timestamp = pd.Timestamp(date[i]).day
 
         # if the SST anomaly differs from the neighbour average by more than the calculated range then reject
         x = anoms[i]
@@ -700,6 +705,13 @@ def do_bayesian_buddy_check(
     * maximum_anomaly = 8.0
     * fail_probability = 0.3
     """
+    lat = cast(np.ndarray, lat)
+    lon = cast(np.ndarray, lon)
+    date = cast(np.ndarray, date)
+    value = cast(np.ndarray, value)
+    climatology = cast(np.ndarray, climatology)
+      
+    
     numobs = len(lat)
     p0 = prior_probability_of_gross_error
     q = quantization_interval
@@ -714,7 +726,7 @@ def do_bayesian_buddy_check(
 
     # Return untestable if any parameters is invalid
     if p0 < 0.0 or p0 > 1.0 or q <= 0.0 or r_hi < r_lo or sigma_m < 0.0:
-        return np.zeros(numobs) + untestable
+        return cast(Sequence[int], np.zeros(numobs) + untestable)
 
     anoms = value - climatology
 
@@ -766,4 +778,4 @@ def do_bayesian_buddy_check(
 
     del grid
 
-    return qc_outcomes
+    return cast(Sequence[int], qc_outcomes)

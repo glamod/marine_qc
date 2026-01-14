@@ -3,7 +3,7 @@
 from __future__ import annotations
 import calendar
 import math
-from collections.abc import Callable, Sequence
+from typing import Callable, Sequence, Any, cast
 from datetime import datetime
 
 import numpy as np

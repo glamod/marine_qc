@@ -5,7 +5,7 @@ Module containing main QC functions which could be applied on a DataBundle.
 """
 
 from __future__ import annotations
-from typing import Literal, cast
+from typing import Literal, cast, Optional
 
 import numpy as np
 

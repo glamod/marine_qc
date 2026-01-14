@@ -112,7 +112,7 @@ def track_day_test(
     year2 = year
     day2 = day_in_year(year, month, day)
     hour2 = math.floor(hour)
-    minute2 = (hour - math.floor(hour)) * 60.0
+    minute2 = int((hour - math.floor(hour)) * 60.0)
     lat2 = lat
     lon2 = lon
     if lat == 0:
@@ -1540,7 +1540,7 @@ class SSTBiasedNoisyChecker:
         self.qc_outcomes_noise[:] = input_state
         self.qc_outcomes_bias[:] = input_state
 
-    def do_sst_biased_noisy_check(self):
+    def do_sst_biased_noisy_check(self) -> None:
         """Perform the bias/noise check QC."""
         if not self.valid_parameters():
             self.set_all_qc_outcomes_to(untestable)
