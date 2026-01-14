@@ -34,7 +34,7 @@ from .spherical_geometry import (
 from .time_control import time_difference
 
 
-def modal_speed(speeds: list) -> float:
+def modal_speed(speeds: list[float]) -> float:
     """
     Calculate the modal speed from the input array in 3 knot bins.
 
@@ -64,7 +64,7 @@ def modal_speed(speeds: list) -> float:
     # if the modal speed is less than 8.50 then it is set to 8.50
     # anything exceeding 36 knots is assigned to the top bin
     if len(speeds) <= 1:
-        return np.nan
+        return float(np.nan)
 
     # Convert km/h to knots
     speeds = np.asarray(speeds)
@@ -88,10 +88,10 @@ def modal_speed(speeds: list) -> float:
     modal_speed_knots = max(bin_centres[modal_bin], 8.5)
 
     # Convert back to km/h
-    return convert_to(modal_speed_knots, "knots", "km/h")
+    return float(convert_to(modal_speed_knots, "knots", "km/h"))
 
 
-def set_speed_limits(amode: float) -> (float, float, float):
+def set_speed_limits(amode: float) -> tuple[float, float, float]:
     """
     Take a modal speed and calculate speed limits for the track checker.
 
@@ -111,7 +111,7 @@ def set_speed_limits(amode: float) -> (float, float, float):
 
     if not isvalid(amode):
         return amax, amaxx, amin
-    if amode <= convert_to(8.51, "knots", "km/h"):
+    if amode <= float(convert_to(8.51, "knots", "km/h")):
         return amax, amaxx, amin
 
     return amode * 1.25, convert_to(30.0, "knots", "km/h"), amode * 0.75
@@ -296,7 +296,7 @@ def check_distance_from_estimate(
     fwd_diff_from_estimated: np.ndarray,
     rev_diff_from_estimated: np.ndarray,
     vsi_previous: np.ndarray | None = None,
-):
+) -> np.ndarray:
     """
     Check that distances from estimated positions are less than calculated distance.
 

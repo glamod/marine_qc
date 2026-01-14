@@ -14,6 +14,7 @@ import pandas as pd
 import xarray as xr
 from joblib import Parallel, delayed
 from numpy import ndarray
+from pathlin import Path
 from xclim.core.units import convert_units_to
 
 from .auxiliary import (
@@ -94,7 +95,7 @@ def _select_point(
     return i, float(sel.values)
 
 
-def _empty_dataarray():
+def _empty_dataarray() -> xr.DataArray:
     """
     Create an empty 3D DataArray with latitude, time, and longitude dimensions.
 
@@ -124,7 +125,10 @@ def _empty_dataarray():
     )
 
 
-def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | None = None) -> Callable:
+def inspect_climatology(
+    *climatology_keys: str, 
+    optional: str | Sequence[str] | None = None,
+) -> Callable[..., Any]:
     r"""
     A decorator factory to preprocess function arguments that may be Climatology objects.
 
@@ -144,7 +148,7 @@ def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | 
 
     Returns
     -------
-    Callable
+    Callable[..., Any]
         A decorator that wraps the target function, processing specified arguments before the function is called.
 
     Notes
@@ -158,7 +162,7 @@ def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | 
     elif optional is None:
         optional = []
 
-    def pre_handler(arguments: dict, **meta_kwargs):
+    def pre_handler(arguments: dict[str, Any], **meta_kwargs) -> None:
         r"""
         Preprocess specified arguments, resoling Climatology objects to concrete values.
 
@@ -218,7 +222,7 @@ def open_xrdataset(
     decode_times: bool = False,
     parallel: bool = False,
     data_vars: Literal["all", "minimal", "different"] = "minimal",
-    chunks: int | dict | Literal["auto", "default"] | None = "default",
+    chunks: int | dict[str, Any] | Literal["auto", "default"] | None = "default",
     coords: Literal["all", "minimal", "different"] | None = "minimal",
     compat: Literal["identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"] = "override",
     combine: Literal["by_coords", "nested"] | None = "by_coords",
@@ -271,7 +275,7 @@ def open_xrdataset(
     .. [decode_cf] https://docs.xarray.dev/en/stable/generated/xarray.decode_cf.html
     """
 
-    def drop_all_coords(ds):
+    def drop_all_coords(ds: xr.Dataset) -> xr.Dataset:
         """
         Drop all non-dimension coordinates from an xarray Dataset.
 
@@ -347,7 +351,7 @@ class Climatology:
         source_units: str | None = None,
         target_units: str | None = None,
         valid_ntime: int | list | None = None,
-    ):
+    ) -> None:
         """
         Initialize a Climatology object from an xarray DataArray.
 
@@ -407,7 +411,7 @@ class Climatology:
             raise ValueError(f"Weird shaped field {self.ntime}. Use one of {valid_ntime}.")
 
     @classmethod
-    def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:
+    def open_netcdf_file(cls, file_name: Union(str, Path), clim_name: str, **kwargs) -> Climatology:
         r"""
         Open a NetCDF climatology file and construct a Climatology instance.
 
@@ -435,7 +439,7 @@ class Climatology:
             warnings.warn(f"Could not open: {file_name}.", stacklevel=2)
         return cls(_empty_dataarray(), **kwargs)
 
-    def convert_units_to(self, target_units, source_units=None) -> None:
+    def convert_units_to(self, target_units: str, source_unitsOptional[str]=None) -> None:
         """
         Convert units to user-specific units.
 
@@ -546,20 +550,20 @@ class Climatology:
         return result
 
     @staticmethod
-    def get_y_index(lat_arr, lat_axis):
+    def get_y_index(lat_arr: np.ndarray, lat_axis: np.ndarray) -> np.ndarray:
         """
         Convert an array of latitudes to an array of indices for the grid.
 
         Parameters
         ----------
-        lat_arr :  ndarray
+        lat_arr :  np.ndarray
             Array of latitudes.
-        lat_axis : ndarray
+        lat_axis : np.ndarray
             Array containing the latitude axis.
 
         Returns
         -------
-        ndarray
+        np.ndarray
             Array of indices.
         """
         lat_axis_0 = lat_axis[0]
@@ -581,7 +585,7 @@ class Climatology:
         return y_index
 
     @staticmethod
-    def get_x_index(lon_arr, lon_axis):
+    def get_x_index(lon_arr: np.ndarray, lon_axis: np.ndarray) -> np.ndarray:
         """
         Convert an array of longitudes to an array of indices for the grid.
 
@@ -616,7 +620,7 @@ class Climatology:
         return x_index
 
     @staticmethod
-    def get_t_index(month, day, ntime):
+    def get_t_index(month: np.ndarray, day: np.ndarray, ntime: int) -> np.ndarray:
         """
         Convert arrays of months and days to an array of indices for the grid.
 

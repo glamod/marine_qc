@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 import inspect
-from collections.abc import Callable, Iterable
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Callable, Iterable, cast, Union, Mapping, Iterator
 
 import pandas as pd
 
@@ -38,7 +37,7 @@ from .qc_sequential_reports import (  # noqa: F401
 )
 
 
-def _get_function(name: str) -> Callable:
+def _get_function(name: str) -> Callable[..., Any]:
     """
     Return the function of a given name or raises a NameError.
 
@@ -49,21 +48,21 @@ def _get_function(name: str) -> Callable:
 
     Returns
     -------
-    Callable
+    Callable[..., Any]
         Function of a given name.
 
     Raises
     ------
     NameError
-        If function of that name does not exist.
+        If a callable with the given name does not exist.
     """
     func = globals().get(name)
     if not callable(func):
         raise NameError(f"Function '{name}' is not defined.")
-    return func
+    return cast(Callable[..., Any], func)
 
 
-def _is_func_param(func: Callable, param: str) -> bool:
+def _is_func_param(func: Callable[..., Any], param: str) -> bool:
     """
     Return True if param is the name of a parameter of function func.
 
@@ -85,7 +84,7 @@ def _is_func_param(func: Callable, param: str) -> bool:
     return param in sig.parameters
 
 
-def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
+def _is_in_data(name: str, data: Union[pd.Series, pd.DataFrame]) -> bool:
     """
     Return True if named column or variable, name, is in data.
 
@@ -107,13 +106,17 @@ def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
         If data type is not pd.Series or pd.DataFrame.
     """
     if isinstance(data, pd.Series):
-        return data.name == name
+        return bool(data.name == name)
     if isinstance(data, pd.DataFrame):
-        return name in data.columns
+        return bool(name in data.columns)
     raise TypeError(f"Unsupported data type: {type(data)}")
 
 
-def _get_requests_from_params(params: dict | None, func: Callable, data: pd.Series | pd.DataFrame) -> dict:
+def _get_requests_from_params(
+    params: Union[dict[str, str], None], 
+    func: Callable[..., Any], 
+    data: Union[pd.Series, pd.DataFrame],
+) -> dict[str, Union[pd.Series, Any]]:
     """
     Get requests from `func` or `data` using `params`.
 
@@ -144,7 +147,7 @@ def _get_requests_from_params(params: dict | None, func: Callable, data: pd.Seri
     NameError
         If one of the dictionary values from params is not a column or variable in data.
     """
-    requests = {}
+    requests : dict[str, Union[pd.Series, Any]] = {}
     if params is None:
         return requests
     for param, cname in params.items():
@@ -156,7 +159,7 @@ def _get_requests_from_params(params: dict | None, func: Callable, data: pd.Seri
     return requests
 
 
-def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
+def _get_preprocessed_args(arguments: dict[str, str], preprocessed: dict[str, Any]) -> dict[str, Any]:
     """
     Update `arguments` for values available in `preprocessed`.
 
@@ -184,23 +187,26 @@ def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
     return args
 
 
-def _prepare_preprocessed_vars(preproc_dict: dict, data: pd.DataFrame | pd.Series) -> dict:
+def _prepare_preprocessed_vars(
+    preproc_dict: dict[str, Mapping[str, Any]], 
+    data: Union[pd.DataFrame, pd.Series],
+) -> dict[str, Any]:
     """
     Run all preprocessing steps defined in ``preproc_dict`` and return their results.
 
     Parameters
     ----------
-    preproc_dict : dict
+    preproc_dict : dict[str, Mapping[str, Any]]
         Preprocessing configuration dictionary.
     data : pd.DataFrame or pd.Series
         DataFrame used to extract request parameters.
 
     Returns
     -------
-    dict
+    dict[str, Any]
         A dict mapping variable names to their preprocessed values.
     """
-    preprocessed = {}
+    preprocessed : dict[str, Any] = {}
 
     for var_name, params in preproc_dict.items():
         func = _get_function(params["func"])
@@ -217,26 +223,30 @@ def _prepare_preprocessed_vars(preproc_dict: dict, data: pd.DataFrame | pd.Serie
     return preprocessed
 
 
-def _prepare_qc_functions(qc_dict: dict, preprocessed: dict, data: pd.DataFrame | pd.Series) -> dict:
+def _prepare_qc_functions(
+    qc_dict: dict[str, Mapping[str, Any]], 
+    preprocessed: dict[str, Any], 
+    data: Union[pd.DataFrame, pd.Series],
+) -> dict[str, dict[str, Any]]:
     """
     Build QC function inputs from ``qc_dict`` and return a structured mapping.
 
     Parameters
     ----------
-    qc_dict : dict
+    qc_dict : dict[str, Mapping[str, Any]]
         Configuration describing QC functions, their input names, and arguments.
-    preprocessed : dict
+    preprocessed : dict[str, Mapping[str, Any]]
         Previously computed preprocessed variables available for argument resolution.
     data : pd.DataFrame or pd.Series
         DataFrame used to extract requested parameters for QC functions.
 
     Returns
     -------
-    dict
+    dict[str, dict[str, Any]]
         A mapping of QC names to dictionaries containing:
         ``{"function": callable, "requests": dict, "kwargs": dict}``.
     """
-    qc_inputs = {}
+    qc_inputs: dict[str, dict[str, Any]] = {}
 
     for qc_name, params in qc_dict.items():
         func = _get_function(params["func"])
@@ -248,7 +258,13 @@ def _prepare_qc_functions(qc_dict: dict, preprocessed: dict, data: pd.DataFrame 
     return qc_inputs
 
 
-def _apply_qc_to_masked_rows(qc_func: Callable[..., Any], args: dict, kwargs: dict, data_index: pd.Index, mask: pd.Series) -> pd.Series:
+def _apply_qc_to_masked_rows(
+    qc_func: Callable[..., Any], 
+    args: dict[str, Any], 
+    kwargs: dict[str, Any], 
+    data_index: pd.Index, 
+    mask: pd.Series,
+) -> pd.Series:
     """
     Apply a QC function to masked rows and return a Series aligned to ``data_index``.
 
@@ -256,9 +272,9 @@ def _apply_qc_to_masked_rows(qc_func: Callable[..., Any], args: dict, kwargs: di
     ----------
     qc_func : Callable
         QC function to execute.
-    args : Mapping[str, Any]
+    args : dict[str, Any]
         Keyword arguments constructed from requests.
-    kwargs : Mapping[str, Any]
+    kwargs : dict[str, Any]
         Additional keyword arguments, typically from preprocessed variables.
     data_index : pandas.Index
         Full index of the dataset for aligning the QC result.
@@ -267,7 +283,7 @@ def _apply_qc_to_masked_rows(qc_func: Callable[..., Any], args: dict, kwargs: di
 
     Returns
     -------
-    pandas.Series
+    pd.Series
         A Series indexed by ``data_index`` containing QC results for masked rows
         and default values elsewhere.
     """
@@ -282,7 +298,10 @@ def _apply_qc_to_masked_rows(qc_func: Callable[..., Any], args: dict, kwargs: di
     return full
 
 
-def _normalize_groupby(data: pd.DataFrame | pd.Series, groupby: Optional(str, pd.core.groupby.generic.DataFrameGroupBy)) -> list[tuple]:
+def _normalize_groupby(
+    data: Union[pd.DataFrame, pd.Series], 
+    groupby: Optional[Union[str, pd.core.groupby.generic.DataFrameGroupBy]],
+) -> list[tuple[Any, pd.DataFrame]]:
     """
     Return iterable of (name, group_df) pairs, trimming invalid rows.
 
@@ -347,10 +366,10 @@ def _validate_and_normalize_input(
 
 
 def _prepare_all_inputs(
-    data: pd.DataFrame | pd.Series,
-    qc_dict: dict | None,
-    preproc_dict: dict | None,
-) -> tuple[dict, pd.Series, pd.DataFrame]:
+    data: Union[pd.DataFrame, pd.Series],
+    qc_dict: Optional[dict[str, Any]],
+    preproc_dict: Optional[dict[str, Any]],
+) -> tuple[dict[str, Any], pd.Series, pd.DataFrame]:
     """
     Build all inputs required for QC execution.
 
@@ -386,9 +405,9 @@ def _prepare_all_inputs(
 
 
 def _group_iterator(
-    data: pd.DataFrame | pd.Series,
-    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None,
-):
+    data: Union[pd.DataFrame, pd.Series],
+    groupby: Optional[Union[str, Iterable[str], pd.core.groupby.generic.DataFrameGroupBy]],
+) -> Iterator[tuple[Union[Any, None], Union[pd.DataFrame, pd.Series]]]:
     """
     Yield groups of a DataFrame as (group_name, group_df) pairs.
 
@@ -416,11 +435,11 @@ def _group_iterator(
 
 
 def _run_qc_engine(
-    data: pd.DataFrame | pd.Series,
-    qc_inputs: dict,
-    groups: Iterable,
+    data: Union[pd.DataFrame, pd.Series],
+    qc_inputs: dict[str, Any],
+    groups: Iterable[tuple[Any | None, Union[pd.DataFrame, pd.Series]]],
     return_method: Literal["all", "passed", "failed"],
-) -> pd.DataFrame | pd.Series:
+) -> Union[pd.DataFrame, pd.Series]:
     """
     Execute QC checks on the provided data groups and collect the results.
 
@@ -485,11 +504,11 @@ def _run_qc_engine(
 
 def _do_multiple_check(
     data: pd.DataFrame | pd.Series,
-    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None = None,
-    qc_dict: dict | None = None,
-    preproc_dict: dict | None = None,
+    groupby: Optional[Union[str, Iterable[str], pd.core.groupby.generic.DataFrameGroupBy, None]] = None,
+    qc_dict: Optional[dict[str, Any]] = None,
+    preproc_dict: Optional[dict[str, Any]] = None,
     return_method: Literal["all", "passed", "failed"] = "all",
-) -> pd.DataFrame | pd.Series:
+) -> Union[pd.DataFrame, pd.Series]:
     """
     Internal entry point for performing QC checks on data.
 
@@ -543,11 +562,11 @@ def _do_multiple_check(
 
 
 def do_multiple_individual_check(
-    data: pd.DataFrame | pd.Series,
-    qc_dict: dict | None = None,
-    preproc_dict: dict | None = None,
+    data: Union[pd.DataFrame, pd.Series],
+    qc_dict: Optional[dict[str, Any]] = None,
+    preproc_dict: Optional[dict[str, Any]] = None,
     return_method: Literal["all", "passed", "failed"] = "all",
-) -> pd.DataFrame | pd.Series:
+) -> Union[pd.DataFrame, pd.Series]:
     """
     Apply one or more quality-control (QC) functions independently to each row of a DataFrame or Series.
 
@@ -698,8 +717,8 @@ def do_multiple_individual_check(
 def do_multiple_sequential_check(
     data: pd.DataFrame | pd.Series,
     groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None = None,
-    qc_dict: dict | None = None,
-    preproc_dict: dict | None = None,
+    qc_dict: Optional[dict[str, Any]] = None,
+    preproc_dict: Optional[dict[str, Any]] = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame | pd.Series:
     """
@@ -774,8 +793,8 @@ def do_multiple_sequential_check(
 
 def do_multiple_grouped_check(
     data: pd.DataFrame,
-    qc_dict: dict | None = None,
-    preproc_dict: dict | None = None,
+    qc_dict: Optional[dict[str, Any]] = None,
+    preproc_dict: Optional[dict[str, Any]] = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame:
     """

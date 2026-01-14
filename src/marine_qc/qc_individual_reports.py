@@ -5,7 +5,7 @@ Module containing main QC functions which could be applied on a DataBundle.
 """
 
 from __future__ import annotations
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
 
@@ -49,6 +49,8 @@ def value_check(value: ValueFloatType) -> ValueIntType:
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
+    value = cast(np.ndarray, value)
+    
     valid_mask = isvalid(value)
     result = np.where(valid_mask, passed, failed)
 
@@ -82,6 +84,9 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
         - Returns 1 (or array/sequence/Series of 1s) if either latitude or longitude is out of the valid range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
+    lat = cast(np.ndarray, lat)
+    lon = cast(np.ndarray, lon)
+    
     result = np.full(lat.shape, untestable, dtype=int)  # type: np.ndarray
 
     valid_indices = isvalid(lat) & isvalid(lon)
@@ -129,6 +134,10 @@ def do_date_check(
         - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
+    year = cast(np.ndarray, year)
+    month = cast(np.ndarray, month)
+    day = cast(np.ndarray, day)
+    
     result = np.full(year.shape, untestable, dtype=int)
     valid = isvalid(year) & isvalid(month) & isvalid(day)
 
@@ -182,6 +191,8 @@ def do_time_check(
         - Returns 1 (or array/sequence/Series of 1s) if hour is not a valid hour,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
+    hour = cast(np.ndarray, hour)
+    
     result = np.full(hour.shape, untestable, dtype=int)  # type: np.ndarray
 
     valid_indices = isvalid(hour)
@@ -196,13 +207,13 @@ def do_time_check(
 
 
 def _do_daytime_check(
-    date: ValueDatetimeType | None,
-    year: ValueIntType | None,
-    month: ValueIntType | None,
-    day: ValueIntType | None,
-    hour: ValueFloatType | None,
-    lat: ValueFloatType | None,
-    lon: ValueFloatType | None,
+    date: np.ndarray,
+    year: np.ndarray,
+    month: np.ndarray,
+    day: np.ndarray,
+    hour: np.ndarray,
+    lat: np.ndarray,
+    lon: np.ndarray,
     time_since_sun_above_horizon: float | None,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
@@ -327,13 +338,13 @@ def _do_daytime_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
-    hour: ValueFloatType | None = None,
-    lat: ValueFloatType | None = None,
-    lon: ValueFloatType | None = None,
+    date: Optional[ValueDatetimeType] = None,
+    year: Optional[ValueIntType] = None,
+    month: Optional[ValueIntType] = None,
+    day: Optional[ValueIntType] = None,
+    hour: Optional[ValueFloatType] = None,
+    lat: Optional[ValueFloatType] = None,
+    lon: Optional[ValueFloatType] = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
@@ -398,13 +409,13 @@ def do_day_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
-    hour: ValueFloatType | None = None,
-    lat: ValueFloatType | None = None,
-    lon: ValueFloatType | None = None,
+    date: Optional[ValueDatetimeType] = None,
+    year: Optional[ValueIntType] = None,
+    month: Optional[ValueIntType] = None,
+    day: Optional[ValueIntType] = None,
+    hour: Optional[ValueFloatType] = None,
+    lat: Optional[ValueFloatType] = None,
+    lon: Optional[ValueFloatType] = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
@@ -546,6 +557,8 @@ def do_hard_limit_check(
         - Returns 1 (or array/sequence/Series of 1s) if value(s) are outside the specified limits.
         - Returns 0 (or array/sequence/Series of 0s) if value(s) are within limits.
     """
+    value = cast(np.ndarray, value)
+    
     result = np.full(value.shape, untestable, dtype=int)  # type: np.ndarray
 
     if limits[1] <= limits[0]:
@@ -618,6 +631,9 @@ def do_climatology_check(
     If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
     `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
+    value = cast(np.ndarray, value)
+    climatology = cast(np.ndarray, climatology)
+    
     if climatology.ndim == 0:
         climatology = np.full_like(value, climatology)  # type: np.ndarray
 
@@ -685,6 +701,9 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
         - Returns 1 (or array/sequence/Series of 1s) if supersaturation is detected,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
+    dpt = cast(np.ndarray, dpt)
+    at2 = cast(np.ndarray, at2)
+    
     result = np.full(dpt.shape, untestable, dtype=int)  # type: np.ndarray
 
     valid_indices = isvalid(dpt) & isvalid(at2)
@@ -751,6 +770,8 @@ def do_sst_freeze_check(
         * ``freezing_point``: -1.80
         * ``n_sigma``: 2.0
     """
+    sst = cast(np.ndarray, sst)
+    
     result = np.full(sst.shape, untestable, dtype=int)  # type: np.ndarray
 
     if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
@@ -798,6 +819,9 @@ def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueF
         - Returns 1 (or array/sequence/Series of 1s) if wind_speed and wind_direction are inconsistent,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
+    wind_speed = cast(np.ndarray, wind_speed)
+    wind_direction = cast(np.ndarray, wind_direction)
+    
     result = np.full(wind_speed.shape, untestable, dtype=int)  # type: np.ndarray
 
     valid_indices = isvalid(wind_speed) & isvalid(wind_direction)

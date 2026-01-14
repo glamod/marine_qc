@@ -5,6 +5,9 @@ Module containing QC functions for quality control of grouped marine reports.
 """
 
 from __future__ import annotations
+
+from typing import Optional
+
 import itertools
 import math
 from collections.abc import Sequence
@@ -15,6 +18,7 @@ import pandas as pd
 from .auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
+    SequenceIntType,
     convert_units,
     failed,
     inspect_arrays,
@@ -76,7 +80,7 @@ def get_threshold_multiplier(total_nobs: int, nob_limits: list[int], multiplier_
     if not is_monotonic(nob_limits):
         raise ValueError("Invalid nob_limits: {nob_limits}. Must be in ascending order.")
 
-    multiplier = -1
+    multiplier = -1.0
     if total_nobs == 0:
         multiplier = 4.0
 
@@ -93,7 +97,7 @@ def get_threshold_multiplier(total_nobs: int, nob_limits: list[int], multiplier_
 class SuperObsGrid:
     """Class for gridding data in buddy check, based on numpy arrays."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialise empty grid."""
         self.grid = np.zeros((360, 180, 73))  # type: np.ndarray
         self.buddy_mean = np.zeros((360, 180, 73))  # type: np.ndarray
@@ -107,9 +111,9 @@ class SuperObsGrid:
         lats: SequenceFloatType,
         lons: SequenceFloatType,
         values: SequenceFloatType,
-        date: SequenceDatetimeType = None,
-        month: SequenceFloatType = None,
-        day: SequenceFloatType = None,
+        date: Optional[SequenceDatetimeType] = None,
+        month: Optional[SequenceFloatType] = None,
+        day: Optional[SequenceFloatType] = None,
     ) -> None:
         """
         Add a series of observations to the grid and take the grid average.
@@ -135,33 +139,34 @@ class SuperObsGrid:
         -----
         The observations should be anomalies.
         """
-        value_arr = np.atleast_1d(values)  # type: np.ndarray
-        value_arr = np.where(value_arr is None, np.nan, value_arr).astype(float)
-
-        lat_arr = np.atleast_1d(lats)  # type: np.ndarray
-        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
-
-        lon_arr = np.atleast_1d(lons)  # type: np.ndarray
-        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
-
-        month_arr = np.atleast_1d(month)  # type: np.ndarray
-        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
+        value_arr: np.ndarray = np.atleast_1d(values).astype(float)
+        lat_arr: np.ndarray = np.atleast_1d(lats).astype(float)
+        lon_arr: np.ndarray = np.atleast_1d(lons).astype(float)
+        month_arr: np.ndarray = np.atleast_1d(month if month is not None else -1).astype(float)
+        day_arr: np.ndarray = np.atleast_1d(day if day is not None else -1).astype(float)
+        
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
-
-        day_arr = np.atleast_1d(day)  # type: np.ndarray
-        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        valid = isvalid(lats) & isvalid(lons) & isvalid(month) & isvalid(day) & isvalid(values)
+        valid: np.ndarray = (
+            isvalid(lats) &
+            isvalid(lons) &
+            isvalid(month) &
+            isvalid(day) &
+            isvalid(values)
+        )
         valid &= (month_arr >= 1) & (month_arr <= 12)
+        
+        if not np.any(valid):
+            return
 
-        y_index = mds_lat_to_yindex_fast(lat_arr[valid], res=1)
-        x_index = mds_lon_to_xindex_fast(lon_arr[valid], res=1)
-        t_index = Climatology.get_t_index(month_arr[valid], day_arr[valid], 73)
+        y_index: np.ndarray = mds_lat_to_yindex_fast(lat_arr[valid], res=1)
+        x_index: np.ndarray = mds_lon_to_xindex_fast(lon_arr[valid], res=1)
+        t_index: np.ndarray = Climatology.get_t_index(month_arr[valid], day_arr[valid], 73)
 
-        unique_index = t_index * 1000000 + y_index * 1000 + x_index
+        unique_index: np.ndarray = t_index * 1000000 + y_index * 1000 + x_index
 
-        df = pd.DataFrame(
+        df: pd.DataFrame = pd.DataFrame(
             {
                 "uid": unique_index,
                 "value": value_arr[valid],
@@ -170,14 +175,16 @@ class SuperObsGrid:
                 "t": t_index,
             }
         )
-        means = df.groupby("uid")["value"].mean().values
-        nobs = df.groupby("uid")["value"].count().values
-        x = df.groupby("uid")["x"].first().values
-        y = df.groupby("uid")["y"].first().values
-        t = df.groupby("uid")["t"].first().values
+        
+        grouped = df.groupby("uid")
+        means = grouped["value"].mean().values
+        nobs = grouped["value"].count().values
+        x: np.ndarray = df.groupby("uid")["x"].first().values
+        y: np.ndarray = df.groupby("uid")["y"].first().values
+        t: np.ndarray = df.groupby("uid")["t"].first().values
 
-        self.grid[x, y, t] = means[:]
-        self.nobs[x, y, t] = nobs[:]
+        self.grid[x, y, t] = means
+        self.nobs[x, y, t] = nobs
 
     def add_single_observation(self, lat: float, lon: float, month: int, day: int, anom: float) -> None:
         """
@@ -221,14 +228,20 @@ class SuperObsGrid:
         nonmiss = np.nonzero(self.nobs)
         self.grid[nonmiss] = self.grid[nonmiss] / self.nobs[nonmiss]
 
-    def get_neighbour_anomalies(self, search_radius: list, xindex: int, yindex: int, pindex: int) -> (list[float], list[float]):
+    def get_neighbour_anomalies(
+        self, 
+        search_radius: list[int], 
+        xindex: int, 
+        yindex: int, 
+        pindex: int,
+    ) -> tuple[list[float], list[float]]:
         """
         Search within a specified search radius of the given point and extract the neighbours for buddy check.
 
         Parameters
         ----------
-        search_radius : list
-            Three element array search radius in which to look lon, lat, time.
+        search_radius : list[int]
+            Three element array search radius [lon, lat, time].
         xindex : int
             The xindex of the gridcell to start from.
         yindex : int
@@ -238,14 +251,13 @@ class SuperObsGrid:
 
         Returns
         -------
-        list[float]
+        tuple of list of float
             Anomalies and numbers of observations in two lists.
         """
         if len(search_radius) != 3:
             raise ValueError(f"Length mismatch (search_radius): {len(search_radius)}. Must be 3.")
 
         radcon = np.pi / 180.0
-
         latitude_approx = 89.5 - yindex
 
         xspan = search_radius[0]
@@ -253,8 +265,8 @@ class SuperObsGrid:
         yspan = search_radius[1]
         pspan = search_radius[2]
 
-        temp_anom = []
-        temp_nobs = []
+        temp_anom: list[float] = []
+        temp_nobs: list[float] = []
 
         for xpt, ypt, ppt in itertools.product(
             range(-1 * full_xspan, full_xspan + 1),
@@ -339,7 +351,7 @@ class SuperObsGrid:
         stdev1: Climatology,
         stdev2: Climatology,
         stdev3: Climatology,
-        limits: list[int, int, int],
+        limits: list[int],
         sigma_m: float,
         noise_scaling: float,
     ) -> None:
@@ -445,7 +457,7 @@ class SuperObsGrid:
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
         pindex = which_pentad(month, day) - 1
-        return self.buddy_mean[xindex, yindex, pindex]
+        return float(self.buddy_mean[xindex, yindex, pindex])
 
     def get_buddy_stdev(self, lat: float, lon: float, month: int, day: int) -> float:
         """
@@ -470,7 +482,7 @@ class SuperObsGrid:
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
         pindex = which_pentad(month, day) - 1
-        return self.buddy_stdev[xindex, yindex, pindex]
+        return float(self.buddy_stdev[xindex, yindex, pindex])
 
 
 @post_format_return_type(["value"])
@@ -487,8 +499,8 @@ def do_mds_buddy_check(
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
     multipliers: list[list[float]],
-    ignore_indexes: list[int] | None = None,
-):
+    ignore_indexes: Optional[list[int]] = None,
+) -> SequenceIntType:
     """
     Do the old style buddy check.
 
@@ -571,13 +583,12 @@ def do_mds_buddy_check(
 
     if ignore_indexes is None:
         ignore_indexes = []
+        
+    valid_mask = isvalid(anom)
 
     # finally loop over all reports and update buddy QC
     for i in range(numobs):
-        if i in ignore_indexes:
-            continue
-
-        if not isvalid(anoms[i]):
+        if i in ignore_indexes or not valid_mask[i]:
             continue
 
         lat_ = lat[i]

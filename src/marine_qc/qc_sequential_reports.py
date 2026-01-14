@@ -6,6 +6,8 @@ Module containing QC functions for track checking which could be applied on a Da
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 from scipy.ndimage import label
@@ -107,6 +109,11 @@ def do_spike_check(
     * delta_t: float = 2.0
     * n_neighbours: int = 5
     """
+    value = cast(np.ndarray, value)
+    lat = cast(np.ndarray, lat)
+    lon = cast(np.ndarray, lon)
+    date = cast(np.ndarray, date)
+    
     gradient_violations = []
     count_gradient_violations = []
 

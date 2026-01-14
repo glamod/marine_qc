@@ -18,7 +18,7 @@ from .auxiliary import (
 )
 
 
-def convert_date(params: list[str]) -> Callable:
+def convert_date(params: list[str]) -> Callable[..., Any]:
     """
     Decorator to extract date components and inject them as function parameters.
 
@@ -34,7 +34,7 @@ def convert_date(params: list[str]) -> Callable:
 
     Returns
     -------
-    Callable
+    Callable[..., Any]
         A decorator that wraps a function, extracting date components before calling it.
 
     Notes
@@ -47,7 +47,7 @@ def convert_date(params: list[str]) -> Callable:
       and returns a dictionary mapping parameter names to their values.
     """
 
-    def pre_handler(arguments: dict, **meta_kwargs):
+    def pre_handler(arguments: dict[str, Any], **meta_kwargs) -> Any:
         r"""
         Extract date components from the 'date' argument and inject them into function arguments.
 
@@ -86,7 +86,7 @@ def convert_date(params: list[str]) -> Callable:
     return generic_decorator(pre_handler=pre_handler)
 
 
-def split_date(date: datetime) -> dict:
+def split_date(date: datetime) -> dict[str, float]:
     """
     Split datetime date into year, month, day and hour.
 
@@ -328,7 +328,7 @@ def valid_month_day(year: int | None = None, month: int = 1, day: int = 1) -> bo
     return True
 
 
-def which_pentad_array(month: np.ndarray, day: np.ndarray):
+def which_pentad_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
     """
     Take month and day arrays as inputs and return array of pentads in range 1-73.
 
@@ -556,7 +556,7 @@ def leap_year_correction(time_in_hours: float, day: int, years_since_1980: int) 
         Leap year corrected time.
     """
     leap = leap_year(years_since_1980)
-    time = time_in_whole_days(time_in_hours, day, years_since_1980, leap)
+    time: float = time_in_whole_days(time_in_hours, day, years_since_1980, leap)
     if years_since_1980 == leap * 4.0:
         time = time - 1.0
     if years_since_1980 < 0 and years_since_1980 != leap * 4.0:
@@ -642,7 +642,7 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
 
 @post_format_return_type(["times1", "times2"], dtype=float)
 @inspect_arrays(["times1", "times2"])
-def time_difference(times1, times2):
+def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> Sequence[datetime]:
     """
     Convert two arrays of datetimes to the difference in hours.
 
@@ -659,6 +659,9 @@ def time_difference(times1, times2):
         1-dimensional array containing the time difference in hours
         computed as ``times2 - times1``.
     """
+    times1 = cast(np.ndarray, times1)
+    times2 = cast(np.ndarray, times2)
+    
     times1 = pd.to_datetime(times1, errors="coerce").values
     times2 = pd.to_datetime(times2, errors="coerce").values
 

@@ -205,7 +205,7 @@ class SpeedChecker:
         speed_limit: float,
         min_win_period: float,
         max_win_period: float,
-    ):
+    ) -> None:
         """
         Create an object for performing the Speed Check.
 
@@ -311,7 +311,7 @@ class SpeedChecker:
 
         return valid
 
-    def do_speed_check(self):
+    def do_speed_check(self) -> None:
         """Perform the actual speed check."""
         nrep = self.nreps
         min_win_period_hours = self.min_win_period * 24.0
@@ -431,7 +431,7 @@ class NewSpeedChecker:
         delta_d: float,
         delta_t: float,
         n_neighbours: int,
-    ):
+    ) -> None:
         """
         Object used to perform the new speed check.
 
@@ -544,7 +544,7 @@ class NewSpeedChecker:
 
         return valid
 
-    def perform_iquam_track_check(self):
+    def perform_iquam_track_check(self) -> None:
         """
         Perform iQuam track check as if reports are from a ship.
 
@@ -661,7 +661,7 @@ class AgroundChecker:
         smooth_win: int,
         min_win_period: int,
         max_win_period: int | None,
-    ):
+    ) -> None:
         """
         Create on object for performing the Aground and New Aground checks.
 
@@ -760,7 +760,7 @@ class AgroundChecker:
 
         return valid
 
-    def smooth_arrays(self):
+    def smooth_arrays(self) -> None:
         """Perform the preprocessing of the lat lon and time arrays."""
         half_win = int((self.smooth_win - 1) / 2)
         # create smoothed lon/lat timeseries  # length of series after smoothing
@@ -781,7 +781,7 @@ class AgroundChecker:
         self.lat_smooth = lat_smooth
         self.hrs_smooth = hrs_smooth
 
-    def do_aground_check(self):
+    def do_aground_check(self) -> None:
         """Perform the actual aground check."""
         half_win = (self.smooth_win - 1) / 2
         min_win_period_hours = self.min_win_period * 24.0
@@ -933,7 +933,7 @@ class SSTTailChecker:
         drif_inter: float,
         drif_intra: float,
         background_err_lim: float,
-    ):
+    ) -> None:
         """
         Create SSTTailChecker object to perform the SST Tail QC Check.
 
@@ -1003,7 +1003,7 @@ class SSTTailChecker:
         self.drif_intra = drif_intra
         self.background_err_lim = background_err_lim
 
-    def get_qc_outcomes(self):
+    def get_qc_outcomes(self) -> None:
         """
         Return the QC outcomes.
 
@@ -1014,7 +1014,7 @@ class SSTTailChecker:
         """
         return self.qc_outcomes
 
-    def valid_parameters(self):
+    def valid_parameters(self) -> bool:
         """
         Check the parameters are valid. Raises a warning and returns False if not valid.
 
@@ -1048,7 +1048,7 @@ class SSTTailChecker:
 
         return valid
 
-    def do_sst_tail_check(self, start_tail: bool):
+    def do_sst_tail_check(self, start_tail: bool) -> None:
         """
         Perform the actual SST tail check.
 
@@ -1107,7 +1107,14 @@ class SSTTailChecker:
             self.qc_outcomes[self.reps_ind[self.end_tail_ind] :] = failed
 
     @staticmethod
-    def _parse_rep(lat, lon, ostia, ice, bgvar, dates) -> (float, float, float, bool):
+    def _parse_rep(
+        lat: float, 
+        lon: float, 
+        ostia: float, 
+        ice: float, 
+        bgvar: float, 
+        dates: float,
+    ) -> tuple[float, float, float, bool]:
         """
         Process a report.
 
@@ -1254,7 +1261,7 @@ class SSTTailChecker:
             else:
                 break
 
-    def _do_short_tail_check(self, first_pass_ind, last_pass_ind, forward=True):
+    def _do_short_tail_check(self, first_pass_ind: int, last_pass_ind: int, forward: bool=True) -> None:
         """
         Perform the short tail check.
 
@@ -1388,7 +1395,7 @@ class SSTBiasedNoisyChecker:
         err_std_n: float,
         n_bad: int,
         background_err_lim: float,
-    ):
+    ) -> None:
         """
         Create an object for performing the SST Biased, Noisy and Short Checks.
 
@@ -1480,7 +1487,7 @@ class SSTBiasedNoisyChecker:
 
         return valid
 
-    def get_qc_outcomes_bias(self):
+    def get_qc_outcomes_bias(self) -> np.ndarray:
         """
         Return the QC outcomes for the bias check.
 
@@ -1491,7 +1498,7 @@ class SSTBiasedNoisyChecker:
         """
         return self.qc_outcomes_bias
 
-    def get_qc_outcomes_noise(self):
+    def get_qc_outcomes_noise(self) -> np.ndarray:
         """
         Return the QC outcomes for the noisy check.
 
@@ -1502,7 +1509,7 @@ class SSTBiasedNoisyChecker:
         """
         return self.qc_outcomes_noise
 
-    def get_qc_outcomes_short(self):
+    def get_qc_outcomes_short(self) -> np.ndarray:
         """
         Return the QC outcomes for the short check.
 
@@ -1513,7 +1520,7 @@ class SSTBiasedNoisyChecker:
         """
         return self.qc_outcomes_short
 
-    def set_all_qc_outcomes_to(self, input_state: int):
+    def set_all_qc_outcomes_to(self, input_state: int) -> None:
         """
         Set all the QC outcomes to the specified input_state.
 
@@ -1555,7 +1562,15 @@ class SSTBiasedNoisyChecker:
                 self._short_record_qc()
 
     @staticmethod
-    def _parse_rep(lat, lon, ostia, ice, bgvar, dates, background_err_lim) -> (float, float, float, bool, bool, bool):
+    def _parse_rep(
+        lat: float, 
+        lon: float, 
+        ostia: float, 
+        ice: float, 
+        bgvar: float, 
+        dates: datetime, 
+        background_err_lim: float,
+    ) -> tuple[float, float, float, bool, bool, bool]:
         """
         Extract QC-relevant variables from a marine report.
 
@@ -1764,7 +1779,7 @@ def do_new_speed_check(
     delta_d: float,
     delta_t: float,
     n_neighbours: int,
-):
+) -> Sequence[int]:
     """
     Perform the new speed check.
 
@@ -1833,7 +1848,7 @@ def do_aground_check(
     smooth_win: int,
     min_win_period: int,
     max_win_period: int,
-):
+) -> Sequence[int]:
     """
     Perform the aground check.
 
@@ -1880,7 +1895,7 @@ def do_new_aground_check(
     dates: Sequence[datetime],
     smooth_win: int,
     min_win_period: int,
-):
+) -> Sequence[int]:
     """
     Perform the new aground check.
 
@@ -1932,7 +1947,7 @@ def do_sst_start_tail_check(
     drif_inter: float,
     drif_intra: float,
     background_err_lim: float,
-):
+) -> Sequence[int]:
     """
     Perform the SST Start Tail Check.
 
@@ -2030,7 +2045,7 @@ def do_sst_end_tail_check(
     drif_inter: float,
     drif_intra: float,
     background_err_lim: float,
-):
+) -> Sequence[int]:
     """
     Perform the SST Start Tail Check.
 
@@ -2127,7 +2142,7 @@ def do_sst_biased_check(
     err_std_n: float,
     n_bad: int,
     background_err_lim: float,
-):
+) -> Sequence[int]:
     """
     Perform the SST bias check.
 
@@ -2217,7 +2232,7 @@ def do_sst_noisy_check(
     err_std_n: float,
     n_bad: int,
     background_err_lim: float,
-):
+) -> Sequence[int]:
     """
     Perform the SST noise check.
 
@@ -2307,7 +2322,7 @@ def do_sst_biased_noisy_short_check(
     err_std_n: float,
     n_bad: int,
     background_err_lim: float,
-):
+) -> Sequence[int]:
     """
     Perform the SST short check.
 

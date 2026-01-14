@@ -7,6 +7,8 @@ Sourced from https://edwilliams.org/avform147.htm formerly williams.best.vwh.net
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 from pyproj import Geod
 
@@ -93,6 +95,11 @@ def angular_distance(
     ValueError
         If any of lat1, lat2, lon1, or lon2 is numerically invalid or None.
     """
+    lat1 = cast(np.ndarray, lat1)
+    lon1 = cast(np.ndarray, lon1)
+    lat2 = cast(np.ndarray, lat2)
+    lon2 = cast(np.ndarray, lon2)
+    
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
     result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
@@ -136,6 +143,11 @@ def sphere_distance(
     np.ndarray
         Angular great-circle distance between the two points in kilometres.
     """
+    lat1 = cast(np.ndarray, lat1)
+    lon1 = cast(np.ndarray, lon1)
+    lat2 = cast(np.ndarray, lat2)
+    lon2 = cast(np.ndarray, lon2)    
+    
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
     result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
@@ -181,6 +193,11 @@ def intermediate_point(
         - Longitude(s) of the intermediate point(s) in degrees.
         The outputs have the same shape as the broadcasted inputs.
     """
+    lat1 = cast(np.ndarray, lat1)
+    lon1 = cast(np.ndarray, lon1)
+    lat2 = cast(np.ndarray, lat2)
+    lon2 = cast(np.ndarray, lon2)    
+    
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
     valid &= f >= 0.0
@@ -266,6 +283,9 @@ def lat_lon_from_course_and_distance(
         - Longitude(s) of the intermediate point(s) in degrees.
         The outputs have the same shape as the broadcasted inputs.
     """
+    lat1 = cast(np.ndarray, lat1)
+    lon1 = cast(np.ndarray, lon1)  
+    
     lat1 = convert_to(lat1, "deg", "rad")
     lon1 = convert_to(lon1, "deg", "rad")
     tcr = convert_to(tc, "deg", "rad")

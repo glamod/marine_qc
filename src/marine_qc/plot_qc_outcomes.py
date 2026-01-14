@@ -4,6 +4,8 @@ Plot QC outcomes.
 Some plotting routines for QC outcomes
 """
 
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
@@ -79,7 +81,7 @@ def _make_plot(
     xlabel: str,
     ylabel: str,
     filename: str | None,
-):
+) -> None:
     """
     Make plot.
 
@@ -145,7 +147,7 @@ def _make_plot(
     plt.close()
 
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: Optional[str] = None) -> None:
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
 
@@ -172,7 +174,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
     )
 
 
-def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
+def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: Optional[str] = None) -> None:
     """
     Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 

@@ -73,21 +73,20 @@ def mds_lat_to_yindex(lat: float, res: float) -> int:
     return int(90 / res - int(lat_local / res))
 
 
-def mds_lat_to_yindex_fast(lat: ValueFloatType, res: float) -> ValueIntType:
+def mds_lat_to_yindex_fast(lat: np.ndarray, res: float) -> np.ndarray:
     """
     For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : np.ndarray
         Latitude(s) of observation in degrees.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     res : float
         Resolution of grid in degrees.
 
     Returns
     -------
-    Same type as input, but with integer values
+    np.ndarray
         Grid box indexes.
 
     Notes
@@ -204,21 +203,20 @@ def mds_lon_to_xindex(lon: float, res: float) -> int:
     return int(int(long_local / res) + 180 / res - 1)
 
 
-def mds_lon_to_xindex_fast(lon: ValueFloatType, res: float) -> ValueIntType:
+def mds_lon_to_xindex_fast(lon: np.ndarray, res: float) -> np.ndarray:
     """
     For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
 
     Parameters
     ----------
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : np.ndarray
         Longitude(s) of observation in degrees.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     res : float
         Resolution of grid in degrees.
 
     Returns
     -------
-    Same type as input, but with integer values
+    np.ndarray
         Grid box indexes.
 
     Notes
@@ -272,11 +270,11 @@ def lon_to_xindex(lon: float, res: float) -> int:
         inlon = inlon + 360.0
     xindex = int((inlon + 180.0) / res)
     while xindex >= 360 / res:
-        xindex -= 360 / res
+        xindex -= int(360 / res)
     return int(xindex)
 
 
-def filler(value_to_fill, neighbour1, neighbour2, opposite):
+def filler(value_to_fill: float, neighbour1: float, neighbour2: float, opposite: float) -> float:
     """
     Fill invalid values.
 

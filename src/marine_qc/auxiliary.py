@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 import inspect
-from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
-from typing import Any, TypeAlias
+
+from typing import Any, TypeAlias, Callable, Sequence, Optional
+from pandas._libs.missing import NAType
+from pandas._libs.tslibs.nattype import NaTType
 
 import numpy as np
 import numpy.typing as npt
@@ -18,8 +20,8 @@ failed = 1
 untestable = 2
 untested = 3
 
-PandasNAType: TypeAlias = type(pd.NA)
-PandasNaTType: TypeAlias = type(pd.NaT)
+PandasNAType: TypeAlias = NAType
+PandasNaTType: TypeAlias = NaTType
 
 # --- Scalars ---
 ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
@@ -28,15 +30,15 @@ ScalarDatetimeType: TypeAlias = datetime | np.datetime64 | pd.Timestamp | Pandas
 
 # --- Sequences ---
 SequenceIntType: TypeAlias = (
-    Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series  # optionally: pd.Series[np.integer] or pd.Series[pd.Int64Dtype]
+    Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray  # optionally: pd.Series[np.integer] or pd.Series[pd.Int64Dtype]
 )
 
 SequenceFloatType: TypeAlias = (
-    Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series  # optionally: pd.Series[np.floating] or pd.Series[pd.Float64Dtype]
+    Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray  # optionally: pd.Series[np.floating] or pd.Series[pd.Float64Dtype]
 )
 
 SequenceDatetimeType: TypeAlias = (
-    Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series  # optionally: pd.Series[pd.DatetimeTZDtype] or similar
+    Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray  # optionally: pd.Series[pd.DatetimeTZDtype] or similar
 )
 
 # --- Value Types (Scalar or Sequence) ---
@@ -69,7 +71,7 @@ def is_scalar_like(x: Any) -> bool:
         True if `x` is scalar-like, False otherwise.
     """
     try:
-        return np.ndim(x) == 0
+        return bool(np.ndim(x) == 0)
     except TypeError:
         return True  # fallback: built-in scalars like int, float, pd.Timestamp
 
@@ -131,7 +133,7 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     return result_array  # np.ndarray or fallback
 
 
-def convert_to(value: float | None | Sequence[float | None], source_units: str, target_units: str):
+def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -> SequenceFloatType:
     """
     Convert a float or sequence from source units to target units.
 
@@ -168,7 +170,7 @@ def convert_to(value: float | None | Sequence[float | None], source_units: str, 
     5000.0
     """
 
-    def _convert_to(value: Any):
+    def _convert_to(value: Any) -> Any:
         """
         Convert units of value.
 
@@ -193,13 +195,13 @@ def convert_to(value: float | None | Sequence[float | None], source_units: str, 
     if isinstance(value, np.ndarray):
         return np.array([_convert_to(v) for v in value])
     if isinstance(value, Sequence):
-        return type(value)(_convert_to(v) for v in value)
+        return type(value)([_convert_to(v) for v in value])
     return _convert_to(value)
 
 
 def generic_decorator(
-    pre_handler: Callable[[dict], None] | None = None,
-    post_handler: Callable[[Any, dict], Any] | None = None,
+    pre_handler: Optional[Callable[[dict[str, Any]], None]] = None,
+    post_handler: Optional[Callable[[Any, dict[str, Any]], Any]] = None,
 ) -> Callable[..., Any]:
     """
     Create a decorator that binds function arguments and applies pre- and post-processing handlers.
@@ -239,19 +241,19 @@ def generic_decorator(
     if post_handler:
         post_handler._is_post_handler = True
 
-    def decorator(func: Callable):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """
         Decorator that binds function arguments and applies pre- and post-handlers.
 
         Parameters
         ----------
-        func : Callable
+        func : Callable[..., Any]
             The function to be decorated. Its arguments will be bound and optionally modified
             by the pre- and post-handlers.
 
         Returns
         -------
-        Callable
+        Callable[..., Any]
             The `wrapper` function that executes pre-handlers, calls the original function
             and then executes post-handlers.
         """
@@ -262,7 +264,7 @@ def generic_decorator(
             handlers.append(post_handler)
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             r"""
             Wrapper function that executes pre-handlers, calls the original function, and executes post-handlers.
 
