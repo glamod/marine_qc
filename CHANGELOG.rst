@@ -22,6 +22,7 @@ Internal changes
 * add plotting routines to documentation's API reference (:pull:`95`)
 * add helper functions to documentation's API reference (:pull:`95`)
 * add section "More theoretical information" to documentation (:pull:`95`)
+* The numpydoc linting tool has been added linting checks, and the pre-commit configurations (:issue:`53`, :issue:`59`, :pull:`120`)
 
 0.2.0 (2025-10-21)
 ------------------
