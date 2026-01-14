@@ -751,9 +751,9 @@ def test_buddy_check_designed_to_fail(buddy_reps, dummy_pentad_stdev_):
 
     for i, flag in enumerate(result):
         if i == 0:
-            assert flag == 1
+            assert flag == failed
         else:
-            assert flag == 0
+            assert flag == passed
 
 
 @pytest.mark.parametrize(
@@ -787,7 +787,7 @@ def test_buddy_check_designed_to_fail_time(buddy_reps_time, dummy_pentad_stdev_,
         if i == 0:
             assert flag == expected
         else:
-            assert flag == 0
+            assert flag == passed
 
 
 def test_buddy_check_designed_to_fail_2(buddy_reps_spread, dummy_pentad_stdev_):
@@ -811,9 +811,9 @@ def test_buddy_check_designed_to_fail_2(buddy_reps_spread, dummy_pentad_stdev_):
 
     for i, flag in enumerate(result):
         if i == 0:
-            assert flag == 1
+            assert flag == failed
         else:
-            assert flag == 0
+            assert flag == passed
 
 
 def test_buddy_check_raises(reps_, dummy_pentad_stdev_):
@@ -985,4 +985,4 @@ def test_bayesian_buddy_check_designed_to_fail_time(buddy_reps_time, dummy_penta
         if i == 0:
             assert flag == expected
         else:
-            assert flag == 0
+            assert flag == passed
