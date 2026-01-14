@@ -167,7 +167,7 @@ def to_siderial_time(time: float, delyear: int) -> float:
         Time value.
     delyear : int
         Relative year number.
-        
+
     Returns
     -------
     float

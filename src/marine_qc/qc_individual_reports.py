@@ -5,6 +5,7 @@ Module containing main QC functions which could be applied on a DataBundle.
 """
 
 from __future__ import annotations
+from typing import Literal
 
 import numpy as np
 
@@ -60,9 +61,9 @@ def value_check(value: ValueFloatType) -> ValueIntType:
 def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
     """
     Perform the positional QC check on the report.
-    
+
     Simple check to make sure that the latitude and longitude are within specified bounds:
-    - Latitude is between -90 and 90. 
+    - Latitude is between -90 and 90.
     - Longitude is between 180 and 360.
 
     Parameters
@@ -98,10 +99,10 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
 @convert_date(["year", "month", "day"])
 @inspect_arrays(["year", "month", "day"])
 def do_date_check(
-    date: Optional[ValueDatetimeType] = None,
-    year: Optional[ValueIntType] = None,
-    month: Optional[ValueIntType] = None,
-    day: Optional[ValueIntType] = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
 ) -> ValueIntType:
     """
     Perform the date QC check on the report. Checks whether the given date or date components are valid.
@@ -159,8 +160,8 @@ def do_date_check(
 @convert_date(["hour"])
 @inspect_arrays(["hour"])
 def do_time_check(
-    date: Optional[ValueDatetimeType] = None, 
-    hour: Optional[ValueFloatType] = None,
+    date: ValueDatetimeType | None = None,
+    hour: ValueFloatType | None = None,
 ) -> ValueIntType:
     """
     Check that the time is valid i.e. in the range 0.0 to 23.99999...
@@ -195,14 +196,14 @@ def do_time_check(
 
 
 def _do_daytime_check(
-    date: Optional[ValueDatetimeType],
-    year: Optional[ValueIntType],
-    month: Optional[ValueIntType],
-    day: Optional[ValueIntType],
-    hour: Optional[ValueFloatType],
-    lat: Optional[ValueFloatType],
-    lon: Optional[ValueFloatType],
-    time_since_sun_above_horizon: Optional[float],
+    date: ValueDatetimeType | None,
+    year: ValueIntType | None,
+    month: ValueIntType | None,
+    day: ValueIntType | None,
+    hour: ValueFloatType | None,
+    lat: ValueFloatType | None,
+    lon: ValueFloatType | None,
+    time_since_sun_above_horizon: float | None,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
     """
@@ -236,8 +237,8 @@ def _do_daytime_check(
         to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
     mode : {"day", "night"}
         If "day", check if the sun is above the horizon.
-        If "night", check if the sun is below the horizon.   
-        
+        If "night", check if the sun is below the horizon.
+
     Returns
     -------
     np.ndarray of int
@@ -246,7 +247,7 @@ def _do_daytime_check(
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
           returns 1 or if it is night (sun below horizon an hour ago).
         - Returns 0 if it is day (sun above horizon an hour ago).
-            
+
     Raises
     ------
     ValueError
@@ -326,14 +327,14 @@ def _do_daytime_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
-    date: Optional[ValueDatetimeType] = None,
-    year: Optional[ValueIntType] = None,
-    month: Optional[ValueIntType] = None,
-    day: Optional[ValueIntType] = None,
-    hour: Optional[ValueFloatType] = None,
-    lat: Optional[ValueFloatType] = None,
-    lon: Optional[ValueFloatType] = None,
-    time_since_sun_above_horizon: Optional[float] = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
+    hour: ValueFloatType | None = None,
+    lat: ValueFloatType | None = None,
+    lon: ValueFloatType | None = None,
+    time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
     Determine if the sun was above the horizon a specified time before the report.
@@ -382,12 +383,12 @@ def do_day_check(
     See Also
     --------
     do_night_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
-    
+
     Notes
     -----
     In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
-    than one hour after sunset and up to one hour after sunrise.    
+    than one hour after sunset and up to one hour after sunrise.
     """
     return _do_daytime_check(date, year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day")
 
@@ -397,14 +398,14 @@ def do_day_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
-    date: Optional[ValueDatetimeType] = None,
-    year: Optional[ValueIntType] = None,
-    month: Optional[ValueIntType] = None,
-    day: Optional[ValueIntType] = None,
-    hour: Optional[ValueFloatType] = None,
-    lat: Optional[ValueFloatType] = None,
-    lon: Optional[ValueFloatType] = None,
-    time_since_sun_above_horizon: Optional[float] = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
+    hour: ValueFloatType | None = None,
+    lat: ValueFloatType | None = None,
+    lon: ValueFloatType | None = None,
+    time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
     Determine if the sun was below the horizon a specified time before the report.
@@ -453,12 +454,12 @@ def do_night_check(
     See Also
     --------
     do_day_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
-    
+
     Notes
     -----
     In previous versions, ``time_since_sun_above_horizon`` has the default value 1.0 as one hour is used as a
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
-    than one hour after sunset and up to one hour after sunrise.    
+    than one hour after sunset and up to one hour after sunrise.
     """
     return _do_daytime_check(
         date,
@@ -494,7 +495,7 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
 
 @inspect_climatology("climatology")
 def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIntType:
-    """
+    r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
     Parameters
@@ -502,7 +503,7 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIn
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
         The input climatological value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    **kwargs
+    \**kwargs : dict
         Additional keyword arguments passed by the decorator framework (unused).
 
     Returns
@@ -575,7 +576,7 @@ def do_climatology_check(
 ) -> ValueIntType:
     """
     Climatology check to compare a value with a climatological average within specified anomaly limits.
-    
+
     This check supports optional parameters to customize the comparison.
 
     If ``standard_deviation`` is provided, the value is converted into a standardised anomaly. Optionally,
@@ -665,7 +666,7 @@ def do_climatology_check(
 def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueIntType:
     """
     Perform the super saturation check.
-    
+
     Check if a valid dewpoint temperature is greater than a valid air temperature.
 
     Parameters
@@ -777,8 +778,8 @@ def do_sst_freeze_check(
 def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueFloatType) -> ValueIntType:
     """
     Test to compare windspeed to winddirection to check if they are consistent.
-    
-    Zero windspeed should correspond to no particular direction (variable) and 
+
+    Zero windspeed should correspond to no particular direction (variable) and
     wind speeds above a threshold should correspond to a particular direction.
 
     Parameters

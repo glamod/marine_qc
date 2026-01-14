@@ -42,7 +42,7 @@ from .auxiliary import isvalid
 def vap(td: float, t: float, p: float, roundit: bool = True) -> float:
     """
     Calculate vapour pressure from dew point temperature, dry bulb temperature and pressure.
-    
+
     It requires a sea (station actually but sea level ok for marine data)
     level pressure value. This can be a scalar or an array, even if dewpoint
     temperature is an array (CHECK). To test whether to apply the ice or water
@@ -108,7 +108,7 @@ def vap(td: float, t: float, p: float, roundit: bool = True) -> float:
 def vap_from_sh(sh: float, p: float, roundit: bool = True) -> float:
     """
     Calculate vapour pressure from specific humidity and pressure.
-    
+
     It requires a sea (station actually but sea level ok for marine data)
     level pressure value. This can be a scalar or an array, even if specific humidity
     is an array (CHECK).
@@ -148,7 +148,7 @@ def vap_from_sh(sh: float, p: float, roundit: bool = True) -> float:
 def sh(td: float, t: float, p: float, roundit: bool = True) -> float:
     """
     Calculate specific humidity dew point temperature, dry bulb temperature and pressure.
-    
+
     It requires a sea (station actually but sea level ok for marine data)
     level pressure value. This can be a scalar or an array, even if vapour
     pressure is an array (CHECK).
@@ -209,7 +209,7 @@ def sh(td: float, t: float, p: float, roundit: bool = True) -> float:
 def sh_from_vap(e: float, p: float, roundit: bool = True) -> float:
     """
     Calculate specific humidity from vapour pressure and pressure.
-    
+
     It requires a sea (station actually but sea level ok for marine data)
     level pressure value. This can be a scalar or an array, even if vapour
     pressure is an array (CHECK).
@@ -249,7 +249,7 @@ def sh_from_vap(e: float, p: float, roundit: bool = True) -> float:
 def rh(td: float, t: float, p: float, roundit: bool = True) -> float:
     """
     Calculate relative humidity from dew point temperature, dry bulb temperature and pressure.
-    
+
     It calculates the saturated vapour pressure from t.
     It requires a sea (station actually but sea level ok for marine data)
     level pressure value. This can be a scalar or an array, even if vapour pressure
@@ -331,7 +331,7 @@ def rh(td: float, t: float, p: float, roundit: bool = True) -> float:
 def wb(td: float, t: float, p: float, roundit: bool = True) -> float:
     """
     Calculate wet bulb temperature from dew point temperature, dry bulb temperature and pressure.
-    
+
     It requires a sea (station actually but sea level ok for marine data)
     level pressure value. This can be a scalar or an array, even ifvapour pressure
     is an array (CHECK). To test whether to apply the ice or water
@@ -437,7 +437,7 @@ def dpd(td: float, t: float, roundit: bool = True) -> float:
 def td_from_vap(e: float, p: float, t: float, roundit: bool = True) -> float:
     """
     Calculate dew point depression from vapour pressure, pressure and dry bulb temperature.
-    
+
     It also requires temperature to check whether the wet bulb temperature
     is <= 0.0 - if so the ice bulb calculation is used.
 

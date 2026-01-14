@@ -279,7 +279,7 @@ def lon_to_xindex(lon: float, res: float) -> int:
 def filler(value_to_fill, neighbour1, neighbour2, opposite):
     """
     Fill invalid values.
-    
+
     If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
     it is replaced with the value from the opposite member.
 
@@ -312,7 +312,7 @@ def filler(value_to_fill, neighbour1, neighbour2, opposite):
 def fill_missing_vals(q11: float, q12: float, q21: float, q22: float) -> tuple[float, float, float, float]:
     """
     Fill missing values.
-    
+
     For a group of four neighbouring grid boxes which form a square, with values q11, q12, q21, q22,
     fill gaps using means of neighbours.
 

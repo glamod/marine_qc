@@ -9,15 +9,15 @@ import numpy as np
 from matplotlib.lines import Line2D
 
 
-def _get_colours_labels(qc_outcomes: np.ndarray) -> Tuple[list[str], list[Line2D]]:
+def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[list[str], list[Line2D]]:
     """
     Get color lebels.
-    
+
     Parameters
     ----------
     qc_outcomes : np.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
-        
+
     Returns
     -------
     tuple of (list of str, list of Line2D)
@@ -71,18 +71,18 @@ def _get_colours_labels(qc_outcomes: np.ndarray) -> Tuple[list[str], list[Line2D
 
 
 def _make_plot(
-    xvalue: np.ndarray, 
-    yvalue: np.ndarray, 
-    flags: np.ndarray, 
-    xlim: List[float] | None, 
-    ylim: List[float] | None, 
-    xlabel: str, 
-    ylabel: str, 
+    xvalue: np.ndarray,
+    yvalue: np.ndarray,
+    flags: np.ndarray,
+    xlim: list[float] | None,
+    ylim: list[float] | None,
+    xlabel: str,
+    ylabel: str,
     filename: str | None,
 ):
     """
     Make plot.
-    
+
     Parameters
     ----------
     xvalue : np.ndarray
@@ -145,7 +145,7 @@ def _make_plot(
     plt.close()
 
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: Optional[str] = None):
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
 

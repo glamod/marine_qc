@@ -701,7 +701,7 @@ class AgroundChecker:
     def get_qc_outcomes(self) -> Sequence[int]:
         """
         Return the QC outcomes.
-        
+
         Returns
         -------
         array-like of int, shape (n,)
@@ -712,7 +712,7 @@ class AgroundChecker:
     def valid_parameters(self) -> bool:
         """
         Check the parameters are valid. Raises a warning and returns False if not valid.
-        
+
         Returns
         -------
         bool
@@ -739,7 +739,7 @@ class AgroundChecker:
     def valid_arrays(self) -> bool:
         """
         Check the input arrays are valid. Raises a warning and returns False if not valid.
-        
+
         Returns
         -------
         bool
@@ -1006,7 +1006,7 @@ class SSTTailChecker:
     def get_qc_outcomes(self):
         """
         Return the QC outcomes.
-        
+
         Returns
         -------
         array-like of int, shape (n,)
@@ -1017,7 +1017,7 @@ class SSTTailChecker:
     def valid_parameters(self):
         """
         Check the parameters are valid. Raises a warning and returns False if not valid.
-        
+
         Returns
         -------
         bool
@@ -1051,7 +1051,7 @@ class SSTTailChecker:
     def do_sst_tail_check(self, start_tail: bool):
         """
         Perform the actual SST tail check.
-        
+
         Parameters
         ----------
         start_tail : bool
@@ -1167,7 +1167,7 @@ class SSTTailChecker:
     def _preprocess_reps(self) -> bool:
         """
         Process the reps and calculate the values used in the QC check.
-        
+
         Returns
         -------
         bool
@@ -1391,7 +1391,7 @@ class SSTBiasedNoisyChecker:
     ):
         """
         Create an object for performing the SST Biased, Noisy and Short Checks.
-        
+
         Parameters
         ----------
         lat : array-like of float, shape (n,)
@@ -1454,7 +1454,7 @@ class SSTBiasedNoisyChecker:
     def valid_parameters(self) -> bool:
         """
         Check the parameters are valid. Raises a warning and returns False if not valid.
-        
+
         Returns
         -------
         bool
@@ -1483,40 +1483,40 @@ class SSTBiasedNoisyChecker:
     def get_qc_outcomes_bias(self):
         """
         Return the QC outcomes for the bias check.
-        
+
         Returns
         -------
         array-like of int, shape (n,)
             1-dimensional array containing QC flags.
-        """        
+        """
         return self.qc_outcomes_bias
 
     def get_qc_outcomes_noise(self):
         """
         Return the QC outcomes for the noisy check.
-        
+
         Returns
         -------
         array-like of int, shape (n,)
             1-dimensional array containing QC flags.
-        """        
+        """
         return self.qc_outcomes_noise
 
     def get_qc_outcomes_short(self):
         """
         Return the QC outcomes for the short check.
-        
+
         Returns
         -------
         array-like of int, shape (n,)
             1-dimensional array containing QC flags.
-        """        
+        """
         return self.qc_outcomes_short
 
     def set_all_qc_outcomes_to(self, input_state: int):
         """
         Set all the QC outcomes to the specified input_state.
-        
+
         Parameters
         ----------
         input_state : int
@@ -1623,7 +1623,7 @@ class SSTBiasedNoisyChecker:
         anomalies, background error standard deviations, and flags any missing or invalid
         background values. It also checks whether the time series is sorted and sets
         a mask flag if any background variances are masked.
-        
+
         Returns
         -------
         bool

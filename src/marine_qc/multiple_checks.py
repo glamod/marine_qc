@@ -113,10 +113,10 @@ def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     raise TypeError(f"Unsupported data type: {type(data)}")
 
 
-def _get_requests_from_params(params: Optional[dict], func: Callable, data: Union[pd.Series, pd.DataFrame]) -> dict:
+def _get_requests_from_params(params: dict | None, func: Callable, data: pd.Series | pd.DataFrame) -> dict:
     """
-    Get requests from `func` or ``data` using `params`.
-    
+    Get requests from `func` or `data` using `params`.
+
     Given a dictionary of key value pairs where the keys are parameters in the function, func, and the values
     are columns or variables in data, create a new dictionary in which the keys are the parameter names (as in the
     original dictionary) and the values are the numbers extracted from data.
@@ -124,8 +124,8 @@ def _get_requests_from_params(params: Optional[dict], func: Callable, data: Unio
     Parameters
     ----------
     params : dict or None
-        Dictionary. Keys are parameter names for the function func, and values are the names of columns or variables
-        in data.
+        Dictionary. Keys are parameter names for the function func,
+        and values are the names of columns or variables in data.
     func : Callable
         Function for which the parameters will be checked.
     data : pd.Series or pd.DataFrame
@@ -159,7 +159,7 @@ def _get_requests_from_params(params: Optional[dict], func: Callable, data: Unio
 def _get_preprocessed_args(arguments: dict, preprocessed: dict) -> dict:
     """
     Update `arguments` for values available in `preprocessed`.
-    
+
     Given a dictionary of key value pairs, if one of the values is equal to __preprocessed__ then replace
     the value with the value corresponding to that key in preprocessed.
 
@@ -353,8 +353,8 @@ def _prepare_all_inputs(
 ) -> tuple[dict, pd.Series, pd.DataFrame]:
     """
     Build all inputs required for QC execution.
-    
-    This includes preporcessed variables, resolved QC function arguments, an initial boolean mask, 
+
+    This includes preporcessed variables, resolved QC function arguments, an initial boolean mask,
     and an empty results table.
 
     Parameters
@@ -704,7 +704,7 @@ def do_multiple_sequential_check(
 ) -> pd.DataFrame | pd.Series:
     """
     Apply one or more sequential quality-control (QC) functions to groups of a DataFrame or Series.
-    
+
     Typically for time-ordered or track-based checks.
 
     Parameters

@@ -175,9 +175,9 @@ def do_track_check(
 ) -> SequenceIntType:
     """
     Perform one pass of the track check.
-    
-    This is an implementation of the MDS track check code which was originally written in the 1990s. 
-    I don't know why this piece of historic trivia so exercises my mind, but it does: the 1990s! 
+
+    This is an implementation of the MDS track check code which was originally written in the 1990s.
+    I don't know why this piece of historic trivia so exercises my mind, but it does: the 1990s!
     I wish my code would last so long.
 
     Parameters
@@ -381,7 +381,7 @@ def find_saturated_runs(
 ) -> SequenceIntType:
     """
     Perform checks on persistence of 100% rh while going through the voyage.
-    
+
     While going through the voyage repeated strings of 100 %rh (AT == DPT) are noted.
     If a string extends beyond 20 reports and two days/48 hrs in time then all values are set to
     fail the repsat qc flag.
@@ -464,7 +464,7 @@ def find_saturated_runs(
 def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find instances when more than "threshold" of the observations are whole numbers and set the 'round' flag.
-    
+
     Used in the humidity QC where there are times when the values are rounded and this may have caused a bias.
 
     Parameters

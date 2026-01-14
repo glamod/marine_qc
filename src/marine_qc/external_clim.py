@@ -17,8 +17,8 @@ from numpy import ndarray
 from xclim.core.units import convert_units_to
 
 from .auxiliary import (
-    ValueFloatType,
     SequenceFloatType,
+    ValueFloatType,
     generic_decorator,
     isvalid,
     post_format_return_type,
@@ -34,12 +34,12 @@ from .time_control import (
 
 
 def _format_output(
-    result: np.ndarray, 
+    result: np.ndarray,
     lat: ValueFloatType,
 ) -> ValueFloatType:
     """
     Format output to match the input latitude type.
-    
+
     Parameters
     ----------
     result : np.ndarray
@@ -60,16 +60,16 @@ def _format_output(
 
 
 def _select_point(
-    i: int, 
-    da_slice: xr.DataArray, 
+    i: int,
+    da_slice: xr.DataArray,
     lat_arr: SequenceFloatType,
     lon_arr: SequenceFloatType,
-    lat_axis: str, 
+    lat_axis: str,
     lon_axis: str,
-) -> Tuple[int, float]:
+) -> tuple[int, float]:
     """
     Select nearest grid point value for a single lat/lon pair.
-    
+
     Parameters
     ----------
     i : int
@@ -80,7 +80,7 @@ def _select_point(
         Array of latitude values.
     lon_arr : SequenceFloatType
         Array of longitude values.
-    lat_axis : str 
+    lat_axis : str
         Name of the latitude dimension in `da_slice`.
     lon_axis : str
         Name of the longitude dimension in `da_slice`.
@@ -97,7 +97,7 @@ def _select_point(
 def _empty_dataarray():
     """
     Create an empty 3D DataArray with latitude, time, and longitude dimensions.
-    
+
     Returns
     -------
     xr.DataArray
@@ -125,7 +125,7 @@ def _empty_dataarray():
 
 
 def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | None = None) -> Callable:
-    """
+    r"""
     A decorator factory to preprocess function arguments that may be Climatology objects.
 
     This decorator inspects the specified function arguments and, if any are instances of
@@ -133,7 +133,7 @@ def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | 
 
     Parameters
     ----------
-    *climatology_keys : str
+    \*climatology_keys : str
         Names of required function arguments to be inspected. These should be arguments that may be
         either a float or a `Climatology` object. If a `Climatology` object is detected, it will be
         replaced with the resolved value.
@@ -159,16 +159,16 @@ def inspect_climatology(*climatology_keys: str, optional: str | Sequence[str] | 
         optional = []
 
     def pre_handler(arguments: dict, **meta_kwargs):
-        """
+        r"""
         Preprocess specified arguments, resoling Climatology objects to concrete values.
-        
+
         Parameters
         ----------
         arguments : dict
             Function arguments as a dictionary.
-        **meta_kwargs
+        \**meta_kwargs : dict
             Additional keyword arguments to pass to `Climatology.get_value_fast()`.
-            
+
         Returns
         -------
         None
@@ -224,7 +224,7 @@ def open_xrdataset(
     combine: Literal["by_coords", "nested"] | None = "by_coords",
     **kwargs,
 ) -> xr.Dataset:
-    """
+    r"""
     Optimized function for opening large CF-compliant datasets with xarray.
 
     based on [open_xrdataset]_.
@@ -256,7 +256,7 @@ def open_xrdataset(
         See [open_mfdataset].
     combine : {"by_coords", "nested"}, optional, default: "by_coords"
         See [open_mfdataset].
-    **kwargs
+    \**kwargs : dict
         Additional keyword arguments passed to xarray.open_mfdataset.
 
     Returns
@@ -284,7 +284,7 @@ def open_xrdataset(
         -------
         xr.Dataset
             Dataset with all coordinates dropped.
-    """
+        """
         return ds.reset_coords(drop=True)
 
     if chunks == "default":
@@ -310,7 +310,7 @@ def open_xrdataset(
 class Climatology:
     """
     Class for dealing with climatologies, reading, extracting values etc.
-    
+
     Automatically detects if this is a single field, pentad or daily climatology.
 
     Parameters
@@ -337,6 +337,7 @@ class Climatology:
         - 73: pentad climatology
         - 365: daily climatology
     """
+
     def __init__(
         self,
         data: xr.DataArray,
@@ -351,8 +352,8 @@ class Climatology:
         Initialize a Climatology object from an xarray DataArray.
 
         The climatology type (single-field, pentad, or daily) is inferred from
-        the length of the time dimension.  
-              
+        the length of the time dimension.
+
         Parameters
         ----------
         data : xr.DataArray
@@ -376,7 +377,7 @@ class Climatology:
           - 1: single field climatology
           - 73: pentad climatology
           - 365: daily climatology
-        
+
         Raises
         ------
         ValueError
@@ -407,16 +408,16 @@ class Climatology:
 
     @classmethod
     def open_netcdf_file(cls, file_name, clim_name, **kwargs) -> Climatology:
-        """
+        r"""
         Open a NetCDF climatology file and construct a Climatology instance.
-        
+
         Parameters
         ----------
         file_name : str or path-like
             Path to the NetCDF file to open.
         clim_name : str
             Name of the climatology variable within the NetCDF file.
-        **kwargs
+        \**kwargs : dict
             Additional keyword arguments passed to the Climatology constructor.
 
         Returns
@@ -746,14 +747,14 @@ class Climatology:
 
 @inspect_climatology("climatology")
 def get_climatological_value(climatology: Climatology, **kwargs) -> ndarray:
-    """
+    r"""
     Get the value from a climatology.
 
     Parameters
     ----------
     climatology : Climatology
         Climatology class.
-    **kwargs : dict
+    \**kwargs : dict
         Pass keyword-arguments to :py:class:~Climatology.get_value`.
 
     Returns

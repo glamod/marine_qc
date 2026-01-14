@@ -300,7 +300,7 @@ def check_distance_from_estimate(
     """
     Check that distances from estimated positions are less than calculated distance.
 
-    The estimated postions are calculated forward and backwards in time.
+    The estimated positions are calculated forward and backwards in time.
     The calculated distance is the time difference multiplied by the average reported speeds.
 
     Parameters

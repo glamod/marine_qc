@@ -25,14 +25,14 @@ geod = Geod(a=earths_radius, b=earths_radius)
 
 
 def _geod_inv(
-    lat1: SequenceFloatType, 
-    lon1: SequenceFloatType, 
-    lat2: SequenceFloatType, 
+    lat1: SequenceFloatType,
+    lon1: SequenceFloatType,
+    lat2: SequenceFloatType,
     lon2: SequenceFloatType,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute forward azimuth, back azimuth, and distance between two points using an ellipsoidal model.
-    
+
     Parameters
     ----------
     lat1 : SequenceFloatType
@@ -43,12 +43,12 @@ def _geod_inv(
         Latitude of the second point in degrees.
     lon2 : SequenceFloatType
         Longitude of the second point in degrees.
-        
+
     Returns
     -------
-    tuple of (np.ndarray, np.ndarray, np.ndarray) 
+    tuple of (np.ndarray, np.ndarray, np.ndarray)
         A tuple containing:
-        - Forward azimuth(s) from point 1 to point 2 in degrees.     
+        - Forward azimuth(s) from point 1 to point 2 in degrees.
         - Back azimuth(s) from point 2 to point 1 in degrees.
         - Distance(s) between the points in meters.
         The outputs have the same shape as the broadcasted inputs.
@@ -60,9 +60,9 @@ def _geod_inv(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def angular_distance(
-    lat1: SequenceFloatType, 
-    lon1: SequenceFloatType, 
-    lat2: SequenceFloatType, 
+    lat1: SequenceFloatType,
+    lon1: SequenceFloatType,
+    lat2: SequenceFloatType,
     lon2: SequenceFloatType,
 ) -> np.ndarray:
     """
@@ -104,14 +104,14 @@ def angular_distance(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def sphere_distance(
-    lat1: SequenceFloatType, 
-    lon1: SequenceFloatType, 
-    lat2: SequenceFloatType, 
+    lat1: SequenceFloatType,
+    lon1: SequenceFloatType,
+    lat2: SequenceFloatType,
     lon2: SequenceFloatType,
 ) -> np.ndarray:
     """
     Calculate the great circle angular distance between two points on a sphere.
-    
+
     Input latitudes and longitudes should be in degrees.
     Output distance is returned in radians.
 
@@ -147,15 +147,15 @@ def sphere_distance(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2", "f"], dtype=float, multiple=True)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2", "f"])
 def intermediate_point(
-    lat1: SequenceFloatType, 
-    lon1: SequenceFloatType, 
-    lat2: SequenceFloatType, 
-    lon2: SequenceFloatType, 
+    lat1: SequenceFloatType,
+    lon1: SequenceFloatType,
+    lat2: SequenceFloatType,
+    lon2: SequenceFloatType,
     f: float,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Compute the intermediate point along the great-circle path between two points.
-    
+
     Given two lat,lon points find the latitude and longitude that are a fraction f
     of the great circle distance between them https://edwilliams.org/avform147.htm formerly
     williams.best.vwh.net/avform.htm#Intermediate
@@ -198,10 +198,10 @@ def intermediate_point(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def course_between_points(
-    lat1: SequenceFloatType, 
-    lon1: SequenceFloatType, 
-    lat2: SequenceFloatType, 
-    lon2: SequenceFloatType, 
+    lat1: SequenceFloatType,
+    lon1: SequenceFloatType,
+    lat2: SequenceFloatType,
+    lon2: SequenceFloatType,
 ) -> SequenceFloatType:
     """
     Given two points find the initial true course at point1 inputs are in degrees and output is in degrees.
@@ -235,17 +235,17 @@ def course_between_points(
     ]
 )
 def lat_lon_from_course_and_distance(
-    lat1: SequenceFloatType, 
-    lon1: SequenceFloatType, 
-    tc: float, 
+    lat1: SequenceFloatType,
+    lon1: SequenceFloatType,
+    tc: float,
     d: float,
-) -> Tuple[SequenceFloatType, SequenceFloatType]:
+) -> tuple[SequenceFloatType, SequenceFloatType]:
     """
     Calculate latitude and longitude given a starting point, true course and distance.
-    
+
     Uses spherical trigonometry formulas from https://edwilliams.org/avform147.htm
     to compute the endpoint given a starting latitude and longitude, a true coure
-    (bearing), and a distance traveled along a great-circle path. 
+    (bearing), and a distance traveled along a great-circle path.
 
     Parameters
     ----------

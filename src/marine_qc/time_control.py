@@ -48,14 +48,14 @@ def convert_date(params: list[str]) -> Callable:
     """
 
     def pre_handler(arguments: dict, **meta_kwargs):
-        """
+        r"""
         Extract date components from the 'date' argument and inject them into function arguments.
 
         Parameters
         ----------
         arguments : dict
             Dictionary of function arguments that may include a ``date`` entry.
-        **meta_kwargs
+        \**meta_kwargs : dict
             Additional keyword arguments passed by the decorator framework (unused).
         """
         date = arguments.get("date")

@@ -11,7 +11,7 @@ import numpy as np
 def p_data_given_good(x: float, q: float, r_hi: float, r_lo: float, mu: float, sigma: float) -> float:
     """
     Probability of an observed value assuming it comes from a "good" measurement.
-    
+
     Calculate the probability of an observed value x given a normal distribution with mean mu
     standard deviation of sigma, where x is constrained to fall between R_hi and R_lo
     and is known only to an integer multiple of Q, the quantization level.
@@ -63,7 +63,7 @@ def p_data_given_good(x: float, q: float, r_hi: float, r_lo: float, mu: float, s
 def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
     """
     Probability of an observed value assuming it is a gross error.
-    
+
     Calculate the probability of the data given a gross error
     assuming gross errors are uniformly distributed between
     R_low and R_high and that the quantization, rounding level is Q
@@ -99,7 +99,7 @@ def p_data_given_gross(q: float, r_hi: float, r_lo: float) -> float:
 def p_gross(p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, sigma: float) -> float:
     """
     Posterior probability that an observation is a gross error.
-    
+
     Calculate the posterior probability of a gross error given the prior probability p0,
     the quantization level of the observed value, Q, previous limits on the observed value,
     R_hi and R_lo, the observed value, x, and the mean (mu) and standard deviation (sigma) of the
@@ -228,18 +228,18 @@ def missing_mean(inarr: list[float]) -> float | None:
 def _trim_stat(inarr: Sequence[float], trim: int, stat: str) -> float:
     """
     Calculate a resistant (aka robust) statistics of an input array given a trimming criteria.
-    
+
     Parameters
     ----------
     inarr : array-like of float, shape (n,)
         1-dimensional value array.
     trim : int
-        Trimming criteria. 
+        Trimming criteria.
         A value of 10 trims one tenth of the values off each end of the sorted array
         before calculating the mean.
     stat : str
         Name of the numpy statistic function to apply, e.g., "mean", "std".
-    
+
     Returns
     -------
     float
@@ -267,7 +267,7 @@ def trim_mean(inarr: Sequence[float], trim: int) -> float:
     inarr : array-like of float, shape (n,)
         1-dimensional value array.
     trim : int
-        Trimming criteria. 
+        Trimming criteria.
         A value of 10 trims one tenth of the values off each end of the sorted array
         before calculating the mean.
 
@@ -288,7 +288,7 @@ def trim_std(inarr: Sequence[float], trim: int) -> float:
     inarr : array-like of float, shape (n,)
         1-dimensional value array.
     trim : int
-        Trimming criteria. 
+        Trimming criteria.
         A value of 10 trims one tenth of the values off each end of the sorted array before
         calculating the standard deviation.
 
