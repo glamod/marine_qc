@@ -4,9 +4,10 @@ from __future__ import annotations
 import inspect
 import warnings
 from collections import defaultdict
-
+from collections.abc import Callable, Sequence
 from datetime import datetime
-from typing import Literal, TypeAlias, Callable, Sequence, Any
+from pathlib import Path
+from typing import Any, Literal, TypeAlias
 
 import cf_xarray  # noqa: F401
 import numpy as np
@@ -14,7 +15,6 @@ import pandas as pd
 import xarray as xr
 from joblib import Parallel, delayed
 from numpy import ndarray
-from pathlib import Path
 from xclim.core.units import convert_units_to
 
 from .auxiliary import (
@@ -126,7 +126,7 @@ def _empty_dataarray() -> xr.DataArray:
 
 
 def inspect_climatology(
-    *climatology_keys: str, 
+    *climatology_keys: str,
     optional: str | Sequence[str] | None = None,
 ) -> Callable[..., Any]:
     r"""
@@ -439,7 +439,7 @@ class Climatology:
             warnings.warn(f"Could not open: {file_name}.", stacklevel=2)
         return cls(_empty_dataarray(), **kwargs)
 
-    def convert_units_to(self, target_units: str, source_units: Optional[str]=None) -> None:
+    def convert_units_to(self, target_units: str, source_units: Optional[str] = None) -> None:
         """
         Convert units to user-specific units.
 

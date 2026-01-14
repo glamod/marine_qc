@@ -5,12 +5,10 @@ Module containing QC functions for quality control of grouped marine reports.
 """
 
 from __future__ import annotations
-
-from typing import Optional
-
 import itertools
 import math
-from typing import Sequence, cast
+from collections.abc import Sequence
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -111,9 +109,9 @@ class SuperObsGrid:
         lats: SequenceFloatType,
         lons: SequenceFloatType,
         values: SequenceFloatType,
-        date: Optional[SequenceDatetimeType] = None,
-        month: Optional[SequenceFloatType] = None,
-        day: Optional[SequenceFloatType] = None,
+        date: SequenceDatetimeType | None = None,
+        month: SequenceFloatType | None = None,
+        day: SequenceFloatType | None = None,
     ) -> None:
         """
         Add a series of observations to the grid and take the grid average.
@@ -144,19 +142,13 @@ class SuperObsGrid:
         lon_arr: np.ndarray = np.atleast_1d(lons).astype(float)
         month_arr: np.ndarray = np.atleast_1d(month if month is not None else -1).astype(float)
         day_arr: np.ndarray = np.atleast_1d(day if day is not None else -1).astype(float)
-        
+
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        valid: np.ndarray = (
-            isvalid(lats) &
-            isvalid(lons) &
-            isvalid(month) &
-            isvalid(day) &
-            isvalid(values)
-        )
+        valid: np.ndarray = isvalid(lats) & isvalid(lons) & isvalid(month) & isvalid(day) & isvalid(values)
         valid &= (month_arr >= 1) & (month_arr <= 12)
-        
+
         if not np.any(valid):
             return
 
@@ -175,7 +167,7 @@ class SuperObsGrid:
                 "t": t_index,
             }
         )
-        
+
         grouped = df.groupby("uid")
         means = grouped["value"].mean().values
         nobs = grouped["value"].count().values
@@ -229,10 +221,10 @@ class SuperObsGrid:
         self.grid[nonmiss] = self.grid[nonmiss] / self.nobs[nonmiss]
 
     def get_neighbour_anomalies(
-        self, 
-        search_radius: list[int], 
-        xindex: int, 
-        yindex: int, 
+        self,
+        search_radius: list[int],
+        xindex: int,
+        yindex: int,
         pindex: int,
     ) -> tuple[list[float], list[float]]:
         """
@@ -499,7 +491,7 @@ def do_mds_buddy_check(
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
     multipliers: list[list[float]],
-    ignore_indexes: Optional[list[int]] = None,
+    ignore_indexes: list[int] | None = None,
 ) -> SequenceIntType:
     """
     Do the old style buddy check.
@@ -568,7 +560,7 @@ def do_mds_buddy_check(
     lon = cast(np.ndarray, lon)
     value = cast(np.ndarray, value)
     climatology = cast(np.ndarray, climatology)
-    
+
     anoms = value - climatology
 
     if len(limits) != len(number_of_obs_thresholds) and len(limits) != len(multipliers):
@@ -588,7 +580,7 @@ def do_mds_buddy_check(
 
     if ignore_indexes is None:
         ignore_indexes = []
-        
+
     valid_mask: np.ndarray = isvalid(anoms)
 
     # finally loop over all reports and update buddy QC
@@ -710,8 +702,7 @@ def do_bayesian_buddy_check(
     date = cast(np.ndarray, date)
     value = cast(np.ndarray, value)
     climatology = cast(np.ndarray, climatology)
-      
-    
+
     numobs = len(lat)
     p0 = prior_probability_of_gross_error
     q = quantization_interval

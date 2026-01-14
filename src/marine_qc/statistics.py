@@ -1,9 +1,6 @@
 """Some generally helpful statistical functions for base QC."""
 
 from __future__ import annotations
-
-from typing import Union
-
 import copy
 import math
 from collections.abc import Sequence
@@ -161,10 +158,10 @@ def p_gross(p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, 
     return pgross
 
 
-def winsorised_mean(inarr: list[Union[float, int]]) -> float:
+def winsorised_mean(inarr: list[float | int]) -> float:
     """
     Compute the 25% winsorised mean of the input array.
-    
+
     The winsorised mean is a resistant way of calculating an average.
 
     Parameters
@@ -176,7 +173,7 @@ def winsorised_mean(inarr: list[Union[float, int]]) -> float:
     -------
     float
         The winsorised mean of the input array with a 25% trimming.
-        
+
     Raises
     ------
     ValueError
@@ -193,19 +190,19 @@ def winsorised_mean(inarr: list[Union[float, int]]) -> float:
     """
     length = len(inarr)
     if length == 0:
-        raise ValueError("Input array must have at least one element.") 
-        
+        raise ValueError("Input array must have at least one element.")
+
     inarr_sorted = sorted(inarr)
 
     trim = length // 4
-    
+
     if trim == 0:
         return float(sum(inarr_sorted) / length)
-        
+
     middle_sum = sum(inarr_sorted[trim : length - trim])
     lower_sum = inarr_sorted[trim] * trim
     upper_sum = inarr_sorted[length - trim - 1] * trim
-    
+
     total = lower_sum + middle_sum + upper_sum
     return total / length
 

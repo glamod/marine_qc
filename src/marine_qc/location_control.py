@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .auxiliary import ValueFloatType, ValueIntType, isvalid
+from .auxiliary import isvalid
 from .statistics import missing_mean
 
 

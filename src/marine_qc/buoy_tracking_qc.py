@@ -1108,11 +1108,11 @@ class SSTTailChecker:
 
     @staticmethod
     def _parse_rep(
-        lat: float, 
-        lon: float, 
-        ostia: float, 
-        ice: float, 
-        bgvar: float, 
+        lat: float,
+        lon: float,
+        ostia: float,
+        ice: float,
+        bgvar: float,
         dates: float,
     ) -> tuple[float, float, float, bool]:
         """
@@ -1261,7 +1261,7 @@ class SSTTailChecker:
             else:
                 break
 
-    def _do_short_tail_check(self, first_pass_ind: int, last_pass_ind: int, forward: bool=True) -> None:
+    def _do_short_tail_check(self, first_pass_ind: int, last_pass_ind: int, forward: bool = True) -> None:
         """
         Perform the short tail check.
 
@@ -1563,12 +1563,12 @@ class SSTBiasedNoisyChecker:
 
     @staticmethod
     def _parse_rep(
-        lat: float, 
-        lon: float, 
-        ostia: float, 
-        ice: float, 
-        bgvar: float, 
-        dates: datetime, 
+        lat: float,
+        lon: float,
+        ostia: float,
+        ice: float,
+        bgvar: float,
+        dates: datetime,
         background_err_lim: float,
     ) -> tuple[float, float, float, bool, bool, bool]:
         """

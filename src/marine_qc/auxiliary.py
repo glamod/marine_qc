@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 import inspect
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
-
-from typing import Any, TypeAlias, Callable, Sequence, Optional
-from pandas._libs.missing import NAType
-from pandas._libs.tslibs.nattype import NaTType
+from typing import Any, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from pandas._libs.missing import NAType
+from pandas._libs.tslibs.nattype import NaTType
 from xclim.core.units import convert_units_to, units
 
 
@@ -200,8 +200,8 @@ def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -
 
 
 def generic_decorator(
-    pre_handler: Optional[Callable[[dict[str, Any]], None]] = None,
-    post_handler: Optional[Callable[[Any, dict[str, Any]], Any]] = None,
+    pre_handler: Callable[[dict[str, Any]], None] | None = None,
+    post_handler: Callable[[Any, dict[str, Any]], Any] | None = None,
 ) -> Callable[..., Any]:
     """
     Create a decorator that binds function arguments and applies pre- and post-processing handlers.

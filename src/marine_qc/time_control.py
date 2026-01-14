@@ -3,8 +3,9 @@
 from __future__ import annotations
 import calendar
 import math
-from typing import Callable, Sequence, Any, cast
+from collections.abc import Callable, Sequence
 from datetime import datetime
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -661,7 +662,7 @@ def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> S
     """
     times1 = cast(np.ndarray, times1)
     times2 = cast(np.ndarray, times2)
-    
+
     times1 = pd.to_datetime(times1, errors="coerce").values
     times2 = pd.to_datetime(times2, errors="coerce").values
 
