@@ -25,24 +25,24 @@ geod = Geod(a=earths_radius, b=earths_radius)
 
 
 def _geod_inv(
-    lat1: SequenceFloatType,
     lon1: SequenceFloatType,
-    lat2: SequenceFloatType,
+    lat1: SequenceFloatType,
     lon2: SequenceFloatType,
+    lat2: SequenceFloatType,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute forward azimuth, back azimuth, and distance between two points using an ellipsoidal model.
 
     Parameters
     ----------
-    lat1 : SequenceFloatType
-        Latitude of the first point in degrees.
     lon1 : SequenceFloatType
         Longitude of the first point in degrees.
-    lat2 : SequenceFloatType
-        Latitude of the second point in degrees.
+    lat1 : SequenceFloatType
+        Latitude of the first point in degrees.
     lon2 : SequenceFloatType
         Longitude of the second point in degrees.
+    lat2 : SequenceFloatType
+        Latitude of the second point in degrees.
 
     Returns
     -------
