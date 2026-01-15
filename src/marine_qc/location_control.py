@@ -274,7 +274,12 @@ def lon_to_xindex(lon: float, res: float) -> int:
     return int(xindex)
 
 
-def filler(value_to_fill: float, neighbour1: float, neighbour2: float, opposite: float) -> float:
+def filler(
+    value_to_fill: float | None, 
+    neighbour1: float | None, 
+    neighbour2: float | None, 
+    opposite: float | None,
+) -> float | None:
     """
     Fill invalid values.
 
@@ -307,7 +312,12 @@ def filler(value_to_fill: float, neighbour1: float, neighbour2: float, opposite:
     return value_to_fill
 
 
-def fill_missing_vals(q11: float, q12: float, q21: float, q22: float) -> tuple[float, float, float, float]:
+def fill_missing_vals(
+    q11: float | None, 
+    q12: float | None, 
+    q21: float | None, 
+    q22: float | None,
+) -> tuple[float | None, float | None, float | None, float | None]:
     """
     Fill missing values.
 

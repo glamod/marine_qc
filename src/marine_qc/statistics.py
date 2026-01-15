@@ -210,7 +210,7 @@ def winsorised_mean(inarr: list[Union[float, int]]) -> float:
     return total / length
 
 
-def missing_mean(inarr: list[float]) -> float | None:
+def missing_mean(inarr: list[float | None]) -> float | None:
     """
     Return mean of input array.
 

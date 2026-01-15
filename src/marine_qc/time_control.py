@@ -3,7 +3,7 @@
 from __future__ import annotations
 import calendar
 import math
-from typing import Callable, Sequence, Any, cast
+from typing import Callable, Sequence, Any, cast, Iterable
 from datetime import datetime
 
 import numpy as np
@@ -15,6 +15,7 @@ from .auxiliary import (
     is_scalar_like,
     isvalid,
     post_format_return_type,
+    DECORATOR_KWARGS,
 )
 
 
@@ -47,7 +48,7 @@ def convert_date(params: list[str]) -> Callable[..., Any]:
       and returns a dictionary mapping parameter names to their values.
     """
 
-    def pre_handler(arguments: dict[str, Any], **meta_kwargs) -> Any:
+    def pre_handler(arguments: dict[str, Any], **meta_kwargs: Any) -> None:
         r"""
         Extract date components from the 'date' argument and inject them into function arguments.
 
@@ -65,23 +66,23 @@ def convert_date(params: list[str]) -> Callable[..., Any]:
 
         if is_scalar_like(date):
             scalar = True
-            extracted = split_date(date)
+            extracted_dict: dict[str, float] = split_date(date)
         else:
             scalar = False
-            extracted = [split_date(d) for d in date]
+            extracted_list: list[dict[str, float]] = [
+                split_date(d) for d in date
+            ]
 
         for param in params:
             if param not in arguments:
                 raise ValueError(f"Parameter '{param}' is not a valid parameter.")
 
             if scalar:
-                value = extracted[param]
+                arguments[param] = extracted_dict[param]
             else:
-                value = [e[param] for e in extracted]
+                arguments[param] = [e[param] for e in extracted_list]
 
-            arguments[param] = value
-
-    pre_handler._decorator_kwargs = set()
+    DECORATOR_KWARGS[pre_handler] = set()
 
     return generic_decorator(pre_handler=pre_handler)
 
@@ -511,10 +512,10 @@ def leap_year(years_since_1980: int) -> int:
     int
         1 if it is a leap year, 0 otherwise.
     """
-    return math.floor(years_since_1980 / 4.0)
+    return int(math.floor(years_since_1980 / 4.0))
 
 
-def time_in_whole_days(time_in_hours: int, day: int, years_since_1980: int, leap: int) -> float:
+def time_in_whole_days(time_in_hours: int | float, day: int, years_since_1980: int, leap: int) -> float:
     """
     Calculate from time in hours to time in whole days.
 
@@ -555,11 +556,11 @@ def leap_year_correction(time_in_hours: float, day: int, years_since_1980: int) 
     float
         Leap year corrected time.
     """
-    leap = leap_year(years_since_1980)
+    leap: int = leap_year(years_since_1980)
     time: float = time_in_whole_days(time_in_hours, day, years_since_1980, leap)
-    if years_since_1980 == leap * 4.0:
+    if years_since_1980 == leap * 4:
         time = time - 1.0
-    if years_since_1980 < 0 and years_since_1980 != leap * 4.0:
+    if years_since_1980 < 0 and years_since_1980 != leap * 4:
         time = time - 1.0
     return time
 
@@ -633,16 +634,17 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
         1- dimensional array containing hours since the first element in the array.
     """
     n_dates = len(dates)
-    hours_elapsed = np.zeros(n_dates)
-    for i, date in enumerate(dates):
-        duration_in_seconds = (date - dates[0]).total_seconds()
-        hours_elapsed[i] = duration_in_seconds / (60 * 60)
+    hours_elapsed: list[float] = []
+    start = dates[0]
+    for date in dates:
+        duration_in_seconds = (date - start).total_seconds()
+        hours_elapsed.append(duration_in_seconds / 3600.0)
     return hours_elapsed
 
 
 @post_format_return_type(["times1", "times2"], dtype=float)
 @inspect_arrays(["times1", "times2"])
-def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> Sequence[datetime]:
+def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> Sequence[float]:
     """
     Convert two arrays of datetimes to the difference in hours.
 
@@ -659,14 +661,14 @@ def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> S
         1-dimensional array containing the time difference in hours
         computed as ``times2 - times1``.
     """
-    times1 = cast(np.ndarray, times1)
-    times2 = cast(np.ndarray, times2)
+    times1_arr: np.ndarray = pd.to_datetime(times1, errors="coerce").values
+    times2_arr: np.ndarray = pd.to_datetime(times2, errors="coerce").values
+
+    valid: np.ndarray = isvalid(times1_arr) & isvalid(times2_arr)
     
-    times1 = pd.to_datetime(times1, errors="coerce").values
-    times2 = pd.to_datetime(times2, errors="coerce").values
-
-    valid = isvalid(times1) & isvalid(times2)
-
-    result = np.full(times1.shape, np.nan, dtype=float)  # np.ndarray
-    result[valid] = (times2[valid] - times1[valid]).astype(float) / (1e9 * 60 * 60)
+    delta_hours: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
+    delta_hours[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta(1, "h")
+    
+    result: list[float] = delta_hours.tolist()
+    
     return result

@@ -6,7 +6,7 @@ import warnings
 from collections import defaultdict
 
 from datetime import datetime
-from typing import Literal, TypeAlias, Callable, Sequence, Any
+from typing import Literal, TypeAlias, Callable, Sequence, Any, Union, Optional
 
 import cf_xarray  # noqa: F401
 import numpy as np
@@ -23,6 +23,8 @@ from .auxiliary import (
     generic_decorator,
     isvalid,
     post_format_return_type,
+    DECORATOR_KWARGS,
+    DECORATOR_NAMES,
 )
 from .time_control import (
     convert_date,
@@ -162,7 +164,7 @@ def inspect_climatology(
     elif optional is None:
         optional = []
 
-    def pre_handler(arguments: dict[str, Any], **meta_kwargs) -> None:
+    def pre_handler(arguments: dict[str, Any], **meta_kwargs: Any) -> None:
         r"""
         Preprocess specified arguments, resoling Climatology objects to concrete values.
 
@@ -183,7 +185,7 @@ def inspect_climatology(
         for clim_key in active_keys:
             if clim_key not in arguments:
                 raise TypeError(
-                    f"Missing expected argument '{clim_key}' in function '{pre_handler.__funcname__}'. "
+                    f"Missing expected argument '{clim_key}' in function '{DECORATOR_NAMES[pre_handler]}'. "
                     "The decorator requires this argument to be present."
                 )
             climatology = arguments[clim_key]
@@ -198,7 +200,7 @@ def inspect_climatology(
                 if missing_in_kwargs:
                     warnings.warn(
                         f"The following required key-word arguments for 'Climatology.get_value' are missing "
-                        f"in function '{pre_handler.__funcname__}': {missing_in_kwargs}. "
+                        f"in function '{DECORATOR_NAMES[pre_handler]}': {missing_in_kwargs}. "
                         f"Ensure all required arguments are passed via **kwargs.",
                         stacklevel=2,
                     )
@@ -210,13 +212,13 @@ def inspect_climatology(
 
             arguments[clim_key] = climatology
 
-    pre_handler._decorator_kwargs = {"lat", "lon", "date", "month", "day"}
+    DECORATOR_KWARGS[pre_handler] = {"lat", "lon", "date", "month", "day"}
 
     return generic_decorator(pre_handler=pre_handler)
 
 
 def open_xrdataset(
-    files: str | list,
+    files: str | list[str],
     use_cftime: bool = True,
     decode_cf: bool = False,
     decode_times: bool = False,
@@ -226,7 +228,7 @@ def open_xrdataset(
     coords: Literal["all", "minimal", "different"] | None = "minimal",
     compat: Literal["identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"] = "override",
     combine: Literal["by_coords", "nested"] | None = "by_coords",
-    **kwargs,
+    **kwargs: Any,
 ) -> xr.Dataset:
     r"""
     Optimized function for opening large CF-compliant datasets with xarray.
@@ -350,7 +352,7 @@ class Climatology:
         lon_axis: str | None = None,
         source_units: str | None = None,
         target_units: str | None = None,
-        valid_ntime: int | list | None = None,
+        valid_ntime: int | list[int] | None = None,
     ) -> None:
         """
         Initialize a Climatology object from an xarray DataArray.
@@ -411,7 +413,7 @@ class Climatology:
             raise ValueError(f"Weird shaped field {self.ntime}. Use one of {valid_ntime}.")
 
     @classmethod
-    def open_netcdf_file(cls, file_name: Union[str, Path], clim_name: str, **kwargs) -> Climatology:
+    def open_netcdf_file(cls, file_name: str, clim_name: str, **kwargs: Any) -> Climatology:
         r"""
         Open a NetCDF climatology file and construct a Climatology instance.
 
@@ -439,7 +441,7 @@ class Climatology:
             warnings.warn(f"Could not open: {file_name}.", stacklevel=2)
         return cls(_empty_dataarray(), **kwargs)
 
-    def convert_units_to(self, target_units: str, source_units: Optional[str]=None) -> None:
+    def convert_units_to(self, target_units: Union[str, Path, None], source_units: Optional[str]=None) -> None:
         """
         Convert units to user-specific units.
 
@@ -750,7 +752,7 @@ class Climatology:
 
 
 @inspect_climatology("climatology")
-def get_climatological_value(climatology: Climatology, **kwargs) -> ndarray:
+def get_climatological_value(climatology: Climatology, **kwargs: Any) -> ndarray:
     r"""
     Get the value from a climatology.
 

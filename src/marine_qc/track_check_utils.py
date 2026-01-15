@@ -68,7 +68,7 @@ def modal_speed(speeds: list[float]) -> float:
 
     # Convert km/h to knots
     speeds = np.asarray(speeds)
-    speeds = convert_to(speeds, "km/h", "knots")
+    speeds = np.asarray(convert_to(speeds, "km/h", "knots"), dtype=float)
 
     # Bin edges: [0, 3, 6, ..., 36], 12 bins
     bins = np.arange(0, 37, 3)
@@ -88,7 +88,8 @@ def modal_speed(speeds: list[float]) -> float:
     modal_speed_knots = max(bin_centres[modal_bin], 8.5)
 
     # Convert back to km/h
-    return float(convert_to(modal_speed_knots, "knots", "km/h"))
+    modal_speed_kmh = np.asarray(convert_to(modal_speed_knots, "knots", "km/h"), dtype=float)
+    return float(modal_speed_kmh)
 
 
 def set_speed_limits(amode: float) -> tuple[float, float, float]:
@@ -105,16 +106,17 @@ def set_speed_limits(amode: float) -> tuple[float, float, float]:
     (float, float, float)
         Max speed, maximum max speed and min speed.
     """
-    amax = convert_to(15.0, "knots", "km/h")
-    amaxx = convert_to(20.0, "knots", "km/h")
+    amax = float(np.asarray(convert_to(15.0, "knots", "km/h"), dtype=float))
+    amaxx = float(np.asarray(convert_to(20.0, "knots", "km/h"), dtype=float))
     amin = 0.00
 
     if not isvalid(amode):
         return amax, amaxx, amin
-    if amode <= float(convert_to(8.51, "knots", "km/h")):
+        
+    if amode <= float(np.asarray(convert_to(8.51, "knots", "km/h"), dtype=float)):
         return amax, amaxx, amin
 
-    return amode * 1.25, convert_to(30.0, "knots", "km/h"), amode * 0.75
+    return amode * 1.25, float(np.asarray(convert_to(30.0, "knots", "km/h"), dtype=float)), amode * 0.75
 
 
 @post_format_return_type(["alat1"], dtype=float, multiple=True)
@@ -469,7 +471,7 @@ def calculate_speed_course_distance_time_difference(
 
 
 @post_format_return_type(["vsi"], dtype=float)
-@inspect_arrays(["vsi"], sortby="date")
+@inspect_arrays(["lat", "lon", "date", "vsi", "dsi"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def forward_discrepancy(
     lat: SequenceFloatType,
@@ -521,6 +523,12 @@ def forward_discrepancy(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
     """
+    assert isinstance(lat, np.ndarray)
+    assert isinstance(lon, np.ndarray)
+    assert isinstance(date, np.ndarray)
+    assert isinstance(vsi, np.ndarray)
+    assert isinstance(dsi, np.ndarray)
+    
     timediff = time_difference(np.roll(date, 1), date)
     lat1, lon1 = increment_position(np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff)
 
@@ -538,7 +546,7 @@ def forward_discrepancy(
 
 
 @post_format_return_type(["vsi"], dtype=float)
-@inspect_arrays(["vsi"], sortby="date")
+@inspect_arrays(["lat", "lon", "date", "vsi", "dsi"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def backward_discrepancy(
     lat: SequenceFloatType,
@@ -590,6 +598,12 @@ def backward_discrepancy(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
     """
+    assert isinstance(lat, np.ndarray)
+    assert isinstance(lon, np.ndarray)
+    assert isinstance(date, np.ndarray)
+    assert isinstance(vsi, np.ndarray)
+    assert isinstance(dsi, np.ndarray)
+        
     timediff = time_difference(np.roll(date, 1), date)
     lat2, lon2 = increment_position(
         np.roll(lat, 1),

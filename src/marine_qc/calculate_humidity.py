@@ -81,7 +81,7 @@ def vap(td: float, t: float, p: float, roundit: bool = True) -> float:
     e = 12.3
     """
     if not isvalid(td) or not isvalid(t) or not isvalid(p):
-        return np.nan
+        return float("nan")
 
     # Calculate pseudo-e assuming wet bulb to calculate a
     # pseudo-wet bulb (see wb below)
@@ -102,7 +102,7 @@ def vap(td: float, t: float, p: float, roundit: bool = True) -> float:
     if roundit:
         e = round(e * 10) / 10.0
 
-    return e
+    return float(e)
 
 
 def vap_from_sh(sh: float, p: float, roundit: bool = True) -> float:
@@ -180,7 +180,7 @@ def sh(td: float, t: float, p: float, roundit: bool = True) -> float:
     sh = 7.6
     """
     if not isvalid(td) or not isvalid(t) or not isvalid(p):
-        return np.nan
+        return float("nan")
 
     # Calculate pseudo-e assuming wet bulb to
     # calculate a pseudo-wet bulb (see wb below)
@@ -203,7 +203,7 @@ def sh(td: float, t: float, p: float, roundit: bool = True) -> float:
     if roundit:
         q = round(q * 10.0) / 10.0
 
-    return q
+    return float(q)
 
 
 def sh_from_vap(e: float, p: float, roundit: bool = True) -> float:
@@ -284,7 +284,7 @@ def rh(td: float, t: float, p: float, roundit: bool = True) -> float:
     rh = 72.0
     """
     if not isvalid(td) or not isvalid(t) or not isvalid(p):
-        return np.nan
+        return float("nan")
 
     # Calculate pseudo-e assuming wet bulb to calculate a
     # pseudo-wet bulb (see wb below)
@@ -325,7 +325,7 @@ def rh(td: float, t: float, p: float, roundit: bool = True) -> float:
     if roundit:
         r = round(r * 10.0) / 10.0
 
-    return r
+    return float(r)
 
 
 def wb(td: float, t: float, p: float, roundit: bool = True) -> float:
@@ -368,7 +368,7 @@ def wb(td: float, t: float, p: float, roundit: bool = True) -> float:
     wb = 12.2
     """
     if not isvalid(td) or not isvalid(t) or not isvalid(p):
-        return np.nan
+        return float("nan")
 
     # Calculate pseudo-e assuming wet bulb to calculate a pseudo-wet bulb (see wb below)
     f = 1 + (7.0 * (10 ** (-4.0))) + ((3.46 * (10 ** (-6.0))) * p)
@@ -394,7 +394,7 @@ def wb(td: float, t: float, p: float, roundit: bool = True) -> float:
     if roundit:
         w = round(w * 10.0) / 10.0
 
-    return w
+    return float(w)
 
 
 def dpd(td: float, t: float, roundit: bool = True) -> float:
@@ -424,7 +424,7 @@ def dpd(td: float, t: float, roundit: bool = True) -> float:
     dpd = 5.0
     """
     if not isvalid(td) or not isvalid(t):
-        return np.nan
+        return float("nan")
 
     dp = t - td
 
@@ -474,7 +474,7 @@ def td_from_vap(e: float, p: float, t: float, roundit: bool = True) -> float:
     # First calculate an estimated dew point T
     f = 1 + (7.0 * 10.0 ** (-4.0)) + ((3.46 * 10.0 ** (-6.0)) * p)
 
-    a = 1
+    a = 1.0
     b = (227.3 * np.log(e / (6.1121 * f))) - (18.729 * 227.3)
     c = 257.87 * 227.3 * np.log(e / (6.1121 * f))
 
@@ -500,4 +500,4 @@ def td_from_vap(e: float, p: float, t: float, roundit: bool = True) -> float:
     if roundit:
         td = round(td * 10.0) / 10.0
 
-    return td
+    return float(td)

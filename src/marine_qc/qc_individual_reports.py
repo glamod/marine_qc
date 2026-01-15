@@ -5,7 +5,7 @@ Module containing main QC functions which could be applied on a DataBundle.
 """
 
 from __future__ import annotations
-from typing import Literal, cast, Optional
+from typing import Literal, Optional, Any, Union
 
 import numpy as np
 
@@ -49,7 +49,7 @@ def value_check(value: ValueFloatType) -> ValueIntType:
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    value = cast(np.ndarray, value)
+    assert isinstance(value, np.ndarray)
     
     valid_mask = isvalid(value)
     result = np.where(valid_mask, passed, failed)
@@ -84,18 +84,20 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
         - Returns 1 (or array/sequence/Series of 1s) if either latitude or longitude is out of the valid range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    lat = cast(np.ndarray, lat)
-    lon = cast(np.ndarray, lon)
+    assert isinstance(lat, np.ndarray)
+    assert isinstance(lat, np.ndarray)
     
-    result = np.full(lat.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(lat.shape, untestable, dtype=int)
 
-    valid_indices = isvalid(lat) & isvalid(lon)
+    valid = isvalid(lat) & isvalid(lon)
+    
+    lat_valid = np.where(valid, lat, np.nan)
+    lon_valid = np.where(valid, lon, np.nan)
+    
+    cond_failed = (lat_valid < -90.) | (lat_valid > 90.) | (lon_valid < -180.) | (lon_valid > 360.)
 
-    cond_failed = np.full(lat.shape, True, dtype=bool)  # type: np.ndarray
-    cond_failed[valid_indices] = (lat[valid_indices] < -90) | (lat[valid_indices] > 90) | (lon[valid_indices] < -180) | (lon[valid_indices] > 360)
-
-    result[valid_indices & cond_failed] = failed
-    result[valid_indices & ~cond_failed] = passed
+    result[valid & cond_failed] = failed
+    result[valid & ~cond_failed] = passed
 
     return result
 
@@ -134,9 +136,9 @@ def do_date_check(
         - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    year = cast(np.ndarray, year)
-    month = cast(np.ndarray, month)
-    day = cast(np.ndarray, day)
+    assert isinstance(year, np.ndarray)
+    assert isinstance(month, np.ndarray)
+    assert isinstance(day, np.ndarray)
     
     result = np.full(year.shape, untestable, dtype=int)
     valid = isvalid(year) & isvalid(month) & isvalid(day)
@@ -191,13 +193,13 @@ def do_time_check(
         - Returns 1 (or array/sequence/Series of 1s) if hour is not a valid hour,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    hour = cast(np.ndarray, hour)
+    assert isinstance(hour, np.ndarray)
     
-    result = np.full(hour.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(hour.shape, untestable, dtype=int)
 
     valid_indices = isvalid(hour)
 
-    cond_failed = np.full(hour.shape, True, dtype=bool)  # type: np.ndarray
+    cond_failed = np.full(hour.shape, True, dtype=bool)
     cond_failed[valid_indices] = (hour[valid_indices] >= 24) | (hour[valid_indices] < 0)
 
     result[valid_indices & cond_failed] = failed
@@ -505,7 +507,7 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs) -> ValueIntType:
+def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
@@ -557,16 +559,16 @@ def do_hard_limit_check(
         - Returns 1 (or array/sequence/Series of 1s) if value(s) are outside the specified limits.
         - Returns 0 (or array/sequence/Series of 0s) if value(s) are within limits.
     """
-    value = cast(np.ndarray, value)
+    assert isinstance(value, np.ndarray)
     
-    result = np.full(value.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(value.shape, untestable, dtype=int)
 
     if limits[1] <= limits[0]:
         return format_return_type(result, value)
 
     valid_indices = isvalid(value)
 
-    cond_passed = np.full(value.shape, True, dtype=bool)  # type: np.ndarray
+    cond_passed = np.full(value.shape, True, dtype=bool)
     cond_passed[valid_indices] = (limits[0] <= value[valid_indices]) & (value[valid_indices] <= limits[1])
 
     result[valid_indices & cond_passed] = passed
@@ -631,17 +633,20 @@ def do_climatology_check(
     If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
     `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
-    value = cast(np.ndarray, value)
-    climatology = cast(np.ndarray, climatology)
+    assert isinstance(value, np.ndarray)
+    assert isinstance(climatology, np.ndarray)
     
     if climatology.ndim == 0:
-        climatology = np.full_like(value, climatology)  # type: np.ndarray
+        climatology_arr = np.full_like(value, climatology)
+    else:
+        climatology_arr = climatology
 
     if isinstance(standard_deviation, str) and standard_deviation == "default":
-        standard_deviation = np.full(value.shape, 1.0, dtype=float)
-    standard_deviation = np.atleast_1d(standard_deviation)  # type: np.ndarray
+        standard_deviation_arr: np.ndarray = np.full(value.shape, 1.0, dtype=float)
+    else:
+        standard_deviation_arr = np.atleast_1d(standard_deviation)
 
-    result = np.full(value.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(value.shape, untestable, dtype=int)
 
     if maximum_anomaly is None or maximum_anomaly <= 0:
         return format_return_type(result, value)
@@ -651,24 +656,29 @@ def do_climatology_check(
     elif standard_deviation_limits[1] <= standard_deviation_limits[0]:
         return format_return_type(result, value)
 
-    valid_indices = isvalid(value) & isvalid(climatology) & isvalid(maximum_anomaly) & isvalid(standard_deviation)
-    standard_deviation[valid_indices] = np.clip(
-        standard_deviation[valid_indices],
+    valid_indices = (
+        isvalid(value) & 
+        isvalid(climatology_arr) & 
+        isvalid(maximum_anomaly) & 
+        isvalid(standard_deviation_arr)
+    )
+    standard_deviation_arr[valid_indices] = np.clip(
+        standard_deviation_arr[valid_indices],
         standard_deviation_limits[0],
         standard_deviation_limits[1],
     )
 
-    climate_diff = np.zeros_like(value)  # type: np.ndarray
+    climate_diff = np.zeros_like(value)
 
-    climate_diff[valid_indices] = np.abs(value[valid_indices] - climatology[valid_indices])
+    climate_diff[valid_indices] = np.abs(value[valid_indices] - climatology_arr[valid_indices])
 
     if lowbar is None:
-        low_check = np.ones(value.shape, dtype=bool)  # type: np.ndarray
+        low_check = np.ones(value.shape, dtype=bool)
     else:
         low_check = climate_diff > lowbar
 
-    cond_failed = np.full(value.shape, False, dtype=bool)  # type: np.ndarray
-    cond_failed[valid_indices] = (climate_diff[valid_indices] / standard_deviation[valid_indices] > maximum_anomaly) & low_check[valid_indices]
+    cond_failed = np.full(value.shape, False, dtype=bool)
+    cond_failed[valid_indices] = (climate_diff[valid_indices] / standard_deviation_arr[valid_indices] > maximum_anomaly) & low_check[valid_indices]
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed
@@ -701,14 +711,14 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
         - Returns 1 (or array/sequence/Series of 1s) if supersaturation is detected,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    dpt = cast(np.ndarray, dpt)
-    at2 = cast(np.ndarray, at2)
+    assert isinstance(dpt, np.ndarray)
+    assert isinstance(at2, np.ndarray)
     
-    result = np.full(dpt.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(dpt.shape, untestable, dtype=int)
 
     valid_indices = isvalid(dpt) & isvalid(at2)
 
-    cond_failed = np.full(dpt.shape, True, dtype=bool)  # type: np.ndarray
+    cond_failed = np.full(dpt.shape, True, dtype=bool)
     cond_failed[valid_indices] = dpt[valid_indices] > at2[valid_indices]
 
     result[valid_indices & cond_failed] = failed
@@ -723,8 +733,8 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
 def do_sst_freeze_check(
     sst: ValueFloatType,
     freezing_point: float,
-    freeze_check_n_sigma: float | None = "default",
-    sst_uncertainty: float | None = "default",
+    freeze_check_n_sigma: Union[float, Literal["default"]] = "default",
+    sst_uncertainty: Union[float, Literal["default"]] = "default",
 ) -> ValueIntType:
     """
     Check input sea-surface temperature(s) to see if it is above freezing.
@@ -770,9 +780,9 @@ def do_sst_freeze_check(
         * ``freezing_point``: -1.80
         * ``n_sigma``: 2.0
     """
-    sst = cast(np.ndarray, sst)
+    assert isinstance(sst, np.ndarray)
     
-    result = np.full(sst.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(sst.shape, untestable, dtype=int)
 
     if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
         return result
@@ -785,7 +795,7 @@ def do_sst_freeze_check(
     if sst_uncertainty == "default":
         sst_uncertainty = 0.0
 
-    cond_failed = np.full(sst.shape, True, dtype=bool)  # type: np.ndarray
+    cond_failed = np.full(sst.shape, True, dtype=bool)
     cond_failed[valid_sst] = sst[valid_sst] < (freezing_point - freeze_check_n_sigma * sst_uncertainty)
 
     result[valid_sst & cond_failed] = failed
@@ -819,14 +829,14 @@ def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueF
         - Returns 1 (or array/sequence/Series of 1s) if wind_speed and wind_direction are inconsistent,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    wind_speed = cast(np.ndarray, wind_speed)
-    wind_direction = cast(np.ndarray, wind_direction)
+    assert isinstance(wind_speed, np.ndarray)
+    assert isinstance(wind_direction, np.ndarray)
     
-    result = np.full(wind_speed.shape, untestable, dtype=int)  # type: np.ndarray
+    result = np.full(wind_speed.shape, untestable, dtype=int)
 
     valid_indices = isvalid(wind_speed) & isvalid(wind_direction)
 
-    cond_failed = np.full(wind_speed.shape, True, dtype=bool)  # type: np.ndarray
+    cond_failed = np.full(wind_speed.shape, True, dtype=bool)
     cond_failed[valid_indices] = ((wind_speed[valid_indices] == 0) & (wind_direction[valid_indices] != 0)) | (
         (wind_speed[valid_indices] != 0) & (wind_direction[valid_indices] == 0)
     )
