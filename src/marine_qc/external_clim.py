@@ -6,7 +6,6 @@ import warnings
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
 import cf_xarray  # noqa: F401
