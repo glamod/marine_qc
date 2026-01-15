@@ -441,7 +441,7 @@ class Climatology:
             warnings.warn(f"Could not open: {file_name}.", stacklevel=2)
         return cls(_empty_dataarray(), **kwargs)
 
-    def convert_units_to(self, target_units: str | Path | None, source_units: str | None = None) -> None:
+    def convert_units_to(self, target_units: str | None, source_units: str | None = None) -> None:
         """
         Convert units to user-specific units.
 
