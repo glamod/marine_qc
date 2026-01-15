@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .auxiliary import ValueFloatType, ValueIntType, isvalid
+from .auxiliary import isvalid
 from .statistics import missing_mean
 
 
@@ -275,9 +275,9 @@ def lon_to_xindex(lon: float, res: float) -> int:
 
 
 def filler(
-    value_to_fill: float | None, 
-    neighbour1: float | None, 
-    neighbour2: float | None, 
+    value_to_fill: float | None,
+    neighbour1: float | None,
+    neighbour2: float | None,
     opposite: float | None,
 ) -> float | None:
     """
@@ -313,9 +313,9 @@ def filler(
 
 
 def fill_missing_vals(
-    q11: float | None, 
-    q12: float | None, 
-    q21: float | None, 
+    q11: float | None,
+    q12: float | None,
+    q21: float | None,
     q22: float | None,
 ) -> tuple[float | None, float | None, float | None, float | None]:
     """

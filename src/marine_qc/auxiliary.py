@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 import inspect
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
-
-from typing import Any, TypeAlias, Callable, Sequence, Optional
-from pandas._libs.missing import NAType
-from pandas._libs.tslibs.nattype import NaTType
+from typing import Any, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from pandas._libs.missing import NAType
+from pandas._libs.tslibs.nattype import NaTType
 from xclim.core.units import convert_units_to, units
 
 
@@ -29,17 +29,11 @@ ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
 ScalarDatetimeType: TypeAlias = datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
 
-SequenceIntType: TypeAlias = (
-    Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray  
-)
+SequenceIntType: TypeAlias = Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray
 
-SequenceFloatType: TypeAlias = (
-    Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray  
-)
+SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray
 
-SequenceDatetimeType: TypeAlias = (
-    Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray  
-)
+SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
 
 ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
@@ -99,10 +93,10 @@ def isvalid(inval: ValueFloatType) -> bool | np.ndarray[bool]:
     """
     if inval is None:
         return False
-    
-    inval_arr = np.atleast_1d(inval)    
+
+    inval_arr = np.atleast_1d(inval)
     valid_arr = np.logical_not(pd.isna(inval_arr))
-    
+
     if np.isscalar(inval):
         return bool(valid_arr[0])
     return valid_arr
@@ -211,8 +205,8 @@ def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -
 
 
 def generic_decorator(
-    pre_handler: Optional[Callable[..., Any]] = None,
-    post_handler: Optional[Callable[..., Any]] = None,
+    pre_handler: Callable[..., Any] | None = None,
+    post_handler: Callable[..., Any] | None = None,
 ) -> Callable[..., Any]:
     """
     Create a decorator that binds function arguments and applies pre- and post-processing handlers.
@@ -310,7 +304,7 @@ def generic_decorator(
             reserved_keys: set[str] = set()
             all_pre_handlers: list[Callable[..., Any]] = []
             all_post_handlers: list[Callable[..., Any]] = []
-            
+
             current_func: Any = wrapper
             visited: set[int] = set()
 
@@ -327,10 +321,7 @@ def generic_decorator(
                 current_func = current_func.__wrapped__
 
             sig = inspect.signature(func)
-            meta_kwargs = {
-                k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] 
-                for k in reserved_keys if k in kwargs
-            }
+            meta_kwargs = {k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] for k in reserved_keys if k in kwargs}
 
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()

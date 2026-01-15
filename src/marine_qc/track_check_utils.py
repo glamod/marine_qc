@@ -112,7 +112,7 @@ def set_speed_limits(amode: float) -> tuple[float, float, float]:
 
     if not isvalid(amode):
         return amax, amaxx, amin
-        
+
     if amode <= float(np.asarray(convert_to(8.51, "knots", "km/h"), dtype=float)):
         return amax, amaxx, amin
 
@@ -521,14 +521,20 @@ def forward_discrepancy(
     Raises
     ------
     ValueError
-        If either input is not 1-dimensional or if their lengths do not match.
+        - If either input is not 1-dimensional or if their lengths do not match.
+        - If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(lat, np.ndarray)
-    assert isinstance(lon, np.ndarray)
-    assert isinstance(date, np.ndarray)
-    assert isinstance(vsi, np.ndarray)
-    assert isinstance(dsi, np.ndarray)
-    
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(date, np.ndarray):
+        raise TypeError(f"'date' must be a numpy.ndarray, got {type(date).__name__}")
+    if not isinstance(vsi, np.ndarray):
+        raise TypeError(f"'vsi' must be a numpy.ndarray, got {type(vsi).__name__}")
+    if not isinstance(dsi, np.ndarray):
+        raise TypeError(f"'dsi' must be a numpy.ndarray, got {type(dsi).__name__}")
+
     timediff = time_difference(np.roll(date, 1), date)
     lat1, lon1 = increment_position(np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff)
 
@@ -596,14 +602,20 @@ def backward_discrepancy(
     Raises
     ------
     ValueError
-        If either input is not 1-dimensional or if their lengths do not match.
+        - If either input is not 1-dimensional or if their lengths do not match.
+        - If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(lat, np.ndarray)
-    assert isinstance(lon, np.ndarray)
-    assert isinstance(date, np.ndarray)
-    assert isinstance(vsi, np.ndarray)
-    assert isinstance(dsi, np.ndarray)
-        
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(date, np.ndarray):
+        raise TypeError(f"'date' must be a numpy.ndarray, got {type(date).__name__}")
+    if not isinstance(vsi, np.ndarray):
+        raise TypeError(f"'vsi' must be a numpy.ndarray, got {type(vsi).__name__}")
+    if not isinstance(dsi, np.ndarray):
+        raise TypeError(f"'dsi' must be a numpy.ndarray, got {type(dsi).__name__}")
+
     timediff = time_difference(np.roll(date, 1), date)
     lat2, lon2 = increment_position(
         np.roll(lat, 1),

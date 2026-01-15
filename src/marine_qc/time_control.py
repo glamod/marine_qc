@@ -3,19 +3,20 @@
 from __future__ import annotations
 import calendar
 import math
-from typing import Callable, Sequence, Any, cast, Iterable
+from collections.abc import Callable, Sequence
 from datetime import datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from .auxiliary import (
+    DECORATOR_KWARGS,
     generic_decorator,
     inspect_arrays,
     is_scalar_like,
     isvalid,
     post_format_return_type,
-    DECORATOR_KWARGS,
 )
 
 
@@ -69,9 +70,7 @@ def convert_date(params: list[str]) -> Callable[..., Any]:
             extracted_dict: dict[str, float] = split_date(date)
         else:
             scalar = False
-            extracted_list: list[dict[str, float]] = [
-                split_date(d) for d in date
-            ]
+            extracted_list: list[dict[str, float]] = [split_date(d) for d in date]
 
         for param in params:
             if param not in arguments:
@@ -633,7 +632,6 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
     array-like of float, shape (n,)
         1- dimensional array containing hours since the first element in the array.
     """
-    n_dates = len(dates)
     hours_elapsed: list[float] = []
     start = dates[0]
     for date in dates:
@@ -665,10 +663,10 @@ def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> S
     times2_arr: np.ndarray = pd.to_datetime(times2, errors="coerce").values
 
     valid: np.ndarray = isvalid(times1_arr) & isvalid(times2_arr)
-    
+
     delta_hours: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
     delta_hours[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta(1, "h")
-    
+
     result: list[float] = delta_hours.tolist()
-    
+
     return result

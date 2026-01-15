@@ -5,7 +5,7 @@ Module containing main QC functions which could be applied on a DataBundle.
 """
 
 from __future__ import annotations
-from typing import Literal, Optional, Any, Union
+from typing import Any, Literal
 
 import numpy as np
 
@@ -48,9 +48,15 @@ def value_check(value: ValueFloatType) -> ValueIntType:
     Same type as input, but with integer values
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    ValueError
+        If `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(value, np.ndarray)
-    
+    if not isinstance(value, np.ndarray):
+        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+
     valid_mask = isvalid(value)
     result = np.where(valid_mask, passed, failed)
 
@@ -83,18 +89,25 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if either latitude or longitude is out of the valid range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(lat, np.ndarray)
-    assert isinstance(lat, np.ndarray)
-    
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+
     result = np.full(lat.shape, untestable, dtype=int)
 
     valid = isvalid(lat) & isvalid(lon)
-    
+
     lat_valid = np.where(valid, lat, np.nan)
     lon_valid = np.where(valid, lon, np.nan)
-    
-    cond_failed = (lat_valid < -90.) | (lat_valid > 90.) | (lon_valid < -180.) | (lon_valid > 360.)
+
+    cond_failed = (lat_valid < -90.0) | (lat_valid > 90.0) | (lon_valid < -180.0) | (lon_valid > 360.0)
 
     result[valid & cond_failed] = failed
     result[valid & ~cond_failed] = passed
@@ -135,11 +148,19 @@ def do_date_check(
         - Returns 2 (or array/sequence/Series of 2s) if any of year, month, or day is numerically invalid or None,
         - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(year, np.ndarray)
-    assert isinstance(month, np.ndarray)
-    assert isinstance(day, np.ndarray)
-    
+    if not isinstance(year, np.ndarray):
+        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
+    if not isinstance(month, np.ndarray):
+        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
+    if not isinstance(day, np.ndarray):
+        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+
     result = np.full(year.shape, untestable, dtype=int)
     valid = isvalid(year) & isvalid(month) & isvalid(day)
 
@@ -192,9 +213,15 @@ def do_time_check(
         - Returns 2 (or array/sequence/Series of 2s) if hour is numerically invalid or None,
         - Returns 1 (or array/sequence/Series of 1s) if hour is not a valid hour,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(hour, np.ndarray)
-    
+    if not isinstance(hour, np.ndarray):
+        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
+
     result = np.full(hour.shape, untestable, dtype=int)
 
     valid_indices = isvalid(hour)
@@ -340,13 +367,13 @@ def _do_daytime_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
-    date: Optional[ValueDatetimeType] = None,
-    year: Optional[ValueIntType] = None,
-    month: Optional[ValueIntType] = None,
-    day: Optional[ValueIntType] = None,
-    hour: Optional[ValueFloatType] = None,
-    lat: Optional[ValueFloatType] = None,
-    lon: Optional[ValueFloatType] = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
+    hour: ValueFloatType | None = None,
+    lat: ValueFloatType | None = None,
+    lon: ValueFloatType | None = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
@@ -411,13 +438,13 @@ def do_day_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
-    date: Optional[ValueDatetimeType] = None,
-    year: Optional[ValueIntType] = None,
-    month: Optional[ValueIntType] = None,
-    day: Optional[ValueIntType] = None,
-    hour: Optional[ValueFloatType] = None,
-    lat: Optional[ValueFloatType] = None,
-    lon: Optional[ValueFloatType] = None,
+    date: ValueDatetimeType | None = None,
+    year: ValueIntType | None = None,
+    month: ValueIntType | None = None,
+    day: ValueIntType | None = None,
+    hour: ValueFloatType | None = None,
+    lat: ValueFloatType | None = None,
+    lon: ValueFloatType | None = None,
     time_since_sun_above_horizon: float | None = None,
 ) -> ValueIntType:
     """
@@ -558,9 +585,15 @@ def do_hard_limit_check(
           to the lower limit, or if the input is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if value(s) are outside the specified limits.
         - Returns 0 (or array/sequence/Series of 0s) if value(s) are within limits.
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(value, np.ndarray)
-    
+    if not isinstance(value, np.ndarray):
+        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+
     result = np.full(value.shape, untestable, dtype=int)
 
     if limits[1] <= limits[0]:
@@ -628,14 +661,21 @@ def do_climatology_check(
         - Returns 1 (or array/sequence/Series of 1s) if the difference is outside the specified range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
     `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
-    assert isinstance(value, np.ndarray)
-    assert isinstance(climatology, np.ndarray)
-    
+    if not isinstance(value, np.ndarray):
+        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+    if not isinstance(climatology, np.ndarray):
+        raise TypeError(f"'climatology' must be a numpy.ndarray, got {type(climatology).__name__}")
+
     if climatology.ndim == 0:
         climatology_arr = np.full_like(value, climatology)
     else:
@@ -656,12 +696,7 @@ def do_climatology_check(
     elif standard_deviation_limits[1] <= standard_deviation_limits[0]:
         return format_return_type(result, value)
 
-    valid_indices = (
-        isvalid(value) & 
-        isvalid(climatology_arr) & 
-        isvalid(maximum_anomaly) & 
-        isvalid(standard_deviation_arr)
-    )
+    valid_indices = isvalid(value) & isvalid(climatology_arr) & isvalid(maximum_anomaly) & isvalid(standard_deviation_arr)
     standard_deviation_arr[valid_indices] = np.clip(
         standard_deviation_arr[valid_indices],
         standard_deviation_limits[0],
@@ -710,10 +745,17 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
         - Returns 2 (or array/sequence/Series of 2s) if either dpt or at2 is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if supersaturation is detected,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(dpt, np.ndarray)
-    assert isinstance(at2, np.ndarray)
-    
+    if not isinstance(dpt, np.ndarray):
+        raise TypeError(f"'dpt' must be a numpy.ndarray, got {type(dpt).__name__}")
+    if not isinstance(at2, np.ndarray):
+        raise TypeError(f"'at2' must be a numpy.ndarray, got {type(at2).__name__}")
+
     result = np.full(dpt.shape, untestable, dtype=int)
 
     valid_indices = isvalid(dpt) & isvalid(at2)
@@ -733,8 +775,8 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
 def do_sst_freeze_check(
     sst: ValueFloatType,
     freezing_point: float,
-    freeze_check_n_sigma: Union[float, Literal["default"]] = "default",
-    sst_uncertainty: Union[float, Literal["default"]] = "default",
+    freeze_check_n_sigma: float | Literal["default"] = "default",
+    sst_uncertainty: float | Literal["default"] = "default",
 ) -> ValueIntType:
     """
     Check input sea-surface temperature(s) to see if it is above freezing.
@@ -772,6 +814,11 @@ def do_sst_freeze_check(
           `n_sigma` times `sst_uncertainty`.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, some parameters had default values:
@@ -780,8 +827,9 @@ def do_sst_freeze_check(
         * ``freezing_point``: -1.80
         * ``n_sigma``: 2.0
     """
-    assert isinstance(sst, np.ndarray)
-    
+    if not isinstance(sst, np.ndarray):
+        raise TypeError(f"'sst' must be a numpy.ndarray, got {type(sst).__name__}")
+
     result = np.full(sst.shape, untestable, dtype=int)
 
     if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
@@ -828,10 +876,17 @@ def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueF
         - Returns 2 (or array/sequence/Series of 2s) if either wind_speed or wind_direction is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if wind_speed and wind_direction are inconsistent,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    assert isinstance(wind_speed, np.ndarray)
-    assert isinstance(wind_direction, np.ndarray)
-    
+    if not isinstance(wind_speed, np.ndarray):
+        raise TypeError(f"'wind_speed' must be a numpy.ndarray, got {type(wind_speed).__name__}")
+    if not isinstance(wind_direction, np.ndarray):
+        raise TypeError(f"'wind_direction' must be a numpy.ndarray, got {type(wind_direction).__name__}")
+
     result = np.full(wind_speed.shape, untestable, dtype=int)
 
     valid_indices = isvalid(wind_speed) & isvalid(wind_direction)
