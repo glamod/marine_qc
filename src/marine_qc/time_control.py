@@ -642,7 +642,7 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
 
 @post_format_return_type(["times1", "times2"], dtype=float)
 @inspect_arrays(["times1", "times2"])
-def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> Sequence[float]:
+def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> np.ndarray:
     """
     Convert two arrays of datetimes to the difference in hours.
 
@@ -664,9 +664,7 @@ def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> S
 
     valid: np.ndarray = isvalid(times1_arr) & isvalid(times2_arr)
 
-    delta_hours: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
-    delta_hours[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta(1, "h")
-
-    result: list[float] = delta_hours.tolist()
+    result: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
+    result[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta64(1, "h")
 
     return result

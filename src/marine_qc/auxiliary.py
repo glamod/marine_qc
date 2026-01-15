@@ -126,7 +126,7 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     input_value = next((val for val in input_values if val is not None), None)
 
     if input_value is None or is_scalar_like(input_value):
-        if hasattr(result_array, "ndim") and result_array.ndim > 0:
+        if np.ndim(result_array) > 0:
             result_array = result_array[0]
         return dtype(result_array)
     if isinstance(input_value, pd.Series):

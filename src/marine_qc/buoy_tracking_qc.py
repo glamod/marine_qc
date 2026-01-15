@@ -462,7 +462,7 @@ class NewSpeedChecker:
         self.lon = np.asarray(lons, dtype=float)
         self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
-        self.dates = np.asarray(dates, dtype=float)
+        self.dates = np.asarray(dates, dtype=datetime)
         self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
         self.speed_limit = speed_limit
@@ -508,7 +508,7 @@ class NewSpeedChecker:
         if not (self.speed_limit >= 0):
             warnings.warn(UserWarning(f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."), stacklevel=2)
         elif not (self.min_win_period >= 0):
-            warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
+            warnings.warn(UserWarning(f"Invalid min_win_period: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
         else:
             valid = True
 
@@ -1183,9 +1183,9 @@ class SSTTailChecker:
         """
         invalid_series = False
         # test and filter out obs with unsuitable background matches
-        reps_ind: np.ndarray = np.array([] * self.nreps, dtype=float)
-        sst_anom: np.ndarray = np.array([] * self.nreps, dtype=float)
-        bgvar: np.ndarray = np.array([] * self.nreps, dtype=float)
+        reps_ind: np.ndarray = np.full(self.nreps, np.nan, dtype=int)
+        sst_anom: np.ndarray = np.full(self.nreps, np.nan, dtype=float)
+        bgvar: np.ndarray = np.full(self.nreps, np.nan, dtype=float)
         for ind in range(self.nreps):
             bg_val, _ice_val, bgvar_val, good_match, invalid_ob = self._parse_rep(
                 self.lat[ind],
