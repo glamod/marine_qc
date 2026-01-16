@@ -10,40 +10,42 @@ from typing import Any, TypeAlias
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from pandas._libs.missing import NAType
+from pandas._libs.tslibs.nattype import NaTType
 from xclim.core.units import convert_units_to, units
 
 
-passed = 0
-failed = 1
-untestable = 2
-untested = 3
+# --- QC FLAGS ---
+passed: int = 0
+failed: int = 1
+untestable: int = 2
+untested: int = 3
 
-PandasNAType: TypeAlias = type(pd.NA)
-PandasNaTType: TypeAlias = type(pd.NaT)
+# --- DATA TYPES ---
+PandasNAType: TypeAlias = NAType
+PandasNaTType: TypeAlias = NaTType
 
-# --- Scalars ---
 ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
 ScalarDatetimeType: TypeAlias = datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
 
-# --- Sequences ---
-SequenceIntType: TypeAlias = (
-    Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series  # optionally: pd.Series[np.integer] or pd.Series[pd.Int64Dtype]
-)
+SequenceIntType: TypeAlias = Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray
 
-SequenceFloatType: TypeAlias = (
-    Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series  # optionally: pd.Series[np.floating] or pd.Series[pd.Float64Dtype]
-)
+SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray
 
-SequenceDatetimeType: TypeAlias = (
-    Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series  # optionally: pd.Series[pd.DatetimeTZDtype] or similar
-)
+SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
 
-# --- Value Types (Scalar or Sequence) ---
 ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
 
+# --- DECORATOR HELPERS ---
+DECORATOR_HANDLERS: dict[Callable[..., Any], list[Callable[..., Any]]] = {}
+DECORATOR_NAMES: dict[Callable[..., Any], str] = {}
+DECORATOR_KWARGS: dict[Callable[..., Any], set[str]] = {}
+IS_POST_HANDLER: dict[Callable[..., Any], bool] = {}
+
+# --- CONSTANTS ---
 earths_radius = 6371008.8  # m
 
 
@@ -69,12 +71,12 @@ def is_scalar_like(x: Any) -> bool:
         True if `x` is scalar-like, False otherwise.
     """
     try:
-        return np.ndim(x) == 0
+        return bool(np.ndim(x) == 0)
     except TypeError:
         return True  # fallback: built-in scalars like int, float, pd.Timestamp
 
 
-def isvalid(inval: ValueFloatType) -> bool | np.ndarray[bool]:
+def isvalid(inval: ValueFloatType) -> bool | npt.NDArray[np.bool_]:
     """
     Check if a value(s) are numerically valid (not None or NaN).
 
@@ -89,10 +91,22 @@ def isvalid(inval: ValueFloatType) -> bool | np.ndarray[bool]:
         Returns False where the input is None or NaN, True otherwise.
         Returns a boolean scalar if input is scalar, else a boolean array.
     """
-    result = np.logical_not(pd.isna(inval))
-    if np.isscalar(inval):
-        return bool(result)
-    return result
+    if inval is None:
+        return False
+
+    if isinstance(inval, pd.Series):
+        inval_arr = inval.to_numpy()
+    else:
+        inval_arr = np.asarray(inval, dtype=object)
+
+    inval_arr = np.atleast_1d(inval_arr)
+
+    valid_arr: npt.NDArray[np.bool_] = np.logical_not(pd.isna(inval_arr))
+
+    if np.isscalar(inval) or (isinstance(inval, (np.floating, float))):
+        return bool(valid_arr[0])
+
+    return valid_arr
 
 
 def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type = int) -> Any:
@@ -119,7 +133,7 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     input_value = next((val for val in input_values if val is not None), None)
 
     if input_value is None or is_scalar_like(input_value):
-        if hasattr(result_array, "ndim") and result_array.ndim > 0:
+        if np.ndim(result_array) > 0:
             result_array = result_array[0]
         return dtype(result_array)
     if isinstance(input_value, pd.Series):
@@ -131,7 +145,7 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     return result_array  # np.ndarray or fallback
 
 
-def convert_to(value: float | None | Sequence[float | None], source_units: str, target_units: str):
+def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -> SequenceFloatType:
     """
     Convert a float or sequence from source units to target units.
 
@@ -168,7 +182,7 @@ def convert_to(value: float | None | Sequence[float | None], source_units: str, 
     5000.0
     """
 
-    def _convert_to(value: Any):
+    def _convert_to(value: Any) -> Any:
         """
         Convert units of value.
 
@@ -192,14 +206,14 @@ def convert_to(value: float | None | Sequence[float | None], source_units: str, 
 
     if isinstance(value, np.ndarray):
         return np.array([_convert_to(v) for v in value])
-    if isinstance(value, Sequence):
-        return type(value)(_convert_to(v) for v in value)
+    if isinstance(value, (list, tuple)):
+        return type(value)([_convert_to(v) for v in value])
     return _convert_to(value)
 
 
 def generic_decorator(
-    pre_handler: Callable[[dict], None] | None = None,
-    post_handler: Callable[[Any, dict], Any] | None = None,
+    pre_handler: Callable[..., Any] | None = None,
+    post_handler: Callable[..., Any] | None = None,
 ) -> Callable[..., Any]:
     """
     Create a decorator that binds function arguments and applies pre- and post-processing handlers.
@@ -235,34 +249,34 @@ def generic_decorator(
     - The original function is called with the possibly modified bound arguments after handler processing.
     """
     if pre_handler:
-        pre_handler._is_post_handler = False
+        IS_POST_HANDLER[pre_handler] = False
     if post_handler:
-        post_handler._is_post_handler = True
+        IS_POST_HANDLER[post_handler] = True
 
-    def decorator(func: Callable):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """
         Decorator that binds function arguments and applies pre- and post-handlers.
 
         Parameters
         ----------
-        func : Callable
+        func : Callable[..., Any]
             The function to be decorated. Its arguments will be bound and optionally modified
             by the pre- and post-handlers.
 
         Returns
         -------
-        Callable
+        Callable[..., Any]
             The `wrapper` function that executes pre-handlers, calls the original function
             and then executes post-handlers.
         """
-        handlers = []
+        handlers: list[Callable[..., Any]] = []
         if pre_handler:
             handlers.append(pre_handler)
         if post_handler:
             handlers.append(post_handler)
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             r"""
             Wrapper function that executes pre-handlers, calls the original function, and executes post-handlers.
 
@@ -294,20 +308,19 @@ def generic_decorator(
             - Pre-handlers receive the arguments dictionary (`bound_args.arguments`) and reserved kwargs.
             - Post-handlers receive the function result, the current arguments, and the original arguments.
             """
-            reserved_keys = set()
-            all_pre_handlers = []
-            all_post_handlers = []
-            current_func = wrapper
-            visited = set()
+            reserved_keys: set[str] = set()
+            all_pre_handlers: list[Callable[..., Any]] = []
+            all_post_handlers: list[Callable[..., Any]] = []
+
+            current_func: Any = wrapper
+            visited: set[int] = set()
 
             while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
                 visited.add(id(current_func))
-                for handler in getattr(current_func, "_decorator_handlers", []):
-                    if not callable(handler):
-                        continue
-                    if hasattr(handler, "_decorator_kwargs"):
-                        reserved_keys.update(handler._decorator_kwargs)
-                    if getattr(handler, "_is_post_handler", False):
+                for handler in DECORATOR_HANDLERS.get(current_func, []):
+                    if handler in DECORATOR_KWARGS:
+                        reserved_keys.update(DECORATOR_KWARGS[handler])
+                    if IS_POST_HANDLER.get(handler, False):
                         all_post_handlers.append(handler)
                     else:
                         all_pre_handlers.append(handler)
@@ -319,22 +332,21 @@ def generic_decorator(
 
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
-
             original_call = bound_args.arguments.copy()
 
             for handler in reversed(all_pre_handlers):
-                handler.__funcname__ = func.__name__
+                DECORATOR_NAMES[handler] = func.__name__
                 handler(bound_args.arguments, **meta_kwargs)
 
             result = func(*bound_args.args, **bound_args.kwargs)
 
             for handler in reversed(all_post_handlers):
-                handler.__funcname__ = func.__name__
+                DECORATOR_NAMES[handler] = func.__name__
                 result = handler(result, bound_args.arguments, **original_call)
 
             return result
 
-        wrapper._decorator_handlers = handlers
+        DECORATOR_HANDLERS[wrapper] = handlers
 
         return wrapper
 
@@ -625,6 +637,6 @@ def convert_units(**units_by_name: str) -> Callable[..., Any]:
 
             arguments[param] = converted
 
-    pre_handler._decorator_kwargs = {"units"}
+    DECORATOR_KWARGS[pre_handler] = {"units"}
 
     return generic_decorator(pre_handler=pre_handler)

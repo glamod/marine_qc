@@ -112,7 +112,7 @@ def track_day_test(
     year2 = year
     day2 = day_in_year(year, month, day)
     hour2 = math.floor(hour)
-    minute2 = (hour - math.floor(hour)) * 60.0
+    minute2 = int((hour - math.floor(hour)) * 60.0)
     lat2 = lat
     lon2 = lon
     if lat == 0:
@@ -128,7 +128,7 @@ def track_day_test(
     return daytime
 
 
-def is_monotonic(inarr: Sequence[float]) -> bool:
+def is_monotonic(inarr: np.ndarray | Sequence[int | float]) -> bool:
     """
     Test if elements in an array are increasing monotonically.
 
@@ -205,7 +205,7 @@ class SpeedChecker:
         speed_limit: float,
         min_win_period: float,
         max_win_period: float,
-    ):
+    ) -> None:
         """
         Create an object for performing the Speed Check.
 
@@ -227,17 +227,17 @@ class SpeedChecker:
             (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
             min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
         """
-        self.lon = lons
-        self.lat = lats
+        self.lon = np.asarray(lons, dtype=float)
+        self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
-        self.hrs = convert_date_to_hours(dates)
+        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
         self.speed_limit = speed_limit
         self.min_win_period = min_win_period
         self.max_win_period = max_win_period
 
         # Initialise QC outcomes with untested
-        self.qc_outcomes = np.zeros(self.nreps) + untested
+        self.qc_outcomes = np.zeros(self.nreps, dtype=float) + untested
 
     def get_qc_outcomes(self) -> np.ndarray:
         """
@@ -311,7 +311,7 @@ class SpeedChecker:
 
         return valid
 
-    def do_speed_check(self):
+    def do_speed_check(self) -> None:
         """Perform the actual speed check."""
         nrep = self.nreps
         min_win_period_hours = self.min_win_period * 24.0
@@ -431,7 +431,7 @@ class NewSpeedChecker:
         delta_d: float,
         delta_t: float,
         n_neighbours: int,
-    ):
+    ) -> None:
         """
         Object used to perform the new speed check.
 
@@ -459,11 +459,11 @@ class NewSpeedChecker:
         n_neighbours : int
             Number of neighbours considered in the IQUAM track check.
         """
-        self.lon = lons
-        self.lat = lats
+        self.lon = np.asarray(lons, dtype=float)
+        self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
-        self.dates = dates
-        self.hrs = convert_date_to_hours(dates)
+        self.dates = np.asarray(dates, dtype=datetime)
+        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
         self.speed_limit = speed_limit
         self.min_win_period = min_win_period
@@ -473,7 +473,7 @@ class NewSpeedChecker:
         self.delta_t = delta_t
         self.n_neighbours = n_neighbours
 
-        self.iquam_track_ship = None
+        self.iquam_track_ship: np.ndarray = np.array([], dtype=int)
 
         # Initialise QC outcomes with untested
         self.qc_outcomes = np.zeros(self.nreps) + untested
@@ -508,7 +508,7 @@ class NewSpeedChecker:
         if not (self.speed_limit >= 0):
             warnings.warn(UserWarning(f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."), stacklevel=2)
         elif not (self.min_win_period >= 0):
-            warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
+            warnings.warn(UserWarning(f"Invalid min_win_period: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
         else:
             valid = True
 
@@ -544,7 +544,7 @@ class NewSpeedChecker:
 
         return valid
 
-    def perform_iquam_track_check(self):
+    def perform_iquam_track_check(self) -> None:
         """
         Perform iQuam track check as if reports are from a ship.
 
@@ -661,7 +661,7 @@ class AgroundChecker:
         smooth_win: int,
         min_win_period: int,
         max_win_period: int | None,
-    ):
+    ) -> None:
         """
         Create on object for performing the Aground and New Aground checks.
 
@@ -682,23 +682,23 @@ class AgroundChecker:
             than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
             up to 2-days in sampling).
         """
-        self.lon = lons
-        self.lat = lats
+        self.lon = np.asarray(lons, dtype=float)
+        self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
-        self.hrs = convert_date_to_hours(dates)
+        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
         self.smooth_win = smooth_win
         self.min_win_period = min_win_period
         self.max_win_period = max_win_period
 
-        self.lon_smooth = None
-        self.lat_smooth = None
-        self.hrs_smooth = None
+        self.lon_smooth: np.ndarray = np.array([], dtype=float)
+        self.lat_smooth: np.ndarray = np.array([], dtype=float)
+        self.hrs_smooth: np.ndarray = np.array([], dtype=float)
 
         # Initialise QC outcomes with untested
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
-    def get_qc_outcomes(self) -> Sequence[int]:
+    def get_qc_outcomes(self) -> np.ndarray:
         """
         Return the QC outcomes.
 
@@ -760,7 +760,7 @@ class AgroundChecker:
 
         return valid
 
-    def smooth_arrays(self):
+    def smooth_arrays(self) -> None:
         """Perform the preprocessing of the lat lon and time arrays."""
         half_win = int((self.smooth_win - 1) / 2)
         # create smoothed lon/lat timeseries  # length of series after smoothing
@@ -781,7 +781,7 @@ class AgroundChecker:
         self.lat_smooth = lat_smooth
         self.hrs_smooth = hrs_smooth
 
-    def do_aground_check(self):
+    def do_aground_check(self) -> None:
         """Perform the actual aground check."""
         half_win = (self.smooth_win - 1) / 2
         min_win_period_hours = self.min_win_period * 24.0
@@ -933,7 +933,7 @@ class SSTTailChecker:
         drif_inter: float,
         drif_intra: float,
         background_err_lim: float,
-    ):
+    ) -> None:
         """
         Create SSTTailChecker object to perform the SST Tail QC Check.
 
@@ -976,21 +976,21 @@ class SSTTailChecker:
         """
         self.nreps = len(sst)
 
-        self.lat = lat
-        self.lon = lon
-        self.sst = sst
-        self.ostia = ostia
-        self.ice = ice
-        self.bgvar = bgvar
-        self.dates = dates
-        self.hrs = convert_date_to_hours(dates)
+        self.lat = np.asarray(lat, dtype=float)
+        self.lon = np.asarray(lon, dtype=float)
+        self.sst = np.asarray(sst, dtype=float)
+        self.ostia = np.asarray(ostia, dtype=float)
+        self.ice = np.asarray(ice, dtype=float)
+        self.bgvar = np.asarray(bgvar, dtype=float)
+        self.dates = np.asarray(dates, dtype=datetime)
+        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
-        self.reps_ind = None
-        self.sst_anom = None
-        self.bgerr = None
+        self.reps_ind: np.ndarray = np.array([], dtype=float)
+        self.sst_anom: np.ndarray = np.array([], dtype=float)
+        self.bgerr: np.ndarray = np.array([], dtype=float)
 
-        self.start_tail_ind = None
-        self.end_tail_ind = None
+        self.start_tail_ind: int
+        self.end_tail_ind: int
 
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
@@ -1003,7 +1003,7 @@ class SSTTailChecker:
         self.drif_intra = drif_intra
         self.background_err_lim = background_err_lim
 
-    def get_qc_outcomes(self):
+    def get_qc_outcomes(self) -> np.ndarray:
         """
         Return the QC outcomes.
 
@@ -1014,7 +1014,7 @@ class SSTTailChecker:
         """
         return self.qc_outcomes
 
-    def valid_parameters(self):
+    def valid_parameters(self) -> bool:
         """
         Check the parameters are valid. Raises a warning and returns False if not valid.
 
@@ -1048,7 +1048,7 @@ class SSTTailChecker:
 
         return valid
 
-    def do_sst_tail_check(self, start_tail: bool):
+    def do_sst_tail_check(self, start_tail: bool) -> None:
         """
         Perform the actual SST tail check.
 
@@ -1107,7 +1107,14 @@ class SSTTailChecker:
             self.qc_outcomes[self.reps_ind[self.end_tail_ind] :] = failed
 
     @staticmethod
-    def _parse_rep(lat, lon, ostia, ice, bgvar, dates) -> (float, float, float, bool):
+    def _parse_rep(
+        lat: float,
+        lon: float,
+        ostia: float,
+        ice: float,
+        bgvar: float,
+        dates: datetime,
+    ) -> tuple[float, float, float, bool, bool]:
         """
         Process a report.
 
@@ -1134,9 +1141,7 @@ class SSTTailChecker:
         """
         invalid_ob = False
 
-        bg_val = ostia
-
-        if ice is None or np.isnan(ice):
+        if not isvalid(ice):
             ice = 0.0
         if ice < 0.0 or ice > 1.0:
             warnings.warn(UserWarning("Invalid ice value"), stacklevel=2)
@@ -1157,12 +1162,12 @@ class SSTTailChecker:
             daytime = True
             invalid_ob = True
 
-        land_match = bg_val is None
+        land_match = not isvalid(ostia)
         ice_match = ice > 0.15
 
         good_match = not (daytime or land_match or ice_match)
 
-        return bg_val, ice, bgvar, good_match, invalid_ob
+        return ostia, ice, bgvar, good_match, invalid_ob
 
     def _preprocess_reps(self) -> bool:
         """
@@ -1176,9 +1181,9 @@ class SSTTailChecker:
         """
         invalid_series = False
         # test and filter out obs with unsuitable background matches
-        reps_ind = []  # type: list
-        sst_anom = []  # type: list
-        bgvar = []  # type: list
+        reps_ind: list[int] = []
+        sst_anom: list[float] = []
+        bgvar: list[float] = []
         for ind in range(self.nreps):
             bg_val, _ice_val, bgvar_val, good_match, invalid_ob = self._parse_rep(
                 self.lat[ind],
@@ -1205,13 +1210,13 @@ class SSTTailChecker:
 
         # prepare numpy arrays and variables needed for tail checks
         # indices of obs suitable for assessment
-        self.reps_ind = np.array(reps_ind)  # type: np.ndarray
+        self.reps_ind = np.array(reps_ind, dtype=int)
         # ob-background differences
-        self.sst_anom = np.array(sst_anom)  # type: np.ndarray
+        self.sst_anom = np.array(sst_anom, dtype=float)
         # standard deviation of background error
-        bgvar = np.array(bgvar)
-        bgvar[bgvar < 0] = np.nan
-        self.bgerr = np.sqrt(bgvar)  # type: np.ndarray
+        bgvar_arr = np.array(bgvar, dtype=float)
+        bgvar_arr[bgvar_arr < 0.0] = float("nan")
+        self.bgerr = np.sqrt(bgvar_arr)
 
         return invalid_series
 
@@ -1254,7 +1259,7 @@ class SSTTailChecker:
             else:
                 break
 
-    def _do_short_tail_check(self, first_pass_ind, last_pass_ind, forward=True):
+    def _do_short_tail_check(self, first_pass_ind: int, last_pass_ind: int, forward: bool = True) -> None:
         """
         Perform the short tail check.
 
@@ -1388,7 +1393,7 @@ class SSTBiasedNoisyChecker:
         err_std_n: float,
         n_bad: int,
         background_err_lim: float,
-    ):
+    ) -> None:
         """
         Create an object for performing the SST Biased, Noisy and Short Checks.
 
@@ -1424,16 +1429,16 @@ class SSTBiasedNoisyChecker:
         background_err_lim : float
             Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
         """
-        self.lat = lat
-        self.lon = lon
-        self.dates = dates
-        self.sst = sst
-        self.ostia = ostia
-        self.bgvar = bgvar
-        self.ice = ice
+        self.lat = np.asarray(lat, dtype=float)
+        self.lon = np.asarray(lon, dtype=float)
+        self.dates = np.asarray(dates, dtype=datetime)
+        self.sst = np.asarray(sst, dtype=float)
+        self.ostia = np.asarray(ostia, dtype=float)
+        self.bgvar = np.asarray(bgvar, dtype=float)
+        self.ice = np.asarray(ice, dtype=float)
 
         self.nreps = len(lat)
-        self.hrs = convert_date_to_hours(dates)
+        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
         self.n_eval = n_eval
         self.bias_lim = bias_lim
@@ -1443,9 +1448,9 @@ class SSTBiasedNoisyChecker:
         self.n_bad = n_bad
         self.background_err_lim = background_err_lim
 
-        self.sst_anom = None
-        self.bgerr = None
-        self.bgvar_is_masked = None
+        self.sst_anom: np.ndarray = np.array([], dtype=float)
+        self.bgerr: np.ndarray = np.array([], dtype=float)
+        self.bgvar_is_masked: bool
 
         self.qc_outcomes_bias = np.zeros(self.nreps) + untested
         self.qc_outcomes_noise = np.zeros(self.nreps) + untested
@@ -1480,7 +1485,7 @@ class SSTBiasedNoisyChecker:
 
         return valid
 
-    def get_qc_outcomes_bias(self):
+    def get_qc_outcomes_bias(self) -> np.ndarray:
         """
         Return the QC outcomes for the bias check.
 
@@ -1491,7 +1496,7 @@ class SSTBiasedNoisyChecker:
         """
         return self.qc_outcomes_bias
 
-    def get_qc_outcomes_noise(self):
+    def get_qc_outcomes_noise(self) -> np.ndarray:
         """
         Return the QC outcomes for the noisy check.
 
@@ -1502,7 +1507,7 @@ class SSTBiasedNoisyChecker:
         """
         return self.qc_outcomes_noise
 
-    def get_qc_outcomes_short(self):
+    def get_qc_outcomes_short(self) -> np.ndarray:
         """
         Return the QC outcomes for the short check.
 
@@ -1513,7 +1518,7 @@ class SSTBiasedNoisyChecker:
         """
         return self.qc_outcomes_short
 
-    def set_all_qc_outcomes_to(self, input_state: int):
+    def set_all_qc_outcomes_to(self, input_state: int) -> None:
         """
         Set all the QC outcomes to the specified input_state.
 
@@ -1533,7 +1538,7 @@ class SSTBiasedNoisyChecker:
         self.qc_outcomes_noise[:] = input_state
         self.qc_outcomes_bias[:] = input_state
 
-    def do_sst_biased_noisy_check(self):
+    def do_sst_biased_noisy_check(self) -> None:
         """Perform the bias/noise check QC."""
         if not self.valid_parameters():
             self.set_all_qc_outcomes_to(untestable)
@@ -1555,7 +1560,15 @@ class SSTBiasedNoisyChecker:
                 self._short_record_qc()
 
     @staticmethod
-    def _parse_rep(lat, lon, ostia, ice, bgvar, dates, background_err_lim) -> (float, float, float, bool, bool, bool):
+    def _parse_rep(
+        lat: float,
+        lon: float,
+        ostia: float,
+        ice: float,
+        bgvar: float,
+        dates: datetime,
+        background_err_lim: float,
+    ) -> tuple[float, float, float, bool, bool, bool]:
         """
         Extract QC-relevant variables from a marine report.
 
@@ -1584,9 +1597,8 @@ class SSTBiasedNoisyChecker:
             the observation is valid overall.
         """
         invalid_ob = False
-        bg_val = ostia
 
-        if ice is None or np.isnan(ice):
+        if not isvalid(ice):
             ice = 0.0
         if ice < 0.0 or ice > 1.0:
             warnings.warn(UserWarning("Invalid ice value"), stacklevel=2)
@@ -1607,13 +1619,13 @@ class SSTBiasedNoisyChecker:
             daytime = True
             invalid_ob = True
 
-        land_match = bg_val is None
+        land_match = not isvalid(ostia)
         ice_match = ice > 0.15
         bgvar_mask = bgvar is not None and bgvar > background_err_lim
 
         good_match = not (daytime or land_match or ice_match or bgvar_mask)
 
-        return bg_val, ice, bgvar, good_match, bgvar_mask, invalid_ob
+        return ostia, ice, bgvar, good_match, bgvar_mask, invalid_ob
 
     def _preprocess_reps(self) -> bool:
         """
@@ -1665,9 +1677,9 @@ class SSTBiasedNoisyChecker:
 
         # prepare numpy arrays and variables needed for checks
         self.sst_anom = np.array(sst_anom)  # ob-background differences
-        bgvar = np.array(bgvar)
-        bgvar[bgvar < 0] = np.nan
-        self.bgerr = np.sqrt(np.array(bgvar))  # standard deviation of background error
+        bgvar_arr = np.array(bgvar)
+        bgvar_arr[bgvar_arr < 0] = np.nan
+        self.bgerr = np.sqrt(np.array(bgvar_arr))  # standard deviation of background error
 
         self.bgvar_is_masked = bgvar_is_masked
 
@@ -1712,7 +1724,7 @@ def do_speed_check(
     speed_limit: float,
     min_win_period: float,
     max_win_period: float,
-) -> Sequence[int]:
+) -> np.ndarray:
     """
     Perform the Track QC speed check.
 
@@ -1764,7 +1776,7 @@ def do_new_speed_check(
     delta_d: float,
     delta_t: float,
     n_neighbours: int,
-):
+) -> np.ndarray:
     """
     Perform the new speed check.
 
@@ -1833,7 +1845,7 @@ def do_aground_check(
     smooth_win: int,
     min_win_period: int,
     max_win_period: int,
-):
+) -> np.ndarray:
     """
     Perform the aground check.
 
@@ -1880,7 +1892,7 @@ def do_new_aground_check(
     dates: Sequence[datetime],
     smooth_win: int,
     min_win_period: int,
-):
+) -> np.ndarray:
     """
     Perform the new aground check.
 
@@ -1932,7 +1944,7 @@ def do_sst_start_tail_check(
     drif_inter: float,
     drif_intra: float,
     background_err_lim: float,
-):
+) -> np.ndarray:
     """
     Perform the SST Start Tail Check.
 
@@ -2030,7 +2042,7 @@ def do_sst_end_tail_check(
     drif_inter: float,
     drif_intra: float,
     background_err_lim: float,
-):
+) -> np.ndarray:
     """
     Perform the SST Start Tail Check.
 
@@ -2127,7 +2139,7 @@ def do_sst_biased_check(
     err_std_n: float,
     n_bad: int,
     background_err_lim: float,
-):
+) -> np.ndarray:
     """
     Perform the SST bias check.
 
@@ -2217,7 +2229,7 @@ def do_sst_noisy_check(
     err_std_n: float,
     n_bad: int,
     background_err_lim: float,
-):
+) -> np.ndarray:
     """
     Perform the SST noise check.
 
@@ -2307,7 +2319,7 @@ def do_sst_biased_noisy_short_check(
     err_std_n: float,
     n_bad: int,
     background_err_lim: float,
-):
+) -> np.ndarray:
     """
     Perform the SST short check.
 

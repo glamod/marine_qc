@@ -34,7 +34,7 @@ from .spherical_geometry import (
 from .time_control import time_difference
 
 
-def modal_speed(speeds: list) -> float:
+def modal_speed(speeds: list[float]) -> float:
     """
     Calculate the modal speed from the input array in 3 knot bins.
 
@@ -64,17 +64,17 @@ def modal_speed(speeds: list) -> float:
     # if the modal speed is less than 8.50 then it is set to 8.50
     # anything exceeding 36 knots is assigned to the top bin
     if len(speeds) <= 1:
-        return np.nan
+        return float(np.nan)
 
     # Convert km/h to knots
-    speeds = np.asarray(speeds)
-    speeds = convert_to(speeds, "km/h", "knots")
+    speeds_arr: np.ndarray = np.asarray(speeds)
+    speeds_arr = np.asarray(convert_to(speeds_arr, "km/h", "knots"), dtype=float)
 
     # Bin edges: [0, 3, 6, ..., 36], 12 bins
     bins = np.arange(0, 37, 3)
 
     # Digitize returns bin index starting from 1
-    bin_indices = np.digitize(speeds, bins, right=False) - 1
+    bin_indices = np.digitize(speeds_arr, bins, right=False) - 1
     bin_indices = np.clip(bin_indices, 0, 11)
 
     # Count occurrences in each bin
@@ -88,10 +88,11 @@ def modal_speed(speeds: list) -> float:
     modal_speed_knots = max(bin_centres[modal_bin], 8.5)
 
     # Convert back to km/h
-    return convert_to(modal_speed_knots, "knots", "km/h")
+    modal_speed_kmh = np.asarray(convert_to(modal_speed_knots, "knots", "km/h"), dtype=float)
+    return float(modal_speed_kmh)
 
 
-def set_speed_limits(amode: float) -> (float, float, float):
+def set_speed_limits(amode: float) -> tuple[float, float, float]:
     """
     Take a modal speed and calculate speed limits for the track checker.
 
@@ -105,16 +106,17 @@ def set_speed_limits(amode: float) -> (float, float, float):
     (float, float, float)
         Max speed, maximum max speed and min speed.
     """
-    amax = convert_to(15.0, "knots", "km/h")
-    amaxx = convert_to(20.0, "knots", "km/h")
+    amax = float(np.asarray(convert_to(15.0, "knots", "km/h"), dtype=float))
+    amaxx = float(np.asarray(convert_to(20.0, "knots", "km/h"), dtype=float))
     amin = 0.00
 
     if not isvalid(amode):
         return amax, amaxx, amin
-    if amode <= convert_to(8.51, "knots", "km/h"):
+
+    if amode <= float(np.asarray(convert_to(8.51, "knots", "km/h"), dtype=float)):
         return amax, amaxx, amin
 
-    return amode * 1.25, convert_to(30.0, "knots", "km/h"), amode * 0.75
+    return amode * 1.25, float(np.asarray(convert_to(30.0, "knots", "km/h"), dtype=float)), amode * 0.75
 
 
 @post_format_return_type(["alat1"], dtype=float, multiple=True)
@@ -296,7 +298,7 @@ def check_distance_from_estimate(
     fwd_diff_from_estimated: np.ndarray,
     rev_diff_from_estimated: np.ndarray,
     vsi_previous: np.ndarray | None = None,
-):
+) -> np.ndarray:
     """
     Check that distances from estimated positions are less than calculated distance.
 
@@ -469,7 +471,7 @@ def calculate_speed_course_distance_time_difference(
 
 
 @post_format_return_type(["vsi"], dtype=float)
-@inspect_arrays(["vsi"], sortby="date")
+@inspect_arrays(["lat", "lon", "date", "vsi", "dsi"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def forward_discrepancy(
     lat: SequenceFloatType,
@@ -519,8 +521,20 @@ def forward_discrepancy(
     Raises
     ------
     ValueError
-        If either input is not 1-dimensional or if their lengths do not match.
+        - If either input is not 1-dimensional or if their lengths do not match.
+        - If decorator `inspect_arrays` does not return np.ndarrays.
     """
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(date, np.ndarray):
+        raise TypeError(f"'date' must be a numpy.ndarray, got {type(date).__name__}")
+    if not isinstance(vsi, np.ndarray):
+        raise TypeError(f"'vsi' must be a numpy.ndarray, got {type(vsi).__name__}")
+    if not isinstance(dsi, np.ndarray):
+        raise TypeError(f"'dsi' must be a numpy.ndarray, got {type(dsi).__name__}")
+
     timediff = time_difference(np.roll(date, 1), date)
     lat1, lon1 = increment_position(np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff)
 
@@ -538,7 +552,7 @@ def forward_discrepancy(
 
 
 @post_format_return_type(["vsi"], dtype=float)
-@inspect_arrays(["vsi"], sortby="date")
+@inspect_arrays(["lat", "lon", "date", "vsi", "dsi"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def backward_discrepancy(
     lat: SequenceFloatType,
@@ -588,8 +602,20 @@ def backward_discrepancy(
     Raises
     ------
     ValueError
-        If either input is not 1-dimensional or if their lengths do not match.
+        - If either input is not 1-dimensional or if their lengths do not match.
+        - If decorator `inspect_arrays` does not return np.ndarrays.
     """
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(date, np.ndarray):
+        raise TypeError(f"'date' must be a numpy.ndarray, got {type(date).__name__}")
+    if not isinstance(vsi, np.ndarray):
+        raise TypeError(f"'vsi' must be a numpy.ndarray, got {type(vsi).__name__}")
+    if not isinstance(dsi, np.ndarray):
+        raise TypeError(f"'dsi' must be a numpy.ndarray, got {type(dsi).__name__}")
+
     timediff = time_difference(np.roll(date, 1), date)
     lat2, lon2 = increment_position(
         np.roll(lat, 1),

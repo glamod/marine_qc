@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib.lines import Line2D
 
 
-def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[list[str], list[Line2D]]:
+def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[Line2D]]:
     """
     Get color lebels.
 
@@ -23,23 +23,27 @@ def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[list[str], list[Line2D
     tuple of (list of str, list of Line2D)
         Color names and legend elements.
     """
-    colours = []
     colour_passed = "#55ff55"
     colour_failed = "#ff5555"
     colour_other = "#808080"
+
     passed = 0
     failed = 0
     other = 0
+
+    colours_list = []
     for outcome in qc_outcomes:
         if outcome == 0:
-            colours.append(colour_passed)
+            colours_list.append(colour_passed)
             passed += 1
         elif outcome == 1:
-            colours.append(colour_failed)
+            colours_list.append(colour_failed)
             failed += 1
         else:
-            colours.append(colour_other)
+            colours_list.append(colour_other)
             other += 1
+
+    colours = np.array(colours_list, dtype=str)
 
     legend_elements = [
         Line2D(
@@ -79,7 +83,7 @@ def _make_plot(
     xlabel: str,
     ylabel: str,
     filename: str | None,
-):
+) -> None:
     """
     Make plot.
 
@@ -103,8 +107,6 @@ def _make_plot(
         Filename to save the figure to. If None, the figure is saved with a standard name.
     """
     colours, legend_elements = _get_colours_labels(flags)
-
-    colours = np.array(colours)
 
     mask_passed = flags == 0
     mask_failed = flags == 1
@@ -145,7 +147,7 @@ def _make_plot(
     plt.close()
 
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> None:
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
 
@@ -172,7 +174,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
     )
 
 
-def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None):
+def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> None:
     """
     Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 

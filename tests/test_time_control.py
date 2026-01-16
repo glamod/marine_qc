@@ -258,12 +258,12 @@ def test_leap_year_correction():
 @pytest.mark.parametrize(
     "dates, expected",
     [
-        ([datetime(2000, 1, 1, 0, 0), datetime(2000, 1, 1, 1, 0)], [0, 1]),
-        ([datetime(1999, 12, 31, 23, 0), datetime(2000, 1, 1, 1, 0)], [0, 2]),
+        ([datetime(2000, 1, 1, 0, 0), datetime(2000, 1, 1, 1, 0)], [0.0, 1.0]),
+        ([datetime(1999, 12, 31, 23, 0), datetime(2000, 1, 1, 1, 0)], [0.0, 2.0]),
     ],
 )
 def test_convert_date_to_hour(dates, expected):
-    assert (convert_date_to_hours(dates) == expected).all()
+    assert convert_date_to_hours(dates) == expected
 
 
 @pytest.mark.parametrize(

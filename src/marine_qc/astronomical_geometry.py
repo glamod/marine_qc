@@ -30,7 +30,7 @@ def sun_position(time: float) -> float:
     float
         Position of the sun.
     """
-    return (360.0 * time / 365.25) * degrad
+    return float((360.0 * time / 365.25) * degrad)
 
 
 def mean_earth_anomaly(time: float, theta: float) -> float:
@@ -176,7 +176,7 @@ def to_siderial_time(time: float, delyear: int) -> float:
     sid = 1.759335 + 2 * np.pi * (time / 365.25 - delyear) + 3.694e-7 * time
     if sid >= 2 * np.pi:
         sid = sid - 2 * np.pi
-    return sid
+    return float(sid)
 
 
 def to_local_siderial_time(time: float, time_in_hours: float, delyear: int, lon: float) -> float:
@@ -203,7 +203,7 @@ def to_local_siderial_time(time: float, time_in_hours: float, delyear: int, lon:
     lsid = siderial_time + (time_in_hours * 15.0 + lon) * degrad
     if lsid >= 2 * np.pi:
         lsid = lsid - 2 * np.pi
-    return lsid
+    return float(lsid)
 
 
 def sun_hour_angle(local_siderial_time: float, right_ascension: float) -> float:
@@ -319,7 +319,7 @@ def calculate_azimuth(declination: float, hour_angle: float, elevation: float, p
     if math.sin(elevation) < math.sin(declination) / math.sin(phi):
         azimuth = convert_degrees(azimuth)
         azimuth = azimuth - 180.0
-    return 180.0 + azimuth
+    return float(180.0 + azimuth)
 
 
 def azimuth_elevation(lat: float, declination: float, hour_angle: float) -> tuple[float, float]:

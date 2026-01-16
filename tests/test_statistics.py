@@ -108,6 +108,11 @@ def test_winsorised_mean(inarr, expected):
     assert winsorised_mean(inarr) == expected
 
 
+def test_winsorised_mean_error():
+    with pytest.raises(ValueError):
+        winsorised_mean([])
+
+
 @pytest.mark.parametrize(
     "x, q, r_hi, r_lo, mu, sigma",
     [
