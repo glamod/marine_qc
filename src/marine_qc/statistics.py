@@ -232,7 +232,7 @@ def missing_mean(inarr: list[float | None]) -> float | None:
     return result / num
 
 
-def _trim_stat(inarr: Sequence[float], trim: int, stat: str) -> float:
+def _trim_stat(inarr: np.ndarray | Sequence[int | float], trim: int, stat: str) -> float:
     """
     Calculate a resistant (aka robust) statistics of an input array given a trimming criteria.
 
@@ -265,7 +265,7 @@ def _trim_stat(inarr: Sequence[float], trim: int, stat: str) -> float:
     return float(stat_func(arr[index1 : length - index1]))
 
 
-def trim_mean(inarr: Sequence[float], trim: int) -> float:
+def trim_mean(inarr: np.ndarray | Sequence[int | float], trim: int) -> float:
     """
     Calculate a resistant (aka robust) mean of an input array given a trimming criteria.
 
@@ -286,7 +286,7 @@ def trim_mean(inarr: Sequence[float], trim: int) -> float:
     return _trim_stat(inarr, trim, "mean")
 
 
-def trim_std(inarr: Sequence[float], trim: int) -> float:
+def trim_std(inarr: np.ndarray | Sequence[int | float], trim: int) -> float:
     """
     Calculate a resistant (aka robust) standard deviation of an input array given a trimming criteria.
 

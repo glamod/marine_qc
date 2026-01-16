@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from marine_qc import (
@@ -46,10 +47,23 @@ def test_isvalid_check(value, expected):
         (None, failed),
         (5.7, passed),
         (np.nan, failed),
+        (pd.NA, failed),
     ],
 )
 def test_value_check(value, expected):
     assert value_check(value) == expected
+
+
+def test_value_check_numpy():
+    result = value_check(np.array([1.0, np.nan, pd.NA]))
+    expected = [passed, failed, failed]
+    np.testing.assert_allclose(result, expected)
+
+
+def test_value_check_pandas():
+    result = value_check(pd.Series([1.0, None, 2.0]))
+    expected = pd.Series([passed, failed, passed])
+    pd.testing.assert_series_equal(result, expected)
 
 
 @pytest.mark.parametrize(

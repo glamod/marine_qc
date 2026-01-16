@@ -76,7 +76,7 @@ def is_scalar_like(x: Any) -> bool:
         return True  # fallback: built-in scalars like int, float, pd.Timestamp
 
 
-def isvalid(inval: ValueFloatType) -> bool | np.ndarray[bool]:
+def isvalid(inval: ValueFloatType) -> bool | npt.NDArray[np.bool_]:
     """
     Check if a value(s) are numerically valid (not None or NaN).
 
@@ -94,11 +94,18 @@ def isvalid(inval: ValueFloatType) -> bool | np.ndarray[bool]:
     if inval is None:
         return False
 
-    inval_arr = np.atleast_1d(inval)
-    valid_arr = np.logical_not(pd.isna(inval_arr))
+    if isinstance(inval, pd.Series):
+        inval_arr = inval.to_numpy()
+    else:
+        inval_arr = np.asarray(inval, dtype=object)
 
-    if np.isscalar(inval):
+    inval_arr = np.atleast_1d(inval_arr)
+
+    valid_arr: npt.NDArray[np.bool_] = np.logical_not(pd.isna(inval_arr))
+
+    if np.isscalar(inval) or (isinstance(inval, (np.floating, float))):
         return bool(valid_arr[0])
+
     return valid_arr
 
 

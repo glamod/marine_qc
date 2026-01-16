@@ -128,7 +128,7 @@ def track_day_test(
     return daytime
 
 
-def is_monotonic(inarr: Sequence[float]) -> bool:
+def is_monotonic(inarr: np.ndarray | Sequence[int | float]) -> bool:
     """
     Test if elements in an array are increasing monotonically.
 
@@ -989,8 +989,8 @@ class SSTTailChecker:
         self.sst_anom: np.ndarray = np.array([], dtype=float)
         self.bgerr: np.ndarray = np.array([], dtype=float)
 
-        self.start_tail_ind: np.ndarray = np.array([], dtype=float)
-        self.end_tail_ind: np.ndarray = np.array([], dtype=float)
+        self.start_tail_ind: int
+        self.end_tail_ind: int
 
         self.qc_outcomes = np.zeros(self.nreps) + untested
 
@@ -1438,7 +1438,7 @@ class SSTBiasedNoisyChecker:
         self.ice = np.asarray(ice, dtype=float)
 
         self.nreps = len(lat)
-        self.hrs = convert_date_to_hours(dates)
+        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
 
         self.n_eval = n_eval
         self.bias_lim = bias_lim
@@ -1450,7 +1450,7 @@ class SSTBiasedNoisyChecker:
 
         self.sst_anom: np.ndarray = np.array([], dtype=float)
         self.bgerr: np.ndarray = np.array([], dtype=float)
-        self.bgvar_is_masked: np.ndarray = np.array([], dtype=bool)
+        self.bgvar_is_masked: bool
 
         self.qc_outcomes_bias = np.zeros(self.nreps) + untested
         self.qc_outcomes_noise = np.zeros(self.nreps) + untested
@@ -1677,9 +1677,9 @@ class SSTBiasedNoisyChecker:
 
         # prepare numpy arrays and variables needed for checks
         self.sst_anom = np.array(sst_anom)  # ob-background differences
-        bgvar = np.array(bgvar)
-        bgvar[bgvar < 0] = np.nan
-        self.bgerr = np.sqrt(np.array(bgvar))  # standard deviation of background error
+        bgvar_arr = np.array(bgvar)
+        bgvar_arr[bgvar_arr < 0] = np.nan
+        self.bgerr = np.sqrt(np.array(bgvar_arr))  # standard deviation of background error
 
         self.bgvar_is_masked = bgvar_is_masked
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 import calendar
 import math
+import warnings
 from collections.abc import Callable, Sequence
 from datetime import datetime
 from typing import Any
@@ -102,24 +103,29 @@ def split_date(date: datetime) -> dict[str, float]:
     """
     try:
         date = pd.to_datetime(date)
-    except TypeError:
-        date = date
+    except (TypeError, ValueError) as e:
+        warnings.warn(
+            f"Could not convert {date!r} to datetime: {e}",
+            stacklevel=2,
+        )
+
     try:
-        year = int(date.year)
+        year: int | float = int(date.year)
     except (AttributeError, ValueError):
         year = np.nan
     try:
-        month = int(date.month)
+        month: int | float = int(date.month)
     except (AttributeError, ValueError):
         month = np.nan
     try:
-        day = int(date.day)
+        day: int | float = int(date.day)
     except (AttributeError, ValueError):
         day = np.nan
     try:
-        hour = date.hour + date.minute / 60.0 + date.second / 3600.0
+        hour: float = date.hour + date.minute / 60.0 + date.second / 3600.0
     except (AttributeError, ValueError):
         hour = np.nan
+
     return {"year": year, "month": month, "day": day, "hour": hour}
 
 
@@ -365,7 +371,7 @@ def day_in_year_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
         Array of day number from 1-365.
     """
     cumulative_month_lengths = np.array([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334])
-    day_number = cumulative_month_lengths[month - 1] + day
+    day_number: np.ndarray = cumulative_month_lengths[month - 1] + day
     return day_number
 
 
@@ -662,7 +668,7 @@ def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> n
     times1_arr: np.ndarray = pd.to_datetime(times1, errors="coerce").values
     times2_arr: np.ndarray = pd.to_datetime(times2, errors="coerce").values
 
-    valid: np.ndarray = isvalid(times1_arr) & isvalid(times2_arr)
+    valid: np.ndarray = np.atleast_1d(isvalid(times1_arr)) & np.atleast_1d(isvalid(times2_arr))
 
     result: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
     result[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta64(1, "h")

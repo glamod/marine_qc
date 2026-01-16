@@ -67,14 +67,14 @@ def modal_speed(speeds: list[float]) -> float:
         return float(np.nan)
 
     # Convert km/h to knots
-    speeds = np.asarray(speeds)
-    speeds = np.asarray(convert_to(speeds, "km/h", "knots"), dtype=float)
+    speeds_arr: np.ndarray = np.asarray(speeds)
+    speeds_arr = np.asarray(convert_to(speeds_arr, "km/h", "knots"), dtype=float)
 
     # Bin edges: [0, 3, 6, ..., 36], 12 bins
     bins = np.arange(0, 37, 3)
 
     # Digitize returns bin index starting from 1
-    bin_indices = np.digitize(speeds, bins, right=False) - 1
+    bin_indices = np.digitize(speeds_arr, bins, right=False) - 1
     bin_indices = np.clip(bin_indices, 0, 11)
 
     # Count occurrences in each bin

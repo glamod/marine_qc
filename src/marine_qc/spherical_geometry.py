@@ -6,7 +6,6 @@ Sourced from https://edwilliams.org/avform147.htm formerly williams.best.vwh.net
 """
 
 from __future__ import annotations
-from typing import cast
 
 import numpy as np
 from pyproj import Geod
@@ -16,6 +15,7 @@ from .auxiliary import (
     convert_to,
     earths_radius,
     inspect_arrays,
+    is_scalar_like,
     isvalid,
     post_format_return_type,
 )
@@ -92,12 +92,17 @@ def angular_distance(
     Raises
     ------
     ValueError
-        If any of lat1, lat2, lon1, or lon2 is numerically invalid or None.
+        - If `inspect_arrays` does not return np.ndarrays.
+        - If any of lat1, lat2, lon1, or lon2 is numerically invalid or None.
     """
-    lat1 = cast(np.ndarray, lat1)
-    lon1 = cast(np.ndarray, lon1)
-    lat2 = cast(np.ndarray, lat2)
-    lon2 = cast(np.ndarray, lon2)
+    if not isinstance(lat1, np.ndarray):
+        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
+    if not isinstance(lon1, np.ndarray):
+        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
+    if not isinstance(lat2, np.ndarray):
+        raise TypeError(f"'lat2' must be a numpy.ndarray, got {type(lat2).__name__}")
+    if not isinstance(lon2, np.ndarray):
+        raise TypeError(f"'lon2' must be a numpy.ndarray, got {type(lon2).__name__}")
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -141,11 +146,20 @@ def sphere_distance(
     -------
     np.ndarray
         Angular great-circle distance between the two points in kilometres.
+
+    Raises
+    ------
+    ValueError
+        If `inspect_arrays` does not return np.ndarrays.
     """
-    lat1 = cast(np.ndarray, lat1)
-    lon1 = cast(np.ndarray, lon1)
-    lat2 = cast(np.ndarray, lat2)
-    lon2 = cast(np.ndarray, lon2)
+    if not isinstance(lat1, np.ndarray):
+        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
+    if not isinstance(lon1, np.ndarray):
+        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
+    if not isinstance(lat2, np.ndarray):
+        raise TypeError(f"'lat2' must be a numpy.ndarray, got {type(lat2).__name__}")
+    if not isinstance(lon2, np.ndarray):
+        raise TypeError(f"'lon2' must be a numpy.ndarray, got {type(lon2).__name__}")
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -191,11 +205,20 @@ def intermediate_point(
         - Latitude(s) of the intermediate point(s) in degrees.
         - Longitude(s) of the intermediate point(s) in degrees.
         The outputs have the same shape as the broadcasted inputs.
+
+    Raises
+    ------
+    ValueError
+        If `inspect_arrays` does not return np.ndarrays.
     """
-    lat1 = cast(np.ndarray, lat1)
-    lon1 = cast(np.ndarray, lon1)
-    lat2 = cast(np.ndarray, lat2)
-    lon2 = cast(np.ndarray, lon2)
+    if not isinstance(lat1, np.ndarray):
+        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
+    if not isinstance(lon1, np.ndarray):
+        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
+    if not isinstance(lat2, np.ndarray):
+        raise TypeError(f"'lat2' must be a numpy.ndarray, got {type(lat2).__name__}")
+    if not isinstance(lon2, np.ndarray):
+        raise TypeError(f"'lon2' must be a numpy.ndarray, got {type(lon2).__name__}")
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
@@ -255,7 +278,7 @@ def lat_lon_from_course_and_distance(
     lon1: SequenceFloatType,
     tc: float,
     d: float,
-) -> tuple[SequenceFloatType, SequenceFloatType]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculate latitude and longitude given a starting point, true course and distance.
 
@@ -281,21 +304,34 @@ def lat_lon_from_course_and_distance(
         - Latitude(s) of the intermediate point(s) in degrees.
         - Longitude(s) of the intermediate point(s) in degrees.
         The outputs have the same shape as the broadcasted inputs.
+
+    Raises
+    ------
+    ValueError
+        If `inspect_arrays` does not return np.ndarrays.
     """
-    lat1 = cast(np.ndarray, lat1)
-    lon1 = cast(np.ndarray, lon1)
+    if not isinstance(lat1, np.ndarray):
+        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
+    if not isinstance(lon1, np.ndarray):
+        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
 
-    lat1 = convert_to(lat1, "deg", "rad")
-    lon1 = convert_to(lon1, "deg", "rad")
-    tcr = convert_to(tc, "deg", "rad")
+    lat_rad: np.ndarray = np.asarray(convert_to(lat1, "deg", "rad"), dtype=float)
+    lon_rad: np.ndarray = np.asarray(convert_to(lon1, "deg", "rad"), dtype=float)
 
-    dr = d / earths_radius * 1000
+    tc_converted = convert_to(tc, "deg", "rad")
+    if tc_converted is None:
+        tc_converted = [np.nan]
+    elif is_scalar_like(tc_converted):
+        tc_converted = [tc_converted]
+    tc_rad: np.ndarray = np.array(tc_converted, dtype=float)
 
-    lat = np.arcsin(np.sin(lat1) * np.cos(dr) + np.cos(lat1) * np.sin(dr) * np.cos(tcr))
-    dlon = np.arctan2(np.sin(tcr) * np.sin(dr) * np.cos(lat1), np.cos(dr) - np.sin(lat1) * np.sin(lat))
-    lon = np.mod(lon1 + dlon + np.pi, 2.0 * np.pi) - np.pi
+    d_rad = d / earths_radius * 1000
 
-    lat = convert_to(lat, "rad", "deg")
-    lon = convert_to(lon, "rad", "deg")
+    lat_trig = np.arcsin(np.sin(lat_rad) * np.cos(d_rad) + np.cos(lat_rad) * np.sin(d_rad) * np.cos(tc_rad))
+    dlon = np.arctan2(np.sin(tc_rad) * np.sin(d_rad) * np.cos(lat_rad), np.cos(d_rad) - np.sin(lat_rad) * np.sin(lat_trig))
+    lon_trig = np.mod(lon_rad + dlon + np.pi, 2.0 * np.pi) - np.pi
 
-    return lat, lon
+    lat_deg: np.ndarray = np.array(convert_to(lat_trig, "rad", "deg"), dtype=float)
+    lon_deg: np.ndarray = np.array(convert_to(lon_trig, "rad", "deg"), dtype=float)
+
+    return lat_deg, lon_deg

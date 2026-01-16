@@ -133,10 +133,26 @@ class SuperObsGrid:
             1-dimensional day array.
             Used if date is not provided.
 
+        Raises
+        ------
+        ValueError
+            If `inspect_arrays` does not return np.ndarrays.
+
         Notes
         -----
         The observations should be anomalies.
         """
+        if not isinstance(lats, np.ndarray):
+            raise TypeError(f"'lats' must be a numpy.ndarray, got {type(lats).__name__}")
+        if not isinstance(lons, np.ndarray):
+            raise TypeError(f"'lons' must be a numpy.ndarray, got {type(lons).__name__}")
+        if not isinstance(values, np.ndarray):
+            raise TypeError(f"'values' must be a numpy.ndarray, got {type(values).__name__}")
+        if not isinstance(month, np.ndarray):
+            raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
+        if not isinstance(day, np.ndarray):
+            raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+
         value_arr: np.ndarray = np.atleast_1d(values).astype(float)
         lat_arr: np.ndarray = np.atleast_1d(lats).astype(float)
         lon_arr: np.ndarray = np.atleast_1d(lons).astype(float)
@@ -146,7 +162,13 @@ class SuperObsGrid:
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        valid: np.ndarray = isvalid(lats) & isvalid(lons) & isvalid(month) & isvalid(day) & isvalid(values)
+        valid: np.ndarray = (
+            np.atleast_1d(isvalid(lats))
+            & np.atleast_1d(isvalid(lons))
+            & np.atleast_1d(isvalid(month))
+            & np.atleast_1d(isvalid(day))
+            & np.atleast_1d(isvalid(values))
+        )
         valid &= (month_arr >= 1) & (month_arr <= 12)
 
         if not np.any(valid):
@@ -581,7 +603,7 @@ def do_mds_buddy_check(
     if ignore_indexes is None:
         ignore_indexes = []
 
-    valid_mask: np.ndarray = isvalid(anoms)
+    valid_mask: np.ndarray = np.atleast_1d(isvalid(anoms))
 
     # finally loop over all reports and update buddy QC
     for i in range(numobs):

@@ -504,10 +504,12 @@ class Climatology:
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
+        month = np.array(month, dtype=object)
         month_arr = np.atleast_1d(month)  # type: np.ndarray
         month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
 
+        day = np.array(day, dtype=object)
         day_arr = np.atleast_1d(day)  # type: np.ndarray
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
@@ -579,7 +581,7 @@ class Climatology:
             else:
                 raise RuntimeError("I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)")
 
-        y_index = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
+        y_index: np.ndarray = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
 
         y_index[y_index >= len(lat_axis)] = len(lat_axis) - 1
 
@@ -614,7 +616,7 @@ class Climatology:
             else:
                 raise RuntimeError("I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)")
 
-        x_index = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
+        x_index: np.ndarray = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
 
         x_index[x_index >= len(lon_axis)] = len(lon_axis) - 1
 
@@ -689,9 +691,13 @@ class Climatology:
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
+
+        month = np.array(month, dtype=object)
         month_arr = np.atleast_1d(month)  # type: np.ndarray
         month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+
+        day = np.array(day, dtype=object)
         day_arr = np.atleast_1d(day)  # type: np.ndarray
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
@@ -751,7 +757,7 @@ class Climatology:
 
 
 @inspect_climatology("climatology")
-def get_climatological_value(climatology: Climatology, **kwargs: Any) -> ndarray:
+def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndarray:
     r"""
     Get the value from a climatology.
 
@@ -767,7 +773,7 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> ndarray
     ndarray
             Climatology value at specified location and time.
     """
-    return climatology
+    return np.asarray(climatology, dtype=float)
 
 
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
