@@ -584,7 +584,7 @@ class NewSpeedChecker:
                 i += 1
                 time_to_end = self.hrs[-1] - self.hrs[i]
                 continue
-            f_win = (self.hrs >= self.hrs[i] + min_win_period_hours) & (self.iquam_track_ship[i] == passed)
+            f_win = (self.hrs >= self.hrs[i] + min_win_period_hours) & (self.iquam_track_ship == passed)
             if not any(f_win):
                 i += 1
                 time_to_end = self.hrs[-1] - self.hrs[i]
@@ -1141,9 +1141,7 @@ class SSTTailChecker:
         """
         invalid_ob = False
 
-        bg_val = ostia
-
-        if ice is None or np.isnan(ice):
+        if not isvalid(ice):
             ice = 0.0
         if ice < 0.0 or ice > 1.0:
             warnings.warn(UserWarning("Invalid ice value"), stacklevel=2)
@@ -1164,12 +1162,12 @@ class SSTTailChecker:
             daytime = True
             invalid_ob = True
 
-        land_match = bg_val is None
+        land_match = not isvalid(ostia)
         ice_match = ice > 0.15
 
         good_match = not (daytime or land_match or ice_match)
 
-        return bg_val, ice, bgvar, good_match, invalid_ob
+        return ostia, ice, bgvar, good_match, invalid_ob
 
     def _preprocess_reps(self) -> bool:
         """
@@ -1183,9 +1181,9 @@ class SSTTailChecker:
         """
         invalid_series = False
         # test and filter out obs with unsuitable background matches
-        reps_ind: np.ndarray = np.full(self.nreps, np.nan, dtype=int)
-        sst_anom: np.ndarray = np.full(self.nreps, np.nan, dtype=float)
-        bgvar: np.ndarray = np.full(self.nreps, np.nan, dtype=float)
+        reps_ind: list[int] = []
+        sst_anom: list[float] = []
+        bgvar: list[float] = []
         for ind in range(self.nreps):
             bg_val, _ice_val, bgvar_val, good_match, invalid_ob = self._parse_rep(
                 self.lat[ind],
@@ -1206,18 +1204,19 @@ class SSTTailChecker:
                     warnings.warn(UserWarning("Background variance is invalid"), stacklevel=2)
                     invalid_series = True
 
-                reps_ind[ind] = ind
-                sst_anom[ind] = self.sst[ind] - bg_val
-                bgvar[ind] = bgvar_val
+                reps_ind.append(ind)
+                sst_anom.append(self.sst[ind] - bg_val)
+                bgvar.append(bgvar_val)
 
         # prepare numpy arrays and variables needed for tail checks
         # indices of obs suitable for assessment
-        self.reps_ind = reps_ind
+        self.reps_ind = np.array(reps_ind, dtype=int)
         # ob-background differences
-        self.sst_anom = sst_anom
+        self.sst_anom = np.array(sst_anom, dtype=float)
         # standard deviation of background error
-        bgvar[bgvar < 0] = float("nan")
-        self.bgerr = np.sqrt(bgvar)
+        bgvar_arr = np.array(bgvar, dtype=float)
+        bgvar_arr[bgvar_arr < 0.0] = float("nan")
+        self.bgerr = np.sqrt(bgvar_arr)
 
         return invalid_series
 
@@ -1598,9 +1597,8 @@ class SSTBiasedNoisyChecker:
             the observation is valid overall.
         """
         invalid_ob = False
-        bg_val = ostia
 
-        if ice is None or np.isnan(ice):
+        if not isvalid(ice):
             ice = 0.0
         if ice < 0.0 or ice > 1.0:
             warnings.warn(UserWarning("Invalid ice value"), stacklevel=2)
@@ -1621,13 +1619,13 @@ class SSTBiasedNoisyChecker:
             daytime = True
             invalid_ob = True
 
-        land_match = bg_val is None
+        land_match = not isvalid(ostia)
         ice_match = ice > 0.15
         bgvar_mask = bgvar is not None and bgvar > background_err_lim
 
         good_match = not (daytime or land_match or ice_match or bgvar_mask)
 
-        return bg_val, ice, bgvar, good_match, bgvar_mask, invalid_ob
+        return ostia, ice, bgvar, good_match, bgvar_mask, invalid_ob
 
     def _preprocess_reps(self) -> bool:
         """
