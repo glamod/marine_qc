@@ -5,6 +5,7 @@ Module containing QC functions for track checking which could be applied on a Da
 """
 
 from __future__ import annotations
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -107,6 +108,11 @@ def do_spike_check(
     * delta_t: float = 2.0
     * n_neighbours: int = 5
     """
+    value = cast(np.ndarray, value)
+    lat = cast(np.ndarray, lat)
+    lon = cast(np.ndarray, lon)
+    date = cast(np.ndarray, date)
+
     gradient_violations = []
     count_gradient_violations = []
 
@@ -486,6 +492,12 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
       - Returns array/sequence/Series of 1s if the value is a whole number.
       - Returns array/sequence/Series of 0s otherwise.
 
+    Raises
+    ------
+    ValueError
+        - If `threshold` is not between 0.0 and 1.0.
+        - If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     Previous versions had default values for the parameters of:
@@ -495,6 +507,9 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
     """
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
+
+    if not isinstance(value, np.ndarray):
+        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
 
     number_of_obs = len(value)
 
@@ -545,6 +560,12 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
       - Returns array/sequence/Series of 1s if the value is repeated.
       - Returns array/sequence/Series of 0s otherwise.
 
+    Raises
+    ------
+    ValueError
+        - If `threshold` is not between 0.0 and 1.0.
+        - If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     Previous versions had default values for the parameters of:
@@ -554,6 +575,9 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
     """
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
+
+    if not isinstance(value, np.ndarray):
+        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
 
     number_of_obs = len(value)
 
