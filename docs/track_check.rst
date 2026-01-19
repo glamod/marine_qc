@@ -2,13 +2,13 @@
 
 .. _track_check:
 
-do_track_check
-==============
+Track check
+===========
 
 The track check uses the location and datetime information from the reports as well as the ship speed and direction
 information, if available, to determine if any of the reported locations and times are likely to be erroneous.
 
-detailed description
+Detailed description
 ++++++++++++++++++++
 
 The aim of the track check algorithm is to identify from a set of observations sharing a common, non-generic
@@ -65,7 +65,7 @@ between the two points.
 The individual checks
 ^^^^^^^^^^^^^^^^^^^^^
 
-speed check
+Speed check
 """""""""""
 
 Set the speed check total to zero and the speed check flag to pass.
