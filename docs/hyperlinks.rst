@@ -10,11 +10,9 @@
 
 .. _jupyter notebook: https://jupyter.org/install
 
-.. _pip: https://pypi.org/
+.. _pip: https://pip.pypa.io
 
 .. _python3: https://www.python.org/download/releases/3.0
-
-.. _tarball: https://github.com/glamod/mdf_reader/tarball/master
 
 .. _HadSST4: https://www.metoffice.gov.uk/hadobs/hadsst4/
 

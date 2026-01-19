@@ -241,26 +241,26 @@ def open_xrdataset(
     Parameters
     ----------
     files : str or list
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     use_cftime : bool, default: True
-        See [decode_cf].
+        See [decode_cf]_.
     decode_cf : bool, default: True
-        See [decode_cf].
+        See [decode_cf]_.
     decode_times : bool, default: False
-        See [decode_cf].
+        See [decode_cf]_.
     parallel : bool, default: False
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     data_vars : {"minimal", "different", "all"} or list of str, default: "minimal"
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     chunks : int, dict, "auto" or None, optional, default: "default"
         If chunks is "default", set chunks to {"time": 1}
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     coords : {"minimal", "different", "all"} or list of str, optional, default: "minimal"
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     compat : {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"}, default: "override"
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     combine : {"by_coords", "nested"}, optional, default: "by_coords"
-        See [open_mfdataset].
+        See [open_mfdataset]_.
     \**kwargs : dict
         Additional keyword arguments passed to xarray.open_mfdataset.
 

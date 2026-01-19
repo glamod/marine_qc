@@ -5,9 +5,8 @@ Installation
 
 The **marine_qc**  toolbox is a pure Python package, but it has a few dependencies that rely in a specific python and module version.
 
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide you through the process.
+If you don't have pip_ installed, this `Python installation guide`_ can guide you through the process.
 
-.. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
 Stable release
@@ -36,7 +35,7 @@ From source
 
 The source for the **marine_qc** can be downloaded from the `GitHub repository`_ via git_.
 
-#. Download the source code from the `Github repo`_ using one of the following methods:
+#. Download the source code from the `Github repository`_ using one of the following methods:
 
     * Clone the public repository:
 
