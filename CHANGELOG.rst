@@ -10,6 +10,7 @@ New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * New functions ``do_multiple_sequential_check`` and ``do_multiple_grouped_check`` analog to ``do_multiple_individual_check`` to run multiple checks at once (:issue:`32`, :pull:`95`)
 * Call both plotting functions ``latitude_longitude_plot`` and ``latitude_variable_plot`` directly from ``marine_qc`` (:pull:`95`)
+* The documentation now uses the `furo <https://github.com/pradyunsg/furo>`_ theme for Sphinx (:pull:`122`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -24,6 +25,8 @@ Internal changes
 * add section "More theoretical information" to documentation (:pull:`95`)
 * The numpydoc linting tool has been added to the linting checks, and the pre-commit configurations (:issue:`53`, :issue:`59`, :pull:`120`)
 * The mypy type checking has been added to the pre-commit configurations (:issue:`59`, :pull:`121`)
+* Documentation is now build without any warning messages (:issue:`96`, :pull:`122`)
+* `readthedocs.yaml`: set `fail_on_warnings` to "true" (:issue:`61`, :pull:`122`)
 
 0.2.0 (2025-10-21)
 ------------------
