@@ -57,7 +57,6 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_autodoc_typehints",
     "sphinx_copybutton",
-    "sphinx_book_theme",
 ]
 
 autosectionlabel_prefix_document = True
