@@ -797,7 +797,7 @@ def do_multiple_grouped_check(
     qc_dict: dict[str, Any] | None = None,
     preproc_dict: dict[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """
     Apply one or more buddy-check quality-control (QC) functions to a DataFrame or Series.
 
