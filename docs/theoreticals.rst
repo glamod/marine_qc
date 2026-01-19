@@ -1,5 +1,3 @@
-.. currentmodule:: marine_qc
-
 .. _theo:
 
 """"""""""""""""""""""""""""
