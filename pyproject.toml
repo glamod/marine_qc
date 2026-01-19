@@ -79,7 +79,6 @@ docs = [
   "sphinx >=7.1.0,<8.2",
   "sphinx-autodoc-typehints",
   "sphinx-copybutton",
-  # "sphinx-book-theme >=1.0"
   "furo >= 2023.9.10"
 ]
 all = ["marine_qc[dev]", "marine_qc[docs]"]
