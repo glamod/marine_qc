@@ -1,81 +1,107 @@
-.. currentmodule:: marine_qc
-
 Helpers in QC checks for individual reports module
 --------------------------------------------------
 
-.. autosummary::
-   :toctree: generated/
-
-   qc_individual_reports._do_daytime_check
+.. autofunction:: marine_qc.qc_individual_reports._do_daytime_check
+   :noindex:
 
 Helpers in multiple checks module
 ---------------------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.multiple_checks._get_function
+   :noindex:
 
-   multiple_checks._get_function
-   multiple_checks._is_func_param
-   multiple_checks._is_in_data
-   multiple_checks._get_requests_from_params
-   multiple_checks._get_preprocessed_args
-   multiple_checks._prepare_preprocessed_vars
-   multiple_checks._prepare_qc_functions
-   multiple_checks._apply_qc_to_masked_rows
-   multiple_checks._normalize_groupby
-   multiple_checks._validate_and_normalize_input
-   multiple_checks._prepare_all_inputs
-   multiple_checks._group_iterator
-   multiple_checks._run_qc_engine
-   multiple_checks._do_multiple_check
+.. autofunction:: marine_qc.multiple_checks._is_func_param
+   :noindex:
 
+.. autofunction:: marine_qc.multiple_checks._get_requests_from_params
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._get_preprocessed_args
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._prepare_preprocessed_vars
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._prepare_qc_functions
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._apply_qc_to_masked_rows
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._normalize_groupby
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._validate_and_normalize_input
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._prepare_all_inputs
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._group_iterator
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._run_qc_engine
+   :noindex:
+
+.. autofunction:: marine_qc.multiple_checks._do_multiple_check
+   :noindex:
 
 Helpers in external climatology module
 --------------------------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.external_clim._format_output
+   :noindex:
 
-   external_clim._format_output
-   external_clim._select_point
-   external_clim._empty_dataarray
+.. autofunction:: marine_qc.external_clim._select_point
+   :noindex:
+
+.. autofunction:: marine_qc.external_clim._empty_dataarray
+   :noindex:
 
 Helpers in spherical geometry module
 ------------------------------------
 
-.. autosummary::
-   :toctree: generated/
-
-   spherical_geometry._geod_inv
+.. autofunction:: marine_qc.spherical_geometry._geod_inv
+   :noindex:
 
 Helpers in statistical functions module
 ---------------------------------------
 
-.. autosummary::
-   :toctree: generated/
-
-   statistics._trim_stat
+.. autofunction:: marine_qc.statistics._trim_stat
+   :noindex:
 
 Helpers in plotting module
 --------------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.plot_qc_outcomes._get_colours_labels
+   :noindex:
 
-   plot_qc_outcomes._get_colours_labels
-   plot_qc_outcomes._make_plot
+.. autofunction:: marine_qc.plot_qc_outcomes._make_plot
+   :noindex:
 
 Static methods of buoy tracking QC classes
 ------------------------------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTTailChecker._parse_rep
+   :noindex:
 
-   buoy_tracking_qc.SSTTailChecker._parse_rep
-   buoy_tracking_qc.SSTTailChecker._preprocess_reps
-   buoy_tracking_qc.SSTTailChecker._do_long_tail_check
-   buoy_tracking_qc.SSTTailChecker._do_short_tail_check
-   buoy_tracking_qc.SSTBiasedNoisyChecker._parse_rep
-   buoy_tracking_qc.SSTBiasedNoisyChecker._preprocess_reps
-   buoy_tracking_qc.SSTBiasedNoisyChecker._long_record_qc
-   buoy_tracking_qc.SSTBiasedNoisyChecker._short_record_qc
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTTailChecker._preprocess_reps
+   :noindex:
+
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTTailChecker._do_long_tail_check
+   :noindex:
+
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTTailChecker._do_short_tail_check
+   :noindex:
+
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTBiasedNoisyChecker._parse_rep
+   :noindex:
+
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTBiasedNoisyChecker._preprocess_reps
+   :noindex:
+
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTBiasedNoisyChecker._long_record_qc
+   :noindex:
+
+.. autofunction:: marine_qc.buoy_tracking_qc.SSTBiasedNoisyChecker._short_record_qc
+   :noindex:

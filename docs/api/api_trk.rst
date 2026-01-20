@@ -1,9 +1,5 @@
-.. currentmodule:: marine_qc
-
 Tracking utility functions
 --------------------------
 
-.. autosummary::
-   :toctree: generated/
-
-   track_check_utils.increment_position
+.. autofunction:: marine_qc.track_check_utils.increment_position
+   :noindex:

@@ -1,9 +1,5 @@
-.. currentmodule:: marine_qc
-
 Individual report functions
 ---------------------------
 
-.. autosummary::
-   :toctree: generated/
-
-   qc_individual_reports.value_check
+.. autofunction:: marine_qc.qc_individual_reports.value_check
+   :noindex:

@@ -1,22 +1,26 @@
-.. currentmodule:: marine_qc
-
 Buoy tracking classes
 ---------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autoclass:: marine_qc.buoy_tracking_qc.SpeedChecker
+   :noindex:
 
-   buoy_tracking_qc.SpeedChecker
-   buoy_tracking_qc.NewSpeedChecker
-   buoy_tracking_qc.AgroundChecker
-   buoy_tracking_qc.SSTTailChecker
-   buoy_tracking_qc.SSTBiasedNoisyChecker
+.. autoclass:: marine_qc.buoy_tracking_qc.NewSpeedChecker
+   :noindex:
+
+.. autoclass:: marine_qc.buoy_tracking_qc.AgroundChecker
+   :noindex:
+
+.. autoclass:: marine_qc.buoy_tracking_qc.SSTTailChecker
+   :noindex:
+
+.. autoclass:: marine_qc.buoy_tracking_qc.SSTBiasedNoisyChecker
+   :noindex:
 
 Buoy tracking functions
 -----------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.buoy_tracking_qc.track_day_test
+   :noindex:
 
-   buoy_tracking_qc.track_day_test
-   buoy_tracking_qc.is_monotonic
+.. autofunction:: marine_qc.buoy_tracking_qc.is_monotonic
+   :noindex:

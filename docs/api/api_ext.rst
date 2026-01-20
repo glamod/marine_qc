@@ -1,18 +1,14 @@
-.. currentmodule:: marine_qc
-
 External climatology class
 --------------------------
 
-.. autosummary::
-   :toctree: generated/
-
-   external_clim.Climatology
+.. autoclass:: marine_qc.external_clim.Climatology
+   :noindex:
 
 External climatology functions
 ------------------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.external_clim.get_climatological_value
+   :noindex:
 
-   external_clim.get_climatological_value
-   external_clim.open_xrdataset
+.. autofunction:: marine_qc.external_clim.open_xrdataset
+   :noindex:
