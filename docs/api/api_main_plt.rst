@@ -1,12 +1,10 @@
-.. currentmodule:: marine_qc
-
 .. _api_plt:
 
 Plotting QC outcomes
 --------------------
 
-.. autosummary::
-   :toctree: generated/
+.. autofunction:: marine_qc.latitude_longitude_plot
+   :noindex:
 
-    latitude_longitude_plot
-    latitude_variable_plot
+.. autofunction:: marine_qc.latitude_variable_plot
+   :noindex:

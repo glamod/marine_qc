@@ -1,5 +1,3 @@
-.. module:: marine_qc
-
 .. marine_qc documentation master file
 
 ``Marine Quality Control`` documentation
@@ -16,8 +14,7 @@ modular way via a standardised interface.
 
 .. toctree::
    :maxdepth: 2
-   :hidden:
-   :caption: Contents:
+   :caption: Table of Contents:
 
    About <readme>
    installation
@@ -32,9 +29,19 @@ modular way via a standardised interface.
    releasing
    dev_guide
    authors
-   api
    changelog
 
+.. toctree::
+   :maxdepth: 2
+   :caption: User API
+
+   api
+
+.. toctree::
+   :maxdepth: 1
+   :caption: All Modules
+
+   apidoc/modules
 
 About
 -----

@@ -57,7 +57,6 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_autodoc_typehints",
     "sphinx_copybutton",
-    "sphinx_book_theme",
 ]
 
 autosectionlabel_prefix_document = True
@@ -145,13 +144,13 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # html_theme = "sphinx_rtd_theme"
-html_theme = "sphinx_book_theme"
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {"style_external_links": True}
+# html_theme_options = {"style_external_links": True}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -181,4 +180,5 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "python": ("https://docs.python.org/3/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable", None),
 }

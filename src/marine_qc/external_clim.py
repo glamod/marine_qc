@@ -232,48 +232,45 @@ def open_xrdataset(
     r"""
     Optimized function for opening large CF-compliant datasets with xarray.
 
-    based on [open_xrdataset]_.
-    decode_timedelta=False is added to leave variables and
-    coordinates with time units in
+    This implementation follows guidance from:
+    https://github.com/pydata/xarray/issues/1385#issuecomment-561920115
+
+    ``decode_timedelta=False`` is added to leave variables and coordinates
+    with time units in
     {"days", "hours", "minutes", "seconds", "milliseconds", "microseconds"}
     encoded as numbers.
 
     Parameters
     ----------
     files : str or list
-        See [open_mfdataset].
+      See the documentation for :py:func:`xarray.open_mfdataset`.
     use_cftime : bool, default: True
-        See [decode_cf].
+      See the documentation for :py:func:`xarray.decode_cf`.
     decode_cf : bool, default: True
-        See [decode_cf].
+      See the documentation for :py:func:`xarray.decode_cf`.
     decode_times : bool, default: False
-        See [decode_cf].
+      See the documentation for :py:func:`xarray.decode_cf`.
     parallel : bool, default: False
-        See [open_mfdataset].
+      See the documentation for :py:func:`xarray.open_mfdataset`.
     data_vars : {"minimal", "different", "all"} or list of str, default: "minimal"
-        See [open_mfdataset].
+      See the documentation for :py:func:`xarray.open_mfdataset`.
     chunks : int, dict, "auto" or None, optional, default: "default"
-        If chunks is "default", set chunks to {"time": 1}
-        See [open_mfdataset].
+      If ``chunks`` is ``"default"``, chunks are set to ``{"time": 1}``.
+      See the documentation for :py:func:`xarray.open_mfdataset`.
     coords : {"minimal", "different", "all"} or list of str, optional, default: "minimal"
-        See [open_mfdataset].
-    compat : {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"}, default: "override"
-        See [open_mfdataset].
+      See the documentation for :py:func:`xarray.open_mfdataset`.
+    compat : {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"},
+      default: "override"
+      See the documentation for :py:func:`xarray.open_mfdataset`.
     combine : {"by_coords", "nested"}, optional, default: "by_coords"
-        See [open_mfdataset].
+      See the documentation for :py:func:`xarray.open_mfdataset`.
     \**kwargs : dict
-        Additional keyword arguments passed to xarray.open_mfdataset.
+      Additional keyword arguments passed to :py:func:`xarray.open_mfdataset`.
 
     Returns
     -------
     xarray.Dataset
-        Opened xarray Dataset, optimized for large CF datasets.
-
-    References
-    ----------
-    .. [open_xrdataset] https://github.com/pydata/xarray/issues/1385#issuecomment-561920115
-    .. [open_mfdataset] https://docs.xarray.dev/en/stable/generated/xarray.open_mfdataset.html
-    .. [decode_cf] https://docs.xarray.dev/en/stable/generated/xarray.decode_cf.html
+      Opened xarray Dataset, optimized for large CF datasets.
     """
 
     def drop_all_coords(ds: xr.Dataset) -> xr.Dataset:
