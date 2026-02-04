@@ -188,6 +188,81 @@ def _get_preprocessed_args(arguments: dict[str, str], preprocessed: dict[str, An
     return args
 
 
+def _validate_dict(input_dict: Any) -> None:
+    """
+    Validate that the input is a dictionary with string keys and dictionary values.
+
+    This function checks that:
+    - `input_dict` is a dictionary.
+    - All keys in the dictionary are strings.
+    - All values in the dictionary are themselves dictionaries.
+
+    Parameters
+    ----------
+    input_dict : Any
+        The object to validate.
+
+    Raises
+    ------
+    TypeError
+        If `input_dict` is not a dictionary, if any key is not a string,
+        or if any value is not a dictionary.
+    """
+    if not isinstance(input_dict, dict):
+        raise TypeError(f"input must be a dictionary, not {type(input_dict)}.")
+
+    for k, v in input_dict.items():
+        if not isinstance(k, str):
+            raise TypeError(f"input key {k} must be a string, not {type(k)}.")
+        if not isinstance(v, dict):
+            raise TypeError(f"input value {v} must be a dictionary, not {type(v)}.")
+
+
+def _validate_args(
+    func: Callable[..., Any],
+    kwargs: dict[str, Any],
+) -> None:
+    """
+    Validate keyword arguments against a function's signature.
+
+    This function checks that:
+    - All provided keyword arguments correspond to valid parameters of the given function.
+    - All required parameters of the function (i.e., parameters without default values) are present in the provided keyword arguments.
+
+    Parameters
+    ----------
+    func : Callable[..., Any]
+        The function whose signature is used for validation.
+    kwargs : dict
+        Dictionary of keyword arguments intended to be passed to `func`.
+
+    Raises
+    ------
+    ValueError
+        If `kwargs` contains a key that is not a parameter of `func`.
+    TypeError
+        If a required parameter of `func` is missing from `kwargs`.
+    """
+    sig = inspect.signature(func)
+
+    for parameter in kwargs.keys():
+        if parameter not in sig.parameters:
+            raise ValueError(f"Parameter '{parameter}' is not a valid parameter of function '{func.__name__}'.")
+
+    for name, param in sig.parameters.items():
+        if (
+            param.default is inspect.Parameter.empty
+            and param.kind
+            in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                inspect.Parameter.KEYWORD_ONLY,
+            )
+            and name not in kwargs.keys()
+        ):
+            raise TypeError(f"Positional parameter '{name}' is not in specified for function '{func.__name__}'.")
+
+
 def _prepare_preprocessed_vars(
     preproc_dict: dict[str, Mapping[str, Any]],
     data: pd.DataFrame | pd.Series,
@@ -209,7 +284,11 @@ def _prepare_preprocessed_vars(
     """
     preprocessed: dict[str, Any] = {}
 
+    _validate_dict(preproc_dict)
+
     for var_name, params in preproc_dict.items():
+        if "func" not in params:
+            raise ValueError(f"'func' is not specified in {params}.")
         func = _get_function(params["func"])
         requests = _get_requests_from_params(params.get("names"), func, data)
 
@@ -218,6 +297,7 @@ def _prepare_preprocessed_vars(
             inputs = [inputs]
 
         arguments = params.get("arguments", {})
+        _validate_args(func, {**requests, **arguments})
 
         preprocessed[var_name] = func(*inputs, **requests, **arguments)
 
@@ -249,10 +329,15 @@ def _prepare_qc_functions(
     """
     qc_inputs: dict[str, dict[str, Any]] = {}
 
+    _validate_dict(qc_dict)
+
     for qc_name, params in qc_dict.items():
+        if "func" not in params:
+            raise ValueError(f"'func' is not specified in {params}.")
         func = _get_function(params["func"])
         requests = _get_requests_from_params(params.get("names"), func, data)
         kwargs = _get_preprocessed_args(params.get("arguments", {}), preprocessed)
+        _validate_args(func, {**requests, **kwargs})
 
         qc_inputs[qc_name] = {"function": func, "requests": requests, "kwargs": kwargs}
 

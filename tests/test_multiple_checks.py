@@ -402,10 +402,105 @@ def test_run_qc_engine(df_ind, return_method, exp):
         ("failed", {"test1": [failed, passed, passed, failed], "test2": [untested, failed, passed, untested]}),
     ],
 )
-def test_do_multiple_check(df_ind, qc_dict, return_method, exp):
-    result = _do_multiple_check(df_ind, None, qc_dict, {}, return_method)
+def test_do_multiple_check_basic(df_ind, qc_dict, return_method, exp):
+    result = _do_multiple_check(df_ind, qc_dict=qc_dict, return_method=return_method)
 
     pd.testing.assert_frame_equal(result, pd.DataFrame(exp))
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_dicts(df_ind, param):
+    kwargs = "invalid_input"
+    with pytest.raises(TypeError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_keys(df_ind, param):
+    kwargs = {1: {"func": "no_valid_check"}}
+    with pytest.raises(TypeError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_values(df_ind, param):
+    kwargs = {"qc_dict": "no_valid_check"}
+    with pytest.raises(TypeError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_func(df_ind, param):
+    kwargs = {"test": {"func": "no_valid_check"}}
+    with pytest.raises(NameError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_names(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"value": "invalid_value"},
+        }
+    }
+    with pytest.raises(NameError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_params(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"invalid_param": "value2"},
+        },
+    }
+    with pytest.raises(ValueError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_args(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"value": "value2"},
+            "arguments": {"invalid_args": [2, 3]},
+        },
+    }
+    with pytest.raises(ValueError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_missing_func(df_ind, param):
+    kwargs = {"test": {}}
+    with pytest.raises(ValueError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_missing_names(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+        },
+    }
+    with pytest.raises(TypeError):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_missing_args(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"value": "value2"},
+        },
+    }
+    with pytest.raises(TypeError):
+        _do_multiple_check(df_ind, **{param: kwargs})
 
 
 @pytest.mark.parametrize(
