@@ -114,10 +114,10 @@ def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
 
 
 def _get_requests_from_params(
-    params: dict[str, str] | None,
+    params: Mapping[str, str] | None,
     func: Callable[..., Any],
     data: pd.Series | pd.DataFrame,
-) -> dict[str, pd.Series | Any]:
+) -> Mapping[str, pd.Series | Any]:
     """
     Get requests from `func` or `data` using `params`.
 
@@ -127,7 +127,7 @@ def _get_requests_from_params(
 
     Parameters
     ----------
-    params : dict or None
+    params : Mapping or None
         Dictionary. Keys are parameter names for the function func,
         and values are the names of columns or variables in data.
     func : Callable
@@ -137,7 +137,7 @@ def _get_requests_from_params(
 
     Returns
     -------
-    dict
+    Mapping
         Dictionary containing the key value pairs where the keys are as in the input dictionary and the values are
         extracted from the corresponding columns of data.
 
@@ -160,7 +160,7 @@ def _get_requests_from_params(
     return requests
 
 
-def _get_preprocessed_args(arguments: dict[str, str], preprocessed: dict[str, Any]) -> dict[str, Any]:
+def _get_preprocessed_args(arguments: Mapping[str, str], preprocessed: Mapping[str, Any]) -> Mapping[str, Any]:
     """
     Update `arguments` for values available in `preprocessed`.
 
@@ -169,14 +169,14 @@ def _get_preprocessed_args(arguments: dict[str, str], preprocessed: dict[str, An
 
     Parameters
     ----------
-    arguments : dict
+    arguments : Mapping
         Dictionary of key value pairs where the keys are variable names and the values are strings.
     preprocessed : dict
         Dictionary of key value pairs where the keys correspond to variable names.
 
     Returns
     -------
-    dict
+    Mapping
         Dictionary of key value pairs where values in arguments that were set to __preprocessed__ were replaced by
         values from the dictionary preprocessed.
     """
@@ -188,18 +188,18 @@ def _get_preprocessed_args(arguments: dict[str, str], preprocessed: dict[str, An
     return args
 
 
-def _validate_dict(input_dict: Any) -> None:
+def _validate_dict(input_dict: Mapping[str, Mapping[str, Any]]) -> None:
     """
     Validate that the input is a dictionary with string keys and dictionary values.
 
     This function checks that:
     - `input_dict` is a dictionary.
     - All keys in the dictionary are strings.
-    - All values in the dictionary are themselves dictionaries.
+    - All top-level values in the dictionary are themselves dictionaries.
 
     Parameters
     ----------
-    input_dict : Any
+    input_dict : Mapping[str, Mapping[str, Any]]
         The object to validate.
 
     Raises
@@ -208,19 +208,19 @@ def _validate_dict(input_dict: Any) -> None:
         If `input_dict` is not a dictionary, if any key is not a string,
         or if any value is not a dictionary.
     """
-    if not isinstance(input_dict, dict):
+    if not isinstance(input_dict, Mapping):
         raise TypeError(f"input must be a dictionary, not {type(input_dict)}.")
 
     for k, v in input_dict.items():
         if not isinstance(k, str):
-            raise TypeError(f"input key {k} must be a string, not {type(k)}.")
-        if not isinstance(v, dict):
-            raise TypeError(f"input value {v} must be a dictionary, not {type(v)}.")
+            raise TypeError(f"input key {k} must be a string, not {type(k).__name__}.")
+        if not isinstance(v, Mapping):
+            raise TypeError(f"value for key {k} must be a dictionary, not {type(v).__name__}.")
 
 
 def _validate_args(
     func: Callable[..., Any],
-    kwargs: dict[str, Any],
+    kwargs: Mapping[str, Any],
 ) -> None:
     """
     Validate keyword arguments against a function's signature.
@@ -233,7 +233,7 @@ def _validate_args(
     ----------
     func : Callable[..., Any]
         The function whose signature is used for validation.
-    kwargs : dict
+    kwargs : Mapping
         Dictionary of keyword arguments intended to be passed to `func`.
 
     Raises
@@ -245,8 +245,10 @@ def _validate_args(
     """
     sig = inspect.signature(func)
 
-    for parameter in kwargs.keys():
-        if parameter not in sig.parameters:
+    has_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
+
+    for parameter in kwargs:
+        if parameter not in sig.parameters and not has_kwargs:
             raise ValueError(f"Parameter '{parameter}' is not a valid parameter of function '{func.__name__}'.")
 
     for name, param in sig.parameters.items():
@@ -260,26 +262,26 @@ def _validate_args(
             )
             and name not in kwargs.keys()
         ):
-            raise TypeError(f"Positional parameter '{name}' is not in specified for function '{func.__name__}'.")
+            raise TypeError(f"Required parameter '{name}' is missing for function '{func.__name__}'.")
 
 
 def _prepare_preprocessed_vars(
-    preproc_dict: dict[str, Mapping[str, Any]],
+    preproc_dict: Mapping[str, Mapping[str, Any]],
     data: pd.DataFrame | pd.Series,
-) -> dict[str, Any]:
+) -> Mapping[str, Any]:
     """
     Run all preprocessing steps defined in ``preproc_dict`` and return their results.
 
     Parameters
     ----------
-    preproc_dict : dict[str, Mapping[str, Any]]
+    preproc_dict : Mapping[str, Mapping[str, Any]]
         Preprocessing configuration dictionary.
     data : pd.DataFrame or pd.Series
         DataFrame used to extract request parameters.
 
     Returns
     -------
-    dict[str, Any]
+    Mapping[str, Any]
         A dict mapping variable names to their preprocessed values.
     """
     preprocessed: dict[str, Any] = {}
@@ -305,29 +307,29 @@ def _prepare_preprocessed_vars(
 
 
 def _prepare_qc_functions(
-    qc_dict: dict[str, Mapping[str, Any]],
-    preprocessed: dict[str, Any],
+    qc_dict: Mapping[str, Mapping[str, Any]],
+    preprocessed: Mapping[str, Any],
     data: pd.DataFrame | pd.Series,
-) -> dict[str, dict[str, Any]]:
+) -> Mapping[str, Mapping[str, Any]]:
     """
     Build QC function inputs from ``qc_dict`` and return a structured mapping.
 
     Parameters
     ----------
-    qc_dict : dict[str, Mapping[str, Any]]
+    qc_dict : Mapping[str, Mapping[str, Any]]
         Configuration describing QC functions, their input names, and arguments.
-    preprocessed : dict[str, Mapping[str, Any]]
+    preprocessed : Mapping[str, Mapping[str, Any]]
         Previously computed preprocessed variables available for argument resolution.
     data : pd.DataFrame or pd.Series
         DataFrame used to extract requested parameters for QC functions.
 
     Returns
     -------
-    dict[str, dict[str, Any]]
+    Mapping[str, Mapping[str, Any]]
         A mapping of QC names to dictionaries containing:
         ``{"function": callable, "requests": dict, "kwargs": dict}``.
     """
-    qc_inputs: dict[str, dict[str, Any]] = {}
+    qc_inputs: dict[str, Mapping[str, Any]] = {}
 
     _validate_dict(qc_dict)
 
@@ -346,8 +348,8 @@ def _prepare_qc_functions(
 
 def _apply_qc_to_masked_rows(
     qc_func: Callable[..., Any],
-    args: dict[str, Any],
-    kwargs: dict[str, Any],
+    args: Mapping[str, Any],
+    kwargs: Mapping[str, Any],
     data_index: pd.Index,
     mask: pd.Series,
 ) -> pd.Series:
@@ -358,9 +360,9 @@ def _apply_qc_to_masked_rows(
     ----------
     qc_func : Callable
         QC function to execute.
-    args : dict[str, Any]
+    args : Mapping[str, Any]
         Keyword arguments constructed from requests.
-    kwargs : dict[str, Any]
+    kwargs : Mapping[str, Any]
         Additional keyword arguments, typically from preprocessed variables.
     data_index : pandas.Index
         Full index of the dataset for aligning the QC result.
@@ -453,9 +455,9 @@ def _validate_and_normalize_input(
 
 def _prepare_all_inputs(
     data: pd.DataFrame | pd.Series,
-    qc_dict: dict[str, Any] | None,
-    preproc_dict: dict[str, Any] | None,
-) -> tuple[dict[str, Any], pd.Series, pd.DataFrame]:
+    qc_dict: Mapping[str, Any] | None,
+    preproc_dict: Mapping[str, Any] | None,
+) -> tuple[Mapping[str, Any], pd.Series, pd.DataFrame]:
     """
     Build all inputs required for QC execution.
 
@@ -466,14 +468,14 @@ def _prepare_all_inputs(
     ----------
     data : pd.Series or pd.DataFrame
         Hashable input data.
-    qc_dict : dict or None
+    qc_dict : Mapping or None
         Dictionary defining QC functions and their arguments.
-    preproc_dict : dict or None
+    preproc_dict : Mapping or None
         Dictionary defining preprocessing steps.
 
     Returns
     -------
-    tuple of (dict, pd.Series, pd.DataFrame)
+    tuple of (Mapping, pd.Series, pd.DataFrame)
         - QC inputs dictionary: {qc_name: {function, requests, kwargs}}.
         - Initial boolean mask Series (all True).
         - Empty results DataFrame with shape (n_rows, n_qcs).
@@ -522,7 +524,7 @@ def _group_iterator(
 
 def _run_qc_engine(
     data: pd.DataFrame | pd.Series,
-    qc_inputs: dict[str, Any],
+    qc_inputs: Mapping[str, Any],
     groups: Iterable[tuple[Any | None, pd.DataFrame | pd.Series]],
     return_method: Literal["all", "passed", "failed"],
 ) -> pd.DataFrame | pd.Series:
@@ -537,7 +539,7 @@ def _run_qc_engine(
     ----------
     data : pd.Series or pd.DataFrame
         Hashable input data.
-    qc_inputs : dict
+    qc_inputs : Mapping
         Dictionary of QC inputs, each containing:
         {"function": callable, "requests": dict, "kwargs": dict}.
     groups : Iterable
@@ -591,8 +593,8 @@ def _run_qc_engine(
 def _do_multiple_check(
     data: pd.DataFrame | pd.Series,
     groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None | None = None,
-    qc_dict: dict[str, Any] | None = None,
-    preproc_dict: dict[str, Any] | None = None,
+    qc_dict: Mapping[str, Any] | None = None,
+    preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame | pd.Series:
     """
@@ -612,14 +614,14 @@ def _do_multiple_check(
         directly. Any groups that contain indices not present in ``data`` are
         automatically trimmed.
         If ``None``, the entire input ``data`` is treated as a single group.
-    qc_dict : dict, optional
+    qc_dict : Mapping, optional
         Nested QC dictionary.
         Keys represent arbitrary user-specified names for the checks.
         The values are dictionaries which contain the keys "func" (name of the QC function),
         "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
         if necessary, "arguments" (the corresponding keyword arguments).
         For more information see Examples.
-    preproc_dict : dict, optional
+    preproc_dict : Mapping, optional
         Nested pre-processing dictionary.
         Keys represent variable names that can be used by `qc_dict`.
         The values are dictionaries which contain the keys "func" (name of the pre-processing function),
@@ -649,8 +651,8 @@ def _do_multiple_check(
 
 def do_multiple_individual_check(
     data: pd.DataFrame | pd.Series,
-    qc_dict: dict[str, Any] | None = None,
-    preproc_dict: dict[str, Any] | None = None,
+    qc_dict: Mapping[str, Any] | None = None,
+    preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame | pd.Series:
     """
@@ -660,14 +662,14 @@ def do_multiple_individual_check(
     ----------
     data : pd.Series or pd.DataFrame
         Hashable input data.
-    qc_dict : dict, optional
+    qc_dict : Mapping, optional
         Nested QC dictionary.
         Keys represent arbitrary user-specified names for the checks.
         The values are dictionaries which contain the keys "func" (name of the QC function),
         "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
         if necessary, "arguments" (the corresponding keyword arguments).
         For more information see Examples.
-    preproc_dict : dict, optional
+    preproc_dict : Mapping, optional
         Nested pre-processing dictionary.
         Keys represent variable names that can be used by `qc_dict`.
         The values are dictionaries which contain the keys "func" (name of the pre-processing function),
@@ -803,8 +805,8 @@ def do_multiple_individual_check(
 def do_multiple_sequential_check(
     data: pd.DataFrame | pd.Series,
     groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None = None,
-    qc_dict: dict[str, Any] | None = None,
-    preproc_dict: dict[str, Any] | None = None,
+    qc_dict: Mapping[str, Any] | None = None,
+    preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame | pd.Series:
     """
@@ -824,13 +826,13 @@ def do_multiple_sequential_check(
         automatically trimmed.
         If ``None``, the entire input ``data`` is treated as a single group.
         For more information see Examples.
-    qc_dict : dict, optional
+    qc_dict : Mapping, optional
         Nested QC dictionary.
         Keys represent arbitrary user-specified names for the checks.
         The values are dictionaries which contain the keys "func" (name of the QC function),
         "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
         if necessary, "arguments" (the corresponding keyword arguments).
-    preproc_dict : dict, optional
+    preproc_dict : Mapping, optional
         Nested pre-processing dictionary.
         Keys represent variable names that can be used by `qc_dict`.
         The values are dictionaries which contain the keys "func" (name of the pre-processing function),
@@ -879,8 +881,8 @@ def do_multiple_sequential_check(
 
 def do_multiple_grouped_check(
     data: pd.DataFrame,
-    qc_dict: dict[str, Any] | None = None,
-    preproc_dict: dict[str, Any] | None = None,
+    qc_dict: Mapping[str, Any] | None = None,
+    preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
 ) -> pd.DataFrame | pd.Series:
     """
@@ -890,14 +892,14 @@ def do_multiple_grouped_check(
     ----------
     data : pd.Series or pd.DataFrame
         Hashable input data.
-    qc_dict : dict, optional
+    qc_dict : Mapping, optional
         Nested QC dictionary.
         Keys represent arbitrary user-specified names for the checks.
         The values are dictionaries which contain the keys "func" (name of the QC function),
         "names" (input data names as keyword arguments, that will be retrieved from `data`) and,
         if necessary, "arguments" (the corresponding keyword arguments).
         For more information see Examples.
-    preproc_dict : dict, optional
+    preproc_dict : Mapping, optional
         Nested pre-processing dictionary.
         Keys represent variable names that can be used by `qc_dict`.
         The values are dictionaries which contain the keys "func" (name of the pre-processing function),
