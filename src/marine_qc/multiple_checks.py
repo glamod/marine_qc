@@ -272,12 +272,8 @@ def _validate_args(
                 break
         return handlers
 
-    if args is None:
-        args = ()
-    elif isinstance(args, dict) and kwargs is None:
-        kwargs = args
-        args = ()
-    elif not isinstance(args, (tuple, list)):
+    args = args or ()
+    if not isinstance(args, (list, tuple)):
         args = (args,)
 
     kwargs = kwargs or {}
@@ -356,7 +352,7 @@ def _prepare_preprocessed_vars(
 
         arguments = params.get("arguments", {})
 
-        _validate_args(func, inputs, {**requests, **arguments})  # , reserved=reserved_keys)
+        _validate_args(func, args=inputs, kwargs={**requests, **arguments})  # , reserved=reserved_keys)
 
         preprocessed[var_name] = func(*inputs, **requests, **arguments)
 

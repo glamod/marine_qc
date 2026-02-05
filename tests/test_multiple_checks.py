@@ -197,40 +197,40 @@ def test_validate_dict_invalid_values(input_dict):
 
 
 def test_validate_args_passing_required_only():
-    _validate_args(simple_test_function, {"in_param": 2})
+    _validate_args(simple_test_function, kwargs={"in_param": 2})
 
 
 def test_validate_args_passing_with_extra_kwargs():
     _validate_args(
         simple_test_function,
-        {"in_param": 2, "extra": 123, "another": "value"},
+        kwargs={"in_param": 2, "extra": 123, "another": "value"},
     )
 
 
 def test_validate_args_passing_with_kwargs_only():
     _validate_args(
         simple_test_function,
-        {"in_param": 2, "unexpected_param": 42},
+        kwargs={"in_param": 2, "unexpected_param": 42},
     )
 
 
 def test_validate_args_passing_with_args_and_kwargs():
-    _validate_args(simple_test_function, 2, {"extra": 123})
+    _validate_args(simple_test_function, args=2, kwargs={"extra": 123})
 
 
 def test_validate_args_invalid_param():
     with pytest.raises(ValueError, match="is not a valid parameter of function"):
-        _validate_args(simple_test_function_no_kwargs, {"in_param": 2, "extra": 123})
+        _validate_args(simple_test_function_no_kwargs, kwargs={"in_param": 2, "extra": 123})
 
 
 def test_validate_args_missing_required_param():
     with pytest.raises(TypeError, match="is missing for function"):
-        _validate_args(simple_test_function, {"extra": 123})
+        _validate_args(simple_test_function, kwargs={"extra": 123})
 
 
 def test_validate_args_too_many_args():
     with pytest.raises(TypeError, match="Too many positional arguments for function"):
-        _validate_args(simple_test_function_no_kwargs, (1, 2))
+        _validate_args(simple_test_function_no_kwargs, args=(1, 2))
 
 
 def test_get_requests_from_params(df_ind):
