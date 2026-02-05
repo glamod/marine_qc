@@ -21,8 +21,7 @@ from marine_qc.multiple_checks import (
     _is_in_data,
     _normalize_groupby,
     _prepare_all_inputs,
-    _prepare_preprocessed_vars,
-    _prepare_qc_functions,
+    _prepare_functions,
     _run_qc_engine,
     _validate_and_normalize_input,
     _validate_args,
@@ -268,34 +267,34 @@ def test_get_preprocessed_args():
     assert result["var2"] == 99
 
 
-def test_prepare_preprocessed_vars_basic(df_ind):
-    preproc_dict = {
+def test_prepare_functions_execute(df_ind):
+    config = {
         "test": {
             "func": "do_hard_limit_check",
             "names": {"value": "value1"},
             "arguments": {"limits": [2, 3]},
         },
     }
-    result = _prepare_preprocessed_vars(preproc_dict, df_ind)
+    result = _prepare_functions(config, df_ind, execute=True)
 
     expected = pd.Series([failed, passed, passed, failed])
     pd.testing.assert_series_equal(result["test"], expected)
 
 
-def test_prepare_preprocessed_vars_error(df_ind):
-    preproc_dict = {
+def test_prepare_functions_without_func(df_ind):
+    config = {
         "test": {
             "names": {"value": "value1"},
             "arguments": {"limits": [2, 3]},
         },
     }
     with pytest.raises(ValueError, match="'func' is not specified"):
-        _prepare_preprocessed_vars(preproc_dict, df_ind)
+        _prepare_functions(config, df_ind)
 
 
-def test_prepare_qc_functions_basic(df_ind, qc_dict):
+def test_prepare_functions_preprocessed(df_ind, qc_dict):
     preprocessed = {}
-    result = _prepare_qc_functions(qc_dict, preprocessed, df_ind)
+    result = _prepare_functions(qc_dict, df_ind, preprocessed=preprocessed)
 
     for i in ["1", "2"]:
         function = result[f"test{i}"]["function"]
@@ -305,18 +304,6 @@ def test_prepare_qc_functions_basic(df_ind, qc_dict):
 
         pd.testing.assert_series_equal(requests["value"], df_ind[f"value{i}"])
         assert result[f"test{i}"]["kwargs"] == qc_dict[f"test{i}"]["arguments"]
-
-
-def test_prepare_qc_functions_error(df_ind):
-    preprocessed = {}
-    qc_dict = {
-        "test": {
-            "names": {"value": "value1"},
-            "arguments": {"limits": [2, 3]},
-        }
-    }
-    with pytest.raises(ValueError, match="'func' is not specified"):
-        _prepare_qc_functions(qc_dict, preprocessed, df_ind)
 
 
 def test_apply_qc_to_masked_rows():
