@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 import inspect
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from typing import Any, Literal, cast
 
 import pandas as pd
 
-from .auxiliary import failed, passed, untested
+from .auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS, failed, passed, untested
 from .external_clim import get_climatological_value  # noqa: F401
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,
@@ -220,10 +220,11 @@ def _validate_dict(input_dict: Mapping[str, Mapping[str, Any]]) -> None:
 
 def _validate_args(
     func: Callable[..., Any],
-    kwargs: Mapping[str, Any],
+    args: Sequence[Any] | None = None,
+    kwargs: Mapping[str, Any] | None = None,
 ) -> None:
     """
-    Validate keyword arguments against a function's signature.
+    Validate positional and keyword arguments against a function's signature, taking decorators into account.
 
     This function checks that:
     - All provided keyword arguments correspond to valid parameters of the given function.
@@ -233,7 +234,9 @@ def _validate_args(
     ----------
     func : Callable[..., Any]
         The function whose signature is used for validation.
-    kwargs : Mapping
+    args : Sequence[Any], optional
+        Sequence of arguments intended to be passed to `func`.
+    kwargs : Mapping[str, Any], optional
         Dictionary of keyword arguments intended to be passed to `func`.
 
     Raises
@@ -243,15 +246,65 @@ def _validate_args(
     TypeError
         If a required parameter of `func` is missing from `kwargs`.
     """
+
+    def all_handlers(func: Callable[..., Any]) -> list[Callable[..., Any]]:
+        """
+        Collect all decorator handlers applied to a function.
+
+        Parameters
+        ----------
+        func : Callable[..., Any]
+            The function to inspect for applied decorator handlers.
+
+        Returns
+        -------
+        List[Callable[..., Any]]
+            A list of all decorator handlers associated with the function,
+            including handlers from wrapped functions.
+        """
+        handlers: list[Callable[..., Any]] = []
+        current: Callable[..., Any] = func
+        while True:
+            handlers.extend(DECORATOR_HANDLERS.get(current, []))
+            if hasattr(current, "__wrapped__"):
+                current = current.__wrapped__
+            else:
+                break
+        return handlers
+
+    if args is None:
+        args = ()
+    elif isinstance(args, dict) and kwargs is None:
+        kwargs = args
+        args = ()
+    elif not isinstance(args, (tuple, list)):
+        args = (args,)
+
+    kwargs = kwargs or {}
+
+    reserved_keys: set[str] = set()
+    for handler in all_handlers(func):
+        reserved_keys.update(DECORATOR_KWARGS.get(handler, set()))
+
     sig = inspect.signature(func)
+    params = list(sig.parameters.values())
 
-    has_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
+    positional_params = [p for p in params if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)]
 
-    for parameter in kwargs:
-        if parameter not in sig.parameters and not has_kwargs:
-            raise ValueError(f"Parameter '{parameter}' is not a valid parameter of function '{func.__name__}'.")
+    has_args = any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in params)
 
-    for name, param in sig.parameters.items():
+    if len(args) > len(positional_params) and not has_args:
+        raise TypeError(f"Too many positional arguments for function '{func.__name__}'.")
+
+    bound_args = {positional_params[i].name for i in range(min(len(args), len(positional_params)))}
+
+    has_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params)
+
+    for key in kwargs:
+        if key not in sig.parameters and key not in reserved_keys and not has_kwargs:
+            raise ValueError(f"Parameter '{key}' is not a valid parameter of function '{func.__name__}'.")
+
+    for param in params:
         if (
             param.default is inspect.Parameter.empty
             and param.kind
@@ -260,9 +313,10 @@ def _validate_args(
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 inspect.Parameter.KEYWORD_ONLY,
             )
-            and name not in kwargs.keys()
+            and param.name not in kwargs
+            and param.name not in bound_args
         ):
-            raise TypeError(f"Required parameter '{name}' is missing for function '{func.__name__}'.")
+            raise TypeError(f"Required parameter '{param.name}' is missing for function '{func.__name__}'.")
 
 
 def _prepare_preprocessed_vars(
@@ -291,15 +345,18 @@ def _prepare_preprocessed_vars(
     for var_name, params in preproc_dict.items():
         if "func" not in params:
             raise ValueError(f"'func' is not specified in {params}.")
+
         func = _get_function(params["func"])
-        requests = _get_requests_from_params(params.get("names"), func, data)
 
         inputs = params.get("inputs", [])
         if not isinstance(inputs, list):
             inputs = [inputs]
 
+        requests = _get_requests_from_params(params.get("names"), func, data)
+
         arguments = params.get("arguments", {})
-        _validate_args(func, {**requests, **arguments})
+
+        _validate_args(func, inputs, {**requests, **arguments})  # , reserved=reserved_keys)
 
         preprocessed[var_name] = func(*inputs, **requests, **arguments)
 
@@ -339,7 +396,7 @@ def _prepare_qc_functions(
         func = _get_function(params["func"])
         requests = _get_requests_from_params(params.get("names"), func, data)
         kwargs = _get_preprocessed_args(params.get("arguments", {}), preprocessed)
-        _validate_args(func, {**requests, **kwargs})
+        _validate_args(func, kwargs={**requests, **kwargs})
 
         qc_inputs[qc_name] = {"function": func, "requests": requests, "kwargs": kwargs}
 

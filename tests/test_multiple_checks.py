@@ -214,6 +214,10 @@ def test_validate_args_passing_with_kwargs_only():
     )
 
 
+def test_validate_args_passing_with_args_and_kwargs():
+    _validate_args(simple_test_function, 2, {"extra": 123})
+
+
 def test_validate_args_invalid_param():
     with pytest.raises(ValueError, match="is not a valid parameter of function"):
         _validate_args(simple_test_function_no_kwargs, {"in_param": 2, "extra": 123})
@@ -222,6 +226,11 @@ def test_validate_args_invalid_param():
 def test_validate_args_missing_required_param():
     with pytest.raises(TypeError, match="is missing for function"):
         _validate_args(simple_test_function, {"extra": 123})
+
+
+def test_validate_args_too_many_args():
+    with pytest.raises(TypeError, match="Too many positional arguments for function"):
+        _validate_args(simple_test_function_no_kwargs, (1, 2))
 
 
 def test_get_requests_from_params(df_ind):
