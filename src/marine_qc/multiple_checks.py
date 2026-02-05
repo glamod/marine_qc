@@ -621,7 +621,7 @@ def _validate_and_normalize_input(
 
 def _do_multiple_check(
     data: pd.DataFrame | pd.Series,
-    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None | None = None,
+    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None = None,
     qc_dict: Mapping[str, Any] | None = None,
     preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",

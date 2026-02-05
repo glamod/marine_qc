@@ -16,13 +16,7 @@ Helpers in multiple checks module
 .. autofunction:: marine_qc.multiple_checks._get_requests_from_params
    :noindex:
 
-.. autofunction:: marine_qc.multiple_checks._get_preprocessed_args
-   :noindex:
-
-.. autofunction:: marine_qc.multiple_checks._prepare_preprocessed_vars
-   :noindex:
-
-.. autofunction:: marine_qc.multiple_checks._prepare_qc_functions
+.. autofunction:: marine_qc.multiple_checks._prepare_functions
    :noindex:
 
 .. autofunction:: marine_qc.multiple_checks._apply_qc_to_masked_rows
