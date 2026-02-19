@@ -3,7 +3,8 @@
 from __future__ import annotations
 import inspect
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
-from typing import Any, Literal, cast
+from types import UnionType
+from typing import Any, Literal, cast, get_args, get_origin, get_type_hints
 
 import pandas as pd
 
@@ -212,6 +213,66 @@ def _group_iterator(
         yield from _normalize_groupby(data, groupby)
 
 
+def _validate_arg(
+    key: str,
+    value: Any,
+    func_name: str,
+    parameters: Mapping[str, inspect.Parameter],
+    type_hints: Mapping[str, type],
+    reserved_keys: set[str],
+    has_arguments: bool,
+) -> None:
+    """
+    Validate argument against a function's signature, taking decorators into account.
+
+    Parameters
+    ----------
+    key : str
+        The name of the argument to validate.
+    value : Any
+        The value of the argument to validate.
+    func_name : str
+        The name of the function (used in error message).
+    parameters : Mapping[str, inspect.Parameter]
+        A mapping of parameter names to `inspect.Parameter` objects,
+        typically from `inspect.signature(func).parameters`.
+    type_hints : Mapping[str, type]
+        A mapping of parameter names to expected types,
+        typically from `typing.get_type_hints(func)`.
+    reserved_keys : set[str]
+        Argument names that are considered reserved and should nor raise errors.
+    has_arguments : bool
+        Whether the function accepts arbitrary arguments.
+    """
+    if has_arguments or key in reserved_keys:
+        return
+    if key not in parameters:
+        raise ValueError(f"Parameter '{key}' is not a valid parameter of function '{func_name}'.")
+
+    expected = type_hints.get(key)
+    if not expected or expected is inspect._empty:
+        return
+
+    origin, args = get_origin(expected), get_args(expected)
+    if origin is None:
+        if not isinstance(value, expected):
+            raise TypeError(f"Parameter '{key}' does not match expected type: {expected}.")
+        return
+    if origin is UnionType:
+        return  # still not handled
+
+    if not isinstance(value, (list, tuple)):
+        raise TypeError(f"Parameter '{key}' does not match expected type: {origin}.")
+
+    if args:
+        if origin is tuple and len(args) != len(value):
+            raise ValueError(f"Parameter '{key}' does not have the expected length: {len(args)}.")
+        for i, v in enumerate(value):
+            t = args[i] if origin is tuple and len(args) > 1 else args[0]
+            if not isinstance(v, t):
+                raise TypeError(f"Entries of parameter '{key}' does not have the expected type: {t}.")
+
+
 def _validate_args(
     func: Callable[..., Any],
     args: Sequence[Any] | None = None,
@@ -286,13 +347,18 @@ def _validate_args(
     if len(args) > len(positional_params) and not has_args:
         raise TypeError(f"Too many positional arguments for function '{func.__name__}'.")
 
-    bound_args = {positional_params[i].name for i in range(min(len(args), len(positional_params)))}
+    bound_args = [positional_params[i].name for i in range(min(len(args), len(positional_params)))]
+    # print(bound_args)
 
     has_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params)
 
-    for key in kwargs:
-        if key not in sig.parameters and key not in reserved_keys and not has_kwargs:
-            raise ValueError(f"Parameter '{key}' is not a valid parameter of function '{func.__name__}'.")
+    type_hints = get_type_hints(func)
+
+    for i, arg in enumerate(args):
+        _validate_arg(bound_args[i], arg, func.__name__, sig.parameters, type_hints, reserved_keys, has_args)
+
+    for key, value in kwargs.items():
+        _validate_arg(key, value, func.__name__, sig.parameters, type_hints, reserved_keys, has_kwargs)
 
     for param in params:
         if (

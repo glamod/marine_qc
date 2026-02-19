@@ -232,6 +232,10 @@ def test_validate_args_too_many_args():
         _validate_args(simple_test_function_no_kwargs, args=(1, 2))
 
 
+def test_validate_args_ttttttt():
+    _validate_args(do_hard_limit_check, args=([1, 2, 3, 4, 5],), kwargs={"limits": [5, 6]})
+
+
 def test_get_requests_from_params(df_ind):
     test_params = {"in_param": "value1"}
     result = _get_requests_from_params(test_params, simple_test_function, df_ind)
