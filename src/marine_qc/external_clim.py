@@ -21,6 +21,7 @@ from .auxiliary import (
     DECORATOR_NAMES,
     SequenceFloatType,
     ValueFloatType,
+    ValueIntType,
     generic_decorator,
     isvalid,
     post_format_return_type,
@@ -773,4 +774,6 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
     return np.asarray(climatology, dtype=float)
 
 
+ClimIntType: TypeAlias = ValueIntType | Climatology
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
+ClimNumberType: TypeAlias = ValueIntType | ValueFloatType | Climatology

@@ -27,16 +27,17 @@ PandasNaTType: TypeAlias = NaTType
 
 ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
+ScalarNumberType: TypeAlias = ScalarIntType | ScalarFloatType
 ScalarDatetimeType: TypeAlias = datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
 
 SequenceIntType: TypeAlias = Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray
-
 SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray
-
+SequenceNumberType: TypeAlias = SequenceIntType | SequenceFloatType
 SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
 
-ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
+ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
+ValueNumberType: TypeAlias = ValueIntType | ValueFloatType
 ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
 
 # --- DECORATOR HELPERS ---
