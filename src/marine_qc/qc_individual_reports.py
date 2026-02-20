@@ -11,9 +11,11 @@ import numpy as np
 
 from .astronomical_geometry import sunangle
 from .auxiliary import (
+    ScalarNumberType,
     ValueDatetimeType,
     ValueFloatType,
     ValueIntType,
+    ValueNumberType,
     convert_units,
     failed,
     format_return_type,
@@ -23,7 +25,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimFloatType, inspect_climatology
+from .external_clim import ClimNumberType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
@@ -33,7 +35,7 @@ vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float,
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def value_check(value: ValueFloatType) -> ValueIntType:
+def value_check(value: ValueNumberType) -> ValueIntType:
     """
     Check if a value is equal to None or numerically invalid (NaN).
 
@@ -66,7 +68,7 @@ def value_check(value: ValueFloatType) -> ValueIntType:
 @post_format_return_type(["lat", "lon"])
 @inspect_arrays(["lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
-def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
+def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntType:
     """
     Perform the positional QC check on the report.
 
@@ -240,9 +242,9 @@ def _do_daytime_check(
     month: ValueIntType,
     day: ValueIntType,
     hour: ValueFloatType,
-    lat: ValueFloatType,
-    lon: ValueFloatType,
-    time_since_sun_above_horizon: float | None,
+    lat: ValueNumberType,
+    lon: ValueNumberType,
+    time_since_sun_above_horizon: ScalarNumberType | None,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
     """
@@ -382,9 +384,9 @@ def do_day_check(
     month: ValueIntType | None = None,
     day: ValueIntType | None = None,
     hour: ValueFloatType | None = None,
-    lat: ValueFloatType | None = None,
-    lon: ValueFloatType | None = None,
-    time_since_sun_above_horizon: float | None = None,
+    lat: ValueNumberType | None = None,
+    lon: ValueNumberType | None = None,
+    time_since_sun_above_horizon: ScalarNumberType | None = None,
 ) -> ValueIntType:
     """
     Determine if the sun was above the horizon a specified time before the report.
@@ -453,9 +455,9 @@ def do_night_check(
     month: ValueIntType | None = None,
     day: ValueIntType | None = None,
     hour: ValueFloatType | None = None,
-    lat: ValueFloatType | None = None,
-    lon: ValueFloatType | None = None,
-    time_since_sun_above_horizon: float | None = None,
+    lat: ValueNumberType | None = None,
+    lon: ValueNumberType | None = None,
+    time_since_sun_above_horizon: ScalarNumberType | None = None,
 ) -> ValueIntType:
     """
     Determine if the sun was below the horizon a specified time before the report.
@@ -523,7 +525,7 @@ def do_night_check(
     )
 
 
-def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
+def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
     """
     Check if a value is equal to None or numerically invalid (NaN).
 
@@ -543,7 +545,7 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs: Any) -> ValueIntType:
+def do_missing_value_clim_check(climatology: ClimNumberType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
@@ -573,8 +575,8 @@ def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs: Any) -> Va
 @inspect_arrays(["value"])
 @convert_units(value="unknown", limits="unknown")
 def do_hard_limit_check(
-    value: ValueFloatType,
-    limits: tuple[float, float],
+    value: ValueNumberType,
+    limits: tuple[int | float, int | float],
 ) -> ValueIntType:
     """
     Check if a value is outside specified limits.
@@ -624,12 +626,12 @@ def do_hard_limit_check(
 @convert_units(value="unknown", climatology="unknown")
 @inspect_climatology("climatology", optional="standard_deviation")
 def do_climatology_check(
-    value: ValueFloatType,
-    climatology: ClimFloatType,
+    value: ValueNumberType,
+    climatology: ClimNumberType,
     maximum_anomaly: float,
-    standard_deviation: ValueFloatType = "default",
-    standard_deviation_limits: tuple[float, float] | None = None,
-    lowbar: float | None = None,
+    standard_deviation: ValueNumberType = "default",
+    standard_deviation_limits: tuple[int | float, int | float] | None = None,
+    lowbar: int | float | None = None,
 ) -> ValueIntType:
     """
     Climatology check to compare a value with a climatological average within specified anomaly limits.
@@ -734,7 +736,7 @@ def do_climatology_check(
 @post_format_return_type(["dpt", "at2"])
 @inspect_arrays(["dpt", "at2"])
 @convert_units(dpt="K", at2="K")
-def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueIntType:
+def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> ValueIntType:
     """
     Perform the super saturation check.
 
@@ -783,10 +785,10 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
 @inspect_arrays(["sst"])
 @convert_units(sst="K", freezing_point="K")
 def do_sst_freeze_check(
-    sst: ValueFloatType,
-    freezing_point: float,
-    freeze_check_n_sigma: float | Literal["default"] = "default",
-    sst_uncertainty: float | Literal["default"] = "default",
+    sst: ValueNumberType,
+    freezing_point: int | float,
+    freeze_check_n_sigma: int | float | Literal["default"] = "default",
+    sst_uncertainty: int | float | Literal["default"] = "default",
 ) -> ValueIntType:
     """
     Check input sea-surface temperature(s) to see if it is above freezing.
@@ -864,7 +866,7 @@ def do_sst_freeze_check(
 
 @post_format_return_type(["wind_speed", "wind_direction"])
 @inspect_arrays(["wind_speed", "wind_direction"])
-def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueFloatType) -> ValueIntType:
+def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: ValueNumberType) -> ValueIntType:
     """
     Test to compare windspeed to winddirection to check if they are consistent.
 
