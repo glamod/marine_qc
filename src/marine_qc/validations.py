@@ -3,12 +3,13 @@
 from __future__ import annotations
 import collections.abc as abc
 import inspect
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from types import UnionType
 from typing import (
     Annotated,
     Any,
     Literal,
+    Tuple,
     Union,
     get_args,
     get_origin,
@@ -50,6 +51,192 @@ from .qc_sequential_reports import (  # noqa: F401
 )
 
 
+def _validate_non_generic(value: Any, expected: Any) -> bool:
+    """
+    Validate a non-generic type (str, int, float, etc.).
+
+    Parameters
+    ----------
+    value : Any
+        The value to validate.
+    expected : Any
+        The expected type.
+
+    Returns
+    -------
+    bool
+        True if `value` matches `expected`, False otherwise.
+    """
+    if isinstance(expected, type):
+        return isinstance(value, expected)
+    return False
+
+
+def _validate_mapping(value: Mapping[Any, Any], origin: type, args: Tuple[Any, ...]) -> bool:
+    """
+    Validate a mapping type (dict, Mapping).
+
+    Parameters
+    ----------
+    value : Mapping[Any, Any]
+        The value to validate.
+    origin : type
+        The mapping type (e.g., dict).
+    args : tuple[Any, ...]
+        Expected key and value types.
+
+    Returns
+    -------
+    bool
+        True if `value` matches the mapping type and key/value types, False otherwise.
+    """
+    if not isinstance(value, origin):
+        return False
+    if not args:
+        return True
+    key_type, val_type = args
+    return all(validate_type(k, key_type) and validate_type(v, val_type) for k, v in value.items())
+
+
+def _validate_iterable(value: Iterable[Any], origin: type, args: Tuple[Any, ...]) -> bool:
+    """
+    Validate an iterable type (list, set, frozenset).
+
+    Parameters
+    ----------
+    value : Any
+        The value to validate.
+    origin : type
+        The iterable type.
+    args : tuple[Any, ...]
+        Expected element types.
+
+    Returns
+    -------
+    bool
+        True if all elements match the expected type, False otherwise.
+    """
+    if not isinstance(value, origin):
+        return False
+    if not args:
+        return True
+    elem_type = args[0]
+    return all(validate_type(v, elem_type) for v in value)
+
+
+def _validate_sequence(value: Any, args: Tuple[Any, ...]) -> bool:
+    """
+    Validate a generic sequence type (e.g., Sequence[int]).
+
+    Parameters
+    ----------
+    value : Any
+        The value to validate.
+    args : tuple[Any, ...]
+        Expected element types.
+
+    Returns
+    -------
+    bool
+        True if all elements match the expected type, False otherwise.
+    """
+    if not isinstance(value, abc.Sequence) or isinstance(value, (str, bytes)):
+        return False
+    if not args:
+        return True
+    elem_type = args[0]
+    return all(validate_type(v, elem_type) for v in value)
+
+
+def _validate_tuple(value: Any, args: Tuple[Any, ...]) -> bool:
+    """
+    Validate a tuple type (fixed-length or homogeneous).
+
+    Parameters
+    ----------
+    value : Any
+        The value to validate.
+    args : tuple[Any, ...]
+        Expected element types.
+
+    Returns
+    -------
+    bool
+        True if the tuple matches the expected types and length, False otherwise.
+    """
+    if not isinstance(value, abc.Sequence) or isinstance(value, (str, bytes)):
+        return False
+    if not args:
+        return True
+    if len(args) == 2 and args[1] is Ellipsis:
+        return all(validate_type(v, args[0]) for v in value)
+    if len(args) != len(value):
+        return False
+    return all(validate_type(v, t) for v, t in zip(value, args, strict=False))
+
+
+def _validate_ndarray(value: Any, args: Tuple[Any, ...]) -> bool:
+    """
+    Validate a numpy ndarray type, optionally checking dtype.
+
+    Parameters
+    ----------
+    value : Any
+        The value to validate.
+    args : tuple[Any, ...]
+        Expected dtype (first argument may be `Any` or unspecified).
+
+    Returns
+    -------
+    bool
+        True if `value` is an ndarray and matches expected dtype, False otherwise.
+    """
+    if not isinstance(value, np.ndarray):
+        return False
+
+    if not args:
+        return True
+
+    if len(args) < 2:
+        return True
+
+    expected_dtype = args[1]
+
+    inner = get_args(expected_dtype)
+    if inner:
+        expected_dtype = inner[0]
+
+    if expected_dtype in (Any, None):
+        return True
+
+    try:
+        return np.issubdtype(value.dtype, expected_dtype)
+    except TypeError:
+        return False
+
+
+def _safe_isinstance(value: Any, origin: Any) -> bool:
+    """
+    Safely check if value is an instance of a type, avoiding TypeError for weird generics.
+
+    Parameters
+    ----------
+    value : Any
+        Value to check.
+    origin : Any
+        Type or generic to check against.
+
+    Returns
+    -------
+    bool
+        True if `value` is an instance of `origin`, False otherwise.
+    """
+    try:
+        return isinstance(value, origin)
+    except TypeError:
+        return False
+
+
 def validate_type(value: Any, expected: Any) -> bool:
     """
     Recursively validate that a value matches the expected type hint.
@@ -73,16 +260,14 @@ def validate_type(value: Any, expected: Any) -> bool:
     origin = get_origin(expected)
     args = get_args(expected)
 
+    if origin is None:
+        return _validate_non_generic(value, expected)
+
     if origin is Annotated:
         return validate_type(value, args[0])
 
     if origin is Literal:
         return value in args
-
-    if origin is None:
-        if isinstance(expected, type):
-            return isinstance(value, expected)
-        return False
 
     if origin in (Union, UnionType):
         return any(validate_type(value, t) for t in args)
@@ -90,69 +275,25 @@ def validate_type(value: Any, expected: Any) -> bool:
     if origin is abc.Callable:
         return callable(value)
 
-    if isinstance(origin, type) and issubclass(origin, abc.Mapping):
-        if not isinstance(value, origin):
-            return False
-        if not args:
-            return True
-        key_type, val_type = args
-        return all(validate_type(k, key_type) and validate_type(v, val_type) for k, v in value.items())
-
-    if isinstance(origin, type) and issubclass(origin, (list, set, frozenset)):
-        if not isinstance(value, origin):
-            return False
-        if not args:
-            return True
-        elem_type = args[0]
-        return all(validate_type(v, elem_type) for v in value)
-
-    if origin is tuple:
-        if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-            return False
-        if not args:
-            return True
-        if len(args) == 2 and args[1] is Ellipsis:
-            return all(validate_type(v, args[0]) for v in value)
-        if len(args) != len(value):
-            return False
-        return all(validate_type(v, t) for v, t in zip(value, args, strict=False))
-
-    if isinstance(origin, type) and issubclass(origin, abc.Sequence):
-        if not isinstance(value, abc.Sequence) or isinstance(value, (str, bytes)):
-            return False
-        if not args:
-            return True
-        elem_type = args[0]
-        return all(validate_type(v, elem_type) for v in value)
-
     if origin in (np.ndarray, npt.NDArray):
-        if not isinstance(value, np.ndarray):
-            return False
-
-        if not args:
-            return True
-
-        expected_dtype = args[1]
-
-        inner = get_args(expected_dtype)
-        if inner:
-            expected_dtype = inner[0]
-
-        if expected_dtype in (Any, None):
-            return True
-
-        try:
-            return np.issubdtype(value.dtype, expected_dtype)
-        except TypeError:
-            return False
+        return _validate_ndarray(value, args)
 
     if isinstance(expected, type) and issubclass(expected, (pd.DataFrame, pd.Series)):
         return isinstance(value, expected)
 
-    try:
-        return isinstance(value, origin)
-    except TypeError:
-        return False
+    if isinstance(origin, type) and issubclass(origin, abc.Mapping):
+        return _validate_mapping(value, origin, args)
+
+    if isinstance(origin, type) and issubclass(origin, (list, set, frozenset)):
+        return _validate_iterable(value, origin, args)
+
+    if origin is tuple:
+        return _validate_tuple(value, args)
+
+    if isinstance(origin, type) and issubclass(origin, abc.Sequence):
+        return _validate_sequence(value, args)
+
+    return _safe_isinstance(value, origin)
 
 
 def validate_arg(
