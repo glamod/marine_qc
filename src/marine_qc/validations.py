@@ -274,23 +274,22 @@ def validate_type(value: Any, expected: Any) -> bool:
     if origin is abc.Callable:
         return callable(value)
 
+    if origin is tuple:
+        return _validate_tuple(value, args)
+
     if origin in (np.ndarray, npt.NDArray):
         return _validate_ndarray(value, args)
 
     if isinstance(expected, type) and issubclass(expected, (pd.DataFrame, pd.Series)):
         return isinstance(value, expected)
 
-    if isinstance(origin, type) and issubclass(origin, abc.Mapping):
-        return _validate_mapping(value, origin, args)
-
-    if isinstance(origin, type) and issubclass(origin, (list, set, frozenset)):
-        return _validate_iterable(value, origin, args)
-
-    if origin is tuple:
-        return _validate_tuple(value, args)
-
-    if isinstance(origin, type) and issubclass(origin, abc.Sequence):
-        return _validate_sequence(value, args)
+    if isinstance(origin, type):
+        if issubclass(origin, abc.Mapping):
+            return _validate_mapping(value, origin, args)
+        if issubclass(origin, (list, set, frozenset)):
+            return _validate_iterable(value, origin, args)
+        if issubclass(origin, abc.Sequence):
+            return _validate_sequence(value, args)
 
     return _safe_isinstance(value, origin)
 
