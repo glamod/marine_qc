@@ -17,15 +17,11 @@ from marine_qc.multiple_checks import (
     _get_preprocessed_args,
     _get_requests_from_params,
     _group_iterator,
-    _is_func_param,
-    _is_in_data,
     _normalize_groupby,
+    _normalize_input,
     _prepare_all_inputs,
     _prepare_functions,
     _run_qc_engine,
-    _validate_and_normalize_input,
-    _validate_args,
-    _validate_dict,
 )
 
 
@@ -35,11 +31,6 @@ def simple_test_function(in_param, **kwargs):
 
 def simple_test_function_no_kwargs(in_param):
     return in_param * 2
-
-
-@pytest.fixture
-def series_ind():
-    return pd.Series([1, 2, 3, 4], name="value")
 
 
 @pytest.fixture
@@ -121,119 +112,6 @@ def test_get_function():
 def test_get_function_raises():
     with pytest.raises(NameError, match="Function 'BAD_NAME' is not defined."):
         _get_function("BAD_NAME")
-
-
-def test_is_func_param():
-    assert not _is_func_param(_is_func_param, "Non existent parameter")
-    assert _is_func_param(_is_func_param, "param")
-    assert _is_func_param(simple_test_function, "non existent parameter")
-
-
-def test_is_in_data_series(series_ind):
-    assert _is_in_data("value", series_ind)
-    assert not _is_in_data("value2", series_ind)
-
-
-def test_is_in_data_df(df_ind):
-    assert _is_in_data("value1", df_ind)
-    assert _is_in_data("value2", df_ind)
-    assert not _is_in_data("value3", df_ind)
-
-
-def test_is_in_data_raises():
-    with pytest.raises(TypeError, match="Unsupported data type"):
-        _is_in_data("test_name", [1, 2, 3])
-
-
-def test_validate_dict_passing():
-    _validate_dict({"test": {"value": 1}})
-
-
-@pytest.mark.parametrize(
-    "input_value",
-    [
-        1,
-        1.0,
-        "1",
-        [1, 2],
-        (1, 2),
-        pd.DataFrame({"A": [1, 2], "B": [3, 4]}),
-        pd.Series([1, 2]),
-    ],
-)
-def test_validate_dict_invalid_input(input_value):
-    with pytest.raises(TypeError, match="must be a dictionary"):
-        _validate_dict(input_value)
-
-
-@pytest.mark.parametrize(
-    "input_dict",
-    [
-        {1: "test"},
-        {1.0: "test"},
-    ],
-)
-def test_validate_dict_invalid_keys(input_dict):
-    with pytest.raises(TypeError, match="must be a string"):
-        _validate_dict(input_dict)
-
-
-@pytest.mark.parametrize(
-    "input_dict",
-    [
-        {"test": 1},
-        {"test": 1.0},
-        {"test": "1"},
-        {"test": [1, 2]},
-        {"test": (1, 2)},
-        {"test": pd.DataFrame({"A": [1, 2], "B": [3, 4]})},
-        {"test": pd.Series([1, 2])},
-    ],
-)
-def test_validate_dict_invalid_values(input_dict):
-    with pytest.raises(TypeError, match="must be a dictionary"):
-        _validate_dict(input_dict)
-
-
-def test_validate_args_passing_required_only():
-    _validate_args(simple_test_function, kwargs={"in_param": 2})
-
-
-def test_validate_args_passing_with_extra_kwargs():
-    _validate_args(
-        simple_test_function,
-        kwargs={"in_param": 2, "extra": 123, "another": "value"},
-    )
-
-
-def test_validate_args_passing_with_kwargs_only():
-    _validate_args(
-        simple_test_function,
-        kwargs={"in_param": 2, "unexpected_param": 42},
-    )
-
-
-def test_validate_args_passing_with_args_and_kwargs():
-    _validate_args(simple_test_function, args=2, kwargs={"extra": 123})
-
-
-def test_validate_args_invalid_param():
-    with pytest.raises(ValueError, match="is not a valid parameter of function"):
-        _validate_args(simple_test_function_no_kwargs, kwargs={"in_param": 2, "extra": 123})
-
-
-def test_validate_args_missing_required_param():
-    with pytest.raises(TypeError, match="is missing for function"):
-        _validate_args(simple_test_function, kwargs={"extra": 123})
-
-
-def test_validate_args_too_many_args():
-    with pytest.raises(TypeError, match="Too many positional arguments for function"):
-        _validate_args(simple_test_function_no_kwargs, args=(1, 2))
-
-
-def test_validate_args_ttttttt():
-    _validate_args(do_hard_limit_check, args=([1, 2, 3, 4, 5],), kwargs={"limits": [5, 6]})
 
 
 def test_get_requests_from_params(df_ind):
@@ -373,16 +251,16 @@ def test_normalize_groupby(df_ind):
         (pd.Series([1, 2, 3, 4], name="value"), "failed", True),
     ],
 )
-def test_validate_and_normalize_input(data, return_method, is_series):
-    result = _validate_and_normalize_input(data, return_method)
+def test_normalize_input(data, return_method, is_series):
+    result = _normalize_input(data, return_method)
 
     assert result[1] is is_series
     pd.testing.assert_frame_equal(result[0], pd.DataFrame({"value": [1, 2, 3, 4]}))
 
 
-def test_validate_and_normalize_input_raise():
+def test_normalize_input_raise():
     with pytest.raises(ValueError, match="'return_method' must be 'all','passed','failed'."):
-        _validate_and_normalize_input(pd.DataFrame(), "invalid")
+        _normalize_input(pd.DataFrame(), "invalid")
 
 
 def test_prepare_all_inputs(df_ind, qc_dict):

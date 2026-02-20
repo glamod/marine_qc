@@ -1,14 +1,12 @@
 """Module containing base QC which call multiple QC functions and could be applied on a DataBundle."""
 
 from __future__ import annotations
-import inspect
-from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
-from types import UnionType
-from typing import Any, Literal, cast, get_args, get_origin, get_type_hints
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from typing import Any, Literal, cast
 
 import pandas as pd
 
-from .auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS, failed, passed, untested
+from .auxiliary import failed, passed, untested
 from .external_clim import get_climatological_value  # noqa: F401
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,
@@ -36,6 +34,12 @@ from .qc_sequential_reports import (  # noqa: F401
     find_multiple_rounded_values,
     find_repeated_values,
     find_saturated_runs,
+)
+from .validations import (
+    is_func_param,
+    is_in_data,
+    validate_args,
+    validate_dict,
 )
 
 
@@ -213,218 +217,6 @@ def _group_iterator(
         yield from _normalize_groupby(data, groupby)
 
 
-def _validate_arg(
-    key: str,
-    value: Any,
-    func_name: str,
-    parameters: Mapping[str, inspect.Parameter],
-    type_hints: Mapping[str, type],
-    reserved_keys: set[str],
-    has_arguments: bool,
-) -> None:
-    """
-    Validate argument against a function's signature, taking decorators into account.
-
-    Parameters
-    ----------
-    key : str
-        The name of the argument to validate.
-    value : Any
-        The value of the argument to validate.
-    func_name : str
-        The name of the function (used in error message).
-    parameters : Mapping[str, inspect.Parameter]
-        A mapping of parameter names to `inspect.Parameter` objects,
-        typically from `inspect.signature(func).parameters`.
-    type_hints : Mapping[str, type]
-        A mapping of parameter names to expected types,
-        typically from `typing.get_type_hints(func)`.
-    reserved_keys : set[str]
-        Argument names that are considered reserved and should nor raise errors.
-    has_arguments : bool
-        Whether the function accepts arbitrary arguments.
-    """
-    if has_arguments or key in reserved_keys:
-        return
-    if key not in parameters:
-        raise ValueError(f"Parameter '{key}' is not a valid parameter of function '{func_name}'.")
-
-    expected = type_hints.get(key)
-    if not expected or expected is inspect._empty:
-        return
-
-    origin, args = get_origin(expected), get_args(expected)
-    if origin is None:
-        if not isinstance(value, expected):
-            raise TypeError(f"Parameter '{key}' does not match expected type: {expected}.")
-        return
-    if origin is UnionType:
-        return  # still not handled
-
-    if not isinstance(value, (list, tuple)):
-        raise TypeError(f"Parameter '{key}' does not match expected type: {origin}.")
-
-    if args:
-        if origin is tuple and len(args) != len(value):
-            raise ValueError(f"Parameter '{key}' does not have the expected length: {len(args)}.")
-        for i, v in enumerate(value):
-            t = args[i] if origin is tuple and len(args) > 1 else args[0]
-            if not isinstance(v, t):
-                raise TypeError(f"Entries of parameter '{key}' does not have the expected type: {t}.")
-
-
-def _validate_args(
-    func: Callable[..., Any],
-    args: Sequence[Any] | None = None,
-    kwargs: Mapping[str, Any] | None = None,
-) -> None:
-    """
-    Validate positional and keyword arguments against a function's signature, taking decorators into account.
-
-    This function checks that:
-    - All provided keyword arguments correspond to valid parameters of the given function.
-    - All required parameters of the function (i.e., parameters without default values) are present in the provided keyword arguments.
-
-    Parameters
-    ----------
-    func : Callable[..., Any]
-        The function whose signature is used for validation.
-    args : Sequence[Any], optional
-        Sequence of arguments intended to be passed to `func`.
-    kwargs : Mapping[str, Any], optional
-        Dictionary of keyword arguments intended to be passed to `func`.
-
-    Raises
-    ------
-    ValueError
-        If `kwargs` contains a key that is not a parameter of `func`.
-    TypeError
-        If a required parameter of `func` is missing from `kwargs`.
-    """
-
-    def all_handlers(func: Callable[..., Any]) -> list[Callable[..., Any]]:
-        """
-        Collect all decorator handlers applied to a function.
-
-        Parameters
-        ----------
-        func : Callable[..., Any]
-            The function to inspect for applied decorator handlers.
-
-        Returns
-        -------
-        List[Callable[..., Any]]
-            A list of all decorator handlers associated with the function,
-            including handlers from wrapped functions.
-        """
-        handlers: list[Callable[..., Any]] = []
-        current: Callable[..., Any] = func
-        while True:
-            handlers.extend(DECORATOR_HANDLERS.get(current, []))
-            if hasattr(current, "__wrapped__"):
-                current = current.__wrapped__
-            else:
-                break
-        return handlers
-
-    args = args or ()
-    if not isinstance(args, (list, tuple)):
-        args = (args,)
-
-    kwargs = kwargs or {}
-
-    reserved_keys: set[str] = set()
-    for handler in all_handlers(func):
-        reserved_keys.update(DECORATOR_KWARGS.get(handler, set()))
-
-    sig = inspect.signature(func)
-    params = list(sig.parameters.values())
-
-    positional_params = [p for p in params if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)]
-
-    has_args = any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in params)
-
-    if len(args) > len(positional_params) and not has_args:
-        raise TypeError(f"Too many positional arguments for function '{func.__name__}'.")
-
-    bound_args = [positional_params[i].name for i in range(min(len(args), len(positional_params)))]
-    # print(bound_args)
-
-    has_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params)
-
-    type_hints = get_type_hints(func)
-
-    for i, arg in enumerate(args):
-        _validate_arg(bound_args[i], arg, func.__name__, sig.parameters, type_hints, reserved_keys, has_args)
-
-    for key, value in kwargs.items():
-        _validate_arg(key, value, func.__name__, sig.parameters, type_hints, reserved_keys, has_kwargs)
-
-    for param in params:
-        if (
-            param.default is inspect.Parameter.empty
-            and param.kind
-            in (
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                inspect.Parameter.KEYWORD_ONLY,
-            )
-            and param.name not in kwargs
-            and param.name not in bound_args
-        ):
-            raise TypeError(f"Required parameter '{param.name}' is missing for function '{func.__name__}'.")
-
-
-def _is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
-    """
-    Return True if named column or variable, name, is in data.
-
-    Parameters
-    ----------
-    name : str
-        Name of variable.
-    data : pd.Series or pd.DataFrame
-        Pandas Series or DataFrame to be tested.
-
-    Returns
-    -------
-    bool
-        Returns True if name is one of the columns or variables in data, False otherwise.
-
-    Raises
-    ------
-    TypeError
-        If data type is not pd.Series or pd.DataFrame.
-    """
-    if isinstance(data, pd.Series):
-        return bool(data.name == name)
-    if isinstance(data, pd.DataFrame):
-        return bool(name in data.columns)
-    raise TypeError(f"Unsupported data type: {type(data)}")
-
-
-def _is_func_param(func: Callable[..., Any], param: str) -> bool:
-    """
-    Return True if param is the name of a parameter of function func.
-
-    Parameters
-    ----------
-    func : Callable
-        Function whose parameters are to be inspected.
-    param : str
-        Name of the parameter.
-
-    Returns
-    -------
-    bool
-        Returns True if param is one of the functions parameters or the function uses ``**kwargs``.
-    """
-    sig = inspect.signature(func)
-    if "kwargs" in sig.parameters:
-        return True
-    return param in sig.parameters
-
-
 def _get_requests_from_params(
     params: Mapping[str, str] | None,
     func: Callable[..., Any],
@@ -464,9 +256,9 @@ def _get_requests_from_params(
     if params is None:
         return requests
     for param, cname in params.items():
-        if not _is_func_param(func, param):
+        if not is_func_param(func, param):
             raise ValueError(f"Parameter '{param}' is not a valid parameter of function '{func.__name__}'")
-        if not _is_in_data(cname, data):
+        if not is_in_data(cname, data):
             raise NameError(f"Variable '{cname}' is not available in input data: {data}.")
         requests[param] = data[cname]
     return requests
@@ -525,36 +317,6 @@ def _get_function(name: str) -> Callable[..., Any]:
     return cast(Callable[..., Any], func)
 
 
-def _validate_dict(input_dict: Mapping[str, Mapping[str, Any]]) -> None:
-    """
-    Validate that the input is a dictionary with string keys and dictionary values.
-
-    This function checks that:
-    - `input_dict` is a dictionary.
-    - All keys in the dictionary are strings.
-    - All top-level values in the dictionary are themselves dictionaries.
-
-    Parameters
-    ----------
-    input_dict : Mapping[str, Mapping[str, Any]]
-        The object to validate.
-
-    Raises
-    ------
-    TypeError
-        If `input_dict` is not a dictionary, if any key is not a string,
-        or if any value is not a dictionary.
-    """
-    if not isinstance(input_dict, Mapping):
-        raise TypeError(f"input must be a dictionary, not {type(input_dict)}.")
-
-    for k, v in input_dict.items():
-        if not isinstance(k, str):
-            raise TypeError(f"input key {k} must be a string, not {type(k).__name__}.")
-        if not isinstance(v, Mapping):
-            raise TypeError(f"value for key {k} must be a dictionary, not {type(v).__name__}.")
-
-
 def _prepare_functions(
     config: Mapping[str, Mapping[str, Any]],
     data: pd.DataFrame | pd.Series,
@@ -583,7 +345,7 @@ def _prepare_functions(
         If `execute=False`, returns a dict mapping names to dicts:
         `{"function": callable, "requests": dict, "kwargs": dict}`.
     """
-    _validate_dict(config)
+    validate_dict(config)
 
     results: dict[str, Any] = {}
 
@@ -605,7 +367,7 @@ def _prepare_functions(
 
         kwargs = {**requests, **arguments}
 
-        _validate_args(func, args=args, kwargs=kwargs)
+        validate_args(func, args=args, kwargs=kwargs)
 
         if execute:
             results[name] = func(*args, **kwargs)
@@ -654,7 +416,7 @@ def _prepare_all_inputs(
     return qc_inputs, mask, results
 
 
-def _validate_and_normalize_input(
+def _normalize_input(
     data: pd.DataFrame | pd.Series,
     return_method: Literal["all", "passed", "failed"],
 ) -> tuple[pd.DataFrame, bool]:
@@ -737,7 +499,7 @@ def _do_multiple_check(
         to the QC names in ``qc_dict`` and whose values contain QC flags for each row.
         Flags depend on the QC functions used.
     """
-    data, is_series = _validate_and_normalize_input(data, return_method)
+    data, is_series = _normalize_input(data, return_method)
     qc_inputs, mask, results = _prepare_all_inputs(data, qc_dict, preproc_dict)
     groups = _group_iterator(data, groupby)
     results = _run_qc_engine(data, qc_inputs, groups, return_method)
