@@ -10,9 +10,6 @@ Helpers in multiple checks module
 .. autofunction:: marine_qc.multiple_checks._get_function
    :noindex:
 
-.. autofunction:: marine_qc.multiple_checks._is_func_param
-   :noindex:
-
 .. autofunction:: marine_qc.multiple_checks._get_requests_from_params
    :noindex:
 
@@ -25,7 +22,7 @@ Helpers in multiple checks module
 .. autofunction:: marine_qc.multiple_checks._normalize_groupby
    :noindex:
 
-.. autofunction:: marine_qc.multiple_checks._validate_and_normalize_input
+.. autofunction:: marine_qc.multiple_checks._normalize_input
    :noindex:
 
 .. autofunction:: marine_qc.multiple_checks._prepare_all_inputs
