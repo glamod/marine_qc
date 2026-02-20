@@ -9,7 +9,6 @@ from typing import (
     Annotated,
     Any,
     Literal,
-    Tuple,
     Union,
     get_args,
     get_origin,
@@ -72,7 +71,7 @@ def _validate_non_generic(value: Any, expected: Any) -> bool:
     return False
 
 
-def _validate_mapping(value: Mapping[Any, Any], origin: type, args: Tuple[Any, ...]) -> bool:
+def _validate_mapping(value: Mapping[Any, Any], origin: type, args: tuple[Any, ...]) -> bool:
     """
     Validate a mapping type (dict, Mapping).
 
@@ -98,7 +97,7 @@ def _validate_mapping(value: Mapping[Any, Any], origin: type, args: Tuple[Any, .
     return all(validate_type(k, key_type) and validate_type(v, val_type) for k, v in value.items())
 
 
-def _validate_iterable(value: Iterable[Any], origin: type, args: Tuple[Any, ...]) -> bool:
+def _validate_iterable(value: Iterable[Any], origin: type, args: tuple[Any, ...]) -> bool:
     """
     Validate an iterable type (list, set, frozenset).
 
@@ -124,7 +123,7 @@ def _validate_iterable(value: Iterable[Any], origin: type, args: Tuple[Any, ...]
     return all(validate_type(v, elem_type) for v in value)
 
 
-def _validate_sequence(value: Any, args: Tuple[Any, ...]) -> bool:
+def _validate_sequence(value: Any, args: tuple[Any, ...]) -> bool:
     """
     Validate a generic sequence type (e.g., Sequence[int]).
 
@@ -148,7 +147,7 @@ def _validate_sequence(value: Any, args: Tuple[Any, ...]) -> bool:
     return all(validate_type(v, elem_type) for v in value)
 
 
-def _validate_tuple(value: Any, args: Tuple[Any, ...]) -> bool:
+def _validate_tuple(value: Any, args: tuple[Any, ...]) -> bool:
     """
     Validate a tuple type (fixed-length or homogeneous).
 
@@ -175,7 +174,7 @@ def _validate_tuple(value: Any, args: Tuple[Any, ...]) -> bool:
     return all(validate_type(v, t) for v, t in zip(value, args, strict=False))
 
 
-def _validate_ndarray(value: Any, args: Tuple[Any, ...]) -> bool:
+def _validate_ndarray(value: Any, args: tuple[Any, ...]) -> bool:
     """
     Validate a numpy ndarray type, optionally checking dtype.
 
