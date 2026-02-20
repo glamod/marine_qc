@@ -355,9 +355,9 @@ pygments==2.18.0 \
     --hash=sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199 \
     --hash=sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a
     # via rich
-pylint==4.0.4 \
-    --hash=sha256:63e06a37d5922555ee2c20963eb42559918c20bd2b21244e4ef426e7c43b92e0 \
-    --hash=sha256:d9b71674e19b1c36d79265b5887bf8e55278cbe236c9e95d22dc82cf044fdbd2
+pylint==4.0.5 \
+    --hash=sha256:00f51c9b14a3b3ae08cff6b2cdd43f28165c78b165b628692e428fb1f8dc2cf2 \
+    --hash=sha256:8cd6a618df75deb013bd7eb98327a95f02a6fb839205a6bbf5456ef96afb317c
     # via -r CI/requirements_ci.in
 pyproject-api==1.10.0 \
     --hash=sha256:40c6f2d82eebdc4afee61c773ed208c04c19db4c4a60d97f8d7be3ebc0bbb330 \
@@ -457,9 +457,9 @@ tomlkit==0.13.0 \
     # via
     #   bump-my-version
     #   pylint
-tox==4.40.0 \
-    --hash=sha256:9bffdca463154a13cb79a33a9e6927f35577b304c9442e583a60f0ec491b9168 \
-    --hash=sha256:ba1503111fe3ffe8b3427bb491d99c0b2c865f36f94c7b91f73c485e81aa7bd2
+tox==4.42.0 \
+    --hash=sha256:5e018e281496fee16f860b5685adac8de14a42c9b2ad6c13df5632307ec9ea4f \
+    --hash=sha256:841db009ab088748d91c49c850af4ebbe543712e9562f383b8c48f3172989163
     # via
     #   -r CI/requirements_ci.in
     #   tox-gh
