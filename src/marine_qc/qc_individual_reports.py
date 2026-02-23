@@ -23,7 +23,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimFloatType, inspect_climatology
+from .external_clim import ClimFloatType, ClimIntType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
@@ -908,5 +908,69 @@ def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueF
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed
+
+    return result
+
+
+@post_format_return_type(["lat", "lon"])
+@inspect_arrays(["lat", "lon", "land_sea_mask"])
+@convert_units(lat="degrees", lon="degrees")
+@inspect_climatology("land_sea_mask")
+def do_landlock_check(
+    lat: ValueFloatType,
+    lon: ValueFloatType,
+    land_sea_mask: ClimIntType,
+    land_flag: int,
+) -> ValueIntType:
+    """
+    Check input sea-surface temperature(s) to see if it is above freezing.
+
+    Parameters
+    ----------
+    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude() of observation in degree.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    land_sea_mask : int or None, sequence of int or None, 1D np.ndarray of int, pd.Series of int or :py:class:`.Climatology`
+        The climatological average(s) to which the latitude and longitude values(s) will be compared.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    land_flag : int
+        Value that denotes a land point.
+
+    Returns
+    -------
+    Same type as input, but with integer values
+        - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
+        - Returns 1 (or array/sequence/Series of 1s) if latitude and longitude denotes a land point
+        - Returns 0 (or array/sequence/Series of 0s) otherwise
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+    """
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(land_sea_mask, np.ndarray):
+        raise TypeError(f"'land_sea_mask' must be a numpy.ndarray, got {type(land_sea_mask).__name__}")
+
+    if land_sea_mask.ndim == 0:
+        land_sea_mask_arr = np.full_like(lat, land_sea_mask)
+    else:
+        land_sea_mask_arr = land_sea_mask
+
+    result = np.full(lat.shape, untestable, dtype=int)
+
+    valid_indices = isvalid(lat) & isvalid(lon)
+
+    land_locked = np.full(lat.shape, True, dtype=bool)
+    land_locked[valid_indices] = land_sea_mask_arr[valid_indices] == land_flag
+
+    result[valid_indices & land_locked] = passed
+    result[valid_indices & ~land_locked] = failed
 
     return result

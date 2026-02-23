@@ -24,6 +24,7 @@ from .qc_individual_reports import (
     do_date_check,
     do_day_check,
     do_hard_limit_check,
+    do_landlock_check,
     do_missing_value_check,
     do_missing_value_clim_check,
     do_night_check,
