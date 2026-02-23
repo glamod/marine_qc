@@ -259,9 +259,6 @@ def validate_type(value: Any, expected: Any) -> bool:
     origin = get_origin(expected)
     args = get_args(expected)
 
-    if origin is None:
-        return _validate_non_generic(value, expected)
-
     if origin is Annotated:
         return validate_type(value, args[0])
 
@@ -290,6 +287,9 @@ def validate_type(value: Any, expected: Any) -> bool:
             return _validate_iterable(value, origin, args)
         if issubclass(origin, abc.Sequence):
             return _validate_sequence(value, args)
+
+    if origin is None:
+        return _validate_non_generic(value, expected)
 
     return _safe_isinstance(value, origin)
 

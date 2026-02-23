@@ -12,6 +12,13 @@ from marine_qc import (
     do_hard_limit_check,
 )
 from marine_qc.validations import (
+    _safe_isinstance,
+    _validate_iterable,
+    _validate_mapping,
+    _validate_ndarray,
+    _validate_non_generic,
+    _validate_sequence,
+    _validate_tuple,
     is_func_param,
     is_in_data,
     validate_arg,
@@ -42,6 +49,7 @@ def sample_func_long(
     s: pd.Series,
     t: np.ndarray,
     u: npt.NDArray[np.int64],
+    v,
 ):
     return a, b, c, d, e, f, g, h, i, j, k, m, n, o, p, q, r, s, t, u
 
@@ -139,25 +147,101 @@ def test_validate_dict_invalid_values(input_dict):
         validate_dict(input_dict)
 
 
+def test_validate_non_generic():
+    assert _validate_non_generic(5, int)
+    assert not _validate_non_generic("5", int)
+    assert not _validate_non_generic(5, 123)
+
+
+def test_validate_mapping():
+    assert not _validate_mapping([], dict, (str, int))
+    assert _validate_mapping({"a": 1}, dict, ())
+    assert _validate_mapping({"a": 1}, dict, (str, int))
+    assert not _validate_mapping({"a": "1"}, dict, (str, int))
+
+
+def test_validate_iterable():
+    assert not _validate_iterable((1, 2), list, (int,))
+    assert _validate_iterable([1, 2], list, ())
+    assert _validate_iterable([1, 2], list, (int,))
+    assert not _validate_iterable([1, "2"], list, (int,))
+
+
+def test_validate_sequence():
+    assert not _validate_sequence("123", (int,))
+    assert _validate_sequence([1, 2], ())
+    assert _validate_sequence([1, 2], (int,))
+    assert not _validate_sequence([1, "2"], (int,))
+
+
+def test_validate_tuple():
+    assert not _validate_tuple("123", (int,))
+    assert _validate_tuple((1, 2), ())
+    assert _validate_tuple((1, 2), (int, Ellipsis))
+    assert not _validate_tuple((1, "2"), (int, Ellipsis))
+    assert _validate_tuple((1, "2"), (int, str))
+    assert not _validate_tuple((1,), (int, str))
+    assert not _validate_tuple((1, 2), (int, str))
+
+
+def test_validate_ndarray():
+    arr = np.array([1, 2, 3])
+
+    assert not _validate_ndarray([1, 2, 3], (None, np.int64))
+    assert _validate_ndarray(arr, ())
+    assert _validate_ndarray(arr, (np.int64,))
+    assert _validate_ndarray(arr, (None, Any))
+    assert _validate_ndarray(arr, (None, None))
+    assert _validate_ndarray(arr, (None, np.int64))
+    assert not _validate_ndarray(arr, (None, np.float64))
+    assert not _validate_ndarray(arr, (None, object()))
+
+
+def test_safe_isinstance():
+    assert _safe_isinstance(5, int)
+    assert not _safe_isinstance(5, list[int])
+
+
 @pytest.mark.parametrize(
     "value,expected",
     [
+        # Simple types
         (123, Any),
+        ("abc", str),
         (5, int),
+        (int, type[int]),
+        # Annotated / Literal
         (10, Annotated[int, "meta"]),
         ("x", Literal["x", "y"]),
+        # Union / Optional
         (5, int | str),
         ("hello", int | str),
+        (None, int | None),
+        # Callable
         (lambda x: x, Callable[[int], int]),
+        # Mappings
         ({"a": 1}, dict[str, int]),
+        ({"a": 1}, dict),
+        ({}, dict[str, int]),
+        # Iterables
         ([1, 2, 3], list[int]),
+        ([1, 2, 3], list),
+        ([1, 2, 3], Sequence[int]),
+        ([1, 2, 3], Sequence),
+        ([1], tuple[int, ...]),
+        ((1, 2, 3), tuple[int, ...]),
+        ((1, 2, 3), tuple),
+        ((1, "x"), tuple[int, str]),
+        # Sets/ frozensets
         ({1.0, 2.0}, set[float]),
         (frozenset({1, 2}), frozenset[int]),
-        ((1, "x"), tuple[int, str]),
-        ((1, 2, 3), tuple[int, ...]),
-        ([1, 2, 3], Sequence[int]),
+        # NumPy arrays
         (np.array([1, 2, 3]), np.ndarray),
         (np.array([1, 2, 3], dtype=np.int64), npt.NDArray[np.int64]),
+        (np.array([1, 2, 3]), npt.NDArray[np.int64]),
+        (np.array([1.0, 2.0]), npt.NDArray[Any]),
+        (np.array([1, 2, 3]), npt.NDArray[Any]),
+        # pandas objects
         (pd.DataFrame({"a": [1, 2]}), pd.DataFrame),
         (pd.Series([1, 2]), pd.Series),
     ],
@@ -169,38 +253,37 @@ def test_validate_type_valid(value, expected):
 @pytest.mark.parametrize(
     "value,expected",
     [
+        # Simple types
         ("5", int),
         ("z", Literal["x", "y"]),
         (5.5, int | str),
+        (5, str),
+        # Mappings
         ({1: "a"}, dict[str, int]),
         ({"a": "b"}, dict[str, int]),
+        ([("a", 1)], dict[str, int]),
+        # Sequence
         ([1, "x"], list[int]),
         ((1,), tuple[int, str]),
         ((1, 2), tuple[int, str]),
+        ((1, "x"), tuple[int, int]),
+        ((1, 2), list[int]),
         ([1, "x"], Sequence[int]),
+        ("abc", Sequence[str]),
+        # NumPy arrays
         (np.array([1.0, 2.0]), npt.NDArray[np.int64]),
+        (np.array([1, 2, 3]), npt.NDArray[object]),
+        # pandas objects
         (pd.Series([1, 2]), pd.DataFrame),
+        # Others
+        (5, list[int]),
+        (5, 123),
+        (123, Callable[[int], int]),
+        ("abc", Sequence[int]),
     ],
 )
 def test_validate_type_invalid(value, expected):
     assert not validate_type(value, expected)
-
-
-def test_validate_type_origin_none_not_type():
-    assert not validate_type(5, 123)
-
-
-def test_validate_type_ndarray_any_dtype():
-    arr = np.array([1.0, 2.0])
-    assert validate_type(arr, npt.NDArray[Any])
-
-
-def test_validate_type_callable_invalid():
-    assert not validate_type(123, Callable[[int], int])
-
-
-def test_validate_type_sequence_rejects_string():
-    assert not validate_type("abc", Sequence[int])
 
 
 @pytest.mark.parametrize(
@@ -228,6 +311,7 @@ def test_validate_type_sequence_rejects_string():
         ("s", pd.Series([1, 2, 3])),
         ("t", np.array([1, 2, 3])),
         ("u", np.array([1, 2, 3], dtype=np.int64)),
+        ("v", 1),
     ],
 )
 def test_validate_arg_valid(key, value):
@@ -240,6 +324,9 @@ def test_validate_arg_valid(key, value):
         reserved_keys=set(),
         has_arguments=False,
     )
+
+
+# def test_validate_args_missing_type_hints():
 
 
 @pytest.mark.parametrize(
@@ -375,6 +462,7 @@ def test_validate_args_passing_args_only():
             pd.Series([1, 2, 3]),
             np.array([1, 2, 3]),
             np.array([1, 2, 3], dtype=np.int64),
+            1,
         ),
     )
 
@@ -403,5 +491,6 @@ def test_validate_args_passing_kwargs_only():
             "s": pd.Series([1, 2, 3]),
             "t": np.array([1, 2, 3]),
             "u": np.array([1, 2, 3], dtype=np.int64),
+            "v": 1,
         },
     )
