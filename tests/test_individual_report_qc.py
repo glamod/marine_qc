@@ -745,6 +745,28 @@ def test_do_landlocked_check_array(ds_lsm):
     np.testing.assert_array_equal(results, expected)
 
 
+def test_do_landlocked_check_netcdf(tmp_path, ds_lsm):
+    file_path = tmp_path / "lsm.nc"
+    ds_lsm.to_netcdf(file_path)
+
+    lat = [45, 45, -45, -45, None, 45]
+    lon = [-90, 90, -90, 90, -90, None]
+    expected = [passed, failed, failed, passed, untestable, untestable]
+
+    results = do_landlocked_check(
+        lat=lat,
+        lon=lon,
+        land_sea_mask=file_path,
+        land_flag=1,
+        clim_name="land_sea_mask",
+        time_axis="time",
+        lat_axis="lat",
+        lon_axis="lon",
+    )
+
+    np.testing.assert_array_equal(results, expected)
+
+
 @pytest.mark.parametrize(
     "lat, lon, lsm, expected",
     [
@@ -771,7 +793,7 @@ def test_do_maritime_check_array(ds_lsm):
         lon=lon,
         sea_land_mask=ds_lsm,
         sea_flag=0,
-        data_var="land_sea_mask",
+        clim_name="land_sea_mask",
         time_axis="time",
         lat_axis="lat",
         lon_axis="lon",
