@@ -236,12 +236,12 @@ def do_time_check(
 
 
 def _do_daytime_check(
-    year: ValueIntType,
-    month: ValueIntType,
-    day: ValueIntType,
-    hour: ValueFloatType,
-    lat: ValueFloatType,
-    lon: ValueFloatType,
+    year: np.ndarray,
+    month: np.ndarray,
+    day: np.ndarray,
+    hour: np.ndarray,
+    lat: np.ndarray,
+    lon: np.ndarray,
     time_since_sun_above_horizon: float | None,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
@@ -250,24 +250,18 @@ def _do_daytime_check(
 
     Parameters
     ----------
-    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    year : 1D np.ndarray of int
         Year(s) of observation.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    month : 1D np.ndarray of int
         Month(s) of observation (1-12).
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+    day : 1D np.ndarray of int
         Day(s) of observation.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+    hour : 1D np.ndarray of float
         Hour(s) of observation (minutes as decimal).
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : 1D np.ndarray of float
         Latitude(s) of observation in degrees.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : 1D np.ndarray of float
         Longitude() of observation in degree.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     time_since_sun_above_horizon : float
         Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
         to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
@@ -292,19 +286,6 @@ def _do_daytime_check(
     """
     if mode not in ["day", "night"]:
         raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
-
-    if not isinstance(year, np.ndarray):
-        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
-    if not isinstance(month, np.ndarray):
-        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
-    if not isinstance(day, np.ndarray):
-        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
-    if not isinstance(hour, np.ndarray):
-        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
 
     p_check = np.atleast_1d(do_position_check(lat, lon))
     d_check = np.atleast_1d(do_date_check(year=year, month=month, day=day))
@@ -439,6 +420,18 @@ def do_day_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
+    if not isinstance(year, np.ndarray):
+        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
+    if not isinstance(month, np.ndarray):
+        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
+    if not isinstance(day, np.ndarray):
+        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+    if not isinstance(hour, np.ndarray):
+        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
     return _do_daytime_check(year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day")
 
 
@@ -510,6 +503,18 @@ def do_night_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
+    if not isinstance(year, np.ndarray):
+        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
+    if not isinstance(month, np.ndarray):
+        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
+    if not isinstance(day, np.ndarray):
+        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+    if not isinstance(hour, np.ndarray):
+        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
     return _do_daytime_check(
         year,
         month,
