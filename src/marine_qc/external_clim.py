@@ -227,7 +227,7 @@ def inspect_climatology(
             if isinstance(climatology, xr.Dataset):
                 data_var = meta_kwargs.pop("clim_name", None)
                 if data_var is None:
-                    raise ValueError("No data value is specified in climatology.")
+                    raise ValueError("No data variable to select is specified in climatology.Use parameter 'clim_name'.")
                 climatology = climatology[data_var]
 
             if isinstance(climatology, xr.DataArray):
@@ -240,7 +240,7 @@ def inspect_climatology(
             elif isinstance(climatology, (str, os.PathLike)):
                 path = Path(climatology)
                 if not path.is_file():
-                    raise ValueError(f"{climatology} is not a valid file on disk.")
+                    raise FileNotFoundError(f"{climatology} is not a valid file on disk.")
                 clim_kwargs = {
                     param: meta_kwargs.pop(param, None)
                     for param in ["clim_name", "time_axis", "lat_axis", "lon_axis", "source_units", "target_units", "valid_ntime"]
