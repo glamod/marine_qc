@@ -148,7 +148,7 @@ def inspect_climatology(
         - a numeric value
         - a `xr.DataArray`
         - a `xr.Dataset`
-        - a string or `os.PathLike` object pointing to a valid NetCDF file on disk
+        - a string or path-like object pointing to a valid NetCDF file on disk
         - a `Climatology` instance
 
         If a `Climatology` object (or an object convertible to one) is detected,
@@ -183,7 +183,7 @@ def inspect_climatology(
     - `xr.Dataset` inputs require the keyword argument `clim_name` to select
       the relevant data variable.
     - `xr.DataArray` inputs are automatically wrapped in a `Climatology` object.
-    - String or `os.PathLike` inputs must point to an existing file and are
+    - String or path-like inputs must point to an existing file and are
       opened via `Climatology.open_netcdf_file`.
     - If a `Climatology` object is processed, it is resolved using
       `.get_value_fast(**kwargs)`.
@@ -206,7 +206,8 @@ def inspect_climatology(
         arguments : dict
             Function arguments as a dictionary.
         \**meta_kwargs : dict
-            Additional keyword arguments to pass to `Climatology.get_value_fast()`.
+            Additional keyword arguments to pass to `Climatology.get_value_fast()`,
+            `Climatology()` and/or `Climatology.open_netcdf_file()`.
 
         Returns
         -------
@@ -313,7 +314,7 @@ def open_xrdataset(
 
     Parameters
     ----------
-    files : str or list of str or os.PathLike
+    files : str or list of str or path-like
       See the documentation for :py:func:`xarray.open_mfdataset`.
     use_cftime : bool, default: True
       See the documentation for :py:func:`xarray.decode_cf`.
@@ -857,3 +858,5 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
 
 ClimIntType: TypeAlias = ValueIntType | Climatology
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
+
+ClimInputType: TypeAlias = str | os.PathLike[str] | xr.DataArray | xr.Dataset
