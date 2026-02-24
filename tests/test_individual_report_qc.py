@@ -11,7 +11,8 @@ from marine_qc import (
     do_date_check,
     do_day_check,
     do_hard_limit_check,
-    do_landlock_check,
+    do_landlocked_check,
+    do_maritime_check,
     do_missing_value_check,
     do_missing_value_clim_check,
     do_night_check,
@@ -721,20 +722,55 @@ def test_do_wind_consistency_check_array():
         (np.nan, 21, 0, untestable),
     ],
 )
-def test_do_landlock_check(lat, lon, lsm, expected):
-    assert do_landlock_check(lat, lon, lsm, land_flag=1) == expected
+def test_do_landlocked_check(lat, lon, lsm, expected):
+    assert do_landlocked_check(lat, lon, lsm, land_flag=1) == expected
 
 
-def test_do_landlock_check_array(ds_lsm):
+def test_do_landlocked_check_array(ds_lsm):
     lat = [45, 45, -45, -45, None, 45]
     lon = [-90, 90, -90, 90, -90, None]
     expected = [passed, failed, failed, passed, untestable, untestable]
 
-    results = do_landlock_check(
+    results = do_landlocked_check(
         lat=lat,
         lon=lon,
         land_sea_mask=ds_lsm,
         land_flag=1,
+        data_var="land_sea_mask",
+        time_axis="time",
+        lat_axis="lat",
+        lon_axis="lon",
+    )
+
+    np.testing.assert_array_equal(results, expected)
+
+
+@pytest.mark.parametrize(
+    "lat, lon, lsm, expected",
+    [
+        (45, 21, 1, failed),
+        (45, 21, 0, passed),
+        (45, 21, 3, failed),
+        (45, None, 0, untestable),
+        (None, 21, 0, untestable),
+        (45, np.nan, 0, untestable),
+        (np.nan, 21, 0, untestable),
+    ],
+)
+def test_do_maritime_check(lat, lon, lsm, expected):
+    assert do_maritime_check(lat, lon, lsm, sea_flag=0) == expected
+
+
+def test_do_maritime_check_array(ds_lsm):
+    lat = [45, 45, -45, -45, None, 45]
+    lon = [-90, 90, -90, 90, -90, None]
+    expected = [failed, passed, passed, failed, untestable, untestable]
+
+    results = do_maritime_check(
+        lat=lat,
+        lon=lon,
+        sea_land_mask=ds_lsm,
+        sea_flag=0,
         data_var="land_sea_mask",
         time_axis="time",
         lat_axis="lat",
