@@ -237,7 +237,7 @@ def inspect_climatology(
                 }
                 climatology = Climatology(climatology, **clim_kwargs)
 
-            elif isinstance(climatology, (str, os.PathLike)):
+            elif isinstance(climatology, (str, os.PathLike)) and climatology != "default":
                 path = Path(climatology)
                 if not path.is_file():
                     raise FileNotFoundError(f"{climatology} is not a valid file on disk.")
