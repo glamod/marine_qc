@@ -118,7 +118,27 @@ Tests that wind speed and direction are consistent.
 Compares the wind speed and wind direction to check for consistency. If the windspeed is zero, the direction should
 be set to zero also. If the wind speed is greater than zero then the wind directions should not equal zero. If either
 of these constraints is violated then the flag is set to 1, fail, otherwise it is set to 0. If either of the inputs
-is numerically valid then the flag is set to 2, untestable.
+is numerically invalid then the flag is set to 2, untestable.
+
+:func:`.do_landlocked_check`
+============================
+
+Tests whether the position is on land.
+
+Compares the position with a user-given land-sea mask. If the position is on a land point the flag is set to 0, passed.
+If the position is on a sea point it is set to 1, failed. If either of the inputs is numerically invalid then the flag
+is set to 2, untestable.
+
+:func:`.do_maritime_check`
+==========================
+
+Tests whether the position is on sea.
+
+Compares the position with a user-given sea-land mask. If the position is on a sea point the flag is set to 0, passed.
+If the position is on a land point it is set to 1, failed. If either of the inputs is numerically invalid then the flag
+is set to 2, untestable.
+
+Tests whether the position is on sea.
 
 .. _running_multiple_ind:
 
