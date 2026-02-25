@@ -23,7 +23,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimFloatType, inspect_climatology
+from .external_clim import ClimFloatType, ClimInputType, ClimIntType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
@@ -236,12 +236,12 @@ def do_time_check(
 
 
 def _do_daytime_check(
-    year: ValueIntType,
-    month: ValueIntType,
-    day: ValueIntType,
-    hour: ValueFloatType,
-    lat: ValueFloatType,
-    lon: ValueFloatType,
+    year: np.ndarray,
+    month: np.ndarray,
+    day: np.ndarray,
+    hour: np.ndarray,
+    lat: np.ndarray,
+    lon: np.ndarray,
     time_since_sun_above_horizon: float | None,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
@@ -250,24 +250,18 @@ def _do_daytime_check(
 
     Parameters
     ----------
-    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    year : 1D np.ndarray of int
         Year(s) of observation.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    month : 1D np.ndarray of int
         Month(s) of observation (1-12).
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+    day : 1D np.ndarray of int
         Day(s) of observation.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+    hour : 1D np.ndarray of float
         Hour(s) of observation (minutes as decimal).
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : 1D np.ndarray of float
         Latitude(s) of observation in degrees.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : 1D np.ndarray of float
         Longitude() of observation in degree.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     time_since_sun_above_horizon : float
         Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
         to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
@@ -292,19 +286,6 @@ def _do_daytime_check(
     """
     if mode not in ["day", "night"]:
         raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
-
-    if not isinstance(year, np.ndarray):
-        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
-    if not isinstance(month, np.ndarray):
-        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
-    if not isinstance(day, np.ndarray):
-        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
-    if not isinstance(hour, np.ndarray):
-        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
 
     p_check = np.atleast_1d(do_position_check(lat, lon))
     d_check = np.atleast_1d(do_date_check(year=year, month=month, day=day))
@@ -366,7 +347,6 @@ def _do_daytime_check(
         lon_fixed,
     )
 
-    # Assign results in one go
     result[valid_indices] = np.where(elevations > 0, _passed, _failed)
 
     return result
@@ -440,6 +420,18 @@ def do_day_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
+    if not isinstance(year, np.ndarray):
+        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
+    if not isinstance(month, np.ndarray):
+        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
+    if not isinstance(day, np.ndarray):
+        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+    if not isinstance(hour, np.ndarray):
+        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
     return _do_daytime_check(year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day")
 
 
@@ -511,6 +503,18 @@ def do_night_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
+    if not isinstance(year, np.ndarray):
+        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
+    if not isinstance(month, np.ndarray):
+        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
+    if not isinstance(day, np.ndarray):
+        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+    if not isinstance(hour, np.ndarray):
+        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
     return _do_daytime_check(
         year,
         month,
@@ -543,15 +547,15 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimFloatType, **kwargs: Any) -> ValueIntType:
+def do_missing_value_clim_check(climatology: ClimInputType | ClimFloatType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
     Parameters
     ----------
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology` or ClimInputType
         The input climatological value(s) to be tested.
-        Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
     \**kwargs : dict
         Additional keyword arguments passed by the decorator framework (unused).
 
@@ -625,7 +629,7 @@ def do_hard_limit_check(
 @inspect_climatology("climatology", optional="standard_deviation")
 def do_climatology_check(
     value: ValueFloatType,
-    climatology: ClimFloatType,
+    climatology: ClimInputType | ClimFloatType,
     maximum_anomaly: float,
     standard_deviation: ValueFloatType = "default",
     standard_deviation_limits: tuple[float, float] | None = None,
@@ -646,9 +650,9 @@ def do_climatology_check(
     value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
         Value(s) to be compared to climatology.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology` or ClimInputType
         The climatological average(s) to which the values(s) will be compared.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
     maximum_anomaly : float
         Largest allowed anomaly.
         If ``standard_deviation`` is provided, this is interpreted as the largest allowed standardised anomaly.
@@ -910,3 +914,150 @@ def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueF
     result[valid_indices & ~cond_failed] = passed
 
     return result
+
+
+def _do_mask_check(
+    lat: np.ndarray,
+    lon: np.ndarray,
+    mask: np.ndarray,
+    flag: int,
+) -> np.ndarray:
+    """
+    Check input position(s) to determine whether they correspond to a masked point.
+
+    Parameters
+    ----------
+    lat : 1D np.ndarray of float
+        Latitude(s) of observation in degrees.
+    lon : 1D np.ndarray of float
+        Longitude() of observation in degree.
+    mask : 1D np.ndarray of int
+        Masked classification value(s) to which the latitude and longitude values(s) will be compared.
+    flag : int
+        Integer value in `mask` that denotes a specific point.
+
+    Returns
+    -------
+    Same type as input, but with integer values
+        - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
+        - Returns 1 (or array/sequence/Series of 1s) if the position does not correspond to a land point
+        - Returns 0 (or array/sequence/Series of 0s) otherwise
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+    """
+    if mask.ndim == 0:
+        mask_arr = np.full_like(lat, mask)
+    else:
+        mask_arr = mask
+
+    result = np.full(lat.shape, untestable, dtype=int)
+
+    valid_indices = isvalid(lat) & isvalid(lon)
+
+    masked_points = np.full(lat.shape, True, dtype=bool)
+    masked_points[valid_indices] = mask_arr[valid_indices] == flag
+
+    result[valid_indices & masked_points] = passed
+    result[valid_indices & ~masked_points] = failed
+
+    return result
+
+
+@post_format_return_type(["lat", "lon"])
+@inspect_arrays(["lat", "lon", "land_sea_mask"])
+@convert_units(lat="degrees", lon="degrees")
+@inspect_climatology("land_sea_mask")
+def do_landlocked_check(
+    lat: ValueFloatType,
+    lon: ValueFloatType,
+    land_sea_mask: ClimInputType | ClimIntType,
+    land_flag: int,
+) -> ValueIntType:
+    """
+    Check input position(s) to determine whether they correspond to a land point.
+
+    Parameters
+    ----------
+    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude() of observation in degree.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    land_sea_mask : int or None, sequence of int or None, 1D np.ndarray of int, pd.Series of int, :py:class:`.Climatology` or ClimInputType
+        Land-sea classification value(s) to which the latitude and longitude values(s) will be compared.
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+    land_flag : int
+        Integer value in `land_sea_mask` that denotes a land point.
+
+    Returns
+    -------
+    Same type as input, but with integer values
+        - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
+        - Returns 1 (or array/sequence/Series of 1s) if the position does not correspond to a land point
+        - Returns 0 (or array/sequence/Series of 0s) otherwise
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+    """
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(land_sea_mask, np.ndarray):
+        raise TypeError(f"'land_sea_mask' must be a numpy.ndarray, got {type(land_sea_mask).__name__}")
+
+    return _do_mask_check(lat=lat, lon=lon, mask=land_sea_mask, flag=land_flag)
+
+
+@post_format_return_type(["lat", "lon"])
+@inspect_arrays(["lat", "lon", "sea_land_mask"])
+@convert_units(lat="degrees", lon="degrees")
+@inspect_climatology("sea_land_mask")
+def do_maritime_check(
+    lat: ValueFloatType,
+    lon: ValueFloatType,
+    sea_land_mask: ClimInputType | ClimIntType,
+    sea_flag: int,
+) -> ValueIntType:
+    """
+    Check input position(s) to determine whether they correspond to a sea point.
+
+    Parameters
+    ----------
+    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Latitude(s) of observation in degrees.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+        Longitude() of observation in degree.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    sea_land_mask : int or None, sequence of int or None, 1D np.ndarray of int, pd.Series of int :py:class:`.Climatology` or ClimInputType
+        Sea-land classification value(s) to which the latitude and longitude values(s) will be compared.
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+    sea_flag : int
+        Integer value in `sea_land_mask` that denotes a sea point.
+
+    Returns
+    -------
+    Same type as input, but with integer values
+        - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
+        - Returns 1 (or array/sequence/Series of 1s) if latitude and longitude denotes not a sea point
+        - Returns 0 (or array/sequence/Series of 0s) otherwise
+
+    Raises
+    ------
+    ValueError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+    """
+    if not isinstance(lat, np.ndarray):
+        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
+    if not isinstance(lon, np.ndarray):
+        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    if not isinstance(sea_land_mask, np.ndarray):
+        raise TypeError(f"'sea_land_mask' must be a numpy.ndarray, got {type(sea_land_mask).__name__}")
+    return _do_mask_check(lat=lat, lon=lon, mask=sea_land_mask, flag=sea_flag)

@@ -4,12 +4,15 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 
 from marine_qc import (
     do_climatology_check,
     do_date_check,
     do_day_check,
     do_hard_limit_check,
+    do_landlocked_check,
+    do_maritime_check,
     do_missing_value_check,
     do_missing_value_clim_check,
     do_night_check,
@@ -27,6 +30,59 @@ from marine_qc.auxiliary import (
     untestable,
 )
 from marine_qc.qc_individual_reports import value_check
+
+
+@pytest.fixture
+def ds_lsm():
+    # simple 1deg land-sea mask
+    # northern-western hemisphere: land
+    # northern-eastern hemisphere: sea
+    # southern-western hemisphere: sea
+    # southern-eastern hemisphere: land
+    lats = np.arange(-90, 90, 1)
+    lons = np.arange(-180, 180, 1)
+    time = pd.to_datetime(["2026-02-26 12:00:00"])
+
+    mask = np.zeros((len(time), len(lats), len(lons)), dtype=int)
+
+    lat_mask = (lats < 0)[:, None]
+    lon_mask = (lons >= 0)[None, :]
+    mask[0] += (lat_mask & lon_mask).astype(int)
+
+    lat_mask = (lats >= 0)[:, None]
+    lon_mask = (lons < 0)[None, :]
+    mask[0] += (lat_mask & lon_mask).astype(int)
+
+    ds = xr.Dataset({"land_sea_mask": (["time", "lat", "lon"], mask)}, coords={"time": time, "lat": lats, "lon": lons})
+
+    return ds
+
+
+@pytest.fixture
+def ds_clim():
+    # simple 1deg climatology
+    # northern-western hemisphere: land
+    # northern-eastern hemisphere: sea
+    # southern-western hemisphere: sea
+    # southern-eastern hemisphere: land
+    lats = np.arange(-90, 90, 1)
+    lons = np.arange(-180, 180, 1)
+    time = pd.to_datetime(["2026-02-26 12:00:00"])
+
+    mask = np.zeros((len(time), len(lats), len(lons)), dtype=int)
+
+    north = (lats >= 0)[:, None]
+    south = (lats < 0)[:, None]
+    west = (lons < 0)[None, :]
+    east = (lons >= 0)[None, :]
+
+    mask[0][north & west] = 1
+    mask[0][north & east] = 2
+    mask[0][south & west] = 3
+    mask[0][south & east] = 4
+
+    ds = xr.Dataset({"land_sea_mask": (["time", "lat", "lon"], mask)}, coords={"time": time, "lat": lats, "lon": lons})
+    return ds
 
 
 @pytest.mark.parametrize(
@@ -465,10 +521,32 @@ def test_climatology_check(
 # fmt: on
 
 
-def _test_climatology_plus_stdev_check_raises():
-    with pytest.raises(ValueError):
+def test_climatology_check_array(ds_clim):
+    lat = [45, 45, -45, -45, None, 45]
+    lon = [-90, 90, -90, 90, -90, None]
+    value = [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+    expected = [passed, passed, failed, failed, untestable, untestable]
+
+    results = do_climatology_check(
+        value=value,
+        lat=lat,
+        lon=lon,
+        climatology=ds_clim,
+        maximum_anomaly=0.5,
+        clim_name="land_sea_mask",
+        time_axis="time",
+        lat_axis="lat",
+        lon_axis="lon",
+    )
+
+    np.testing.assert_array_equal(results, expected)
+
+
+def test_climatology_plus_stdev_check_raises():
+    with pytest.raises(TypeError):
         do_climatology_check(1.0, 0.0, 0.5, [1.0, 0.0], 5.0)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         do_climatology_check(1.0, 0.0, 0.5, [0.0, 1.0], -1)
 
 
@@ -488,8 +566,6 @@ def _test_climatology_plus_stdev_check_raises():
     ],
 )
 def test_do_hard_limit_check(value, limits, expected):
-    # assert do_hard_limit_check(value, limits) == expected
-
     value = convert_to(value, "degC", "K")
     units = {"limits": "degC"}
     assert (
@@ -500,7 +576,6 @@ def test_do_hard_limit_check(value, limits, expected):
         )
         == expected
     )
-    # exit()
 
 
 def test_do_supersaturation_check_array():
@@ -632,4 +707,96 @@ def test_do_wind_consistency_check_array():
         wind_speed,
         wind_direction,
     )
+    np.testing.assert_array_equal(results, expected)
+
+
+@pytest.mark.parametrize(
+    "lat, lon, lsm, expected",
+    [
+        (45, 21, 1, passed),
+        (45, 21, 0, failed),
+        (45, 21, 3, failed),
+        (45, None, 0, untestable),
+        (None, 21, 0, untestable),
+        (45, np.nan, 0, untestable),
+        (np.nan, 21, 0, untestable),
+    ],
+)
+def test_do_landlocked_check(lat, lon, lsm, expected):
+    assert do_landlocked_check(lat, lon, lsm, land_flag=1) == expected
+
+
+def test_do_landlocked_check_array(ds_lsm):
+    lat = [45, 45, -45, -45, None, 45]
+    lon = [-90, 90, -90, 90, -90, None]
+    expected = [passed, failed, failed, passed, untestable, untestable]
+
+    results = do_landlocked_check(
+        lat=lat,
+        lon=lon,
+        land_sea_mask=ds_lsm,
+        land_flag=1,
+        clim_name="land_sea_mask",
+        time_axis="time",
+        lat_axis="lat",
+        lon_axis="lon",
+    )
+
+    np.testing.assert_array_equal(results, expected)
+
+
+def test_do_landlocked_check_netcdf(tmp_path, ds_lsm):
+    file_path = tmp_path / "lsm.nc"
+    ds_lsm.to_netcdf(file_path)
+
+    lat = [45, 45, -45, -45, None, 45]
+    lon = [-90, 90, -90, 90, -90, None]
+    expected = [passed, failed, failed, passed, untestable, untestable]
+
+    results = do_landlocked_check(
+        lat=lat,
+        lon=lon,
+        land_sea_mask=file_path,
+        land_flag=1,
+        clim_name="land_sea_mask",
+        time_axis="time",
+        lat_axis="lat",
+        lon_axis="lon",
+    )
+
+    np.testing.assert_array_equal(results, expected)
+
+
+@pytest.mark.parametrize(
+    "lat, lon, lsm, expected",
+    [
+        (45, 21, 1, failed),
+        (45, 21, 0, passed),
+        (45, 21, 3, failed),
+        (45, None, 0, untestable),
+        (None, 21, 0, untestable),
+        (45, np.nan, 0, untestable),
+        (np.nan, 21, 0, untestable),
+    ],
+)
+def test_do_maritime_check(lat, lon, lsm, expected):
+    assert do_maritime_check(lat, lon, lsm, sea_flag=0) == expected
+
+
+def test_do_maritime_check_array(ds_lsm):
+    lat = [45, 45, -45, -45, None, 45]
+    lon = [-90, 90, -90, 90, -90, None]
+    expected = [failed, passed, passed, failed, untestable, untestable]
+
+    results = do_maritime_check(
+        lat=lat,
+        lon=lon,
+        sea_land_mask=ds_lsm,
+        sea_flag=0,
+        clim_name="land_sea_mask",
+        time_axis="time",
+        lat_axis="lat",
+        lon_axis="lon",
+    )
+
     np.testing.assert_array_equal(results, expected)

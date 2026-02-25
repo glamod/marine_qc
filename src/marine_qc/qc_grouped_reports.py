@@ -29,6 +29,7 @@ from .auxiliary import (
 from .buoy_tracking_qc import is_monotonic
 from .external_clim import (
     ClimFloatType,
+    ClimInputType,
     Climatology,
     inspect_climatology,
 )
@@ -508,7 +509,7 @@ def do_mds_buddy_check(
     lon: SequenceFloatType,
     date: SequenceDatetimeType,
     value: SequenceFloatType,
-    climatology: ClimFloatType,
+    climatology: ClimInputType | ClimFloatType,
     standard_deviation: Climatology,
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
@@ -535,9 +536,9 @@ def do_mds_buddy_check(
         1-dimensional date array.
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
         The climatological average(s) used to calculate anomalies.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
     standard_deviation : :py:class:`.Climatology`
         Field of standard deviations of 1x1xpentad standard deviations.
     limits : list[list]
@@ -640,7 +641,7 @@ def do_bayesian_buddy_check(
     lon: SequenceFloatType,
     date: SequenceDatetimeType,
     value: SequenceFloatType,
-    climatology: ClimFloatType,
+    climatology: ClimInputType | ClimFloatType,
     stdev1: Climatology,
     stdev2: Climatology,
     stdev3: Climatology,
@@ -669,9 +670,9 @@ def do_bayesian_buddy_check(
         1-dimensional date array.
     value : array-like of float, shape (n,)
         1-dimensional anomaly array.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float or :py:class:`.Climatology`
+    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
         The climatological average(s) used to calculate anomalies.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
     stdev1 : :py:class:`.Climatology`
         Field of standard deviations representing standard deviation of difference between
         target gridcell and complete neighbour average (grid area to neighbourhood difference).

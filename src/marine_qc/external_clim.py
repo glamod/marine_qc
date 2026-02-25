@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 import inspect
+import os
 import warnings
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
 import cf_xarray  # noqa: F401
@@ -21,6 +23,7 @@ from .auxiliary import (
     DECORATOR_NAMES,
     SequenceFloatType,
     ValueFloatType,
+    ValueIntType,
     generic_decorator,
     isvalid,
     post_format_return_type,
@@ -133,15 +136,23 @@ def inspect_climatology(
     r"""
     A decorator factory to preprocess function arguments that may be Climatology objects.
 
-    This decorator inspects the specified function arguments and, if any are instances of
-    `Climatology`, attempts to resolve them to concrete values using their `.get_value(**kwargs)` method.
+    This decorator inspects the specified function arguments and normalizes them to concrete
+    numerical values before the decorated function is executed. Supported input types include
+    raw numeric values, xarray objects, file paths, and `Climatology` instances.
 
     Parameters
     ----------
     \*climatology_keys : str
-        Names of required function arguments to be inspected. These should be arguments that may be
-        either a float or a `Climatology` object. If a `Climatology` object is detected, it will be
-        replaced with the resolved value.
+        Names of required function arguments to be inspected. These should be arguments that may be:
+
+        - a numeric value
+        - a `xr.DataArray`
+        - a `xr.Dataset`
+        - a string or path-like object pointing to a valid NetCDF file on disk
+        - a `Climatology` instance
+
+        If a `Climatology` object (or an object convertible to one) is detected,
+        it will be resolved to a concrete value using its `.get_value_fast(**kwargs)` method.
 
     optional : str or sequence of str, optional
         Argument names that should be treated as optional. If they are explicitly passed when the
@@ -152,11 +163,34 @@ def inspect_climatology(
     Callable[..., Any]
         A decorator that wraps the target function, processing specified arguments before the function is called.
 
+    Raises
+    ------
+    TypeError
+        If a required climatology argument is missing from the decorated function call
+    ValueError
+        If an `xr.Dataset` is provided without specifying `clim_name`, or
+        if a string/Path input does not point to a valid file on disk.
+
+    Warns
+    -----
+    UserWarning
+        Issued if required keyword arguments for `Climatology.get_value_fast()`
+        are missing. This warning does not stop execution; missing values
+        are replaced with `np.nan`.
+
     Notes
     -----
-    - If a `Climatology` object is found, it will be resolved using its `.get_value(**kwargs)` method.
-    - If required keys for `.get_value()` are missing from the function's `**kwargs`, a warning will be issued.
-    - If resolution fails, the value will be replaced with `np.nan`.
+    - `xr.Dataset` inputs require the keyword argument `clim_name` to select
+      the relevant data variable.
+    - `xr.DataArray` inputs are automatically wrapped in a `Climatology` object.
+    - String or path-like inputs must point to an existing file and are
+      opened via `Climatology.open_netcdf_file`.
+    - If a `Climatology` object is processed, it is resolved using
+      `.get_value_fast(**kwargs)`.
+    - If required keyword arguments for `.get_value_fast()` are missing,
+      a warning is issued.
+    - If resolution fails due to `TypeError` or `ValueError`,
+      the value is replaced with `np.nan`.
     """
     if isinstance(optional, str):
         optional = [optional]
@@ -172,7 +206,8 @@ def inspect_climatology(
         arguments : dict
             Function arguments as a dictionary.
         \**meta_kwargs : dict
-            Additional keyword arguments to pass to `Climatology.get_value_fast()`.
+            Additional keyword arguments to pass to `Climatology.get_value_fast()`,
+            `Climatology()` and/or `Climatology.open_netcdf_file()`.
 
         Returns
         -------
@@ -188,6 +223,30 @@ def inspect_climatology(
                     "The decorator requires this argument to be present."
                 )
             climatology = arguments[clim_key]
+
+            if isinstance(climatology, xr.Dataset):
+                data_var = meta_kwargs.pop("clim_name", None)
+                if data_var is None:
+                    raise ValueError("No data variable to select is specified in climatology.Use parameter 'clim_name'.")
+                climatology = climatology[data_var]
+
+            if isinstance(climatology, xr.DataArray):
+                clim_kwargs = {
+                    param: meta_kwargs.pop(param, None)
+                    for param in ["time_axis", "lat_axis", "lon_axis", "source_units", "target_units", "valid_ntime"]
+                }
+                climatology = Climatology(climatology, **clim_kwargs)
+
+            elif isinstance(climatology, (str, os.PathLike)) and climatology != "default":
+                path = Path(climatology)
+                if not path.is_file():
+                    raise FileNotFoundError(f"{climatology} is not a valid file on disk.")
+                clim_kwargs = {
+                    param: meta_kwargs.pop(param, None)
+                    for param in ["clim_name", "time_axis", "lat_axis", "lon_axis", "source_units", "target_units", "valid_ntime"]
+                }
+                climatology = Climatology.open_netcdf_file(climatology, **clim_kwargs)
+
             if isinstance(climatology, Climatology):
                 get_value_sig = inspect.signature(climatology.get_value_fast)
                 required_keys = {
@@ -211,13 +270,26 @@ def inspect_climatology(
 
             arguments[clim_key] = climatology
 
-    DECORATOR_KWARGS[pre_handler] = {"lat", "lon", "date", "month", "day"}
+    DECORATOR_KWARGS[pre_handler] = {
+        "lat",
+        "lon",
+        "date",
+        "month",
+        "day",
+        "clim_name",
+        "time_axis",
+        "lat_axis",
+        "lon_axis",
+        "source_units",
+        "target_units",
+        "valid_ntime",
+    }
 
     return generic_decorator(pre_handler=pre_handler)
 
 
 def open_xrdataset(
-    files: str | list[str],
+    files: str | list[str] | os.PathLike[str],
     use_cftime: bool = True,
     decode_cf: bool = False,
     decode_times: bool = False,
@@ -242,7 +314,7 @@ def open_xrdataset(
 
     Parameters
     ----------
-    files : str or list
+    files : str or list of str or path-like
       See the documentation for :py:func:`xarray.open_mfdataset`.
     use_cftime : bool, default: True
       See the documentation for :py:func:`xarray.decode_cf`.
@@ -390,6 +462,7 @@ class Climatology:
             valid_ntime = [0, 1, 73, 365]
         self.data = data
         self.convert_units_to(target_units, source_units=source_units)
+
         if time_axis is None:
             self.time_axis = data.cf.coordinates["time"][0]
         else:
@@ -409,7 +482,7 @@ class Climatology:
             raise ValueError(f"Weird shaped field {self.ntime}. Use one of {valid_ntime}.")
 
     @classmethod
-    def open_netcdf_file(cls, file_name: str, clim_name: str, **kwargs: Any) -> Climatology:
+    def open_netcdf_file(cls, file_name: str | os.PathLike[str], clim_name: str, **kwargs: Any) -> Climatology:
         r"""
         Open a NetCDF climatology file and construct a Climatology instance.
 
@@ -501,15 +574,25 @@ class Climatology:
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
+        if month is None and day is None:
+            if self.ntime > 1:
+                raise ValueError("No date information given: {self.ntime} needed")
+            month = self.data[self.time_axis].dt.month.values
+            day = self.data[self.time_axis].dt.day.values
+
         month = np.array(month, dtype=object)
         month_arr = np.atleast_1d(month)  # type: np.ndarray
         month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+        if len(month_arr) == 1 and len(month_arr) != len(lat_arr):
+            month_arr = np.repeat(month_arr, len(lat_arr))
 
         day = np.array(day, dtype=object)
         day_arr = np.atleast_1d(day)  # type: np.ndarray
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
+        if len(day_arr) == 1 and len(day_arr) != len(lat_arr):
+            day_arr = np.repeat(day_arr, len(lat_arr))
 
         valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
         valid &= (month_arr >= 1) & (month_arr <= 12)
@@ -773,4 +856,7 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
     return np.asarray(climatology, dtype=float)
 
 
+ClimIntType: TypeAlias = ValueIntType | Climatology
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
+
+ClimInputType: TypeAlias = str | os.PathLike[str] | xr.DataArray | xr.Dataset

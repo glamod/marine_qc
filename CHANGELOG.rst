@@ -10,7 +10,9 @@ New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * New functions ``do_multiple_sequential_check`` and ``do_multiple_grouped_check`` analog to ``do_multiple_individual_check`` to run multiple checks at once (:issue:`32`, :pull:`95`)
 * Call both plotting functions ``latitude_longitude_plot`` and ``latitude_variable_plot`` directly from ``marine_qc`` (:pull:`95`)
-* The documentation now uses the `furo <https://github.com/pradyunsg/furo>`_ theme for Sphinx (:pull:`122`).
+* The documentation now uses the `furo <https://github.com/pradyunsg/furo>`_ theme for Sphinx (:pull:`122`)
+* New functions ``do_landlocked_check`` and ``do_maritime_check`` to test whether a position is on land/sea using a land-sea mask (:issue:`130`, :pull:`141`)
+* decorator ``external_clim.inspect_climatology`` now supports str, path-like and ``xarray`` objects as input (:pull:`141`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^

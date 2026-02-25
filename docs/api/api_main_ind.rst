@@ -39,5 +39,11 @@ QC checks on individual reports
 .. autofunction:: marine_qc.do_wind_consistency_check
    :noindex:
 
+.. autofunction:: marine_qc.do_landlocked_check
+   :noindex:
+
+.. autofunction:: marine_qc.do_maritime_check
+   :noindex:
+
 .. autofunction:: marine_qc.do_multiple_individual_check
    :noindex:
