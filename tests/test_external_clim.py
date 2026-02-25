@@ -1,9 +1,11 @@
 from __future__ import annotations
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 from cdm_reader_mapper.common.getting_files import load_file
+from xarray import open_dataset
 
 from marine_qc.external_clim import (
     Climatology,
@@ -49,6 +51,16 @@ def external_clim():
         )
     }
     return clim_dict
+
+
+@pytest.fixture(scope="session")
+def external_ds_at(external_clim):
+    return open_dataset(external_clim["AT"]["mean"])
+
+
+@pytest.fixture(scope="session")
+def external_da_at(external_clim):
+    return open_dataset(external_clim["AT"]["mean"])["at"]
 
 
 @pytest.fixture(scope="session")
@@ -288,6 +300,51 @@ def test_inspect_climatology_raise(external_at):
 def test_inspect_climatology_warns(external_at):
     with pytest.warns(UserWarning):
         _inspect_climatology(external_at, lat=53.5)
+
+
+def test_inspect_climatology_ds_pass(external_ds_at):
+    result = _inspect_climatology(external_ds_at, lat=53.5, lon=10.0, month=7, day=4, clim_name="at", time_axis="pentad_time")
+    assert result == 17.317651748657227
+
+
+def test_inspect_climatology_ds_raise(external_ds_at):
+    with pytest.raises(
+        ValueError,
+        match="No data variable to select is specified in climatology.",
+    ):
+        _inspect_climatology(external_ds_at, lat=-190.0, lon=10.0, month=7, day=4)
+
+
+def test_inspect_climatology_da_pass(external_da_at):
+    result = _inspect_climatology(external_da_at, lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time")
+    assert result == 17.317651748657227
+
+
+def test_inspect_climatology_str_pass(external_clim):
+    result = _inspect_climatology(external_clim["AT"]["mean"], lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time", clim_name="at")
+    assert result == 17.317651748657227
+
+
+def test_inspect_climatology_str_raises(external_clim):
+    with pytest.raises(
+        KeyError,
+        match="No variable named",
+    ):
+        _inspect_climatology(external_clim["AT"]["mean"], lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time")
+
+
+def test_inspect_climatology_path_pass(external_clim):
+    filepath = Path(external_clim["AT"]["mean"])
+    result = _inspect_climatology(filepath, lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time", clim_name="at")
+    assert result == 17.317651748657227
+
+
+def test_inspect_climatology_path_raise():
+    with pytest.raises(
+        FileNotFoundError,
+        match="is not a valid file on disk",
+    ):
+        _inspect_climatology(Path("invalid_path"), lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time")
 
 
 @pytest.mark.parametrize(
