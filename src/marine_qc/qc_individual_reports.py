@@ -26,7 +26,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimInputType, ClimNumberType, inspect_climatology
+from .external_clim import ClimInputType, ClimIntType, ClimNumberType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
