@@ -22,6 +22,7 @@ from .auxiliary import (
     SequenceFloatType,
     convert_to,
     convert_units,
+    ensure_arrays,
     inspect_arrays,
     isvalid,
     post_format_return_type,
@@ -324,6 +325,11 @@ def check_distance_from_estimate(
     np.ndarray
         Returned array elements set to 10 if estimated and reported positions differ by more than the reported
         speed multiplied by the calculated time difference, 0 otherwise.
+
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
     """
     valid = isvalid(vsi)
 
@@ -521,19 +527,12 @@ def forward_discrepancy(
     Raises
     ------
     ValueError
-        - If either input is not 1-dimensional or if their lengths do not match.
-        - If decorator `inspect_arrays` does not return np.ndarrays.
+        If either input is not 1-dimensional or if their lengths do not match.
+
+    TypeError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
-    if not isinstance(date, np.ndarray):
-        raise TypeError(f"'date' must be a numpy.ndarray, got {type(date).__name__}")
-    if not isinstance(vsi, np.ndarray):
-        raise TypeError(f"'vsi' must be a numpy.ndarray, got {type(vsi).__name__}")
-    if not isinstance(dsi, np.ndarray):
-        raise TypeError(f"'dsi' must be a numpy.ndarray, got {type(dsi).__name__}")
+    lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)
 
     timediff = time_difference(np.roll(date, 1), date)
     lat1, lon1 = increment_position(np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff)
@@ -602,19 +601,12 @@ def backward_discrepancy(
     Raises
     ------
     ValueError
-        - If either input is not 1-dimensional or if their lengths do not match.
-        - If decorator `inspect_arrays` does not return np.ndarrays.
+        If either input is not 1-dimensional or if their lengths do not match.
+
+    TypeError
+        If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
-    if not isinstance(date, np.ndarray):
-        raise TypeError(f"'date' must be a numpy.ndarray, got {type(date).__name__}")
-    if not isinstance(vsi, np.ndarray):
-        raise TypeError(f"'vsi' must be a numpy.ndarray, got {type(vsi).__name__}")
-    if not isinstance(dsi, np.ndarray):
-        raise TypeError(f"'dsi' must be a numpy.ndarray, got {type(dsi).__name__}")
+    lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)
 
     timediff = time_difference(np.roll(date, 1), date)
     lat2, lon2 = increment_position(

@@ -110,6 +110,34 @@ def isvalid(inval: ValueFloatType) -> bool | npt.NDArray[np.bool_]:
     return valid_arr
 
 
+def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
+    r"""
+    Ensure that all input values are NumPy arrays.
+
+    Parameters
+    ----------
+    \**values : Mapping[str, Any]
+        Mapping of names to values expected to be NumPy arrays.
+
+    Returns
+    -------
+    tuple of np.ndarray
+        A tuple containing the NumPy arrays corresponding to the input values,
+        in the same order as provided.
+
+    Raises
+    ------
+    TypeError
+        If any input value is not a NumPy array.
+    """
+    arrays: list[npt.NDArray[Any]] = []
+    for name, value in values.items():
+        if not isinstance(value, np.ndarray):
+            raise TypeError(f"'{name}' must be a numpy.ndarray, got {type(value).__name__}")
+        arrays.append(value)
+    return tuple(arrays)
+
+
 def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type = int) -> Any:
     r"""
     Convert the result numpy array(s) to the same type as the input `value`.

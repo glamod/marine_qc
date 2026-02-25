@@ -18,6 +18,7 @@ from .auxiliary import (
     SequenceFloatType,
     SequenceIntType,
     convert_units,
+    ensure_arrays,
     failed,
     inspect_arrays,
     isvalid,
@@ -135,23 +136,14 @@ class SuperObsGrid:
 
         Raises
         ------
-        ValueError
+        TypeError
             If `inspect_arrays` does not return np.ndarrays.
 
         Notes
         -----
         The observations should be anomalies.
         """
-        if not isinstance(lats, np.ndarray):
-            raise TypeError(f"'lats' must be a numpy.ndarray, got {type(lats).__name__}")
-        if not isinstance(lons, np.ndarray):
-            raise TypeError(f"'lons' must be a numpy.ndarray, got {type(lons).__name__}")
-        if not isinstance(values, np.ndarray):
-            raise TypeError(f"'values' must be a numpy.ndarray, got {type(values).__name__}")
-        if not isinstance(month, np.ndarray):
-            raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
-        if not isinstance(day, np.ndarray):
-            raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+        lats, lons, values, month, day = ensure_arrays(lats=lats, lons=lons, values=values, month=month, day=day)
 
         value_arr: np.ndarray = np.atleast_1d(values).astype(float)
         lat_arr: np.ndarray = np.atleast_1d(lats).astype(float)
@@ -558,6 +550,11 @@ def do_mds_buddy_check(
         1-dimensional array containing QC flags.
         1 if buddy check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     The limits, number_of_obs_thresholds, and multipliers parameters are rather complex. The buddy check basically
@@ -578,10 +575,7 @@ def do_mds_buddy_check(
     * number_of_obs_thresholds = [[0, 5, 15, 100], [0], [0, 5, 15, 100], [0]]
     * multipliers = [[4.0, 3.5, 3.0, 2.5], [4.0], [4.0, 3.5, 3.0, 2.5], [4.0]]
     """
-    lat = cast(np.ndarray, lat)
-    lon = cast(np.ndarray, lon)
-    value = cast(np.ndarray, value)
-    climatology = cast(np.ndarray, climatology)
+    lat, lon, value, climatology = ensure_arrays(lat=lat, lon=lon, value=value, climatology=climatology)
 
     anoms = value - climatology
 
@@ -707,6 +701,11 @@ def do_bayesian_buddy_check(
         1-dimensional array containing passed, failed or untestable flags. Untestable flags will be set if there
         are no buddies in the specified limits.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions the default values for the parameters were:
@@ -719,11 +718,7 @@ def do_bayesian_buddy_check(
     * maximum_anomaly = 8.0
     * fail_probability = 0.3
     """
-    lat = cast(np.ndarray, lat)
-    lon = cast(np.ndarray, lon)
-    date = cast(np.ndarray, date)
-    value = cast(np.ndarray, value)
-    climatology = cast(np.ndarray, climatology)
+    lat, lon, value, climatology = ensure_arrays(lat=lat, lon=lon, value=value, climatology=climatology)
 
     numobs = len(lat)
     p0 = prior_probability_of_gross_error

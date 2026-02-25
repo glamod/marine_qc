@@ -13,9 +13,11 @@ from collections.abc import Sequence
 from datetime import datetime
 
 import numpy as np
+import numpy.typing as npt
+import pandas as pd
 
 from .astronomical_geometry import sunangle
-from .auxiliary import failed, inspect_arrays, isvalid, passed, untestable, untested
+from .auxiliary import ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
 from .qc_sequential_reports import do_iquam_track_check
 from .spherical_geometry import sphere_distance
 from .statistics import trim_mean, trim_std
@@ -180,11 +182,11 @@ class SpeedChecker:
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -199,9 +201,9 @@ class SpeedChecker:
 
     def __init__(
         self,
-        lons: Sequence[float],
-        lats: Sequence[float],
-        dates: Sequence[datetime],
+        lons: npt.NDArray[np.floating],
+        lats: npt.NDArray[np.floating],
+        dates: npt.NDArray[np.datetime64],
         speed_limit: float,
         min_win_period: float,
         max_win_period: float,
@@ -211,11 +213,11 @@ class SpeedChecker:
 
         Parameters
         ----------
-        lons : array-like of float, shape (n,)
+        lons : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-        lats : array-like of float, shape (n,)
+        lats : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-        dates : array-like of datetime, shape (n,)
+        dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -230,7 +232,9 @@ class SpeedChecker:
         self.lon = np.asarray(lons, dtype=float)
         self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
-        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
+
+        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
 
         self.speed_limit = speed_limit
         self.min_win_period = min_win_period
@@ -398,11 +402,11 @@ class NewSpeedChecker:
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -422,9 +426,9 @@ class NewSpeedChecker:
 
     def __init__(
         self,
-        lons: Sequence[float],
-        lats: Sequence[float],
-        dates: Sequence[datetime],
+        lons: npt.NDArray[np.floating],
+        lats: npt.NDArray[np.floating],
+        dates: npt.NDArray[np.datetime64],
         speed_limit: float,
         min_win_period: float,
         ship_speed_limit: float,
@@ -437,11 +441,11 @@ class NewSpeedChecker:
 
         Parameters
         ----------
-        lons : array-like of float, shape (n,)
+        lons : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-        lats : array-like of float, shape (n,)
+        lats : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-        dates : array-like of datetime, shape (n,)
+        dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -463,7 +467,9 @@ class NewSpeedChecker:
         self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
         self.dates = np.asarray(dates, dtype=datetime)
-        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
+
+        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
 
         self.speed_limit = speed_limit
         self.min_win_period = min_win_period
@@ -634,11 +640,11 @@ class AgroundChecker:
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
     smooth_win : int
             Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -655,9 +661,9 @@ class AgroundChecker:
 
     def __init__(
         self,
-        lons: Sequence[float],
-        lats: Sequence[float],
-        dates: Sequence[datetime],
+        lons: npt.NDArray[np.floating],
+        lats: npt.NDArray[np.floating],
+        dates: npt.NDArray[np.datetime64],
         smooth_win: int,
         min_win_period: int,
         max_win_period: int | None,
@@ -667,11 +673,11 @@ class AgroundChecker:
 
         Parameters
         ----------
-        lons : array-like of float, shape (n,)
+        lons : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-        lats : array-like of float, shape (n,)
+        lats : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-        dates : array-like of datetime, shape (n,)
+        dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
         smooth_win : int
             Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -685,7 +691,9 @@ class AgroundChecker:
         self.lon = np.asarray(lons, dtype=float)
         self.lat = np.asarray(lats, dtype=float)
         self.nreps = len(lons)
-        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
+
+        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
 
         self.smooth_win = smooth_win
         self.min_win_period = min_win_period
@@ -881,19 +889,19 @@ class SSTTailChecker:
 
     Parameters
     ----------
-    lat : array-like of float, shape (n,)
+    lat : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-    lon : array-like of float, shape (n,)
+    lon : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-    sst : array-like of float, shape (n,)
+    sst : np.ndarray of float, shape (n,)
             1-dimensional array of sea surface temperatures in K.
-    ostia : array-like of float, shape (n,)
+    ostia : np.ndarray of float, shape (n,)
             1-dimensional array of background field sea surface temperatures in K.
-    ice : array-like of float, shape (n,)
+    ice : np.ndarray of float, shape (n,)
             1-dimensional array of ice concentrations in the range 0.0 to 1.0.
-    bgvar : array-like of float, shape (n,)
+    bgvar : np.ndarray of float, shape (n,)
             1-dimensional array of background sea surface temperature fields variances in K^2.
-    dates : array-like of datetime, shape (n,)
+    dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
     long_win_len : int
             Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -918,13 +926,13 @@ class SSTTailChecker:
 
     def __init__(
         self,
-        lat: Sequence[float],
-        lon: Sequence[float],
-        sst: Sequence[float],
-        ostia: Sequence[float],
-        ice: Sequence[float],
-        bgvar: Sequence[float],
-        dates: Sequence[datetime],
+        lat: npt.NDArray[np.floating],
+        lon: npt.NDArray[np.floating],
+        sst: npt.NDArray[np.floating],
+        ostia: npt.NDArray[np.floating],
+        ice: npt.NDArray[np.floating],
+        bgvar: npt.NDArray[np.floating],
+        dates: npt.NDArray[np.datetime64],
         long_win_len: int,
         long_err_std_n: float,
         short_win_len: int,
@@ -939,19 +947,19 @@ class SSTTailChecker:
 
         Parameters
         ----------
-        lat : array-like of float, shape (n,)
+        lat : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-        lon : array-like of float, shape (n,)
+        lon : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-        sst : array-like of float, shape (n,)
+        sst : np.ndarray of float, shape (n,)
             1-dimensional array of sea surface temperatures in K.
-        ostia : array-like of float, shape (n,)
+        ostia : np.ndarray of float, shape (n,)
             1-dimensional array of background field sea surface temperatures in K.
-        ice : array-like of float, shape (n,)
+        ice : np.ndarray of float, shape (n,)
             1-dimensional array of ice concentrations in the range 0.0 to 1.0.
-        bgvar : array-like of float, shape (n,)
+        bgvar : np.ndarray of float, shape (n,)
             1-dimensional array of background sea surface temperature fields variances in K^2.
-        dates : array-like of datetime, shape (n,)
+        dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
         long_win_len : int
             Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -983,7 +991,9 @@ class SSTTailChecker:
         self.ice = np.asarray(ice, dtype=float)
         self.bgvar = np.asarray(bgvar, dtype=float)
         self.dates = np.asarray(dates, dtype=datetime)
-        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
+
+        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
 
         self.reps_ind: np.ndarray = np.array([], dtype=float)
         self.sst_anom: np.ndarray = np.array([], dtype=float)
@@ -1346,19 +1356,19 @@ class SSTBiasedNoisyChecker:
 
     Parameters
     ----------
-    lat : array-like of float, shape (n,)
+    lat : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-    lon : array-like of float, shape (n,)
+    lon : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
-    sst : array-like of float, shape (n,)
+    sst : np.ndarray of float, shape (n,)
             1-dimensional sea surface temperature array in K.
-    ostia : array-like of float, shape (n,)
+    ostia : np.ndarray of float, shape (n,)
             1-dimensional background field sea surface temperature array in K.
-    bgvar : array-like of float, shape (n,)
+    bgvar : np.ndarray of float, shape (n,)
             1-dimensional background variance array in K^2.
-    ice : array-like of float, shape (n,)
+    ice : np.ndarray of float, shape (n,)
             1-dimensional ice concentration array in range 0,1.
     n_eval : int
             The minimum number of drifter observations required to be assessed by the long-record check.
@@ -1379,13 +1389,13 @@ class SSTBiasedNoisyChecker:
 
     def __init__(
         self,
-        lat: Sequence[float],
-        lon: Sequence[float],
-        dates: Sequence[datetime],
-        sst: Sequence[float],
-        ostia: Sequence[float],
-        bgvar: Sequence[float],
-        ice: Sequence[float],
+        lat: npt.NDArray[np.floating],
+        lon: npt.NDArray[np.floating],
+        dates: npt.NDArray[np.datetime64],
+        sst: npt.NDArray[np.floating],
+        ostia: npt.NDArray[np.floating],
+        bgvar: npt.NDArray[np.floating],
+        ice: npt.NDArray[np.floating],
         n_eval: int,
         bias_lim: float,
         drif_intra: float,
@@ -1399,19 +1409,19 @@ class SSTBiasedNoisyChecker:
 
         Parameters
         ----------
-        lat : array-like of float, shape (n,)
+        lat : np.ndarray of float, shape (n,)
             1-dimensional latitude array in degrees.
-        lon : array-like of float, shape (n,)
+        lon : np.ndarray of float, shape (n,)
             1-dimensional longitude array in degrees.
-        dates : array-like of datetime, shape (n,)
+        dates : np.ndarray of datetime, shape (n,)
             1-dimensional date array.
-        sst : array-like of float, shape (n,)
+        sst : np.ndarray of float, shape (n,)
             1-dimensional sea surface temperature array in K.
-        ostia : array-like of float, shape (n,)
+        ostia : np.ndarray of float, shape (n,)
             1-dimensional background field sea surface temperature array in K.
-        bgvar : array-like of float, shape (n,)
+        bgvar : np.ndarray of float, shape (n,)
             1-dimensional background variance array in K^2.
-        ice : array-like of float, shape (n,)
+        ice : np.ndarray of float, shape (n,)
             1-dimensional ice concentration array in range 0,1.
         n_eval : int
             The minimum number of drifter observations required to be assessed by the long-record check.
@@ -1438,7 +1448,9 @@ class SSTBiasedNoisyChecker:
         self.ice = np.asarray(ice, dtype=float)
 
         self.nreps = len(lat)
-        self.hrs = np.asarray(convert_date_to_hours(dates), dtype=float)
+
+        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
 
         self.n_eval = n_eval
         self.bias_lim = bias_lim
@@ -1752,6 +1764,11 @@ def do_speed_check(
         1-dimensional array containing QC flags.
         1 if speed check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -1760,7 +1777,9 @@ def do_speed_check(
     * min_win_period = 0.8
     * max_win_perido = 1.8
     """
-    checker = SpeedChecker(lons, lats, dates, speed_limit, min_win_period, max_win_period)
+    lons_arr, lats_arr, dates_arr = ensure_arrays(lons=lons, lats=lats, dates=dates)
+
+    checker = SpeedChecker(lons_arr, lats_arr, dates_arr, speed_limit, min_win_period, max_win_period)
     checker.do_speed_check()
     return checker.get_qc_outcomes()
 
@@ -1808,6 +1827,11 @@ def do_new_speed_check(
     array-like of int, shape (n,)
         Array containing the QC outcomes for the new speed check.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -1822,10 +1846,12 @@ def do_new_speed_check(
     * delta_t = 0.01
     * n_neighbours = 5
     """
+    lons_arr, lats_arr, dates_arr = ensure_arrays(lons=lons, lats=lats, dates=dates)
+
     checker = NewSpeedChecker(
-        lons,
-        lats,
-        dates,
+        lons_arr,
+        lats_arr,
+        dates_arr,
         speed_limit,
         min_win_period,
         ship_speed_limit,
@@ -1872,6 +1898,11 @@ def do_aground_check(
         1-dimensional array containing QC flags.
         1 if aground check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -1880,7 +1911,9 @@ def do_aground_check(
     * min_win_period = 8
     * max_win_period = 10
     """
-    checker = AgroundChecker(lons, lats, dates, smooth_win, min_win_period, max_win_period)
+    lats_arr, lons_arr, dates_arr = ensure_arrays(lats=lats, lons=lons, dates=dates)
+
+    checker = AgroundChecker(lons_arr, lats_arr, dates_arr, smooth_win, min_win_period, max_win_period)
     checker.do_aground_check()
     return checker.get_qc_outcomes()
 
@@ -1915,6 +1948,11 @@ def do_new_aground_check(
         1-dimensional array containing QC flags.
         1 if new aground check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -1922,7 +1960,9 @@ def do_new_aground_check(
     * smooth_win = 41
     * min_win_period = 8
     """
-    checker = AgroundChecker(lons, lats, dates, smooth_win, min_win_period, None)
+    lats_arr, lons_arr, dates_arr = ensure_arrays(lats=lats, lons=lons, dates=dates)
+
+    checker = AgroundChecker(lons_arr, lats_arr, dates_arr, smooth_win, min_win_period, None)
     checker.do_aground_check()
     return checker.get_qc_outcomes()
 
@@ -1991,6 +2031,11 @@ def do_sst_start_tail_check(
         1-dimensional array containing QC flags.
         1 if SST start tail check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -2004,14 +2049,18 @@ def do_sst_start_tail_check(
     * drif_intra = 1.00
     * background_err_lim = 0.3
     """
+    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
+        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    )
+
     checker = SSTTailChecker(
-        lats,
-        lons,
-        sst,
-        ostia,
-        ice,
-        bgvar,
-        dates,
+        lats_arr,
+        lons_arr,
+        sst_arr,
+        ostia_arr,
+        ice_arr,
+        bgvar_arr,
+        dates_arr,
         long_win_len,
         long_err_std_n,
         short_win_len,
@@ -2089,6 +2138,11 @@ def do_sst_end_tail_check(
         1-dimensional array containing QC flags.
         1 if SST start tail check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -2102,14 +2156,18 @@ def do_sst_end_tail_check(
     * drif_intra = 1.00
     * background_err_lim = 0.3
     """
+    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
+        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    )
+
     checker = SSTTailChecker(
-        lats,
-        lons,
-        sst,
-        ostia,
-        ice,
-        bgvar,
-        dates,
+        lats_arr,
+        lons_arr,
+        sst_arr,
+        ostia_arr,
+        ice_arr,
+        bgvar_arr,
+        dates_arr,
         long_win_len,
         long_err_std_n,
         short_win_len,
@@ -2181,6 +2239,11 @@ def do_sst_biased_check(
         1-dimensional array containing QC flags.
         1 if SST bias check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -2193,14 +2256,18 @@ def do_sst_biased_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
+    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
+        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    )
+
     checker = SSTBiasedNoisyChecker(
-        lats,
-        lons,
-        dates,
-        sst,
-        ostia,
-        bgvar,
-        ice,
+        lats_arr,
+        lons_arr,
+        dates_arr,
+        sst_arr,
+        ostia_arr,
+        bgvar_arr,
+        ice_arr,
         n_eval,
         bias_lim,
         drif_intra,
@@ -2271,6 +2338,11 @@ def do_sst_noisy_check(
         1-dimensional array containing QC flags.
         1 if SST noise check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -2283,14 +2355,18 @@ def do_sst_noisy_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
+    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
+        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    )
+
     checker = SSTBiasedNoisyChecker(
-        lats,
-        lons,
-        dates,
-        sst,
-        ostia,
-        bgvar,
-        ice,
+        lats_arr,
+        lons_arr,
+        dates_arr,
+        sst_arr,
+        ostia_arr,
+        bgvar_arr,
+        ice_arr,
         n_eval,
         bias_lim,
         drif_intra,
@@ -2361,6 +2437,11 @@ def do_sst_biased_noisy_short_check(
         1-dimensional array containing QC flags.
         1 if SST short check fails, 0 otherwise.
 
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -2373,14 +2454,18 @@ def do_sst_biased_noisy_short_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
+    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
+        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    )
+
     checker = SSTBiasedNoisyChecker(
-        lats,
-        lons,
-        dates,
-        sst,
-        ostia,
-        bgvar,
-        ice,
+        lats_arr,
+        lons_arr,
+        dates_arr,
+        sst_arr,
+        ostia_arr,
+        bgvar_arr,
+        ice_arr,
         n_eval,
         bias_lim,
         drif_intra,
