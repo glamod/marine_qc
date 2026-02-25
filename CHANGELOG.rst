@@ -32,8 +32,12 @@ Internal changes
 * The mypy type checking has been added to the pre-commit configurations (:issue:`59`, :pull:`121`)
 * Documentation is now build without any warning messages (:issue:`96`, :pull:`122`)
 * `readthedocs.yaml`: set `fail_on_warnings` to "true" (:issue:`61`, :pull:`122`)
-* `multiple_checks`: merge `_prepare_preprocessed_vars` and `_prepare_qc_functions` into `_prepare_functions` (:pull:`128`)
+* new validation method `validations` to validate call signature types for all functions (:pull:`128`)
+* `multiple_checks`: merge helper functions `_prepare_preprocessed_vars` and `_prepare_qc_functions` into `_prepare_functions` (:pull:`128`)
+* `multiple_checks`: rename helper function `_validate_and_normalize_input` to `_normalize_input` (:pull:`128`)
 * `multiple_checks`: replace concrete `dict` types with `Mapping` in function type hints (:pull:`128`)
+* new helper function `auxiliary.ensure_arrays` to ensure that all inputs are NumPy arrays and to increase test coverage (:pull:`128`)
+* new marine_qc data types: ScalarNumberType, SequenceNumberType and ValueNumberType (:pull:`128`)
 
 0.2.0 (2025-10-21)
 ------------------
