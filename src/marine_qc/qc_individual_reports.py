@@ -988,7 +988,7 @@ def do_landlocked_check(
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
     lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=land_sea_mask)
-    
+
     return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=land_flag)
 
 
