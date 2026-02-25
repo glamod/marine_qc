@@ -57,7 +57,7 @@ def value_check(value: ValueNumberType) -> ValueIntType:
     TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
-    value_arr = ensure_arrays(value=value)
+    (value_arr,) = ensure_arrays(value=value)
 
     valid_mask = isvalid(value_arr)
     result = np.where(valid_mask, passed, failed)

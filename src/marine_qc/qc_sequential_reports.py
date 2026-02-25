@@ -374,7 +374,7 @@ def do_few_check(
     TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
-    value = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)
 
     number_of_obs = len(value)
 
@@ -531,7 +531,7 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    value = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)
 
     number_of_obs = len(value)
 
@@ -600,7 +600,7 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    value = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)
 
     number_of_obs = len(value)
 
