@@ -29,6 +29,7 @@ Internal changes
 * The mypy type checking has been added to the pre-commit configurations (:issue:`59`, :pull:`121`)
 * Documentation is now build without any warning messages (:issue:`96`, :pull:`122`)
 * `readthedocs.yaml`: set `fail_on_warnings` to "true" (:issue:`61`, :pull:`122`)
+* remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
 
 0.2.0 (2025-10-21)
 ------------------
