@@ -67,7 +67,7 @@ def testdata():
         )
 
     data_dict = {}
-    db_tables = read_tables(cache_dir, suffix=cdm_name, extension="psv")
+    db_tables = read_tables(cache_dir)
 
     for table in tables:
         db_table = DataBundle()
@@ -160,7 +160,7 @@ def testdata_track():
             within_drs=False,
         )
 
-    db_tables = read_tables(cache_dir, suffix=cdm_name, extension="psv")
+    db_tables = read_tables(cache_dir)
     db_tables.data = db_tables.replace("null", None)
     for table in tables:
         db_tables.data[(table, "latitude")] = db_tables[(table, "latitude")].astype(float)
