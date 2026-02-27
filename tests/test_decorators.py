@@ -9,6 +9,7 @@ from pint.errors import DimensionalityError
 from marine_qc.auxiliary import (
     convert_to,
     convert_units,
+    ensure_arrays,
     format_return_type,
     inspect_arrays,
     is_scalar_like,
@@ -159,6 +160,17 @@ def test_post_format_return_type(value, expected, array_type):
 )
 def test_is_scalar_like(value, expected):
     assert is_scalar_like(value) == expected
+
+
+def test_ensure_arrays_passes():
+    arr_orig = np.array([1, 2, 3])
+    (arr,) = ensure_arrays(arr=arr_orig)
+    np.testing.assert_array_equal(arr, arr_orig)
+
+
+def test_ensure_arrays_raises():
+    with pytest.raises(TypeError):
+        ensure_arrays(arr=1)
 
 
 @pytest.mark.parametrize(

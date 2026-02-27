@@ -16,6 +16,7 @@ from .auxiliary import (
     SequenceFloatType,
     SequenceIntType,
     convert_units,
+    ensure_arrays,
     failed,
     inspect_arrays,
     isvalid,
@@ -99,6 +100,9 @@ def do_spike_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous versions, default values for the parameters were:
@@ -108,6 +112,8 @@ def do_spike_check(
     * delta_t: float = 2.0
     * n_neighbours: int = 5
     """
+    value, lat, lon, date = ensure_arrays(value=value, lat=lat, lon=lon, date=date)
+
     value = cast(np.ndarray, value)
     lat = cast(np.ndarray, lat)
     lon = cast(np.ndarray, lon)
@@ -232,6 +238,9 @@ def do_track_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     If number of observations is less than three, the track check always passes.
@@ -243,6 +252,8 @@ def do_track_check(
     * max_absolute_speed =  40.0
     * max_midpoint_discrepancy = 150.0
     """
+    vsi, dsi, lat, lon, date = ensure_arrays(vsi=vsi, dsi=dsi, lat=lat, lon=lon, date=date)
+
     number_of_obs = len(lat)
 
     # no obs in, no qc outcomes out
@@ -359,7 +370,12 @@ def do_few_check(
     ------
     ValueError
         If either input is not 1-dimensional.
+
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
     """
+    (value,) = ensure_arrays(value=value)
+
     number_of_obs = len(value)
 
     # no obs in, no qc outcomes out
@@ -432,6 +448,9 @@ def find_saturated_runs(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     In previous version, default values for the parameters were:
@@ -439,6 +458,8 @@ def find_saturated_runs(
     * min_time_threshold =  48.0
     * shortest_run = 4
     """
+    at, dpt, lat, lon, date = ensure_arrays(at=at, dpt=dpt, lat=lat, lon=lon, date=date)
+
     saturated = at == dpt
 
     # Label contiguous runs of saturation
@@ -495,8 +516,10 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
     Raises
     ------
     ValueError
-        - If `threshold` is not between 0.0 and 1.0.
-        - If `inspect_arrays` does not return np.ndarrays.
+        If `threshold` is not between 0.0 and 1.0.
+
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
 
     Notes
     -----
@@ -508,8 +531,7 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    if not isinstance(value, np.ndarray):
-        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+    (value,) = ensure_arrays(value=value)
 
     number_of_obs = len(value)
 
@@ -564,7 +586,9 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
     ------
     ValueError
         - If `threshold` is not between 0.0 and 1.0.
-        - If `inspect_arrays` does not return np.ndarrays.
+
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
 
     Notes
     -----
@@ -576,8 +600,7 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    if not isinstance(value, np.ndarray):
-        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+    (value,) = ensure_arrays(value=value)
 
     number_of_obs = len(value)
 
@@ -662,6 +685,9 @@ def do_iquam_track_check(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
 
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
+
     Notes
     -----
     Previous versions had default values for the parameters of:
@@ -671,6 +697,8 @@ def do_iquam_track_check(
     * delta_t = 0.01
     * n_neighbours = 5
     """
+    lat, lon, date = ensure_arrays(lat=lat, lon=lon, date=date)
+
     number_of_obs = len(lat)
 
     if number_of_obs == 0:

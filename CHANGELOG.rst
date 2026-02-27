@@ -18,6 +18,9 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * rename function ``do_multiple_row_check`` to ``multiple_individual_check`` (:pull:`95`)
 * rename module ``marine_qc.multiple_row_checks`` to ``marine_qc.multiple_checks`` (:pull:`95`)
+* `multiple_checks` now raises errors if `qc_dict` or `preproc_dict` has an invalid structure (:issue:`119`, :pull:`128`)
+* `multiple_checks` now raises errors if input directory values do not match the available QC functions or their arguments (:issue:`119`, :pull:`128`)
+
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -29,6 +32,12 @@ Internal changes
 * The mypy type checking has been added to the pre-commit configurations (:issue:`59`, :pull:`121`)
 * Documentation is now build without any warning messages (:issue:`96`, :pull:`122`)
 * `readthedocs.yaml`: set `fail_on_warnings` to "true" (:issue:`61`, :pull:`122`)
+* new validation method `validations` to validate call signature types for all functions (:pull:`128`)
+* `multiple_checks`: merge helper functions `_prepare_preprocessed_vars` and `_prepare_qc_functions` into `_prepare_functions` (:pull:`128`)
+* `multiple_checks`: rename helper function `_validate_and_normalize_input` to `_normalize_input` (:pull:`128`)
+* `multiple_checks`: replace concrete `dict` types with `Mapping` in function type hints (:pull:`128`)
+* new helper function `auxiliary.ensure_arrays` to ensure that all inputs are NumPy arrays and to increase test coverage (:pull:`128`)
+* new marine_qc data types: ScalarNumberType, SequenceNumberType and ValueNumberType (:pull:`128`)
 * remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
 
 0.2.0 (2025-10-21)

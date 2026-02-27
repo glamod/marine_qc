@@ -17,14 +17,11 @@ from marine_qc.multiple_checks import (
     _get_preprocessed_args,
     _get_requests_from_params,
     _group_iterator,
-    _is_func_param,
-    _is_in_data,
     _normalize_groupby,
+    _normalize_input,
     _prepare_all_inputs,
-    _prepare_preprocessed_vars,
-    _prepare_qc_functions,
+    _prepare_functions,
     _run_qc_engine,
-    _validate_and_normalize_input,
 )
 
 
@@ -34,11 +31,6 @@ def simple_test_function(in_param, **kwargs):
 
 def simple_test_function_no_kwargs(in_param):
     return in_param * 2
-
-
-@pytest.fixture
-def series_ind():
-    return pd.Series([1, 2, 3, 4], name="value")
 
 
 @pytest.fixture
@@ -118,30 +110,8 @@ def test_get_function():
 
 
 def test_get_function_raises():
-    with pytest.raises(NameError):
+    with pytest.raises(NameError, match="Function 'BAD_NAME' is not defined."):
         _get_function("BAD_NAME")
-
-
-def test_is_func_param():
-    assert not _is_func_param(_is_func_param, "Non existent parameter")
-    assert _is_func_param(_is_func_param, "param")
-    assert _is_func_param(simple_test_function, "non existent parameter")
-
-
-def test_is_in_data_series(series_ind):
-    assert _is_in_data("value", series_ind)
-    assert not _is_in_data("value2", series_ind)
-
-
-def test_is_in_data_df(df_ind):
-    assert _is_in_data("value1", df_ind)
-    assert _is_in_data("value2", df_ind)
-    assert not _is_in_data("value3", df_ind)
-
-
-def test_is_in_data_raises():
-    with pytest.raises(TypeError):
-        _is_in_data("test_name", [1, 2, 3])
 
 
 def test_get_requests_from_params(df_ind):
@@ -160,11 +130,11 @@ def test_get_requests_from_params(df_ind):
 
 def test_get_requests_from_params_raises(df_ind):
     test_params = {"wrong_param": "value1"}
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not a valid parameter"):
         _get_requests_from_params(test_params, simple_test_function_no_kwargs, df_ind)
 
     test_params = {"in_param": "wrong_name"}
-    with pytest.raises(NameError):
+    with pytest.raises(NameError, match="is not available in input data"):
         _get_requests_from_params(test_params, simple_test_function_no_kwargs, df_ind)
 
 
@@ -179,23 +149,34 @@ def test_get_preprocessed_args():
     assert result["var2"] == 99
 
 
-def test_prepare_preprocessed_vars(df_ind):
-    preproc_dict = {
+def test_prepare_functions_execute(df_ind):
+    config = {
         "test": {
             "func": "do_hard_limit_check",
             "names": {"value": "value1"},
             "arguments": {"limits": [2, 3]},
         },
     }
-    result = _prepare_preprocessed_vars(preproc_dict, df_ind)
+    result = _prepare_functions(config, df_ind, execute=True)
 
     expected = pd.Series([failed, passed, passed, failed])
     pd.testing.assert_series_equal(result["test"], expected)
 
 
-def test_prepare_qc_functions(df_ind, qc_dict):
+def test_prepare_functions_without_func(df_ind):
+    config = {
+        "test": {
+            "names": {"value": "value1"},
+            "arguments": {"limits": [2, 3]},
+        },
+    }
+    with pytest.raises(ValueError, match="'func' is not specified"):
+        _prepare_functions(config, df_ind)
+
+
+def test_prepare_functions_preprocessed(df_ind, qc_dict):
     preprocessed = {}
-    result = _prepare_qc_functions(qc_dict, preprocessed, df_ind)
+    result = _prepare_functions(qc_dict, df_ind, preprocessed=preprocessed)
 
     for i in ["1", "2"]:
         function = result[f"test{i}"]["function"]
@@ -270,16 +251,16 @@ def test_normalize_groupby(df_ind):
         (pd.Series([1, 2, 3, 4], name="value"), "failed", True),
     ],
 )
-def test_validate_and_normalize_input(data, return_method, is_series):
-    result = _validate_and_normalize_input(data, return_method)
+def test_normalize_input(data, return_method, is_series):
+    result = _normalize_input(data, return_method)
 
     assert result[1] is is_series
     pd.testing.assert_frame_equal(result[0], pd.DataFrame({"value": [1, 2, 3, 4]}))
 
 
-def test_validate_and_normalize_input_raise():
-    with pytest.raises(ValueError):
-        _validate_and_normalize_input(pd.DataFrame(), "invalid")
+def test_normalize_input_raise():
+    with pytest.raises(ValueError, match="'return_method' must be 'all','passed','failed'."):
+        _normalize_input(pd.DataFrame(), "invalid")
 
 
 def test_prepare_all_inputs(df_ind, qc_dict):
@@ -402,10 +383,105 @@ def test_run_qc_engine(df_ind, return_method, exp):
         ("failed", {"test1": [failed, passed, passed, failed], "test2": [untested, failed, passed, untested]}),
     ],
 )
-def test_do_multiple_check(df_ind, qc_dict, return_method, exp):
-    result = _do_multiple_check(df_ind, None, qc_dict, {}, return_method)
+def test_do_multiple_check_basic(df_ind, qc_dict, return_method, exp):
+    result = _do_multiple_check(df_ind, qc_dict=qc_dict, return_method=return_method)
 
     pd.testing.assert_frame_equal(result, pd.DataFrame(exp))
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_dicts(df_ind, param):
+    kwargs = "invalid_input"
+    with pytest.raises(TypeError, match="must be a dictionary"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_keys(df_ind, param):
+    kwargs = {1: {"func": "no_valid_check"}}
+    with pytest.raises(TypeError, match="must be a string"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_values(df_ind, param):
+    kwargs = {"qc_dict": "no_valid_check"}
+    with pytest.raises(TypeError, match="must be a dictionary"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_func(df_ind, param):
+    kwargs = {"test": {"func": "no_valid_check"}}
+    with pytest.raises(NameError, match="is not defined"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_names(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"value": "invalid_value"},
+        }
+    }
+    with pytest.raises(NameError, match="is not available in input data"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_params(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"invalid_param": "value2"},
+        },
+    }
+    with pytest.raises(ValueError, match="is not a valid parameter of function"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_invalid_args(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"value": "value2"},
+            "arguments": {"invalid_args": [2, 3]},
+        },
+    }
+    with pytest.raises(ValueError, match="is not a valid parameter of function"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_missing_func(df_ind, param):
+    kwargs = {"test": {}}
+    with pytest.raises(ValueError, match="'func' is not specified"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_missing_names(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+        },
+    }
+    with pytest.raises(TypeError, match="is missing for function"):
+        _do_multiple_check(df_ind, **{param: kwargs})
+
+
+@pytest.mark.parametrize("param", ["qc_dict", "preproc_dict"])
+def test_do_multiple_check_missing_args(df_ind, param):
+    kwargs = {
+        "test": {
+            "func": "do_hard_limit_check",
+            "names": {"value": "value2"},
+        },
+    }
+    with pytest.raises(TypeError, match="is missing for function"):
+        _do_multiple_check(df_ind, **{param: kwargs})
 
 
 @pytest.mark.parametrize(
@@ -427,7 +503,7 @@ def test_do_multiple_individual_check(df_ind, qc_dict, return_method, exp):
 
 
 def test_multiple_individual_check_raises_return_method():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="'return_method' must be 'all','passed','failed'."):
         do_multiple_individual_check(
             data=pd.Series(),
             qc_dict=None,
@@ -436,15 +512,15 @@ def test_multiple_individual_check_raises_return_method():
 
 
 def test_multiple_individual_check_raises_func():
-    with pytest.raises(NameError):
+    with pytest.raises(NameError, match="is not defined"):
         do_multiple_individual_check(
             data=pd.Series(),
             qc_dict={"test_QC": {"func": "do_test_qc"}},
         )
 
 
-def test_multiple_individual_check_raises_3():
-    with pytest.raises(NameError):
+def test_multiple_individual_check_raises_not_in_data():
+    with pytest.raises(NameError, match="is not available in input data"):
         do_multiple_individual_check(
             data=pd.Series(),
             qc_dict={
@@ -456,8 +532,8 @@ def test_multiple_individual_check_raises_3():
         )
 
 
-def test_multiple_individual_check_raises_4():
-    with pytest.raises(ValueError):
+def test_multiple_individual_check_raises_not_in_func():
+    with pytest.raises(ValueError, match="is not a valid parameter of function"):
         do_multiple_individual_check(
             data=pd.Series(),
             qc_dict={

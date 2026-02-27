@@ -858,5 +858,5 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
 
 ClimIntType: TypeAlias = ValueIntType | Climatology
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
-
+ClimNumberType: TypeAlias = ValueIntType | ValueFloatType | Climatology
 ClimInputType: TypeAlias = str | os.PathLike[str] | xr.DataArray | xr.Dataset
