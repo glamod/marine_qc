@@ -7,11 +7,9 @@ import pytest
 from pint.errors import DimensionalityError
 
 from marine_qc.auxiliary import (
-    convert_to,
     convert_units,
     format_return_type,
     inspect_arrays,
-    is_scalar_like,
     post_format_return_type,
 )
 from marine_qc.time_control import convert_date
@@ -143,38 +141,6 @@ def test_post_format_return_type(value, expected, array_type):
         pd.testing.assert_series_equal(result, expected)
     elif array_type == "scalar":
         assert result == expected
-
-
-@pytest.mark.parametrize(
-    "value, expected",
-    [
-        (0.0, True),
-        (0, True),
-        (True, True),
-        ([0.0], False),
-        (np.array(5), True),
-        (np.array([5, 6]), False),
-        ("a", True),
-    ],
-)
-def test_is_scalar_like(value, expected):
-    assert is_scalar_like(value) == expected
-
-
-@pytest.mark.parametrize(
-    "value, source_unit, target_unit, expected",
-    [
-        (5.0, "degF", "unknown", -15.0 + 273.15),
-        (5.0, "degF", "K", -15.0 + 273.15),
-        (5.0, "degC", "K", 5.0 + 273.15),
-        (5.0, "degF", "degC", -15.0),
-        (-15.0, "degC", "degF", 5.0),
-        (1.0, "knots", "kph", 1.852),
-    ],
-)
-def test_convert_to(value, source_unit, target_unit, expected):
-    result = convert_to(value, source_unit, target_unit)
-    assert pytest.approx(result) == expected
 
 
 @pytest.mark.parametrize(
