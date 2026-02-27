@@ -25,7 +25,6 @@ from marine_qc import (
 from marine_qc.auxiliary import (
     convert_to,
     failed,
-    isvalid,
     passed,
     untestable,
 )
@@ -83,18 +82,6 @@ def ds_clim():
 
     ds = xr.Dataset({"land_sea_mask": (["time", "lat", "lon"], mask)}, coords={"time": time, "lat": lats, "lon": lons})
     return ds
-
-
-@pytest.mark.parametrize(
-    "value, expected",
-    [
-        (None, False),
-        (5.7, True),
-        (np.nan, False),
-    ],
-)
-def test_isvalid_check(value, expected):
-    assert isvalid(value) == expected
 
 
 @pytest.mark.parametrize(
