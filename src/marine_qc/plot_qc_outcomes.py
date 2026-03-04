@@ -6,6 +6,7 @@ Some plotting routines for QC outcomes
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
 
@@ -83,7 +84,7 @@ def _make_plot(
     xlabel: str,
     ylabel: str,
     filename: str | None,
-) -> None:
+) -> Figure:
     """
     Make plot.
 
@@ -105,6 +106,11 @@ def _make_plot(
         Name of the y axis.
     filename : str or None
         Filename to save the figure to. If None, the figure is saved with a standard name.
+
+    Returns
+    -------
+    Figure
+        The main figure obkect created by `plt.subplots()`.
     """
     colours, legend_elements = _get_colours_labels(flags)
 
@@ -140,14 +146,14 @@ def _make_plot(
     plt.tight_layout(rect=[0, 0.05, 1, 1])
 
     if filename is None:
-        plt.show()
+        plt.show(block=False)
     else:
         plt.savefig(filename)
 
-    plt.close()
+    return fig
 
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> None:
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> Figure:
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
 
@@ -161,8 +167,13 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
     filename : str or None
         Filename to save the figure to. If None, the figure is saved with a standard name.
+
+    Returns
+    -------
+    Figure
+        The main figure obkect created by `plt.subplots()`.
     """
-    _make_plot(
+    return _make_plot(
         xvalue=value,
         yvalue=lat,
         flags=qc_outcomes,
@@ -174,7 +185,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
     )
 
 
-def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> None:
+def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> Figure:
     """
     Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 
@@ -188,8 +199,13 @@ def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.nd
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
     filename : str or None
         Filename to save the figure to. If None, the figure is saved with a standard name.
+
+    Returns
+    -------
+    Figure
+        The main figure obkect created by `plt.subplots()`.
     """
-    _make_plot(
+    return _make_plot(
         xvalue=lon,
         yvalue=lat,
         flags=qc_outcomes,

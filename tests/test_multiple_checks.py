@@ -6,6 +6,7 @@ import pytest
 
 from marine_qc import (
     do_hard_limit_check,
+    do_multiple_grouped_check,
     do_multiple_individual_check,
     do_multiple_sequential_check,
 )
@@ -103,6 +104,21 @@ def qc_dict_seq():
     }
 
 
+@pytest.fixture
+def qc_dict_grp():
+    return {
+        "test1": {
+            "func": "do_bayesian_buddy_check",
+            "names": {
+                "value": "value",
+                "lat": "lat",
+                "lon": "lon",
+                "date": "date",
+            },
+        }
+    }
+
+
 def test_get_function():
     result = _get_function("do_day_check")
     assert callable(result)
@@ -126,6 +142,9 @@ def test_get_requests_from_params(df_ind):
     assert "second_param" in result
     assert np.all(result["in_param"] == df_ind["value1"])
     assert np.all(result["second_param"] == df_ind["value2"])
+
+    result = _get_requests_from_params(None, simple_test_function, df_ind)
+    assert result == {}
 
 
 def test_get_requests_from_params_raises(df_ind):
@@ -579,3 +598,12 @@ def test_multiple_sequential_check(df_seq, qc_dict_seq, return_method, exp):
         return_method=return_method,
     )
     pd.testing.assert_frame_equal(result, pd.DataFrame(exp))
+
+
+def test_multiple_grouped_check(df_seq, qc_dict_grp):
+    with pytest.raises(TypeError):
+        do_multiple_grouped_check(
+            data=df_seq,
+            qc_dict=qc_dict_grp,
+            return_method="all",
+        )

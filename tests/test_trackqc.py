@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import numpy as np
+import pandas as pd
 import pytest
 
 import marine_qc.buoy_tracking_qc as tqc
@@ -215,15 +216,15 @@ def aground_check_test_data(selector):
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": -0.10, "SST": 5.0, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": -0.12, "SST": 5.0, },
     ]
-    # assertion error - missing observation
+    # assertion error - missing observation (LON)
     vals17 = [
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": -0.02, "SST": 5.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": 0.0, "LON": -0.04, "SST": 5.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": 0.0, "LON": -0.06, "SST": 5.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": -0.08, "SST": 5.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": -0.10, "SST": 5.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": -0.12, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, },
     ]
     # assertion error - times not sorted
     vals18 = [
@@ -234,6 +235,26 @@ def aground_check_test_data(selector):
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": -0.08, "SST": 5.0, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": -0.10, "SST": 5.0, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": -0.12, "SST": 5.0, },
+    ]
+    # assertion error - missing observation (LAT)
+    vals19 = [
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": np.nan, "LON": -0.02, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": np.nan, "LON": -0.04, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": np.nan, "LON": -0.06, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": np.nan, "LON": -0.08, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": np.nan, "LON": -0.10, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": np.nan, "LON": -0.12, "SST": 5.0, },
+    ]
+    # assertion error - missing observation (HRS)
+    vals20 = [
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": np.nan, "LAT": 0.0, "LON": -0.02, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": np.nan, "LAT": 0.0, "LON": -0.04, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": np.nan, "LAT": 0.0, "LON": -0.06, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": np.nan, "LAT": 0.0, "LON": -0.08, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": np.nan, "LAT": 0.0, "LON": -0.10, "SST": 5.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": np.nan, "LAT": 0.0, "LON": -0.12, "SST": 5.0, },
     ]
     # fmt: on
     obs = locals()[f"vals{selector}"]
@@ -247,16 +268,18 @@ def aground_check_test_data(selector):
             if key != "DATE":
                 reps[key].append(v[key])
 
-        hour = int(v["HR"])
-        minute = 60 * (v["HR"] - hour)
+        hr = v["HR"]
+        if np.isnan(hr):
+            reps["DATE"].append(pd.to_datetime(np.nan))
+            continue
+
+        hour = int(hr)
+        minute = 60 * (hr - hour)
         date = datetime(v["YR"], v["MO"], v["DY"], hour, minute)
         reps["DATE"].append(date)
 
     for key in reps:
         reps[key] = np.array(reps[key])
-
-    if selector == 17:
-        reps["LON"][1] = np.nan
 
     return reps["LAT"], reps["LON"], reps["DATE"]
 
@@ -266,88 +289,67 @@ def aground_check_test_data(selector):
     [
         (1, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary
         (2, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary jitter spikes
-        (
-            3,
-            3,
-            1,
-            2,
-            [passed, passed, passed, passed, failed, failed, failed],
-            False,
-        ),  # test stationary big remaining jitter
-        (
-            4,
-            3,
-            1,
-            2,
-            [failed, failed, failed, failed, failed, failed, failed],
-            False,
-        ),  # test_stationary_small_remaining_jitter
+        (3, 3, 1, 2, [passed, passed, passed, passed, failed, failed, failed], False),  # test stationary big remaining jitter
+        (4, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_small_remaining_jitter
         (5, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_moving_west
         (6, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_moving_north
         (7, 3, 1, 2, [passed, passed, passed, passed, failed, failed, failed], False),  # test_moving_north_then_stop
-        (
-            8,
-            3,
-            1,
-            2,
-            [passed, passed, passed, passed, passed, passed, passed],
-            False,
-        ),  # test_stationary_high_freq_sampling
-        (9, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_low_freq_sampling
-        (
-            10,
-            3,
-            1,
-            2,
-            [failed, failed, failed, failed, failed, failed, failed],
-            False,
-        ),  # test_stationary_mid_freq_sampling
-        (
-            11,
-            3,
-            1,
-            2,
-            [failed, failed, failed, failed, failed, failed, failed],
-            False,
-        ),  # test_stationary_low_to_mid_freq_sampling
-        (12, 3, 1, 2, [passed, passed, passed, failed, failed, failed, failed], False),  # test_moving_slowly_northwest
-        (
-            13,
-            3,
-            1,
-            2,
-            [failed, failed, failed, failed, failed, failed, failed],
-            False,
-        ),  # test_moving_slowly_west_in_arctic
+        (8, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_stationary_high_freq_sampling
+        (9, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_stationary_low_freq_sampling
+        (10, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_mid_freq_sampling
+        (11, 3, 1, 2, [passed, passed, failed, failed, failed, failed, failed], False),  # test_stationary_low_to_mid_freq_sampling
+        (12, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_moving_slowly_northwest
+        (13, 3, 1, 2, [failed, failed, failed, failed, failed, failed, failed], False),  # test_moving_slowly_west_in_arctic
         (14, 3, 1, 2, [passed, passed, passed, passed, passed, passed, passed], False),  # test_stop_then_moving_north
         (15, 3, 1, 2, [passed, passed], False),  # test_too_short_for_qc
-        (
-            16,
-            0,
-            1,
-            2,
-            [untestable for x in range(7)],
-            True,
-        ),  # test_error_bad_input_parameter
-        (
-            17,
-            3,
-            1,
-            2,
-            [untestable for x in range(7)],
-            True,
-        ),  # test_error_missing_observation
-        (
-            18,
-            3,
-            1,
-            2,
-            [untestable for x in range(7)],
-            True,
-        ),  # test_error_not_time_sorted
+        (16, 0, 1, 2, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_a
+        (17, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_missing_observation_a
+        (18, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_not_time_sorted
+        (19, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_missing_observation_b
+        (20, 3, 1, 2, [untestable for x in range(7)], True),  # test_error_missing_observation_c
+        (1, 2, 1, 2, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_b
+        (1, 3, -1, 2, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_c
+        (1, 3, 1, -2, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_d
+        (1, 3, 2, 1, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_e
     ],  # fmt: off
 )
-def test_new_generic_aground(selector, smooth_win, min_win_period, max_win_period, expected, warns):
+def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, expected, warns):
+    lats, lons, dates = aground_check_test_data(selector)
+    if warns:
+        with pytest.warns(UserWarning):
+            qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
+    else:
+        qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
+    for i in range(len(lons)):
+        assert qc_outcomes[i] == expected[i]
+
+
+@pytest.mark.parametrize(  # fmt: off
+    "selector, smooth_win, min_win_period, expected, warns",
+    [
+        (1, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary
+        (2, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary jitter spikes
+        (3, 3, 1, [passed, passed, passed, passed, failed, failed, failed], False),  # test stationary big remaining jitter
+        (4, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_small_remaining_jitter
+        (5, 3, 1, [passed, passed, passed, passed, passed, passed, passed], False),  # test_moving_west
+        (6, 3, 1, [passed, passed, passed, passed, passed, passed, passed], False),  # test_moving_north
+        (7, 3, 1, [passed, passed, passed, passed, failed, failed, failed], False),  # test_moving_north_then_stop
+        (8, 3, 1, [passed, passed, passed, passed, passed, passed, passed], False),  # test_stationary_high_freq_sampling
+        (9, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_low_freq_sampling
+        (10, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_mid_freq_sampling
+        (11, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_low_to_mid_freq_sampling
+        (12, 3, 1, [passed, passed, passed, failed, failed, failed, failed], False),  # test_moving_slowly_northwest
+        (13, 3, 1, [failed, failed, failed, failed, failed, failed, failed], False),  # test_moving_slowly_west_in_arctic
+        (14, 3, 1, [passed, passed, passed, passed, passed, passed, passed], False),  # test_stop_then_moving_north
+        (15, 3, 1, [passed, passed], False),  # test_too_short_for_qc
+        (16, 0, 1, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_a
+        (17, 3, 1, [untestable for x in range(7)], True),  # test_error_missing_observation
+        (18, 3, 1, [untestable for x in range(7)], True),  # test_error_not_time_sorted
+        (1, 2, 1, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_b
+        (1, 3, -1, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_c
+    ],  # fmt: off
+)
+def test_new_generic_aground(selector, smooth_win, min_win_period, expected, warns):
     lats, lons, dates = aground_check_test_data(selector)
     if warns:
         with pytest.warns(UserWarning):
@@ -476,27 +478,27 @@ def speed_check_data(selector):
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
     ]
-    # assertion error - bad input parameter
+    # user warning - bad input parameter (LAT)
     vals12 = [
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "PT": 7, },
     ]
-    # assertion error - missing observation
+    # user warning - bad input parameter (LON)
     vals13 = [
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": np.nan, "SST": 5.0, "PT": 7, },
     ]
-    # assertion error - times not sorted
+    # user warning - times not sorted
     vals14 = [
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
@@ -505,6 +507,24 @@ def speed_check_data(selector):
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+    ]
+    # user warning - bad input parameter (HRS)
+    vals15 = [
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 6, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 7, "HR": np.nan, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+    ]
+    # extreme oscillating jumps
+    vals16 = [
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 12, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 2, "HR": 12, "LAT": 80.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 3, "HR": 12, "LAT": -80.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 4, "HR": 12, "LAT": 80.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 5, "HR": 12, "LAT": -80.0, "LON": 0.0, "SST": 5.0, "PT": 7, },
     ]
     # fmt: on
     obs = locals()[f"vals{selector}"]
@@ -518,16 +538,18 @@ def speed_check_data(selector):
             if key != "DATE":
                 reps[key].append(v[key])
 
-        hour = int(v["HR"])
-        minute = 60 * (v["HR"] - hour)
+        hr = v["HR"]
+        if np.isnan(hr):
+            reps["DATE"].append(pd.to_datetime(np.nan))
+            continue
+
+        hour = int(hr)
+        minute = 60 * (hr - hour)
         date = datetime(v["YR"], v["MO"], v["DY"], hour, minute)
         reps["DATE"].append(date)
 
     for key in reps:
         reps[key] = np.array(reps[key])
-
-    if selector == 13:
-        reps["LON"][1] = np.nan
 
     return reps["LAT"], reps["LON"], reps["DATE"]
 
@@ -541,49 +563,18 @@ def speed_check_data(selector):
         (4, 2.5, 0.5, 1.0, [passed, passed, failed, failed, failed, passed, passed], False),  # test_slow_fast_slow_drifter
         (5, 2.5, 0.5, 1.0, [passed, passed, passed, passed, passed, passed, passed], False),  # test_high_freqency_sampling
         (6, 2.5, 0.5, 1.0, [passed, passed, passed, passed, passed, passed, passed], False),  # test_low_freqency_sampling
-        (
-            7,
-            2.5,
-            0.5,
-            1.0,
-            [passed, failed, failed, failed, failed, failed, passed],
-            False,
-        ),  # test_slow_fast_slow_mid_freqency_sampling
+        (7, 2.5, 0.5, 1.0, [passed, failed, failed, failed, failed, failed, passed], False),  # test_slow_fast_slow_mid_freqency_sampling
         (8, 2.5, 0.5, 1.0, [failed, failed, passed, passed, passed, failed, failed], False),  # test_irregular_sampling
         (9, 2.5, 0.5, 1.0, [failed, failed, failed, failed, failed, failed, failed], False),  # test_fast_arctic_drifter
-        (
-            10,
-            2.5,
-            0.5,
-            1.0,
-            [passed, failed, failed, failed, failed, failed, failed],
-            False,
-        ),  # test_stationary_gross_error
+        (10, 2.5, 0.5, 1.0, [passed, failed, failed, failed, failed, failed, failed], False),  # test_stationary_gross_error
         (11, 2.5, 0.5, 1.0, [passed, passed], False),  # test_too_short_for_qc_a
-        (
-            12,
-            -2.5,
-            0.5,
-            1.0,
-            [untestable for x in range(7)],
-            True,
-        ),  # test_error_bad_input_parameter_a
-        (
-            13,
-            2.5,
-            0.5,
-            1.0,
-            [untestable for x in range(7)],
-            True,
-        ),  # test_error_missing_observation_a
-        (
-            14,
-            2.5,
-            0.5,
-            1.0,
-            [untestable for x in range(7)],
-            True,
-        ),  # test_error_not_time_sorted_a
+        (1, -2.5, 0.5, 1.0, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_a
+        (1, 2.5, -0.5, 1.0, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_b
+        (1, 2.5, 0.5, 0.2, [untestable for x in range(7)], True),  # test_error_bad_input_parameter_c
+        (12, 2.5, 0.5, 1.0, [untestable for x in range(7)], True),  # test_error_missing_observation_a
+        (13, 2.5, 0.5, 1.0, [untestable for x in range(7)], True),  # test_error_missing_observation_b
+        (14, 2.5, 0.5, 1.0, [untestable for x in range(7)], True),  # test_error_not_time_sorted_a
+        (15, 2.5, 0.5, 1.0, [untestable for x in range(7)], True),  # test_error_missing_obervation_c
     ],  # fmt: off
 )
 def test_generic_speed_tests(selector, speed_limit, min_win_period, max_win_period, expected, warns):
@@ -622,9 +613,12 @@ def test_generic_speed_tests(selector, speed_limit, min_win_period, max_win_peri
         (9, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [failed, failed, failed, failed, failed, failed, failed], False),  # test_new_fast_arctic_drifter
         (10, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed, passed, passed, passed, passed, passed], False),  # test_new_stationary_gross_error
         (11, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [passed, passed], False),  # test_new_too_short_for_qc_a
-        (12, -2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_bad_input_parameter_a
+        (12, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for x in range(7)], True),  # test_error_missing_observation_a
         (13, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_missing_observation_a
         (14, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_not_time_sorted_a
+        (1, -2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_bad_input_parameter_a
+        (1, 2.5, -0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_bad_input_parameter_a
+        (15, 2.5, 0.5, 60.0, 1.11, 0.01, 5, [untestable for _ in range(7)], True),  # test_new_error_missing_observation_c
     ],
     # fmt: on
 )
@@ -1103,7 +1097,7 @@ def tailcheck_vals(selector):
 
     # assertion error - bad input parameter
     vals34 = [
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.0, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.0, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": np.nan, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.1, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.2, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
         {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.3, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
@@ -1116,15 +1110,15 @@ def tailcheck_vals(selector):
 
     # assertion error - missing matched value
     vals35 = [
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.0, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.1, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.2, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.3, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.4, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.5, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.6, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.7, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.8, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.0, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.1, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.2, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.3, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.4, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.5, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.6, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.7, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.8, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": np.nan, "BGVAR": 1.0, "ICE": 0.0, },
     ]
 
     # assertion error - invalid ice value
@@ -1142,15 +1136,15 @@ def tailcheck_vals(selector):
 
     # assertion error - missing observation value
     vals37 = [
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.0, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.1, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.2, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.3, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.4, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.5, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.6, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.7, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
-        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.8, "LAT": 0.0, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.0, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.1, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.2, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.3, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.4, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.5, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.6, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.7, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
+        {"ID": "AAAAAAAAA", "YR": 2003, "MO": 12, "DY": 1, "HR": 0.8, "LAT": np.nan, "LON": 0.0, "SST": 5.0, "OSTIA": 5.0, "BGVAR": 1.0, "ICE": 0.0, },
     ]
 
     # assertion error - times not sorted
@@ -1211,11 +1205,6 @@ def tailcheck_vals(selector):
 
     for key in reps:
         reps[key] = np.array(reps[key])
-
-    if selector == 37:
-        reps["LAT"][1] = np.nan
-    if selector == 35:
-        reps["OSTIA"][:] = np.nan
 
     return (
         reps["LAT"],
@@ -1447,7 +1436,16 @@ def tailcheck_vals(selector):
         (31, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_good_data
         (32, 3, 3.0, 1, 1.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_long_and_short_start_tail_big_bgvar
         (33, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 2.0, [passed] * 9, [passed] * 9, False),  # test_start_tail_noisy_big_bgvar
-        (34, 0, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check
+        (34, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [passed] * 9, [passed] * 9, False),  # test_error_missing_nan_ice_value
+        (34, 0, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_a
+        (34, 2, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_b
+        (34, 3, -3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_c
+        (34, 3, 3.0, -1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_d
+        (34, 3, 3.0, 1, -3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_e
+        (34, 3, 3.0, 1, 3.0, -1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_f
+        (34, 3, 3.0, 1, 3.0, 1, -0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_g
+        (34, 3, 3.0, 1, 3.0, 1, 0.29, -1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_h
+        (34, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, -0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_bad_input_parameter_tail_check_i
         (36, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_invalid_ice_value
         (37, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_missing_ob_value
         (38, 3, 3.0, 1, 3.0, 1, 0.29, 1.0, 0.3, [untestable] * 9, [untestable] * 9, True),  # test_error_not_time_sorted_tail_check
@@ -1806,7 +1804,7 @@ def sst_biased_noisy_check_vals(selector):
               {'ID': 'AAAAAAAAA', 'YR': 2003, 'MO': 12, 'DY': 1, 'HR': 0.8, 'LAT': 0.0, 'LON': 0.0, 'SST': 5.0, 'OSTIA': 5.0, 'BGVAR': 0.01, 'ICE': 0.0}]
 
     # assertion error - bad input parameter
-    vals20 = [{'ID': 'AAAAAAAAA', 'YR': 2003, 'MO': 12, 'DY': 1, 'HR': 0.0, 'LAT': 0.0, 'LON': 0.0, 'SST': 5.0, 'OSTIA': 5.0, 'BGVAR': 0.01, 'ICE': 0.0},
+    vals20 = [{'ID': 'AAAAAAAAA', 'YR': 2003, 'MO': 12, 'DY': 1, 'HR': 0.0, 'LAT': 0.0, 'LON': 0.0, 'SST': 5.0, 'OSTIA': 5.0, 'BGVAR': 0.01, 'ICE': np.nan},
               {'ID': 'AAAAAAAAA', 'YR': 2003, 'MO': 12, 'DY': 1, 'HR': 0.1, 'LAT': 0.0, 'LON': 0.0, 'SST': 5.0, 'OSTIA': 5.0, 'BGVAR': 0.01, 'ICE': 0.0},
               {'ID': 'AAAAAAAAA', 'YR': 2003, 'MO': 12, 'DY': 1, 'HR': 0.2, 'LAT': 0.0, 'LON': 0.0, 'SST': 5.0, 'OSTIA': 5.0, 'BGVAR': 0.01, 'ICE': 0.0},
               {'ID': 'AAAAAAAAA', 'YR': 2003, 'MO': 12, 'DY': 1, 'HR': 0.3, 'LAT': 0.0, 'LON': 0.0, 'SST': 5.0, 'OSTIA': 5.0, 'BGVAR': 0.01, 'ICE': 0.0},
@@ -2150,6 +2148,7 @@ def sst_biased_noisy_check_vals(selector):
             [passed] * 9,
             False,
         ),  # test_good_data_bnc_19
+        (20, 9, 1.10, 1.0, 0.29, 3.0, 2, 0.3, [passed] * 9, [passed] * 9, [passed] * 9, False),  # test_non_ice_value
         (
             20,
             0,
@@ -2163,7 +2162,91 @@ def sst_biased_noisy_check_vals(selector):
             [untestable for _ in range(9)],
             [untestable for _ in range(9)],
             True,
-        ),  # test_error_bad_input_parameter_bnc
+        ),  # test_error_bad_input_parameter_bnc_a
+        (
+            20,
+            9,
+            -1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc_b
+        (
+            20,
+            9,
+            1.10,
+            -1.0,
+            0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc_c
+        (
+            20,
+            9,
+            1.10,
+            1.0,
+            -0.29,
+            3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc_d
+        (
+            20,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            -3.0,
+            2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc_e
+        (
+            20,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            -2,
+            0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc_f
+        (
+            20,
+            9,
+            1.10,
+            1.0,
+            0.29,
+            3.0,
+            2,
+            -0.3,
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            [untestable for _ in range(9)],
+            True,
+        ),  # test_error_bad_input_parameter_bnc_g
         # Skipping irrelevant tests after refactoring
         (
             22,

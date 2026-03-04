@@ -39,6 +39,7 @@ Internal changes
 * new helper function `auxiliary.ensure_arrays` to ensure that all inputs are NumPy arrays and to increase test coverage (:pull:`128`)
 * new marine_qc data types: ScalarNumberType, SequenceNumberType and ValueNumberType (:pull:`128`)
 * remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
+* update testing suite to cover warnings (:issue:`148`, :pull:`149`)
 
 0.2.0 (2025-10-21)
 ------------------
