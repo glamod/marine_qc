@@ -30,6 +30,7 @@ Internal changes
 * Documentation is now build without any warning messages (:issue:`96`, :pull:`122`)
 * `readthedocs.yaml`: set `fail_on_warnings` to "true" (:issue:`61`, :pull:`122`)
 * remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
+* update testing suite to cover warnings (:issue:`148`, :pull:`149`)
 
 0.2.0 (2025-10-21)
 ------------------
