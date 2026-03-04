@@ -4,11 +4,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 from cdm_reader_mapper.common.getting_files import load_file
 from xarray import open_dataset
 
 from marine_qc.external_clim import (
     Climatology,
+    _empty_dataarray,
+    _format_output,
+    _select_point,
     inspect_climatology,
 )
 
@@ -136,6 +140,133 @@ def _get_value(external, lat, lon, month, day, expected):
 def _get_value_fast(external, lat, lon, month, day, expected):
     result = external.get_value_fast(lat, lon, month=month, day=day)
     assert np.allclose(result, expected, equal_nan=True)
+
+
+@pytest.mark.parametrize(
+    "lat, expected_type",
+    [(10.0, float), (np.float64(5.0), np.floating), (np.array([1, 2]), np.ndarray), ([1, 2], np.ndarray), (pd.Series([1, 2]), pd.Series)],
+)
+def test_format_output(lat, expected_type):
+    result = np.array([42.0, 43.0])
+    output = _format_output(result, lat)
+
+    if np.isscalar(lat):
+        assert np.isscalar(output)
+    else:
+        assert isinstance(output, expected_type)
+
+
+@pytest.mark.parametrize(
+    "lat_coords, lon_coords, data, lat_arr, lon_arr, i, lat_axis, lon_axis, expected",
+    [
+        # Exact match
+        (
+            [0.0, 1.0],
+            [10.0, 20.0],
+            [[100, 200], [300, 400]],
+            [0.0],
+            [20.0],
+            0,
+            "lat",
+            "lon",
+            200.0,
+        ),
+        # Nearest match
+        (
+            [0.0, 1.0, 2.0],
+            [10.0, 20.0, 30.0],
+            [[0, 1, 2], [10, 11, 12], [20, 21, 22]],
+            [1.1],  # nearest 1.0
+            [19.0],  # nearest 20.0
+            0,
+            "lat",
+            "lon",
+            11.0,
+        ),
+        # Custom axis names
+        (
+            [0.0, 1.0],
+            [10.0, 20.0],
+            [[5, 6], [7, 8]],
+            [1.0],
+            [10.0],
+            0,
+            "y",
+            "x",
+            7.0,
+        ),
+        # Multiple index case (i=1)
+        (
+            [0.0, 1.0],
+            [10.0, 20.0],
+            [[1, 2], [3, 4]],
+            [0.0, 1.0],
+            [10.0, 20.0],
+            1,
+            "lat",
+            "lon",
+            4.0,
+        ),
+    ],
+)
+def test_select_point(
+    lat_coords,
+    lon_coords,
+    data,
+    lat_arr,
+    lon_arr,
+    i,
+    lat_axis,
+    lon_axis,
+    expected,
+):
+    # Build DataArray
+    da = xr.DataArray(
+        np.array(data),
+        coords={lat_axis: lat_coords, lon_axis: lon_coords},
+        dims=(lat_axis, lon_axis),
+    )
+
+    idx, value = _select_point(
+        i=i,
+        da_slice=da,
+        lat_arr=np.array(lat_arr),
+        lon_arr=np.array(lon_arr),
+        lat_axis=lat_axis,
+        lon_axis=lon_axis,
+    )
+
+    assert idx == i
+    assert value == expected
+
+
+def test_empty_dataarray_structure():
+    da = _empty_dataarray()
+
+    assert da.shape == (0, 0, 0)
+    assert da.dims == ("latitude", "time", "longitude")
+    assert "latitude" in da.coords
+    assert "pentad_time" in da.coords
+    assert "longitude" in da.coords
+    assert len(da.coords["latitude"]) == 0
+    assert len(da.coords["pentad_time"]) == 0
+    assert len(da.coords["longitude"]) == 0
+
+    lat = da.coords["latitude"]
+    lon = da.coords["longitude"]
+
+    assert lat.attrs["standard_name"] == "latitude"
+    assert lat.attrs["units"] == "degrees_north"
+
+    assert lon.attrs["standard_name"] == "longitude"
+    assert lon.attrs["units"] == "degrees_east"
+
+    time = da.coords["pentad_time"]
+    assert time.attrs["standard_name"] == "time"
+
+    assert isinstance(da.values, np.ndarray)
+    assert da.size == 0
+    assert da.ndim == 3
 
 
 @pytest.mark.parametrize(
