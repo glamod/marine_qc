@@ -7,10 +7,12 @@ import pytest
 from pint.errors import DimensionalityError
 
 from marine_qc.auxiliary import (
+    convert_to,
     convert_units,
     ensure_arrays,
     format_return_type,
     inspect_arrays,
+    is_scalar_like,
     post_format_return_type,
 )
 from marine_qc.time_control import convert_date
