@@ -6,7 +6,7 @@ Some plotting routines for QC outcomes
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figures import Figure
+from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
 
