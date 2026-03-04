@@ -13,6 +13,7 @@ import pandas as pd
 
 from .auxiliary import (
     DECORATOR_KWARGS,
+    ensure_arrays,
     generic_decorator,
     inspect_arrays,
     is_scalar_like,
@@ -664,9 +665,16 @@ def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> n
     array-like of float, shape (n,)
         1-dimensional array containing the time difference in hours
         computed as ``times2 - times1``.
+
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
     """
-    times1_arr: np.ndarray = pd.to_datetime(times1, errors="coerce").values
-    times2_arr: np.ndarray = pd.to_datetime(times2, errors="coerce").values
+    times1_arr, times2_arr = ensure_arrays(times1=times1, times2=times2)
+
+    times1_arr = pd.to_datetime(times1_arr, errors="coerce").values
+    times2_arr = pd.to_datetime(times2_arr, errors="coerce").values
 
     valid: np.ndarray = np.atleast_1d(isvalid(times1_arr)) & np.atleast_1d(isvalid(times2_arr))
 

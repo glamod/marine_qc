@@ -11,10 +11,13 @@ import numpy as np
 
 from .astronomical_geometry import sunangle
 from .auxiliary import (
+    ScalarNumberType,
     ValueDatetimeType,
     ValueFloatType,
     ValueIntType,
+    ValueNumberType,
     convert_units,
+    ensure_arrays,
     failed,
     format_return_type,
     inspect_arrays,
@@ -23,7 +26,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimFloatType, ClimInputType, ClimIntType, inspect_climatology
+from .external_clim import ClimInputType, ClimIntType, ClimNumberType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
@@ -33,7 +36,7 @@ vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float,
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def value_check(value: ValueFloatType) -> ValueIntType:
+def value_check(value: ValueNumberType) -> ValueIntType:
     """
     Check if a value is equal to None or numerically invalid (NaN).
 
@@ -51,13 +54,12 @@ def value_check(value: ValueFloatType) -> ValueIntType:
 
     Raises
     ------
-    ValueError
+    TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(value, np.ndarray):
-        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+    (value_arr,) = ensure_arrays(value=value)
 
-    valid_mask = isvalid(value)
+    valid_mask = isvalid(value_arr)
     result = np.where(valid_mask, passed, failed)
 
     return result
@@ -66,7 +68,7 @@ def value_check(value: ValueFloatType) -> ValueIntType:
 @post_format_return_type(["lat", "lon"])
 @inspect_arrays(["lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
-def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
+def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntType:
     """
     Perform the positional QC check on the report.
 
@@ -92,20 +94,17 @@ def do_position_check(lat: ValueFloatType, lon: ValueFloatType) -> ValueIntType:
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    lat_arr, lon_arr = ensure_arrays(lat=lat, lon=lon)
 
-    result = np.full(lat.shape, untestable, dtype=int)
+    result = np.full(lat_arr.shape, untestable, dtype=int)
 
-    valid = isvalid(lat) & isvalid(lon)
+    valid = isvalid(lat_arr) & isvalid(lon_arr)
 
-    lat_valid = np.where(valid, lat, np.nan)
-    lon_valid = np.where(valid, lon, np.nan)
+    lat_valid = np.where(valid, lat_arr, np.nan)
+    lon_valid = np.where(valid, lon_arr, np.nan)
 
     cond_failed = (lat_valid < -90.0) | (lat_valid > 90.0) | (lon_valid < -180.0) | (lon_valid > 360.0)
 
@@ -151,22 +150,17 @@ def do_date_check(
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(year, np.ndarray):
-        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
-    if not isinstance(month, np.ndarray):
-        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
-    if not isinstance(day, np.ndarray):
-        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
+    year_arr, month_arr, day_arr = ensure_arrays(year=year, month=month, day=day)
 
-    result = np.full(year.shape, untestable, dtype=int)
-    valid = isvalid(year) & isvalid(month) & isvalid(day)
+    result = np.full(year_arr.shape, untestable, dtype=int)
+    valid = isvalid(year_arr) & isvalid(month_arr) & isvalid(day_arr)
 
-    year_valid = year[valid].astype(int)
-    month_valid = month[valid].astype(int)
-    day_valid = day[valid].astype(int)
+    year_valid = year_arr[valid].astype(int)
+    month_valid = month_arr[valid].astype(int)
+    day_valid = day_arr[valid].astype(int)
 
     result_valid = np.full(year_valid.shape, failed, dtype=int)
 
@@ -216,18 +210,17 @@ def do_time_check(
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(hour, np.ndarray):
-        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
+    (hour_arr,) = ensure_arrays(hour=hour)
 
-    result = np.full(hour.shape, untestable, dtype=int)
+    result = np.full(hour_arr.shape, untestable, dtype=int)
 
-    valid_indices = isvalid(hour)
+    valid_indices = isvalid(hour_arr)
 
-    cond_failed = np.full(hour.shape, True, dtype=bool)
-    cond_failed[valid_indices] = (hour[valid_indices] >= 24) | (hour[valid_indices] < 0)
+    cond_failed = np.full(hour_arr.shape, True, dtype=bool)
+    cond_failed[valid_indices] = (hour_arr[valid_indices] >= 24) | (hour_arr[valid_indices] < 0)
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed
@@ -242,7 +235,7 @@ def _do_daytime_check(
     hour: np.ndarray,
     lat: np.ndarray,
     lon: np.ndarray,
-    time_since_sun_above_horizon: float | None,
+    time_since_sun_above_horizon: ScalarNumberType | None,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
     """
@@ -281,8 +274,7 @@ def _do_daytime_check(
     Raises
     ------
     ValueError
-        - If `mode` is not in valid list ["day", "night"].
-        - If any of `year`, `month`, `day`, `hour`, `lat`, or `lon` is not a np.ndarray.
+        If `mode` is not in valid list ["day", "night"].
     """
     if mode not in ["day", "night"]:
         raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
@@ -362,9 +354,9 @@ def do_day_check(
     month: ValueIntType | None = None,
     day: ValueIntType | None = None,
     hour: ValueFloatType | None = None,
-    lat: ValueFloatType | None = None,
-    lon: ValueFloatType | None = None,
-    time_since_sun_above_horizon: float | None = None,
+    lat: ValueNumberType | None = None,
+    lon: ValueNumberType | None = None,
+    time_since_sun_above_horizon: ScalarNumberType | None = None,
 ) -> ValueIntType:
     """
     Determine if the sun was above the horizon a specified time before the report.
@@ -410,6 +402,11 @@ def do_day_check(
           returns 1 or if it is night (sun below horizon an hour ago).
         - Returns 0 if it is day (sun above horizon an hour ago).
 
+    Raises
+    ------
+    TypeError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+
     See Also
     --------
     do_night_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
@@ -420,19 +417,9 @@ def do_day_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
-    if not isinstance(year, np.ndarray):
-        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
-    if not isinstance(month, np.ndarray):
-        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
-    if not isinstance(day, np.ndarray):
-        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
-    if not isinstance(hour, np.ndarray):
-        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
-    return _do_daytime_check(year, month, day, hour, lat, lon, time_since_sun_above_horizon, mode="day")
+    year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr = ensure_arrays(year=year, month=month, day=day, hour=hour, lat=lat, lon=lon)
+
+    return _do_daytime_check(year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr, time_since_sun_above_horizon, mode="day")
 
 
 @post_format_return_type(["date", "year"])
@@ -445,9 +432,9 @@ def do_night_check(
     month: ValueIntType | None = None,
     day: ValueIntType | None = None,
     hour: ValueFloatType | None = None,
-    lat: ValueFloatType | None = None,
-    lon: ValueFloatType | None = None,
-    time_since_sun_above_horizon: float | None = None,
+    lat: ValueNumberType | None = None,
+    lon: ValueNumberType | None = None,
+    time_since_sun_above_horizon: ScalarNumberType | None = None,
 ) -> ValueIntType:
     """
     Determine if the sun was below the horizon a specified time before the report.
@@ -493,6 +480,14 @@ def do_night_check(
           returns 1 or if it is day (sun above horizon an hour ago).
         - Returns 0 if it is night (sun below horizon an hour ago).
 
+    Raises
+    ------
+    ValueError
+        If `mode` is not in valid list ["day", "night"].
+
+    TypeError
+        If decorator `inspect_arrays` does not return np.ndarrays.
+
     See Also
     --------
     do_day_check: Determine if the sun was above the horizon an hour ago based on date, time, and position.
@@ -503,31 +498,21 @@ def do_night_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
-    if not isinstance(year, np.ndarray):
-        raise TypeError(f"'year' must be a numpy.ndarray, got {type(year).__name__}")
-    if not isinstance(month, np.ndarray):
-        raise TypeError(f"'month' must be a numpy.ndarray, got {type(month).__name__}")
-    if not isinstance(day, np.ndarray):
-        raise TypeError(f"'day' must be a numpy.ndarray, got {type(day).__name__}")
-    if not isinstance(hour, np.ndarray):
-        raise TypeError(f"'hour' must be a numpy.ndarray, got {type(hour).__name__}")
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
+    year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr = ensure_arrays(year=year, month=month, day=day, hour=hour, lat=lat, lon=lon)
+
     return _do_daytime_check(
-        year,
-        month,
-        day,
-        hour,
-        lat,
-        lon,
+        year_arr,
+        month_arr,
+        day_arr,
+        hour_arr,
+        lat_arr,
+        lon_arr,
         time_since_sun_above_horizon,
         mode="night",
     )
 
 
-def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
+def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
     """
     Check if a value is equal to None or numerically invalid (NaN).
 
@@ -542,12 +527,17 @@ def do_missing_value_check(value: ValueFloatType) -> ValueIntType:
     Same type as input, but with integer values
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    TypeError
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
     """
     return value_check(value)
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimInputType | ClimFloatType, **kwargs: Any) -> ValueIntType:
+def do_missing_value_clim_check(climatology: ClimInputType | ClimNumberType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
@@ -565,6 +555,11 @@ def do_missing_value_clim_check(climatology: ClimInputType | ClimFloatType, **kw
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
+    Raises
+    ------
+    TypeError
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+
     Notes
     -----
     If `climatology` is a :py:class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
@@ -577,8 +572,8 @@ def do_missing_value_clim_check(climatology: ClimInputType | ClimFloatType, **kw
 @inspect_arrays(["value"])
 @convert_units(value="unknown", limits="unknown")
 def do_hard_limit_check(
-    value: ValueFloatType,
-    limits: tuple[float, float],
+    value: ValueNumberType,
+    limits: tuple[int | float, int | float],
 ) -> ValueIntType:
     """
     Check if a value is outside specified limits.
@@ -601,21 +596,20 @@ def do_hard_limit_check(
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(value, np.ndarray):
-        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
+    (value_arr,) = ensure_arrays(value=value)
 
-    result = np.full(value.shape, untestable, dtype=int)
+    result = np.full(value_arr.shape, untestable, dtype=int)
 
     if limits[1] <= limits[0]:
-        return format_return_type(result, value)
+        return format_return_type(result, value_arr)
 
-    valid_indices = isvalid(value)
+    valid_indices = isvalid(value_arr)
 
-    cond_passed = np.full(value.shape, True, dtype=bool)
-    cond_passed[valid_indices] = (limits[0] <= value[valid_indices]) & (value[valid_indices] <= limits[1])
+    cond_passed = np.full(value_arr.shape, True, dtype=bool)
+    cond_passed[valid_indices] = (limits[0] <= value_arr[valid_indices]) & (value_arr[valid_indices] <= limits[1])
 
     result[valid_indices & cond_passed] = passed
     result[valid_indices & ~cond_passed] = failed
@@ -628,12 +622,12 @@ def do_hard_limit_check(
 @convert_units(value="unknown", climatology="unknown")
 @inspect_climatology("climatology", optional="standard_deviation")
 def do_climatology_check(
-    value: ValueFloatType,
-    climatology: ClimInputType | ClimFloatType,
+    value: ValueNumberType,
+    climatology: ClimInputType | ClimNumberType,
     maximum_anomaly: float,
-    standard_deviation: ValueFloatType = "default",
-    standard_deviation_limits: tuple[float, float] | None = None,
-    lowbar: float | None = None,
+    standard_deviation: ValueNumberType = "default",
+    standard_deviation_limits: tuple[int | float, int | float] | None = None,
+    lowbar: int | float | None = None,
 ) -> ValueIntType:
     """
     Climatology check to compare a value with a climatological average within specified anomaly limits.
@@ -676,7 +670,7 @@ def do_climatology_check(
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
 
     Notes
@@ -684,49 +678,44 @@ def do_climatology_check(
     If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
     `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
-    if not isinstance(value, np.ndarray):
-        raise TypeError(f"'value' must be a numpy.ndarray, got {type(value).__name__}")
-    if not isinstance(climatology, np.ndarray):
-        raise TypeError(f"'climatology' must be a numpy.ndarray, got {type(climatology).__name__}")
+    value_arr, climatology_arr = ensure_arrays(value=value, climatology=climatology)
 
-    if climatology.ndim == 0:
-        climatology_arr = np.full_like(value, climatology)
-    else:
-        climatology_arr = climatology
+    if climatology_arr.ndim == 0:
+        climatology_arr = np.full_like(value_arr, climatology_arr)
 
     if isinstance(standard_deviation, str) and standard_deviation == "default":
-        standard_deviation_arr: np.ndarray = np.full(value.shape, 1.0, dtype=float)
+        standard_deviation_arr: np.ndarray = np.full(value_arr.shape, 1.0, dtype=float)
     else:
         standard_deviation_arr = np.array(standard_deviation)
         standard_deviation_arr = np.atleast_1d(standard_deviation_arr)
 
-    result = np.full(value.shape, untestable, dtype=int)
+    result = np.full(value_arr.shape, untestable, dtype=int)
 
     if maximum_anomaly is None or maximum_anomaly <= 0:
-        return format_return_type(result, value)
+        return format_return_type(result, value_arr)
 
     if standard_deviation_limits is None:
         standard_deviation_limits = (0, np.inf)
     elif standard_deviation_limits[1] <= standard_deviation_limits[0]:
-        return format_return_type(result, value)
+        return format_return_type(result, value_arr)
 
-    valid_indices = isvalid(value) & isvalid(climatology_arr) & isvalid(maximum_anomaly) & isvalid(standard_deviation_arr)
+    valid_indices = isvalid(value_arr) & isvalid(climatology_arr) & isvalid(maximum_anomaly) & isvalid(standard_deviation_arr)
     standard_deviation_arr[valid_indices] = np.clip(
         standard_deviation_arr[valid_indices],
         standard_deviation_limits[0],
         standard_deviation_limits[1],
     )
 
-    climate_diff = np.zeros_like(value)
+    climate_diff = np.zeros_like(value_arr)
 
-    climate_diff[valid_indices] = np.abs(value[valid_indices] - climatology_arr[valid_indices])
+    climate_diff[valid_indices] = np.abs(value_arr[valid_indices] - climatology_arr[valid_indices])
 
     if lowbar is None:
-        low_check = np.ones(value.shape, dtype=bool)
+        low_check = np.ones(value_arr.shape, dtype=bool)
     else:
         low_check = climate_diff > lowbar
 
-    cond_failed = np.full(value.shape, False, dtype=bool)
+    cond_failed = np.full(value_arr.shape, False, dtype=bool)
     cond_failed[valid_indices] = (climate_diff[valid_indices] / standard_deviation_arr[valid_indices] > maximum_anomaly) & low_check[valid_indices]
 
     result[valid_indices & cond_failed] = failed
@@ -738,7 +727,7 @@ def do_climatology_check(
 @post_format_return_type(["dpt", "at2"])
 @inspect_arrays(["dpt", "at2"])
 @convert_units(dpt="K", at2="K")
-def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueIntType:
+def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> ValueIntType:
     """
     Perform the super saturation check.
 
@@ -762,20 +751,17 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(dpt, np.ndarray):
-        raise TypeError(f"'dpt' must be a numpy.ndarray, got {type(dpt).__name__}")
-    if not isinstance(at2, np.ndarray):
-        raise TypeError(f"'at2' must be a numpy.ndarray, got {type(at2).__name__}")
+    dpt_arr, at2_arr = ensure_arrays(dpt=dpt, at2=at2)
 
-    result = np.full(dpt.shape, untestable, dtype=int)
+    result = np.full(dpt_arr.shape, untestable, dtype=int)
 
-    valid_indices = isvalid(dpt) & isvalid(at2)
+    valid_indices = isvalid(dpt_arr) & isvalid(at2_arr)
 
-    cond_failed = np.full(dpt.shape, True, dtype=bool)
-    cond_failed[valid_indices] = dpt[valid_indices] > at2[valid_indices]
+    cond_failed = np.full(dpt_arr.shape, True, dtype=bool)
+    cond_failed[valid_indices] = dpt_arr[valid_indices] > at2_arr[valid_indices]
 
     result[valid_indices & cond_failed] = failed
     result[valid_indices & ~cond_failed] = passed
@@ -787,10 +773,10 @@ def do_supersaturation_check(dpt: ValueFloatType, at2: ValueFloatType) -> ValueI
 @inspect_arrays(["sst"])
 @convert_units(sst="K", freezing_point="K")
 def do_sst_freeze_check(
-    sst: ValueFloatType,
-    freezing_point: float,
-    freeze_check_n_sigma: float | Literal["default"] = "default",
-    sst_uncertainty: float | Literal["default"] = "default",
+    sst: ValueNumberType,
+    freezing_point: int | float,
+    freeze_check_n_sigma: int | float | Literal["default"] = "default",
+    sst_uncertainty: int | float | Literal["default"] = "default",
 ) -> ValueIntType:
     """
     Check input sea-surface temperature(s) to see if it is above freezing.
@@ -830,7 +816,7 @@ def do_sst_freeze_check(
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
 
     Notes
@@ -841,15 +827,14 @@ def do_sst_freeze_check(
         * ``freezing_point``: -1.80
         * ``n_sigma``: 2.0
     """
-    if not isinstance(sst, np.ndarray):
-        raise TypeError(f"'sst' must be a numpy.ndarray, got {type(sst).__name__}")
+    (sst_arr,) = ensure_arrays(sst=sst)
 
-    result = np.full(sst.shape, untestable, dtype=int)
+    result = np.full(sst_arr.shape, untestable, dtype=int)
 
     if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
         return result
 
-    valid_sst = isvalid(sst)
+    valid_sst = isvalid(sst_arr)
 
     if freeze_check_n_sigma == "default":
         freeze_check_n_sigma = 0.0
@@ -857,8 +842,8 @@ def do_sst_freeze_check(
     if sst_uncertainty == "default":
         sst_uncertainty = 0.0
 
-    cond_failed = np.full(sst.shape, True, dtype=bool)
-    cond_failed[valid_sst] = sst[valid_sst] < (freezing_point - freeze_check_n_sigma * sst_uncertainty)
+    cond_failed = np.full(sst_arr.shape, True, dtype=bool)
+    cond_failed[valid_sst] = sst_arr[valid_sst] < (freezing_point - freeze_check_n_sigma * sst_uncertainty)
 
     result[valid_sst & cond_failed] = failed
     result[valid_sst & ~cond_failed] = passed
@@ -868,7 +853,7 @@ def do_sst_freeze_check(
 
 @post_format_return_type(["wind_speed", "wind_direction"])
 @inspect_arrays(["wind_speed", "wind_direction"])
-def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueFloatType) -> ValueIntType:
+def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: ValueNumberType) -> ValueIntType:
     """
     Test to compare windspeed to winddirection to check if they are consistent.
 
@@ -893,21 +878,18 @@ def do_wind_consistency_check(wind_speed: ValueFloatType, wind_direction: ValueF
 
     Raises
     ------
-    ValueError
+    TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(wind_speed, np.ndarray):
-        raise TypeError(f"'wind_speed' must be a numpy.ndarray, got {type(wind_speed).__name__}")
-    if not isinstance(wind_direction, np.ndarray):
-        raise TypeError(f"'wind_direction' must be a numpy.ndarray, got {type(wind_direction).__name__}")
+    wind_speed_arr, wind_direction_arr = ensure_arrays(wind_speed=wind_speed, wind_direction=wind_direction)
 
-    result = np.full(wind_speed.shape, untestable, dtype=int)
+    result = np.full(wind_speed_arr.shape, untestable, dtype=int)
 
-    valid_indices = isvalid(wind_speed) & isvalid(wind_direction)
+    valid_indices = isvalid(wind_speed_arr) & isvalid(wind_direction_arr)
 
-    cond_failed = np.full(wind_speed.shape, True, dtype=bool)
-    cond_failed[valid_indices] = ((wind_speed[valid_indices] == 0) & (wind_direction[valid_indices] != 0)) | (
-        (wind_speed[valid_indices] != 0) & (wind_direction[valid_indices] == 0)
+    cond_failed = np.full(wind_speed_arr.shape, True, dtype=bool)
+    cond_failed[valid_indices] = ((wind_speed_arr[valid_indices] == 0) & (wind_direction_arr[valid_indices] != 0)) | (
+        (wind_speed_arr[valid_indices] != 0) & (wind_direction_arr[valid_indices] == 0)
     )
 
     result[valid_indices & cond_failed] = failed
@@ -971,8 +953,8 @@ def _do_mask_check(
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("land_sea_mask")
 def do_landlocked_check(
-    lat: ValueFloatType,
-    lon: ValueFloatType,
+    lat: ValueNumberType,
+    lon: ValueNumberType,
     land_sea_mask: ClimInputType | ClimIntType,
     land_flag: int,
 ) -> ValueIntType:
@@ -1005,14 +987,9 @@ def do_landlocked_check(
     ValueError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
-    if not isinstance(land_sea_mask, np.ndarray):
-        raise TypeError(f"'land_sea_mask' must be a numpy.ndarray, got {type(land_sea_mask).__name__}")
+    lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=land_sea_mask)
 
-    return _do_mask_check(lat=lat, lon=lon, mask=land_sea_mask, flag=land_flag)
+    return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=land_flag)
 
 
 @post_format_return_type(["lat", "lon"])
@@ -1020,8 +997,8 @@ def do_landlocked_check(
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("sea_land_mask")
 def do_maritime_check(
-    lat: ValueFloatType,
-    lon: ValueFloatType,
+    lat: ValueNumberType,
+    lon: ValueNumberType,
     sea_land_mask: ClimInputType | ClimIntType,
     sea_flag: int,
 ) -> ValueIntType:
@@ -1054,10 +1031,6 @@ def do_maritime_check(
     ValueError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat, np.ndarray):
-        raise TypeError(f"'lat' must be a numpy.ndarray, got {type(lat).__name__}")
-    if not isinstance(lon, np.ndarray):
-        raise TypeError(f"'lon' must be a numpy.ndarray, got {type(lon).__name__}")
-    if not isinstance(sea_land_mask, np.ndarray):
-        raise TypeError(f"'sea_land_mask' must be a numpy.ndarray, got {type(sea_land_mask).__name__}")
-    return _do_mask_check(lat=lat, lon=lon, mask=sea_land_mask, flag=sea_flag)
+    lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=sea_land_mask)
+
+    return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=sea_flag)

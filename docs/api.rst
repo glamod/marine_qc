@@ -35,6 +35,7 @@ For developers
    api/api_seq
    api/api_grp
    api/api_buoy
+   api/api_val
    api/api_dec
    api/api_astro
    api/api_ext

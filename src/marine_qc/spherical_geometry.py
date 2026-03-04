@@ -14,6 +14,7 @@ from .auxiliary import (
     SequenceFloatType,
     convert_to,
     earths_radius,
+    ensure_arrays,
     inspect_arrays,
     is_scalar_like,
     isvalid,
@@ -91,18 +92,10 @@ def angular_distance(
 
     Raises
     ------
-    ValueError
-        - If `inspect_arrays` does not return np.ndarrays.
-        - If any of lat1, lat2, lon1, or lon2 is numerically invalid or None.
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat1, np.ndarray):
-        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
-    if not isinstance(lon1, np.ndarray):
-        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
-    if not isinstance(lat2, np.ndarray):
-        raise TypeError(f"'lat2' must be a numpy.ndarray, got {type(lat2).__name__}")
-    if not isinstance(lon2, np.ndarray):
-        raise TypeError(f"'lon2' must be a numpy.ndarray, got {type(lon2).__name__}")
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -149,17 +142,10 @@ def sphere_distance(
 
     Raises
     ------
-    ValueError
+    TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat1, np.ndarray):
-        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
-    if not isinstance(lon1, np.ndarray):
-        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
-    if not isinstance(lat2, np.ndarray):
-        raise TypeError(f"'lat2' must be a numpy.ndarray, got {type(lat2).__name__}")
-    if not isinstance(lon2, np.ndarray):
-        raise TypeError(f"'lon2' must be a numpy.ndarray, got {type(lon2).__name__}")
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -208,17 +194,10 @@ def intermediate_point(
 
     Raises
     ------
-    ValueError
+    TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat1, np.ndarray):
-        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
-    if not isinstance(lon1, np.ndarray):
-        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
-    if not isinstance(lat2, np.ndarray):
-        raise TypeError(f"'lat2' must be a numpy.ndarray, got {type(lat2).__name__}")
-    if not isinstance(lon2, np.ndarray):
-        raise TypeError(f"'lon2' must be a numpy.ndarray, got {type(lon2).__name__}")
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
@@ -261,18 +240,20 @@ def course_between_points(
     SequenceFloatType
         Initial true course in degrees at point one along the great circle between point
         one and point two.
+
+    Raises
+    ------
+    TypeError
+        If `inspect_arrays` does not return np.ndarrays.
     """
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+
     fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
 
 
 @post_format_return_type(["lat1", "lon1"], dtype=float, multiple=True)
-@inspect_arrays(
-    [
-        "lat1",
-        "lon1",
-    ]
-)
+@inspect_arrays(["lat1", "lon1"])
 def lat_lon_from_course_and_distance(
     lat1: SequenceFloatType,
     lon1: SequenceFloatType,
@@ -307,13 +288,10 @@ def lat_lon_from_course_and_distance(
 
     Raises
     ------
-    ValueError
+    TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
-    if not isinstance(lat1, np.ndarray):
-        raise TypeError(f"'lat1' must be a numpy.ndarray, got {type(lat1).__name__}")
-    if not isinstance(lon1, np.ndarray):
-        raise TypeError(f"'lon1' must be a numpy.ndarray, got {type(lon1).__name__}")
+    lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)
 
     lat_rad: np.ndarray = np.asarray(convert_to(lat1, "deg", "rad"), dtype=float)
     lon_rad: np.ndarray = np.asarray(convert_to(lon1, "deg", "rad"), dtype=float)
