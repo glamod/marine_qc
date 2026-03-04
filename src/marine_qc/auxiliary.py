@@ -1,9 +1,9 @@
 """Auxiliary functions for QC."""
 
 from __future__ import annotations
+import datetime
 import inspect
 from collections.abc import Callable, Sequence
-from datetime import datetime
 from functools import wraps
 from typing import Any, TypeAlias
 
@@ -27,7 +27,7 @@ PandasNaTType: TypeAlias = NaTType
 
 ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
-ScalarDatetimeType: TypeAlias = datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
+ScalarDatetimeType: TypeAlias = datetime.datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
 
 SequenceIntType: TypeAlias = Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray
 
@@ -51,14 +51,28 @@ earths_radius = 6371008.8  # m
 
 def is_scalar_like(x: Any) -> bool:
     """
-    Return True if the input is scalar-like (i.e., has no dimensions).
+    Return True if the input is scalar-like.
 
-    A scalar-like value includes:
-    - Python scalars: int, float, bool, None
-    - NumPy scalars: np.int32, np.float64, np.datetime64, etc.
-    - Zero-dimensional NumPy arrays: np.array(5)
-    - Pandas scalars: pd.Timestamp, pd.Timedelta, pd.NA, pd.NaT
-    - Strings and bytes (unless excluded)
+    A value is considered scalar-like if it is one of the following:
+
+    - Built-in Python scalars: int, float, bool, None
+    - Strings and bytes
+    - NumPy scalars (subclasses of np.generic), e.g. np.int32, np.float64,
+      np.datetime64
+    - Zero-dimensional NumPy arrays (e.g. np.array(5))
+    - Pandas scalar types:
+        - pd.Timestamp
+        - pd.Timedelta
+        - pd.NA
+        - pd.NaT
+    - Python datetime types:
+        - datetime.date
+        - datetime.datetime
+        - datetime.time
+
+    Container types such as lists, tuples, sets, dicts, pandas Series,
+    pandas DataFrame, and NumPy arrays with one or more dimensions are
+    not considered scalar-like.
 
     Parameters
     ----------
@@ -70,10 +84,28 @@ def is_scalar_like(x: Any) -> bool:
     bool
         True if `x` is scalar-like, False otherwise.
     """
-    try:
-        return bool(np.ndim(x) == 0)
-    except TypeError:
-        return True  # fallback: built-in scalars like int, float, pd.Timestamp
+    if isinstance(x, (str, bytes)):
+        return True
+
+    if isinstance(x, np.ndarray):
+        return x.ndim == 0
+
+    if isinstance(x, (int, float, bool, type(None))):
+        return True
+
+    if isinstance(x, np.generic):
+        return True
+
+    if isinstance(x, (pd.Timestamp, pd.Timedelta)):
+        return True
+
+    if x is pd.NA or x is pd.NaT:
+        return True
+
+    if isinstance(x, (datetime.date, datetime.datetime, datetime.time)):
+        return True
+
+    return False
 
 
 def isvalid(inval: ValueFloatType) -> bool | npt.NDArray[np.bool_]:

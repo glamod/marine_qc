@@ -144,6 +144,10 @@ def test_direction_continuity_nan():
     assert np.isnan(direction_continuity(dsi=0, dsi_previous=1, directions=0 + 60.1))
 
 
+def test_direction_continuity_zero():
+    assert direction_continuity(dsi=1, dsi_previous=0, directions=1, max_direction_change=None) == 0.0
+
+
 @pytest.mark.parametrize(
     "vsi, vsi_previous, speeds, expected",
     [
@@ -164,6 +168,10 @@ def test_speed_continuity_array():
 
     result = speed_continuity(vsi=vsi, speeds=speeds)
     assert np.all(result == expected)
+
+
+def test_speed_continuity_zero():
+    assert speed_continuity(vsi=1, vsi_previous=0, speeds=1, max_speed_change=None) == 0.0
 
 
 @pytest.mark.parametrize(

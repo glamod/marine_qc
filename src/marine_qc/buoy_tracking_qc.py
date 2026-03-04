@@ -272,8 +272,6 @@ class SpeedChecker:
             warnings.warn(UserWarning(f"Invalid speed_limit: {self.speed_limit}. Must be zero or positive."), stacklevel=2)
         elif not (self.min_win_period >= 0):
             warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
-        elif not (self.min_win_period >= 0):
-            warnings.warn(UserWarning(f"Invalid speed_limit: {self.min_win_period}. Must be zero or positive."), stacklevel=2)
         elif not (self.max_win_period >= self.min_win_period):
             warnings.warn(UserWarning("max_win_period must be greater than or equal to min_win_period."), stacklevel=2)
         else:
