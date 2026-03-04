@@ -13,6 +13,7 @@ New features and enhancements
 * The documentation now uses the `furo <https://github.com/pradyunsg/furo>`_ theme for Sphinx (:pull:`122`)
 * New functions ``do_landlocked_check`` and ``do_maritime_check`` to test whether a position is on land/sea using a land-sea mask (:issue:`130`, :pull:`141`)
 * decorator ``external_clim.inspect_climatology`` now supports str, path-like and ``xarray`` objects as input (:pull:`141`)
+* new validator to validate call signature types in `multiple_checks` (:issue:`15`, :pull:`128`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
