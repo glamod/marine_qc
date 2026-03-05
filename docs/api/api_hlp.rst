@@ -40,9 +40,6 @@ Helpers in multiple checks module
 Helpers in external climatology module
 --------------------------------------
 
-.. autofunction:: marine_qc.external_clim._format_output
-   :noindex:
-
 .. autofunction:: marine_qc.external_clim._select_point
    :noindex:
 
