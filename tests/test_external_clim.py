@@ -6,13 +6,12 @@ import pandas as pd
 import pytest
 import xarray as xr
 from cdm_reader_mapper.common.getting_files import load_file
-from xarray import open_dataset
 
 from marine_qc.external_clim import (
     Climatology,
     _empty_dataarray,
-    _format_output,
     _select_point,
+    get_climatological_value,
     inspect_climatology,
 )
 
@@ -24,96 +23,59 @@ def external_clim():
         "within_drs": False,
     }
     clim_dict = {}
-    clim_dict["AT"] = {
-        "mean": load_file(
-            "external_files/AT_pentad_climatology.nc",
-            **kwargs,
-        )
-    }
-    clim_dict["DPT"] = {
-        "mean": load_file(
-            "external_files/DPT_pentad_climatology.nc",
-            **kwargs,
-        )
-    }
-    clim_dict["SLP"] = {
-        "mean": load_file(
-            "external_files/SLP_pentad_climatology.nc",
-            **kwargs,
-        )
-    }
-    clim_dict["SST"] = {
-        "mean": load_file(
-            "external_files/SST_daily_climatology_january.nc",
-            **kwargs,
-        )
-    }
-    clim_dict["SST2"] = {
-        "mean": load_file(
-            "external_files/HadSST2_pentad_climatology.nc",
-            **kwargs,
-        )
-    }
+    clim_dict["AT"] = load_file(
+        "external_files/AT_pentad_climatology.nc",
+        **kwargs,
+    )
+    clim_dict["SST"] = load_file(
+        "external_files/SST_daily_climatology_january.nc",
+        **kwargs,
+    )
     return clim_dict
 
 
 @pytest.fixture(scope="session")
 def external_ds_at(external_clim):
-    return open_dataset(external_clim["AT"]["mean"])
+    return xr.open_dataset(external_clim["AT"])
 
 
 @pytest.fixture(scope="session")
 def external_da_at(external_clim):
-    return open_dataset(external_clim["AT"]["mean"])["at"]
+    return xr.open_dataset(external_clim["AT"])["at"]
 
 
 @pytest.fixture(scope="session")
 def external_at(external_clim):
     return Climatology.open_netcdf_file(
-        external_clim["AT"]["mean"],
+        external_clim["AT"],
         "at",
         time_axis="pentad_time",
     )
 
 
-@pytest.fixture(scope="session")
-def external_dpt(external_clim):
-    return Climatology.open_netcdf_file(
-        external_clim["DPT"]["mean"],
-        "dpt",
-        time_axis="pentad_time",
-    )
+@pytest.fixture
+def external_at_no_lat(external_at):
+    data = external_at.data.copy()
+    no_lat = data.isel(latitude=slice(0, 0))
+    return Climatology(data=no_lat, time_axis="pentad_time")
 
 
 @pytest.fixture(scope="session")
-def external_slp(external_clim):
-    return Climatology.open_netcdf_file(
-        external_clim["SLP"]["mean"],
-        "slp",
-    )
+def external_sst_day(external_clim):
+    da = xr.open_dataset(external_clim["SST"])["sst"]
+    data = da.isel(time=slice(0, 1))
+    return Climatology(data=data)
 
 
 @pytest.fixture(scope="session")
-def external_sst(external_clim):
-    clim_sst = Climatology.open_netcdf_file(
-        external_clim["SST"]["mean"],
-        "sst",
-        valid_ntime=31,
-    )
-    ds = clim_sst.data
-    full_year = pd.date_range(f"{ds.time.dt.year[0].item()}-01-01", periods=365, freq="D")
-    ds_full = ds.isel(time=(np.arange(365) % len(ds.time)))
-    clim_sst.data = ds_full.assign_coords(time=full_year)
-    clim_sst.ntime = len(full_year)
-    return clim_sst
-
-
-@pytest.fixture(scope="session")
-def external_sst2(external_clim):
-    return Climatology.open_netcdf_file(
-        external_clim["SST2"]["mean"],
-        "sst",
-    )
+def external_sst_year(external_sst_day):
+    first_day = external_sst_day.data.copy()
+    repeated = xr.concat([first_day] * 365, dim="time")
+    repeated = repeated.assign_coords(time=pd.date_range(start="1961-01-01", periods=365))
+    repeated.attrs = first_day.attrs.copy()
+    for coord in first_day.coords:
+        repeated.coords[coord].attrs = first_day.coords[coord].attrs.copy()
+    return Climatology(data=repeated)
 
 
 @inspect_climatology("climatology")
@@ -124,36 +86,6 @@ def _inspect_climatology(climatology, **kwargs):
 @inspect_climatology("climatology2")
 def _inspect_climatology2(climatology, **kwargs):
     return climatology
-
-
-def _get_value(external, lat, lon, month, day, expected):
-    kwargs = {
-        "lat": lat,
-        "lon": lon,
-        "month": month,
-        "day": day,
-    }
-    result = external.get_value_fast(**kwargs)
-    assert np.allclose(result, expected, equal_nan=True)
-
-
-def _get_value_fast(external, lat, lon, month, day, expected):
-    result = external.get_value_fast(lat, lon, month=month, day=day)
-    assert np.allclose(result, expected, equal_nan=True)
-
-
-@pytest.mark.parametrize(
-    "lat, expected_type",
-    [(10.0, float), (np.float64(5.0), np.floating), (np.array([1, 2]), np.ndarray), ([1, 2], np.ndarray), (pd.Series([1, 2]), pd.Series)],
-)
-def test_format_output(lat, expected_type):
-    result = np.array([42.0, 43.0])
-    output = _format_output(result, lat)
-
-    if np.isscalar(lat):
-        assert np.isscalar(output)
-    else:
-        assert isinstance(output, expected_type)
 
 
 @pytest.mark.parametrize(
@@ -269,109 +201,212 @@ def test_empty_dataarray_structure():
     assert da.ndim == 3
 
 
-@pytest.mark.parametrize(
-    "lat, lon, month, day, expected",
-    [
-        [53.5, 10.0, 7, 4, 17.317652],
-        [42.5, 1.4, 2, 16, 3.7523544],
-        [57.5, 9.4, 6, 1, 13.330604],
-        [-68.4, -52.3, 11, 21, -4.2039094],
-        [-190.0, 10.0, 7, 4, np.nan],
-        [42.5, 95.0, 2, 16, -6.6292677],
-        [57.5, 9.4, 13, 1, np.nan],
-        [-68.4, -52.3, 11, 42, np.nan],
-        [None, 10.0, 7, 4, np.nan],
-        [42.5, None, 2, 16, np.nan],
-        [57.5, 9.4, None, 1, np.nan],
-        [-68.4, -52.3, 11, None, np.nan],
-    ],
-)
-def test_get_value_with_external_at(external_at, lat, lon, month, day, expected):
-    _get_value(external_at, lat, lon, month, day, expected)
+def test_climatology_init_clear(external_da_at):
+    data = external_da_at.copy()
+    data["pentad_time"].attrs["standard_name"] = "time"
+    data["pentad_time"].attrs["axis"] = "T"
+
+    climatology = Climatology(
+        data=data,
+    )
+
+    assert hasattr(climatology, "data")
+    assert isinstance(climatology.data, xr.DataArray)
+    assert hasattr(climatology, "time_axis")
+    assert isinstance(climatology.time_axis, str)
+    assert climatology.time_axis == "pentad_time"
+    assert hasattr(climatology, "lat_axis")
+    assert isinstance(climatology.lat_axis, str)
+    assert climatology.lat_axis == "latitude"
+    assert hasattr(climatology, "lon_axis")
+    assert isinstance(climatology.lon_axis, str)
+    assert climatology.lon_axis == "longitude"
+    assert hasattr(climatology, "ntime")
+    assert isinstance(climatology.ntime, int)
+    assert climatology.ntime == 73
+
+
+def test_climatology_init_set(external_da_at):
+    climatology = Climatology(
+        data=external_da_at,
+        time_axis="pentad_time",
+        lat_axis="latitude",
+        lon_axis="longitude",
+    )
+
+    assert hasattr(climatology, "data")
+    assert isinstance(climatology.data, xr.DataArray)
+    assert hasattr(climatology, "time_axis")
+    assert isinstance(climatology.time_axis, str)
+    assert climatology.time_axis == "pentad_time"
+    assert hasattr(climatology, "lat_axis")
+    assert isinstance(climatology.lat_axis, str)
+    assert climatology.lat_axis == "latitude"
+    assert hasattr(climatology, "lon_axis")
+    assert isinstance(climatology.lon_axis, str)
+    assert climatology.lon_axis == "longitude"
+    assert hasattr(climatology, "ntime")
+    assert isinstance(climatology.ntime, int)
+    assert climatology.ntime == 73
+
+
+def test_climatology_init_convert(external_da_at):
+    climatology = Climatology(
+        data=external_da_at,
+        time_axis="pentad_time",
+        lat_axis="latitude",
+        lon_axis="longitude",
+        source_units="degC",
+        target_units="K",
+    )
+
+    assert hasattr(climatology, "data")
+    assert isinstance(climatology.data, xr.DataArray)
+    assert climatology.data.attrs["units"] == "K"
+    assert hasattr(climatology, "time_axis")
+    assert isinstance(climatology.time_axis, str)
+    assert climatology.time_axis == "pentad_time"
+    assert hasattr(climatology, "lat_axis")
+    assert isinstance(climatology.lat_axis, str)
+    assert climatology.lat_axis == "latitude"
+    assert hasattr(climatology, "lon_axis")
+    assert isinstance(climatology.lon_axis, str)
+    assert climatology.lon_axis == "longitude"
+    assert hasattr(climatology, "ntime")
+    assert isinstance(climatology.ntime, int)
+    assert climatology.ntime == 73
+
+
+def test_climatology_raises(external_da_at):
+    with pytest.raises(ValueError, match="Weird shaped field"):
+        Climatology(
+            data=external_da_at,
+            time_axis="pentad_time",
+            valid_ntime=25,
+        )
+
+
+def test_climatology_netcdf(external_clim):
+    climatology = Climatology.open_netcdf_file(
+        external_clim["AT"],
+        clim_name="at",
+        time_axis="pentad_time",
+    )
+
+    assert hasattr(climatology, "data")
+    assert isinstance(climatology.data, xr.DataArray)
+    assert hasattr(climatology, "time_axis")
+    assert isinstance(climatology.time_axis, str)
+    assert climatology.time_axis == "pentad_time"
+    assert hasattr(climatology, "lat_axis")
+    assert isinstance(climatology.lat_axis, str)
+    assert climatology.lat_axis == "latitude"
+    assert hasattr(climatology, "lon_axis")
+    assert isinstance(climatology.lon_axis, str)
+    assert climatology.lon_axis == "longitude"
+    assert hasattr(climatology, "ntime")
+    assert isinstance(climatology.ntime, int)
+    assert climatology.ntime == 73
+
+
+def test_climatology_empty():
+    with pytest.warns(UserWarning, match="Could not open"):
+        climatology = Climatology.open_netcdf_file("no_data", clim_name="at")
+
+    assert hasattr(climatology, "data")
+    assert isinstance(climatology.data, xr.DataArray)
+    assert hasattr(climatology, "time_axis")
+    assert isinstance(climatology.time_axis, str)
+    assert climatology.time_axis == "pentad_time"
+    assert hasattr(climatology, "lat_axis")
+    assert isinstance(climatology.lat_axis, str)
+    assert climatology.lat_axis == "latitude"
+    assert hasattr(climatology, "lon_axis")
+    assert isinstance(climatology.lon_axis, str)
+    assert climatology.lon_axis == "longitude"
+    assert hasattr(climatology, "ntime")
+    assert isinstance(climatology.ntime, int)
+    assert climatology.ntime == 0
+
+
+def test_get_tindex_single_time(external_sst_day):
+    assert external_sst_day.get_tindex(7, 4) == 0
+
+
+def test_get_tindex_daily(external_sst_year):
+    assert external_sst_year.get_tindex(1, 1) == 0
+    assert external_sst_year.get_tindex(12, 31) == 364
 
 
 @pytest.mark.parametrize(
     "lat, lon, month, day, expected",
     [
-        [53.5, 10.0, 7, 4, 12.243161],
-        [42.5, 1.4, 2, 16, -0.2412281],
-        [57.5, 9.4, 6, 1, 9.056429],
-        [-68.4, -52.3, 11, 21, -6.0470867],
-        [-190.0, 10.0, 7, 4, np.nan],
-        [42.5, 95.0, 2, 16, -17.384878],
-        [57.5, 9.4, 13, 1, np.nan],
-        [-68.4, -52.3, 11, 42, np.nan],
-        [None, 10.0, 7, 4, np.nan],
-        [42.5, None, 2, 16, np.nan],
-        [57.5, 9.4, None, 1, np.nan],
-        [-68.4, -52.3, 11, None, np.nan],
+        (53.5, 10.0, 7, 4, 17.317652),
+        (42.5, 1.4, 2, 16, 3.7523544),
+        (57.5, 9.4, 6, 1, 13.330604),
+        (-68.4, -52.3, 11, 21, -4.2039094),
+        (-190.0, 10.0, 7, 4, np.nan),
+        (42.5, 95.0, 2, 16, -6.6292677),
+        (57.5, 9.4, 13, 1, np.nan),
+        (-68.4, -52.3, 11, 42, np.nan),
+        (None, 10.0, 7, 4, np.nan),
+        (42.5, None, 2, 16, np.nan),
+        (57.5, 9.4, None, 1, np.nan),
+        (-68.4, -52.3, 11, None, np.nan),
     ],
 )
-def test_get_value_with_external_dpt(external_dpt, lat, lon, month, day, expected):
-    _get_value(external_dpt, lat, lon, month, day, expected)
+@pytest.mark.parametrize("fast", [False, True])
+def test_get_value_with_external_at(external_at, lat, lon, month, day, expected, fast):
+    kwargs = {
+        "lat": lat,
+        "lon": lon,
+        "month": month,
+        "day": day,
+    }
+
+    if fast is True:
+        result = external_at.get_value_fast(**kwargs)
+    else:
+        result = external_at.get_value(**kwargs)
+
+    assert np.allclose(result, expected, equal_nan=True)
 
 
-@pytest.mark.parametrize(
-    "lat, lon, month, day, expected",
-    [
-        [53.5, 10.0, 7, 4, 1015.102783],
-        [42.5, 1.4, 2, 16, 1017.175170],
-        [57.5, 9.4, 6, 1, 1014.887268],
-        [-68.4, -52.3, 11, 21, 982.609802],
-        [-190.0, 10.0, 7, 4, np.nan],
-        [42.5, 95.0, 2, 16, 1029.125366],
-        [57.5, 9.4, 13, 1, np.nan],
-        [-68.4, -52.3, 11, 42, np.nan],
-        [None, 10.0, 7, 4, np.nan],
-        [42.5, None, 2, 16, np.nan],
-        [57.5, 9.4, None, 1, np.nan],
-        [-68.4, -52.3, 11, None, np.nan],
-    ],
-)
-def test_get_value_with_external_slp(external_slp, lat, lon, month, day, expected):
-    _get_value(external_slp, lat, lon, month, day, expected)
+def test_get_value_fast_raise(external_at):
+    with pytest.raises(ValueError, match="No date information given"):
+        external_at.get_value_fast(lat=50.0, lon=10.0)
 
 
-@pytest.mark.parametrize(
-    "lat, lon, month, day, expected",
-    [
-        [53.5, 10.0, 1, 4, np.nan],
-        [42.5, 1.4, 1, 16, np.nan],
-        [57.5, 9.4, 1, 1, 278.65952],
-        [-68.4, -52.3, 1, 21, 271.35],
-        [-190.0, 10.0, 7, 4, np.nan],
-        [42.5, 95.0, 1, 16, np.nan],
-        [57.5, 9.4, 13, 1, np.nan],
-        [-68.4, -52.3, 11, 42, np.nan],
-        [None, 10.0, 7, 4, np.nan],
-        [42.5, None, 2, 16, np.nan],
-        [57.5, 9.4, None, 1, np.nan],
-        [-68.4, -52.3, 11, None, np.nan],
-    ],
-)
-def test_get_value_with_external_sst(external_sst, lat, lon, month, day, expected):
-    _get_value(external_sst, lat, lon, month, day, expected)
+def test_get_value_fast_day(external_sst_day):
+    result = external_sst_day.get_value_fast(lat=50.0, lon=-20.0)
+    assert result == 285.1153564453125
 
 
-@pytest.mark.parametrize(
-    "lat, lon, month, day, expected",
-    [
-        [53.5, 10.0, 7, 4, np.nan],
-        [42.5, 1.4, 2, 16, np.nan],
-        [57.5, 9.4, 6, 1, 11.798330],
-        [-68.4, -52.3, 11, 21, -1.799999],
-        [-190.0, 10.0, 7, 4, np.nan],
-        [42.5, 95.0, 2, 16, np.nan],
-        [57.5, 9.4, 13, 1, np.nan],
-        [-68.4, -52.3, 11, 42, np.nan],
-        [None, 10.0, 7, 4, np.nan],
-        [42.5, None, 2, 16, np.nan],
-        [57.5, 9.4, None, 1, np.nan],
-        [-68.4, -52.3, 11, None, np.nan],
-    ],
-)
-def _test_get_value_with_external_sst2(external_sst2, lat, lon, month, day, expected):
-    _get_value(external_sst2, lat, lon, month, day, expected)
+def test_get_value_fast_repeat(external_at):
+    lat = [50.0, 51.0, 52.0]
+    lon = [10.0, 11.0, 12.0]
+    month = 7
+    day = 1
+
+    result = external_at.get_value_fast(
+        lat=lat,
+        lon=lon,
+        month=month,
+        day=day,
+    )
+
+    assert len(result) == 3
+
+
+def test_get_value_fast_empty_axes(external_at_no_lat):
+    result = external_at_no_lat.get_value_fast(
+        lat=50.0,
+        lon=10.0,
+        month=7,
+        day=4,
+    )
+
+    assert np.isnan(result).all()
 
 
 @pytest.mark.parametrize(
@@ -383,21 +418,10 @@ def _test_get_value_with_external_sst2(external_sst2, lat, lon, month, day, expe
         [-68.4, -52.3, 11, 21, -4.203909397125244],
     ],
 )
-def test_inspect_climatology(external_at, lat, lon, month, day, expected):
+def test_inspect_climatology_value(external_at, lat, lon, month, day, expected):
     result = _inspect_climatology(external_at, lat=lat, lon=lon, month=month, day=day)
     assert result == expected
 
-
-@pytest.mark.parametrize(
-    "lat, lon, month, day, expected",
-    [
-        [53.5, 10.0, 7, 4, 17.317651748657227],
-        [42.5, 1.4, 2, 16, 3.752354383468628],
-        [57.5, 9.4, 6, 1, 13.33060359954834],
-        [-68.4, -52.3, 11, 21, -4.203909397125244],
-    ],
-)
-def test_inspect_climatology_date(external_at, lat, lon, month, day, expected):
     date = pd.to_datetime(f"2002-{month}-{day}")
     result = _inspect_climatology(external_at, lat=lat, lon=lon, date=date)
     assert result == expected
@@ -452,7 +476,7 @@ def test_inspect_climatology_da_pass(external_da_at):
 
 
 def test_inspect_climatology_str_pass(external_clim):
-    result = _inspect_climatology(external_clim["AT"]["mean"], lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time", clim_name="at")
+    result = _inspect_climatology(external_clim["AT"], lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time", clim_name="at")
     assert result == 17.317651748657227
 
 
@@ -461,11 +485,11 @@ def test_inspect_climatology_str_raises(external_clim):
         KeyError,
         match="No variable named",
     ):
-        _inspect_climatology(external_clim["AT"]["mean"], lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time")
+        _inspect_climatology(external_clim["AT"], lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time")
 
 
 def test_inspect_climatology_path_pass(external_clim):
-    filepath = Path(external_clim["AT"]["mean"])
+    filepath = Path(external_clim["AT"])
     result = _inspect_climatology(filepath, lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time", clim_name="at")
     assert result == 17.317651748657227
 
@@ -491,7 +515,7 @@ def test_inspect_climatology_path_raise():
         ([-89.9, 89.9], -87.5, 5, [0, 35]),
     ],
 )
-def test_get_y_index(lats, lat0, delta, expected):
+def test_get_y_index_pass(lats, lat0, delta, expected):
     n_lat_axis = int(180 / abs(delta))
     lat_axis = np.arange(n_lat_axis) * delta + lat0
     lats = np.array(lats)
@@ -500,6 +524,14 @@ def test_get_y_index(lats, lat0, delta, expected):
     result = Climatology.get_y_index(lats, lat_axis)
 
     assert np.all(expected == result)
+
+
+def test_get_y_index_raise():
+    lats = np.array([-10.0, 10.0])
+    lat_axis = np.arange(180) + (-88)
+
+    with pytest.raises(RuntimeError, match="I can't work this grid out grid box boundaries"):
+        Climatology.get_y_index(lats, lat_axis)
 
 
 @pytest.mark.parametrize(
@@ -523,7 +555,7 @@ def test_get_y_index(lats, lat0, delta, expected):
         ([-180, 180], -177.5, 5, [0, 71]),
     ],
 )
-def test_get_x_index(lats, lat0, delta, expected):
+def test_get_x_index_pass(lats, lat0, delta, expected):
     n_lat_axis = int(360 / abs(delta))
     lat_axis = np.arange(n_lat_axis) * delta + lat0
     lats = np.array(lats)
@@ -532,6 +564,14 @@ def test_get_x_index(lats, lat0, delta, expected):
     result = Climatology.get_x_index(lats, lat_axis)
 
     assert np.all(expected == result)
+
+
+def test_get_x_index_raise():
+    lons = np.array([-10.0, 10.0])
+    lon_axis = np.arange(360) + (-178)
+
+    with pytest.raises(RuntimeError, match="I can't work this grid out grid box boundaries"):
+        Climatology.get_x_index(lons, lon_axis)
 
 
 def test_get_t_index():
@@ -547,122 +587,19 @@ def test_get_t_index():
     result = Climatology.get_t_index(month, day, 1)
     assert np.all(result == np.zeros(len(result)))
 
-
-def test_get_value_fast_at(external_at):
-    lat = np.arange(12) * 15 - 90.0 + 0.1
-    lon = np.arange(12) * 30 - 180.0 + 0.1
-    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    expected = np.array(
-        [
-            -24.606144,
-            -1.6097184,
-            3.8155653,
-            12.610888,
-            17.65739,
-            25.619099,
-            24.483362,
-            30.759687,
-            27.863735,
-            6.997858,
-            -19.355358,
-            -25.576801,
-        ]
-    )
-    _get_value_fast(external_at, lat, lon, month, day, expected)
+    result = Climatology.get_t_index(month, day, 10)
+    assert np.all(result == -1)
 
 
-def test_get_value_fast_dpt(external_dpt):
-    lat = np.arange(12) * 15 - 90.0 + 0.1
-    lon = np.arange(12) * 30 - 180.0 + 0.1
-    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    expected = np.array(
-        [
-            -27.990265,
-            -3.525132,
-            1.3157192,
-            9.453145,
-            13.400107,
-            20.802454,
-            20.59039,
-            17.97907,
-            -1.6715549,
-            -3.3224113,
-            -22.183725,
-            -28.067549,
-        ]
-    )
-    _get_value_fast(external_dpt, lat, lon, month, day, expected)
-
-
-def test_get_value_fast_slp(external_slp):
-    lat = np.arange(12) * 15 - 90.0 + 0.1
-    lon = np.arange(12) * 30 - 180.0 + 0.1
-    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    expected = np.array(
-        [
-            994.6687,
-            986.797,
-            990.4024,
-            1014.28455,
-            1014.8676,
-            1016.58136,
-            1014.6026,
-            1007.42126,
-            1005.2642,
-            1021.6543,
-            1021.2122,
-            1017.6197,
-        ]
-    )
-    _get_value_fast(external_slp, lat, lon, month, day, expected)
-
-
-def test_get_value_fast_sst(external_sst):
-    lat = np.arange(12) * 15 - 90.0 + 0.1
-    lon = np.arange(12) * 30 - 180.0 + 0.1
-    month = np.ones(12, dtype=int)
-    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    expected = np.array(
-        [
-            np.nan,
-            271.75177,
-            277.03308,
-            285.70743,
-            np.nan,
-            300.02383,
-            300.77612,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            271.35,
-        ]
-    )
-    _get_value_fast(external_sst, lat, lon, month, day, expected)
-
-
-def _test_get_value_fast_sst2(external_sst2):
-    lat = np.arange(12) * 15 - 90.0 + 0.1
-    lon = np.arange(12) * 30 - 180.0 + 0.1
-    month = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    day = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    expected = np.array(
-        [
-            np.nan,
-            -1.1828293,
-            4.2954683,
-            12.715132,
-            np.nan,
-            26.310646,
-            25.364834,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            -1.8,
-        ]
-    )
-    _get_value_fast(external_sst2, lat, lon, month, day, expected)
+@pytest.mark.parametrize(
+    "lat, lon, month, day, expected",
+    [
+        [53.5, 10.0, 7, 4, 17.317651748657227],
+        [42.5, 1.4, 2, 16, 3.752354383468628],
+        [57.5, 9.4, 6, 1, 13.33060359954834],
+        [-68.4, -52.3, 11, 21, -4.203909397125244],
+    ],
+)
+def test_get_climatological_value(external_at, lat, lon, month, day, expected):
+    result = get_climatological_value(external_at, lat=lat, lon=lon, month=month, day=day)
+    assert result == expected
