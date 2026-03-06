@@ -2,9 +2,9 @@
 Changelog
 =========
 
-0.3.0 (unreleased)
+0.3.0 (2026-03-06)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -53,7 +53,7 @@ Announcements
 
 0.1.0 (2025-10-21)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`)
 
 Announcements
 ^^^^^^^^^^^^^
