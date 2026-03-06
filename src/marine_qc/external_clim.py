@@ -38,32 +38,6 @@ from .time_control import (
 )
 
 
-def _format_output(
-    result: np.ndarray,
-    lat: ValueFloatType,
-) -> ValueFloatType:
-    """
-    Format output to match the input latitude type.
-
-    Parameters
-    ----------
-    result : np.ndarray
-        Array of result values.
-    lat : ValueFloatType
-        Latitude input used to determine output format.
-
-    Returns
-    -------
-    ValueFloatType
-        Result formatted to match the type of `lat`.
-    """
-    if np.isscalar(lat):
-        return result[0]
-    if isinstance(lat, pd.Series):
-        return pd.Series(result, index=lat.index)
-    return result
-
-
 def _select_point(
     i: int,
     da_slice: xr.DataArray,
@@ -458,8 +432,6 @@ class Climatology:
           If the length of the time dimension does not match one of the
           allowed values in ``valid_ntime``.
         """
-        if valid_ntime is None:
-            valid_ntime = [0, 1, 73, 365]
         self.data = data
         self.convert_units_to(target_units, source_units=source_units)
 
@@ -475,7 +447,10 @@ class Climatology:
             self.lon_axis = data.cf.coordinates["longitude"][0]
         else:
             self.lon_axis = lon_axis
-        if not isinstance(valid_ntime, list):
+
+        if valid_ntime is None:
+            valid_ntime = [0, 1, 73, 365]
+        elif not isinstance(valid_ntime, (tuple, list)):
             valid_ntime = [valid_ntime]
         self.ntime = len(data[self.time_axis])
         if self.ntime not in valid_ntime:
@@ -577,6 +552,7 @@ class Climatology:
         if month is None and day is None:
             if self.ntime > 1:
                 raise ValueError("No date information given: {self.ntime} needed")
+
             month = self.data[self.time_axis].dt.month.values
             day = self.data[self.time_axis].dt.day.values
 
@@ -733,6 +709,7 @@ class Climatology:
             return day_in_year_array(month=month, day=day) - 1
         return t_index - 1
 
+    @post_format_return_type(["lat"], dtype=float)
     @convert_date(["month", "day"])
     def get_value(
         self,
@@ -795,7 +772,7 @@ class Climatology:
 
         valid_idx = np.where(valid)[0]
         if len(valid_idx) == 0:
-            return _format_output(result, lat)
+            return result
 
         grouped = defaultdict(list)
         for i in valid_idx:
@@ -811,7 +788,7 @@ class Climatology:
             for idx, value in results:
                 result[idx] = value
 
-        return _format_output(result, lat)
+        return result
 
     def get_tindex(self, month: int, day: int) -> int:
         """

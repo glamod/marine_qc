@@ -41,6 +41,7 @@ Internal changes
 * new marine_qc data types: ScalarNumberType, SequenceNumberType and ValueNumberType (:pull:`128`)
 * remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
 * update testing suite to cover warnings (:issue:`148`, :pull:`149`)
+* add unit test for `external_clim` and increase test coverage (:issue:`17`, :pull:`154`)
 
 0.2.0 (2025-10-21)
 ------------------
