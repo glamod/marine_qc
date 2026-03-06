@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.10", "3.11", "3.12", "3.13", "3.14" ]
+        python-version: [ "3.10", "3.11", "3.12", "3.13" ] # "3.14" disabled due to segfault on GitHub CI
     env:
       UV_ENV_FILE: pyproject.toml
       PYTHON_VERSION: ${{ matrix.python-version }}
