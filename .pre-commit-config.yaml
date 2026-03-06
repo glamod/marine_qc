@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.20.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [ '--py310-plus' ]
@@ -47,7 +47,7 @@ repos:
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.3
+    rev: v0.14.3
     hooks:
       - id: ruff-check
         args: [ '--fix', '--show-fixes' ]
@@ -56,7 +56,7 @@ repos:
     rev: 7.3.0
     hooks:
       - id: flake8
-        additional_dependencies: [ 'flake8-rst-docstrings==0.3.1' ]
+        additional_dependencies: [ 'flake8-rst-docstrings==0.4.0' ]
         args: [ '--config=.flake8' ]
   - repo: https://github.com/jendrikseipp/vulture
     rev: 'v2.14'

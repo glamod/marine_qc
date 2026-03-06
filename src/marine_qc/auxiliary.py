@@ -10,8 +10,8 @@ from typing import Any, TypeAlias
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from pandas._libs.missing import NAType
-from pandas._libs.tslibs.nattype import NaTType
+from pandas._libs import missing
+from pandas._libs.tslibs import nattype
 from xclim.core.units import convert_units_to, units
 
 
@@ -22,8 +22,8 @@ untestable: int = 2
 untested: int = 3
 
 # --- DATA TYPES ---
-PandasNAType: TypeAlias = NAType
-PandasNaTType: TypeAlias = NaTType
+PandasNAType: TypeAlias = missing.NAType
+PandasNaTType: TypeAlias = nattype.NaTType
 
 ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None

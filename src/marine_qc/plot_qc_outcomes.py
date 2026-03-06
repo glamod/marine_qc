@@ -6,11 +6,10 @@ Some plotting routines for QC outcomes
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
+from matplotlib import figure, lines
 
 
-def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[Line2D]]:
+def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[lines.Line2D]]:
     """
     Get color lebels.
 
@@ -47,7 +46,7 @@ def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[Line2
     colours = np.array(colours_list, dtype=str)
 
     legend_elements = [
-        Line2D(
+        lines.Line2D(
             [0],
             [0],
             marker="o",
@@ -55,7 +54,7 @@ def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[Line2
             label=f"0: {passed}",
             markerfacecolor=colour_passed,
         ),
-        Line2D(
+        lines.Line2D(
             [0],
             [0],
             marker="o",
@@ -63,7 +62,7 @@ def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[Line2
             label=f"1: {failed}",
             markerfacecolor=colour_failed,
         ),
-        Line2D(
+        lines.Line2D(
             [0],
             [0],
             marker="o",
@@ -84,7 +83,7 @@ def _make_plot(
     xlabel: str,
     ylabel: str,
     filename: str | None,
-) -> Figure:
+) -> figure.Figure:
     """
     Make plot.
 
@@ -143,7 +142,7 @@ def _make_plot(
         bbox_to_anchor=(0.5, 0.53),
     )
 
-    plt.tight_layout(rect=[0, 0.05, 1, 1])
+    plt.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
 
     if filename is None:
         plt.show(block=False)
@@ -153,7 +152,7 @@ def _make_plot(
     return fig
 
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> Figure:
+def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
     """
     Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
 
@@ -185,7 +184,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
     )
 
 
-def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> Figure:
+def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
     """
     Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 
