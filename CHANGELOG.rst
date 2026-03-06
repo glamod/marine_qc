@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.3.0 (2026-03-06)
+0.3.1 (2026-03-06)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`)
 
@@ -42,6 +42,10 @@ Internal changes
 * remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
 * update testing suite to cover warnings (:issue:`148`, :pull:`149`)
 * add unit test for `external_clim` and increase test coverage (:issue:`17`, :pull:`154`)
+
+0.3.0 (2026-03-06)
+------------------
+See 0.3.1
 
 0.2.0 (2025-10-21)
 ------------------
