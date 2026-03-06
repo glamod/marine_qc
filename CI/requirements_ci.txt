@@ -443,19 +443,21 @@ tomli==2.4.0 \
     #   pylint
     #   pyproject-api
     #   tox
-tomli-w==1.0.0 \
-    --hash=sha256:9f2a07e8be30a0729e533ec968016807069991ae2fd921a78d42f429ae5f4463 \
-    --hash=sha256:f463434305e0336248cac9c2dc8076b707d8a12d019dd349f5c1e382dd1ae1b9
-    # via flit
+tomli-w==1.2.0 \
+    --hash=sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90 \
+    --hash=sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021
+    # via
+    #   flit
+    #   tox
 tomlkit==0.13.0 \
     --hash=sha256:08ad192699734149f5b97b45f1f18dad7eb1b6d16bc72ad0c2335772650d7b72 \
     --hash=sha256:7075d3042d03b80f603482d69bf0c8f345c2b30e41699fd8883227f89972b264
     # via
     #   bump-my-version
     #   pylint
-tox==4.47.3 \
-    --hash=sha256:57643508d4c218ad312457a3b0ce3135c50fa1f9f1e4d40867683d880cad1c37 \
-    --hash=sha256:e447862a6821b421bbbfb8cbac071818c0a6884907a4c964d8322516d0b19b34
+tox==4.48.1 \
+    --hash=sha256:4e0369041be0d52b0dc83051f6449e4afae1764b4203a5866982fa300c8c325f \
+    --hash=sha256:971260ac2ea3409de8f3771612d141713d2d33446cc0d981849ebfd9b6bbd3d9
     # via
     #   -r CI/requirements_ci.in
     #   tox-gh
