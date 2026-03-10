@@ -21,11 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
+        python-version: [ "3.14" ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
+          disable-sudo: true
           egress-policy: audit
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -56,11 +57,16 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
+        python-version: [ "3.10", "3.11", "3.12", "3.13" ] # "3.14" disabled due to segfault on GitHub CI
+    env:
+      UV_ENV_FILE: pyproject.toml
+      PYTHON_VERSION: ${{ matrix.python-version }}
+      UV_CACHE_DIR: /tmp/.uv-cache
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
+          disable-sudo: true
           egress-policy: audit
 
       - name: Checkout Repository
@@ -68,11 +74,6 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags.
           persist-credentials: false
-      - name: Set environment variables
-        run: |
-          echo "UV_ENV_FILE=pyproject.toml" >> $GITHUB_ENV
-          echo "PYTHON_VERSION=${{ matrix.python-version }}" >> $GITHUB_ENV
-          echo "UV_CACHE_DIR=/tmp/.uv-cache" >> $GITHUB_ENV
 
       - name: Install uv
         uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
@@ -82,7 +83,7 @@ jobs:
           cache-local-path: ${{ env.UV_CACHE_DIR }}
 
       - name: Restore uv cache
-        uses: actions/cache@v5
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles(env.UV_ENV_FILE) }}
@@ -92,7 +93,7 @@ jobs:
 
       - name: Install marine QC toolbox
         run: |
-          uv sync --extra dev
+          uv sync --group dev
 
       - name: Version info
         run: |

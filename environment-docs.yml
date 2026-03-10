@@ -37,12 +37,13 @@ dependencies:
     - myst-nb >= 1.2.0
     - nbconvert >=7.16.4
     - numpydoc >=1.9.0
-    - sphinx >=7.1.0,<8.2
+    - sphinx >=8.0.0
     - sphinx-autodoc-typehints
-    - sphinx-copybutton
+    - sphinx-codeautolink >=0.16.2
+    - sphinx-copybutton >=0.5.2
     - furo >= 2023.9.10
 
     #from pypi
     - pip:
       - cdm_reader_mapper
-      - pyproj
+      - pyproj  # FIXME: Why not use native conda package?

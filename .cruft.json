@@ -1,12 +1,12 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage.git",
-  "commit": "66708e5e15f00caaaaf1748bf0a7e041bc5c6243",
+  "commit": "b9bacb7ddbbfaa8eff8c3e0182ebf2e8a66d00c7",
   "checkout": null,
   "context": {
     "cookiecutter": {
       "full_name": "Ludwig Lierhammer",
       "email": "ludwig.lierhammer@dwd.de",
-      "github_username": "ludwiglierhammer",
+      "github_username": "glamod",
       "orcid_id": "0000-0002-7207-0003",
       "project_name": "Marine Quality Control",
       "project_slug": "marine_qc",
@@ -21,9 +21,9 @@
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",
       "generated_with_cruft": "n",
-      "__gh_slug": "https://github.com/glamod/marine_qc",
+      "__gh_slug": "https://github.com/ludwiglierhammer/Marine-Quality-Control",
       "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage.git",
-      "_commit": "66708e5e15f00caaaaf1748bf0a7e041bc5c6243"
+      "_commit": "b9bacb7ddbbfaa8eff8c3e0182ebf2e8a66d00c7"
     }
   },
   "directory": null

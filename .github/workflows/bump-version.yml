@@ -21,6 +21,7 @@ on:
       - CHANGELOG.rst
       - CI/**/*.in
       - CI/**/*.txt
+      - CITATION.cff
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.rst
       - Makefile
@@ -30,7 +31,7 @@ on:
       - environment-docs.yml
       - pyproject.toml
       - tests/**.py
-      - tox.ini
+      - tox.toml
       - src/marine_qc/__init__.py
   workflow_dispatch:
 
@@ -43,6 +44,9 @@ jobs:
     permissions:
       actions: read
       contents: write
+    strategy:
+      matrix:
+        python-version: [ "3.13" ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
@@ -59,12 +63,10 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-
       - name: Set up Python3
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.x"
-
+          python-version: ${{ matrix.python-version }}
       - name: Config Commit Bot
         run: |
           git config --local user.email "bumpversion[bot]@dwd.de"

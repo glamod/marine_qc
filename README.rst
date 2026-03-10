@@ -10,8 +10,8 @@ Marine Quality Control: ``marine_qc`` toolbox
 | Open Source                | |license| |zenodo|                                             |
 |                            | |fair-software| |ossf|                                         |
 +----------------------------+----------------------------------------------------------------+
-| Coding Standards           | |ruff| |pre-commit| |codefactor|                               |
-|                            | |security| |fossa|                                             |
+| Coding Standards           | |ruff| |prek| |pre-commit-ci|                                  |
+|                            | |codefactor| |security| |fossa|                                |
 +----------------------------+----------------------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                                   |
 +----------------------------+----------------------------------------------------------------+
@@ -151,9 +151,13 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://securityscorecards.dev/viewer/?uri=github.com/glamod/marine_qc
         :alt: OpenSSF Scorecard
 
-.. |pre-commit| image:: https://results.pre-commit.ci/badge/github/glamod/marine_qc/main.svg
+.. |pre-commit-ci| image:: https://results.pre-commit.ci/badge/github/ludwiglierhammer/Marine-Quality-Control/main.svg
         :target: https://results.pre-commit.ci/latest/github/glamod/marine_qc/main
         :alt: pre-commit.ci status
+
+.. |prek| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
+        :target: https://github.com/j178/prek
+        :alt: prek
 
 .. |pypi| image:: https://img.shields.io/pypi/v/marine_qc.svg
         :target: https://pypi.python.org/pypi/marine_qc
