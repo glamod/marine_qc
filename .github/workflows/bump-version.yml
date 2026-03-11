@@ -30,7 +30,7 @@ on:
       - environment-docs.yml
       - pyproject.toml
       - tests/**.py
-      - tox.ini
+      - tox.toml
       - src/marine_qc/__init__.py
   workflow_dispatch:
 
