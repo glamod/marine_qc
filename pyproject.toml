@@ -5,14 +5,14 @@ build-backend = "flit_core.buildapi"
 [dependency-groups]
 lint = [
   # Linting tools
-  "codespell >=2.4.1",
-  "deptry >=0.24.0",
+  "codespell >=2.4.2",
+  "deptry >=0.25.1",
   "flake8 >=7.3.0",
   "flake8-rst-docstrings >=0.4.0",
-  "mypy >=1.19.1",
+  "mypy >=1.20.0",
   "numpydoc >=1.10.0",
   "pylint >=4.0.4",
-  "ruff >=0.15.0",
+  "ruff >=0.15.9",
   "vulture >=2.14",
   "yamllint >=1.38.0"
 ]
@@ -30,19 +30,19 @@ docs = [
   "jupyter_client",
   "myst-nb >=1.2.0",
   "nbconvert >=7.16.4",
-  "sphinx >=8.0.0",
+  "sphinx >=8.2.0",
   "sphinx-autodoc-typehints",
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton >=0.5.2",
-  "furo >= 2023.9.10"
+  "furo >=2023.9.10"
 ]
 tox = [
-  "tox >=4.41.0",
-  "tox-gh >=1.6.1"
+  "tox >=4.52.0",
+  "tox-gh >=1.7.1"
 ]
 dev = [
   # Development and testing tools
-  "bump-my-version >=1.2.6",
+  "bump-my-version >=1.3.0",
   "notebook",
   "pip >=26.0.1",
   "prek >=0.3.0",
