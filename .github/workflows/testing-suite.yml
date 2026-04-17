@@ -19,7 +19,6 @@ jobs:
   lint:
     name: Lint (Python${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    environment: automation
     strategy:
       matrix:
         python-version: [ "3.14" ]
@@ -55,11 +54,10 @@ jobs:
     name: Test with Python${{ matrix.python-version }}
     needs: lint
     runs-on: ${{ matrix.os }}
-    environment: automation
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.11", "3.12", "3.13" ] # "3.10" disabled due to project's Python requirement; "3.14" disabled due to segfault on GitHub CI
+        python-version: [ "3.11", "3.12", "3.13", "3.14" ] # "3.10" disabled due to project's Python requirement; "3.14" disabled due to segfault on GitHub CI
     env:
       # UV_ENV_FILE: pyproject.toml ; disabled since UV_ENV_FILE requires a .env and in addition it is not needed so far
       PYTHON_VERSION: ${{ matrix.python-version }}
