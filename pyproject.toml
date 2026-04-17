@@ -30,7 +30,7 @@ docs = [
   "jupyter_client",
   "myst-nb >=1.2.0",
   "nbconvert >=7.16.4",
-  "sphinx >=8.2.0",
+  "sphinx >=8.0.0",
   "sphinx-autodoc-typehints",
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton >=0.5.2",
@@ -82,10 +82,10 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13"
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14"
 ]
 dynamic = ["description", "version"]
 dependencies = [
