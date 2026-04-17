@@ -64,8 +64,8 @@ dev = [
   "pytest >=9.0.3",
   "pytest-cov >=7.1.0",
   "pytest-env >=1.6.0",
-  "ruff >=0.15.10",
-  "tox >=4.52.1",
+  "ruff >=0.15.11",
+  "tox >=4.53.0",
   "vulture >=2.16",
   "watchdog >=6.0.0"
 ]
