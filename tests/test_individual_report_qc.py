@@ -174,13 +174,27 @@ def test_do_date_check_using_date(year, month, day, expected):
     assert result == expected
 
 
-def _test_do_date_check_raises_value_error():
-    # Make sure that an exception is raised if year or month is set to None
-    with pytest.raises(ValueError):
-        _ = do_date_check(year=None, month=1, day=1)
-    with pytest.raises(ValueError):
-        _ = do_date_check(year=1850, month=None, day=1)
+def test_do_date_check_untestable():
+    result = do_date_check(year=None, month=1, day=1)
+    assert result == 2
+    result = do_date_check(year=2022, month=None, day=1)
+    assert result == 2
+    result = do_date_check(year=2022, month=1, day=None)
+    assert result == 2
 
+@pytest.mark.parametrize(
+    "year, month, day, expected",
+    [
+        (2022, 1, 1, failed),  # 1st January 2022 FAIL
+        (2023, 1, 1, passed),  # 1st January 2023 PASS
+        (2024, 1, 1, passed),  # 1st January 2024 PASS
+        (2025, 1, 1, passed),  # 1st January 2025 PASS
+        (2026, 1, 1, failed),  # 1st January 2026 FAIL
+    ],
+)
+def test_do_date_check_year_range(year, month, day, expected):
+    result = do_date_check(year=year, month=month, day=day, year_init=2023, year_end=2025)
+    assert result == expected
 
 @pytest.mark.parametrize(
     "hour, expected",
