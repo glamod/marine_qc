@@ -19,6 +19,7 @@ jobs:
   lint:
     name: Lint (Python${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    environment: automation
     strategy:
       matrix:
         python-version: [ "3.14" ]
@@ -54,6 +55,7 @@ jobs:
     name: Test with Python${{ matrix.python-version }}
     needs: lint
     runs-on: ${{ matrix.os }}
+    environment: automation
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
