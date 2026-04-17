@@ -512,8 +512,8 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value_fast(
         self,
-        lat: SequenceNumberType | None = None,
-        lon: SequenceNumberType | None = None,
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
@@ -716,8 +716,8 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value(
         self,
-        lat: SequenceNumberType | None = None,
-        lon: SequenceNumberType | None = None,
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
