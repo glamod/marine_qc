@@ -175,7 +175,7 @@ def do_date_check(
         year_ok[year_valid < year_init] = False
     if year_end:
         year_ok[year_valid > year_end] = False
-    
+
     month_ok = (month_valid >= 1) & (month_valid <= 12)
 
     unique_years = np.unique(year_valid)
