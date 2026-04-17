@@ -6,19 +6,31 @@ updates:
   - package-ecosystem: github-actions # See documentation for possible values
     directory: / # Location of package manifests
     schedule:
-      interval: daily
+      interval: weekly
       time: '12:00'
     groups:
       actions:
         patterns:
           - "*"
+        update-types:
+          - patch
+          - minor
+          - major
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: pip
-    directory: /
+    directory: /CI
     schedule:
       interval: daily
       time: '12:00'
     groups:
-      actions:
+      python:
         patterns:
-          - "*"
+          - "requirements_ci.*"
+        update-types:
+          - patch
+          - minor
+          - major
+    cooldown:
+      default-days: 7
