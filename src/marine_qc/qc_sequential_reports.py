@@ -13,8 +13,8 @@ from scipy.ndimage import label
 
 from .auxiliary import (
     SequenceDatetimeType,
-    SequenceFloatType,
     SequenceIntType,
+    SequenceNumberType,
     convert_units,
     ensure_arrays,
     failed,
@@ -43,9 +43,9 @@ from .track_check_utils import (
 @inspect_arrays(["value", "lat", "lon", "date"], sortby="date")
 @convert_units(lat="degrees", lon="degrees")
 def do_spike_check(
-    value: SequenceFloatType,
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    value: SequenceNumberType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     max_gradient_space: float,
     max_gradient_time: float,
@@ -57,13 +57,13 @@ def do_spike_check(
 
     Parameters
     ----------
-    value : SequenceFloatType
-      One-dimensional array of values to be analyzed.
-      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : SequenceFloatType
+    value : SequenceNumberType
+        One-dimensional array of values to be analyzed.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lat : SequenceNumberType
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType
@@ -168,10 +168,10 @@ def do_spike_check(
 @inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def do_track_check(
-    vsi: SequenceFloatType,
-    dsi: SequenceFloatType,
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    vsi: SequenceNumberType,
+    dsi: SequenceNumberType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     max_direction_change: float,
     max_speed_change: float,
@@ -187,16 +187,16 @@ def do_track_check(
 
     Parameters
     ----------
-    vsi : SequenceFloatType
+    vsi : SequenceNumberType
       One-dimensional reported speed array in km/h.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : SequenceFloatType
+    dsi : SequenceNumberType
       One-dimensional reported heading array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : SequenceFloatType
+    lat : SequenceNumberType
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType
@@ -333,14 +333,14 @@ def do_track_check(
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
 def do_few_check(
-    value: SequenceFloatType,
+    value: SequenceNumberType,
 ) -> SequenceIntType:
     """
     Check if number of observations is less than 3.
 
     Parameters
     ----------
-    value : SequenceFloatType
+    value : SequenceNumberType
         One-dimensional array of values to be analyzed.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -378,10 +378,10 @@ def do_few_check(
 @inspect_arrays(["at", "dpt", "lat", "lon", "date"], sortby="date")
 @convert_units(at="K", dpt="K", lat="degrees", lon="degrees")
 def find_saturated_runs(
-    at: SequenceFloatType,
-    dpt: SequenceFloatType,
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    at: SequenceNumberType,
+    dpt: SequenceNumberType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     min_time_threshold: float,
     shortest_run: int,
@@ -395,16 +395,16 @@ def find_saturated_runs(
 
     Parameters
     ----------
-    at : SequenceFloatType
+    at : SequenceNumberType
       One-dimensional air temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dpt : SequenceFloatType
+    dpt : SequenceNumberType
       One-dimensional dew point temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : SequenceFloatType
+    lat : SequenceNumberType
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType
@@ -467,7 +467,7 @@ def find_saturated_runs(
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
+def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find instances when more than "threshold" of the observations are whole numbers and set the 'round' flag.
 
@@ -475,7 +475,7 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
 
     Parameters
     ----------
-    value : SequenceFloatType
+    value : SequenceNumberType
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     min_count : int, default: 20
@@ -533,7 +533,7 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
+def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find cases where more than a given proportion of SSTs have the same value.
 
@@ -542,7 +542,7 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
 
     Parameters
     ----------
-    value : SequenceFloatType
+    value : SequenceNumberType
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     min_count : int, default: 20
@@ -604,8 +604,8 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
 @inspect_arrays(["lat", "lon", "date"], sortby="date")
 @convert_units(lat="degrees", lon="degrees")
 def do_iquam_track_check(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     speed_limit: float,
     delta_d: float,
@@ -623,10 +623,10 @@ def do_iquam_track_check(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType

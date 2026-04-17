@@ -109,13 +109,13 @@ def is_scalar_like(x: Any) -> bool:
     return False
 
 
-def isvalid(inval: ValueFloatType) -> bool | npt.NDArray[np.bool_]:
+def isvalid(inval: ValueNumberType) -> bool | npt.NDArray[np.bool_]:
     """
     Check if a value(s) are numerically valid (not None or NaN).
 
     Parameters
     ----------
-    inval : ValueFloatType
+    inval : ValueNumberType
         Input value(s) to be tested.
 
     Returns
@@ -206,13 +206,13 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     return result_array  # np.ndarray or fallback
 
 
-def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -> SequenceFloatType:
+def convert_to(value: SequenceNumberType, source_units: str, target_units: str) -> SequenceNumberType:
     """
     Convert a float or sequence from source units to target units.
 
     Parameters
     ----------
-    value : SequenceFloatType
+    value : SequenceNumberType
         A single float value, None, or a sequence (e.g., list, tuple, array-like)
         containing floats and/or None values. `None` values are passed through unchanged.
     source_units : str
@@ -224,7 +224,7 @@ def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -
 
     Returns
     -------
-    SequenceFloatType
+    SequenceNumberType
         The converted value(s), preserving the input structure (scalar, list, tuple, array).
         None values remain unchanged.
 

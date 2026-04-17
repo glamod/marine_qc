@@ -21,8 +21,8 @@ from .auxiliary import (
     DECORATOR_KWARGS,
     DECORATOR_NAMES,
     SequenceDatetimeType,
-    SequenceFloatType,
     SequenceIntType,
+    SequenceNumberType,
     ValueFloatType,
     ValueIntType,
     generic_decorator,
@@ -42,8 +42,8 @@ from .time_control import (
 def _select_point(
     i: int,
     da_slice: xr.DataArray,
-    lat_arr: SequenceFloatType,
-    lon_arr: SequenceFloatType,
+    lat_arr: SequenceNumberType,
+    lon_arr: SequenceNumberType,
     lat_axis: str,
     lon_axis: str,
 ) -> tuple[int, float]:
@@ -56,9 +56,9 @@ def _select_point(
         Index of the latitude/longitude pair.
     da_slice : xr.DataArray
         DataArray slice to sample from.
-    lat_arr : SequenceFloatType
+    lat_arr : SequenceNumberType
         Array of latitude values.
-    lon_arr : SequenceFloatType
+    lon_arr : SequenceNumberType
         Array of longitude values.
     lat_axis : str
         Name of the latitude dimension in `da_slice`.
@@ -512,8 +512,8 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value_fast(
         self,
-        lat: SequenceFloatType | None = None,
-        lon: SequenceFloatType | None = None,
+        lat: SequenceNumberType | None = None,
+        lon: SequenceNumberType | None = None,
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
@@ -523,9 +523,9 @@ class Climatology:
 
         Parameters
         ----------
-        lat : SequenceFloatType, optional
+        lat : SequenceNumberType, optional
             Latitude of location to extract value from in degrees.
-        lon : SequenceFloatType, optional
+        lon : SequenceNumberType, optional
             Longitude of location to extract value from in degrees.
         date : SequenceDatetimeType, optional
             Date for which the value is required.
@@ -716,8 +716,8 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value(
         self,
-        lat: SequenceFloatType | None = None,
-        lon: SequenceFloatType | None = None,
+        lat: SequenceNumberType | None = None,
+        lon: SequenceNumberType | None = None,
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
@@ -727,9 +727,9 @@ class Climatology:
 
         Parameters
         ----------
-        lat : SequenceFloatType, optional
+        lat : SequenceNumberType, optional
             Latitude of location to extract value from in degrees.
-        lon : SequenceFloatType, optional
+        lon : SequenceNumberType, optional
             Longitude of location to extract value from in degrees.
         date : SequenceDatetimeType, optional
             Date for which the value is required.

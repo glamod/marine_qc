@@ -13,8 +13,8 @@ import pandas as pd
 
 from .auxiliary import (
     SequenceDatetimeType,
-    SequenceFloatType,
     SequenceIntType,
+    SequenceNumberType,
     convert_units,
     ensure_arrays,
     failed,
@@ -106,9 +106,9 @@ class SuperObsGrid:
     @inspect_arrays(["lat", "lon", "value", "month", "day"])
     def add_multiple_observations(
         self,
-        lat: SequenceFloatType,
-        lon: SequenceFloatType,
-        value: SequenceFloatType,
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
+        value: SequenceNumberType,
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
@@ -118,11 +118,11 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        lat : SequenceFloatType
+        lat : SequenceNumberType
             1-dimensional latitude array.
-        lon : SequenceFloatType
+        lon : SequenceNumberType
             1-dimensional longitude array.
-        value : SequenceFloatType
+        value : SequenceNumberType
             1-dimensional anomaly array.
         date : SequenceDatetimeType, optional
             1-dimensional datetime array.
@@ -489,10 +489,10 @@ class SuperObsGrid:
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
 def do_mds_buddy_check(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
-    value: SequenceFloatType,
+    value: SequenceNumberType,
     climatology: ClimInputType | ClimFloatType,
     standard_deviation: Climatology,
     limits: list[list[int]],
@@ -512,13 +512,13 @@ def do_mds_buddy_check(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
         1-dimensional latitude array.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         1-dimensional longitude array.
     date : SequenceDatetimeType
         1-dimensional date array.
-    value : SequenceFloatType
+    value : SequenceNumberType
         1-dimensional anomaly array.
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
         The climatological average(s) used to calculate anomalies.
@@ -623,10 +623,10 @@ def do_mds_buddy_check(
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
 def do_bayesian_buddy_check(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
-    value: SequenceFloatType,
+    value: SequenceNumberType,
     climatology: ClimInputType | ClimFloatType,
     stdev1: Climatology,
     stdev2: Climatology,
@@ -648,13 +648,13 @@ def do_bayesian_buddy_check(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
         1-dimensional latitude array.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         1-dimensional longitude array.
     date : SequenceDatetimeType
         1-dimensional date array.
-    value : SequenceFloatType
+    value : SequenceNumberType
         1-dimensional anomaly array.
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
         The climatological average(s) used to calculate anomalies.

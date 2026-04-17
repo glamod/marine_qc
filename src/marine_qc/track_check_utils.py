@@ -20,6 +20,7 @@ from . import time_control
 from .auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
+    SequenceNumberType,
     convert_to,
     convert_units,
     ensure_arrays,
@@ -123,11 +124,11 @@ def set_speed_limits(amode: float) -> tuple[float, float, float]:
 @post_format_return_type(["alat1"], dtype=float, multiple=True)
 @inspect_arrays(["alat1", "alon1", "avs", "ads", "timediff"])
 def increment_position(
-    alat1: np.ndarray,
-    alon1: np.ndarray,
-    avs: np.ndarray,
-    ads: np.ndarray,
-    timediff: np.ndarray,
+    alat1: SequenceNumberType,
+    alon1: SequenceNumberType,
+    avs: SequenceNumberType,
+    ads: SequenceNumberType,
+    timediff: SequenceNumberType,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Compute latitude and longitude increments over half a time interval.
@@ -137,15 +138,15 @@ def increment_position(
 
     Parameters
     ----------
-    alat1 : 1D np.ndarray of float
+    alat1 : SequenceNumberType
       One-dimensional array of Latitude at starting point in degrees.
-    alon1 : 1D np.ndarray of float
+    alon1 : SequenceNumberType
       One-dimensional array of Longitude at starting point in degrees.
-    avs : 1D np.ndarray of float
+    avs : SequenceNumberType
       One-dimensional array of speed of ship in km/h.
-    ads : 1D np.ndarray of float
+    ads : SequenceNumberType
       One-dimensional array of heading of ship in degrees.
-    timediff : 1D np.ndarray of float
+    timediff : SequenceNumberType
       One-dimensional array of time difference between the points in hours.
 
     Returns
@@ -153,11 +154,11 @@ def increment_position(
     1D np.ndarray of float
         Returns latitude and longitude increment or None and None if timediff is None.
     """
-    alat1 = alat1.astype(float)
-    alon1 = alon1.astype(float)
-    avs = avs.astype(float)
-    ads = ads.astype(float)
-    timediff = timediff.astype(float)
+    alat1 = np.array(alat1, dtype=float)
+    alon1 = np.array(alon1, dtype=float)
+    avs = np.array(avs, dtype=float)
+    ads = np.array(ads, dtype=float)
+    timediff = np.array(timediff, dtype=float)
 
     distance = avs * timediff / 2.0
     lat, lon = sph.lat_lon_from_course_and_distance(alat1, alon1, ads, distance)
@@ -170,9 +171,9 @@ def increment_position(
 @post_format_return_type(["dsi"], dtype=float)
 @inspect_arrays(["dsi", "directions"])
 def direction_continuity(
-    dsi: np.ndarray,
-    directions: np.ndarray,
-    dsi_previous: np.ndarray | None = None,
+    dsi: SequenceNumberType,
+    directions: SequenceNumberType,
+    dsi_previous: SequenceNumberType | None = None,
     max_direction_change: float = 60.0,
 ) -> np.ndarray:
     """
@@ -184,11 +185,11 @@ def direction_continuity(
 
     Parameters
     ----------
-    dsi : 1D np.ndarray of float
+    dsi : SequenceNumberType
         Heading at current time step in degrees.
-    directions : 1D np.ndarray of float
+    directions : SequenceNumberType
         Calculated ship direction from reported positions in degrees.
-    dsi_previous : 1D np.ndarray of float
+    dsi_previous : 1SequenceNumberType, optional
         Heading at previous time step in degrees.
         If None, get dsi_previous from dsi.
     max_direction_change : float
@@ -200,6 +201,9 @@ def direction_continuity(
         Returned array elements are 10.0 if the difference between reported and calculated direction is greater
         than the max_direction_change (default, 60 degrees), 0.0 otherwise.
     """
+    dsi = np.array(dsi, dtype=float)
+    directions = np.array(directions, dtype=float)
+
     allowed_list = [0, 45, 90, 135, 180, 225, 270, 315, 360]
     result = np.zeros(len(dsi))
     if not isvalid(max_direction_change):
@@ -212,11 +216,10 @@ def direction_continuity(
         dsi_previous = dsi_previous.astype(float)
         dsi_previous[0] = np.nan
     else:
+        dsi_previous = np.array(dsi_previous, dtype=float)
         valid &= np.isin(dsi_previous, allowed_list)
 
-    dsi = dsi.astype(float)
-    dsi_previous = np.atleast_1d(dsi_previous).astype(float)
-    directions = directions.astype(float)
+    dsi_previous = np.atleast_1d(dsi_previous)
 
     selection1 = max_direction_change < abs(dsi - directions)
     selection2 = abs(dsi - directions) < (360 - max_direction_change)
@@ -234,9 +237,9 @@ def direction_continuity(
 @post_format_return_type(["vsi"], dtype=float)
 @inspect_arrays(["vsi", "speeds"])
 def speed_continuity(
-    vsi: np.ndarray,
-    speeds: np.ndarray,
-    vsi_previous: np.ndarray | None = None,
+    vsi: SequenceNumberType,
+    speeds: SequenceNumberType,
+    vsi_previous: SequenceNumberType | None = None,
     max_speed_change: float | None = 10.0,
 ) -> np.ndarray:
     """
@@ -248,12 +251,12 @@ def speed_continuity(
 
     Parameters
     ----------
-    vsi : 1D np.ndarray of float
+    vsi : SequenceNumberType
         One-dimensional array of reported speed in km/h at current time step.
-    speeds : 1D np.ndarray of float
+    speeds : SequenceNumberType
         One-dimensional array of speed of ship calculated from locations
         at current and previous time steps in km/h.
-    vsi_previous : 1D np.ndarray of float, optional
+    vsi_previous : SequenceNumberType, optional
         One-dimensional array of reported speed in km/h at previous time step.
         If None, get vsi_previous from vsi.
     max_speed_change : float, optional
@@ -265,6 +268,9 @@ def speed_continuity(
         Returned array elements are 10 if the reported and calculated speeds differ by more than 10 knots,
         0 otherwise.
     """
+    vsi = np.array(vsi, dtype=float)
+    speeds = np.array(speeds, dtype=float)
+
     result = np.zeros(len(vsi))
     if not isvalid(max_speed_change):
         return result
@@ -276,11 +282,10 @@ def speed_continuity(
         vsi_previous = vsi_previous.astype(float)
         vsi_previous[0] = np.nan
     else:
+        vsi_previous = np.array(vsi_previous, dtype=float)
         valid &= isvalid(vsi_previous)
 
-    vsi = vsi.astype(float)
-    vsi_previous = np.atleast_1d(vsi_previous).astype(float)
-    speeds = speeds.astype(float)
+    vsi_previous = np.atleast_1d(vsi_previous)
 
     selection1 = abs(vsi - speeds) > max_speed_change
     selection2 = abs(vsi_previous - speeds) > max_speed_change
@@ -294,10 +299,10 @@ def speed_continuity(
 @post_format_return_type(["vsi"], dtype=float)
 @inspect_arrays(["vsi", "time_differences", "fwd_diff_from_estimated", "rev_diff_from_estimated"])
 def check_distance_from_estimate(
-    vsi: np.ndarray,
-    time_differences: np.ndarray,
-    fwd_diff_from_estimated: np.ndarray,
-    rev_diff_from_estimated: np.ndarray,
+    vsi: SequenceNumberType,
+    time_differences: SequenceNumberType,
+    fwd_diff_from_estimated: SequenceNumberType,
+    rev_diff_from_estimated: SequenceNumberType,
     vsi_previous: np.ndarray | None = None,
 ) -> np.ndarray:
     """
@@ -308,13 +313,13 @@ def check_distance_from_estimate(
 
     Parameters
     ----------
-    vsi : 1D np.ndarray of float
+    vsi : SequenceNumberType
         Reported speed in km/h at current time step.
-    time_differences : 1D np.ndarray of float
+    time_differences : SequenceNumberType
         Calculated time differences between reports in hours.
-    fwd_diff_from_estimated : 1D np.ndarray of float
+    fwd_diff_from_estimated : SequenceNumberType
         Distance in km from estimated position, estimates made forward in time.
-    rev_diff_from_estimated : 1D np.ndarray of float
+    rev_diff_from_estimated : SequenceNumberType
         Distance in km from estimated position, estimates made backward in time.
     vsi_previous : 1D np.ndarray of float, optional
         One-dimensional array of reported speed in km/h at previous time step.
@@ -331,19 +336,21 @@ def check_distance_from_estimate(
     TypeError
         If `inspect_arrays` does not return np.ndarrays.
     """
+    vsi = np.array(vsi, dtype=float)
+    time_differences = np.array(time_differences, dtype=float)
+    fwd_diff_from_estimated = np.array(fwd_diff_from_estimated, dtype=float)
+    rev_diff_from_estimated = np.array(rev_diff_from_estimated, dtype=float)
+
     valid = isvalid(vsi)
 
     if vsi_previous is None:
         vsi_previous = np.roll(vsi, 1)
         vsi_previous[0] = np.nan
     else:
+        vsi_previous = np.array(vsi_previous, dtype=float)
         valid &= isvalid(vsi_previous)
 
-    vsi = vsi.astype(float)
-    time_differences = time_differences.astype(float)
-    fwd_diff_from_estimated = fwd_diff_from_estimated.astype(float)
-    rev_diff_from_estimated = rev_diff_from_estimated.astype(float)
-    vsi_previous = np.atleast_1d(vsi_previous).astype(float)
+    vsi_previous = np.atleast_1d(vsi_previous)
 
     alwdis = time_differences * ((vsi + vsi_previous) / 2.0)
 
@@ -419,8 +426,8 @@ def calculate_course_parameters(
 @inspect_arrays(["lat", "lon", "date"])
 @convert_units(lat="degrees", lon="degrees")
 def calculate_speed_course_distance_time_difference(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     alternating: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -429,10 +436,10 @@ def calculate_speed_course_distance_time_difference(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType
@@ -481,11 +488,11 @@ def calculate_speed_course_distance_time_difference(
 @inspect_arrays(["lat", "lon", "date", "vsi", "dsi"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def forward_discrepancy(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
-    vsi: SequenceFloatType,
-    dsi: SequenceFloatType,
+    vsi: SequenceNumberType,
+    dsi: SequenceNumberType,
 ) -> SequenceFloatType:
     """
     Calculate the distance between the projected position and the actual position.
@@ -500,19 +507,19 @@ def forward_discrepancy(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    vsi : SequenceFloatType
+    vsi : SequenceNumberType
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : SequenceFloatType
+    dsi : SequenceNumberType
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -551,11 +558,11 @@ def forward_discrepancy(
 @inspect_arrays(["lat", "lon", "date", "vsi", "dsi"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def backward_discrepancy(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
-    vsi: SequenceFloatType,
-    dsi: SequenceFloatType,
+    vsi: SequenceNumberType,
+    dsi: SequenceNumberType,
 ) -> SequenceFloatType:
     """
     Calculate the distance between the projected position and the actual position.
@@ -570,19 +577,19 @@ def backward_discrepancy(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     date : SequenceDatetimeType
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    vsi : SequenceFloatType
+    vsi : SequenceNumberType
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : SequenceFloatType
+    dsi : SequenceNumberType
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -627,9 +634,9 @@ def backward_discrepancy(
 @inspect_arrays(["lat", "lon", "timediff"])
 @convert_units(lat="degrees", lon="degrees")
 def calculate_midpoint(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
-    timediff: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    timediff: SequenceNumberType,
 ) -> np.ndarray:
     """
     Interpolate between alternate reports and compare the interpolated location to the actual location.
@@ -642,11 +649,11 @@ def calculate_midpoint(
 
     Parameters
     ----------
-    lat : SequenceFloatType
+    lat : SequenceNumberType
         One-dimensional latitude array in degrees.
-    lon : SequenceFloatType
+    lon : SequenceNumberType
         One-dimensional longitude array in degrees.
-    timediff : SequenceDatetimeType
+    timediff : SequenceNumberType
         One-dimensional time difference array.
 
     Returns
@@ -661,7 +668,7 @@ def calculate_midpoint(
     """
     lat = np.array(lat, dtype=float)
     lon = np.array(lon, dtype=float)
-    timediff = np.array(timediff, dtype="datetime64[ns]")
+    timediff = np.array(timediff, dtype=float)
 
     number_of_obs = len(lat)
     midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
