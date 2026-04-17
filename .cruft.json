@@ -21,7 +21,7 @@
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",
       "generated_with_cruft": "n",
-      "__gh_slug": "https://github.com/glamod/Marine-Quality-Control",
+      "__gh_slug": "https://github.com/glamod/marine_qc",
       "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage.git",
       "_commit": "cb8b26cb78a428f6ce447a0ab1b08c0c171ad5aa"
     }
