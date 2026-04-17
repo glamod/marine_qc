@@ -419,9 +419,9 @@ def calculate_course_parameters(
 @inspect_arrays(["lat", "lon", "date"])
 @convert_units(lat="degrees", lon="degrees")
 def calculate_speed_course_distance_time_difference(
-    lat: np.ndarray,
-    lon: np.ndarray,
-    date: np.ndarray,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    date: SequenceDatetimeType,
     alternating: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -429,18 +429,15 @@ def calculate_speed_course_distance_time_difference(
 
     Parameters
     ----------
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     alternating : bool, default: False
         Whether to use alternating reports for calculation.
 
@@ -449,6 +446,10 @@ def calculate_speed_course_distance_time_difference(
     tuple of np.ndarray, each with float values, shape (n,)
         A tuple containing four one-dimensional arrays representing: speed, distance, course, and time difference.
     """
+    lat = np.array(lat, dtype=float)
+    lon = np.array(lon, dtype=float)
+    date = np.array(date, dtype="datetime64[ns]")
+
     if alternating:
         distance = sphere_distance(np.roll(lat, 1), np.roll(lon, 1), np.roll(lat, -1), np.roll(lon, -1))
         timediff = time_difference(np.roll(date, 1), np.roll(date, -1))
@@ -499,23 +500,19 @@ def forward_discrepancy(
 
     Parameters
     ----------
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    vsi : SequenceFloatType
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    dsi : SequenceFloatType
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -573,23 +570,19 @@ def backward_discrepancy(
 
     Parameters
     ----------
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    vsi : SequenceFloatType
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    dsi : SequenceFloatType
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -634,9 +627,9 @@ def backward_discrepancy(
 @inspect_arrays(["lat", "lon", "timediff"])
 @convert_units(lat="degrees", lon="degrees")
 def calculate_midpoint(
-    lat: np.ndarray,
-    lon: np.ndarray,
-    timediff: np.ndarray,
+    lat: SequenceFloatType,
+    lon: SequenceFloatType,
+    timediff: SequenceDatetimeType,
 ) -> np.ndarray:
     """
     Interpolate between alternate reports and compare the interpolated location to the actual location.
@@ -649,13 +642,11 @@ def calculate_midpoint(
 
     Parameters
     ----------
-    lat : 1D np.ndarray of float
+    lat : SequenceFloatType
         One-dimensional latitude array in degrees.
-
-    lon : 1D np.ndarray of float
+    lon : SequenceFloatType
         One-dimensional longitude array in degrees.
-
-    timediff : 1D np.ndarray of datetime
+    timediff : SequenceDatetimeType
         One-dimensional time difference array.
 
     Returns
@@ -668,9 +659,9 @@ def calculate_midpoint(
     ValueError
         If either input is not 1-dimensional or if their lengths do not match.
     """
-    lat = lat.astype(float)
-    lon = lon.astype(float)
-    timediff = timediff.astype(float)
+    lat = np.array(lat, dtype=float)
+    lon = np.array(lon, dtype=float)
+    timediff = np.array(timediff, dtype="datetime64[ns]")
 
     number_of_obs = len(lat)
     midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray

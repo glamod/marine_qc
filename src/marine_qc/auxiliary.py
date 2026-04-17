@@ -115,7 +115,7 @@ def isvalid(inval: ValueFloatType) -> bool | npt.NDArray[np.bool_]:
 
     Parameters
     ----------
-    inval : float, None, array-like of float or None
+    inval : ValueFloatType
         Input value(s) to be tested.
 
     Returns
@@ -181,7 +181,7 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     ----------
     result_array : np.ndarray
         The numpy array of results.
-    \*input_values : scalar, sequence, np.ndarray, pd.Series or None
+    \*input_values : Any
         One or more original input values to infer the desired return type from.
     dtype : type, optional
         Desired data type of the result. Default is int.
@@ -212,7 +212,7 @@ def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -
 
     Parameters
     ----------
-    value : float or None or array-like of float or None
+    value : SequenceFloatType
         A single float value, None, or a sequence (e.g., list, tuple, array-like)
         containing floats and/or None values. `None` values are passed through unchanged.
     source_units : str
@@ -224,7 +224,7 @@ def convert_to(value: SequenceFloatType, source_units: str, target_units: str) -
 
     Returns
     -------
-    float or None or array-like of float or None
+    SequenceFloatType
         The converted value(s), preserving the input structure (scalar, list, tuple, array).
         None values remain unchanged.
 

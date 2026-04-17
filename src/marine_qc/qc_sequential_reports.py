@@ -57,34 +57,27 @@ def do_spike_check(
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : SequenceFloatType
       One-dimensional array of values to be analyzed.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
         One-dimensional array of datetime values.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     max_gradient_space : float, default: 0.5
         Maximum allowed spatial gradient.
         The unit is "units of value" per kilometer.
-
     max_gradient_time : float, default: 1.0
         Maximum allowed temporal gradient.
         The unit is "units of value" per hour.
-
     delta_t : float, default: 2.0
         Temperature delta used in the comparison.
         Typically set to 2.0 for ships and 1.0 for drifting buoys.
-
     n_neighbours : int, default: 5
         Number of neighboring points considered in the analysis.
 
@@ -194,35 +187,27 @@ def do_track_check(
 
     Parameters
     ----------
-    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    vsi : SequenceFloatType
       One-dimensional reported speed array in km/h.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    dsi : SequenceFloatType
       One-dimensional reported heading array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     max_direction_change : float, default: 60.0
       Maximum valid direction change in degrees.
-
     max_speed_change : float, default: 10.0
       Maximum valid speed change in km/h.
-
     max_absolute_speed : float, default: 40.0
       Maximum valid absolute speed in km/h.
-
     max_midpoint_discrepancy : float, default: 150.0
       Maximum valid midpoint discrepancy in meters.
 
@@ -355,7 +340,7 @@ def do_few_check(
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : SequenceFloatType
         One-dimensional array of values to be analyzed.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -410,29 +395,23 @@ def find_saturated_runs(
 
     Parameters
     ----------
-    at : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    at : SequenceFloatType
       One-dimensional air temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dpt : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    dpt : SequenceFloatType
       One-dimensional dew point temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     min_time_threshold : float, default: 48.0
       Minimum time threshold in hours.
-
     shortest_run : int, default: 4
       Shortest number of observations.
 
@@ -496,13 +475,11 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : SequenceFloatType
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     min_count : int, default: 20
       Minimum number of rounded figures that will trigger the test.
-
     threshold : float, default: 0.5
       Minimum fraction of all observations that will trigger the test.
 
@@ -565,13 +542,11 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : SequenceFloatType
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     min_count : int, default: 20
       Minimum number of repeated values that will trigger the test.
-
     threshold : float, default: 0.7
       Smallest fraction of all observations that will trigger the test.
 
@@ -648,28 +623,22 @@ def do_iquam_track_check(
 
     Parameters
     ----------
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : SequenceFloatType
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : SequenceFloatType
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : SequenceDatetimeType
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     speed_limit : float
       Speed limit of platform in kilometers per hour.
       Typically, 60.0 for ships and 15.0 for drifting buoys.
-
     delta_d : float
       Latitude tolerance in degrees.
-
     delta_t : float
       Time tolerance in hundredths of an hour.
-
     n_neighbours : int
       Number of neighbouring points considered in the analysis.
 

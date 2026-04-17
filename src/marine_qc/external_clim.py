@@ -6,7 +6,6 @@ import os
 import warnings
 from collections import defaultdict
 from collections.abc import Callable, Sequence
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
@@ -21,7 +20,9 @@ from xclim.core.units import convert_units_to
 from .auxiliary import (
     DECORATOR_KWARGS,
     DECORATOR_NAMES,
+    SequenceDatetimeType,
     SequenceFloatType,
+    SequenceIntType,
     ValueFloatType,
     ValueIntType,
     generic_decorator,
@@ -511,26 +512,26 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value_fast(
         self,
-        lat: float | Sequence[float] | np.ndarray,
-        lon: float | Sequence[float] | np.ndarray,
-        date: datetime | None | Sequence[datetime | None] | np.ndarray = None,
-        month: int | None | Sequence[int | None] | np.ndarray = None,
-        day: int | None | Sequence[int | None] | np.ndarray = None,
+        lat: SequenceFloatType | None = None,
+        lon: SequenceFloatType | None = None,
+        date: SequenceDatetimeType | None = None,
+        month: SequenceIntType | None = None,
+        day: SequenceIntType | None = None,
     ) -> ndarray | pd.Series:
         """
         Get the value from a climatology at the give position and time.
 
         Parameters
         ----------
-        lat : float, optional
+        lat : SequenceFloatType, optional
             Latitude of location to extract value from in degrees.
-        lon : float, optional
+        lon : SequenceFloatType, optional
             Longitude of location to extract value from in degrees.
-        date : datetime-like, optional
+        date : SequenceDatetimeType, optional
             Date for which the value is required.
-        month : int, optional
+        month : SequenceIntType, optional
             Month for which the value is required.
-        day : int, optional
+        day : SequenceIntType, optional
             Day for which the value is required.
 
         Returns
@@ -543,9 +544,11 @@ class Climatology:
         Assumes that the grid is a regular latitude longitude grid. The alternative method `get_value`
         works with non-regular grids.
         """
+        lat = np.array(lat, dtype=float)
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
+        lon = np.array(lon, dtype=float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
@@ -713,26 +716,26 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value(
         self,
-        lat: float | Sequence[float] | np.ndarray,
-        lon: float | Sequence[float] | np.ndarray,
-        date: datetime | None | Sequence[datetime | None] | np.ndarray = None,
-        month: int | None | Sequence[int | None] | np.ndarray = None,
-        day: int | None | Sequence[int | None] | np.ndarray = None,
+        lat: SequenceFloatType | None = None,
+        lon: SequenceFloatType | None = None,
+        date: SequenceDatetimeType | None = None,
+        month: SequenceIntType | None = None,
+        day: SequenceIntType | None = None,
     ) -> ndarray | pd.Series:
         """
         Get the value from a climatology at the give position and time.
 
         Parameters
         ----------
-        lat : float, optional
+        lat : SequenceFloatType, optional
             Latitude of location to extract value from in degrees.
-        lon : float, optional
+        lon : SequenceFloatType, optional
             Longitude of location to extract value from in degrees.
-        date : datetime-like, optional
+        date : SequenceDatetimeType, optional
             Date for which the value is required.
-        month : int, optional
+        month : SequenceIntType, optional
             Month for which the value is required.
-        day : int, optional
+        day : SequenceIntType, optional
             Day for which the value is required.
 
         Returns
@@ -744,8 +747,11 @@ class Climatology:
         -----
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
+        lat = np.array(lat, dtype=float)
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
+
+        lon = np.array(lon, dtype=float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 

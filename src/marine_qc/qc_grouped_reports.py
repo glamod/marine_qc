@@ -110,26 +110,26 @@ class SuperObsGrid:
         lon: SequenceFloatType,
         value: SequenceFloatType,
         date: SequenceDatetimeType | None = None,
-        month: SequenceFloatType | None = None,
-        day: SequenceFloatType | None = None,
+        month: SequenceIntType | None = None,
+        day: SequenceIntType | None = None,
     ) -> None:
         """
         Add a series of observations to the grid and take the grid average.
 
         Parameters
         ----------
-        lat : array-like of float, shape (n,)
+        lat : SequenceFloatType
             1-dimensional latitude array.
-        lon : array-like of float, shape (n,)
+        lon : SequenceFloatType
             1-dimensional longitude array.
-        value : array-like of float, shape (n,)
+        value : SequenceFloatType
             1-dimensional anomaly array.
-        date : array-like of datetime, shape (n,), optional
+        date : SequenceDatetimeType, optional
             1-dimensional datetime array.
-        month : array-like of int, shape (n,), optional
+        month : SequenceIntType, optional
             1-dimensional month array.
             Used if date is not provided.
-        day : array-like of int, shape (n,), optional
+        day : SequenceIntType, optional
             1-dimensional day array.
             Used if date is not provided.
 
@@ -512,13 +512,13 @@ def do_mds_buddy_check(
 
     Parameters
     ----------
-    lat : array-like of float, shape (n,)
+    lat : SequenceFloatType
         1-dimensional latitude array.
-    lon : array-like of float, shape (n,)
+    lon : SequenceFloatType
         1-dimensional longitude array.
-    date : array-like of datetime, shape (n,)
+    date : SequenceDatetimeType
         1-dimensional date array.
-    value : array-like of float, shape (n,)
+    value : SequenceFloatType
         1-dimensional anomaly array.
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
         The climatological average(s) used to calculate anomalies.
@@ -648,13 +648,13 @@ def do_bayesian_buddy_check(
 
     Parameters
     ----------
-    lat : array-like of float, shape (n,)
+    lat : SequenceFloatType
         1-dimensional latitude array.
-    lon : array-like of float, shape (n,)
+    lon : SequenceFloatType
         1-dimensional longitude array.
-    date : array-like of datetime, shape (n,)
+    date : SequenceDatetimeType
         1-dimensional date array.
-    value : array-like of float, shape (n,)
+    value : SequenceFloatType
         1-dimensional anomaly array.
     climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
         The climatological average(s) used to calculate anomalies.
