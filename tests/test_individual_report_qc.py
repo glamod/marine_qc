@@ -182,6 +182,7 @@ def test_do_date_check_untestable():
     result = do_date_check(year=2022, month=1, day=None)
     assert result == 2
 
+
 @pytest.mark.parametrize(
     "year, month, day, expected",
     [
@@ -195,6 +196,7 @@ def test_do_date_check_untestable():
 def test_do_date_check_year_range(year, month, day, expected):
     result = do_date_check(year=year, month=month, day=day, year_init=2023, year_end=2025)
     assert result == expected
+
 
 @pytest.mark.parametrize(
     "hour, expected",
