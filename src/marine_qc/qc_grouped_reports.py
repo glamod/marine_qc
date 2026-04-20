@@ -540,9 +540,11 @@ def do_mds_buddy_check(
 
     Returns
     -------
-    array-like of int, shape (n,)
-        1-dimensional array containing QC flags.
-        1 if buddy check fails, 0 otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the MDS buddy check fails
+        - Returns or array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -692,9 +694,12 @@ def do_bayesian_buddy_check(
 
     Returns
     -------
-    array-like of int, shape (n,)
-        1-dimensional array containing passed, failed or untestable flags. Untestable flags will be set if there
-        are no buddies in the specified limits.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 2s if there are no buddies in the specified limits
+        - Returns array/sequence/Series of 1s if the bayesian buddy check fails
+        - Returns or array/sequence/Series of 0s otherwise.
 
     Raises
     ------

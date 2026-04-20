@@ -48,7 +48,9 @@ def value_check(value: ValueNumberType) -> ValueIntType:
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -87,7 +89,9 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if either latitude or longitude is out of the valid range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -149,7 +153,9 @@ def do_date_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of year, month, or day is numerically invalid or None,
         - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -214,7 +220,9 @@ def do_time_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if hour is numerically invalid or None,
         - Returns 1 (or array/sequence/Series of 1s) if hour is not a valid hour,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -276,6 +284,7 @@ def _do_daytime_check(
     Returns
     -------
     np.ndarray of int
+
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
@@ -406,7 +415,9 @@ def do_day_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
@@ -484,7 +495,9 @@ def do_night_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
@@ -535,7 +548,9 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -563,7 +578,9 @@ def do_missing_value_clim_check(climatology: ClimInputType | ClimNumberType, **k
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -600,7 +617,9 @@ def do_hard_limit_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if the upper limit is less than or equal
           to the lower limit, or if the input is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if value(s) are outside the specified limits.
@@ -674,7 +693,9 @@ def do_climatology_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if `standard_deviation_limits[1]` is less than or equal to
           `standard_deviation_limits[0]`, or if `maximum_anomaly` is less than or equal to 0, or if any of
           `value`, `climate_normal`, or `standard_deviation` is numerically invalid (None or NaN).
@@ -757,7 +778,9 @@ def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> Valu
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either dpt or at2 is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if supersaturation is detected,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -820,7 +843,9 @@ def do_sst_freeze_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of `sst`, `freezing_point`, `sst_uncertainty`,
           or `n_sigma` is numerically invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if `sst` is below `freezing_point` by more than
@@ -884,7 +909,9 @@ def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: Value
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either wind_speed or wind_direction is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if wind_speed and wind_direction are inconsistent,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -933,7 +960,9 @@ def _do_mask_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if the position does not correspond to a land point
         - Returns 0 (or array/sequence/Series of 0s) otherwise
@@ -990,7 +1019,9 @@ def do_landlocked_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if the position does not correspond to a land point
         - Returns 0 (or array/sequence/Series of 0s) otherwise
@@ -1034,7 +1065,9 @@ def do_maritime_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if latitude and longitude denotes not a sea point
         - Returns 0 (or array/sequence/Series of 0s) otherwise

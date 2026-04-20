@@ -83,8 +83,9 @@ def do_spike_check(
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-        One-dimensional array, sequence, or pandas Series of integer QC flags.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
         - Returns array/sequence/Series of 1s if the spike check fails.
         - Returns array/sequence/Series of 0s otherwise.
 
@@ -213,10 +214,11 @@ def do_track_check(
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the track check fails.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the track check fails.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -346,8 +348,9 @@ def do_few_check(
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
+    :py:obj:`~marine_qc.SequenceIntType`
+      Same type as input, but with integer values
+
       - Returns array/sequence/Series of 1s if number of observations is less than 3.
       - Returns array/sequence/Series of 0s otherwise.
 
@@ -417,10 +420,11 @@ def find_saturated_runs(
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if a saturated run is found.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if a saturated run is found.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -485,10 +489,11 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the value is a whole number.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the value is a whole number.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -552,10 +557,11 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the value is repeated.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the value is repeated.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -644,10 +650,11 @@ def do_iquam_track_check(
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the IQUAM QC fails.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the IQUAM QC fails.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
