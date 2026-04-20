@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import requests
 from platformdirs import user_cache_dir
 
+
 _default_cache_dir_ = Path(user_cache_dir("cdm-testdata", ".cache"))
 
 
