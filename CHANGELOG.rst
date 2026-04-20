@@ -10,6 +10,12 @@ New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
 
+Internal changes
+^^^^^^^^^^^^^^^^
+* `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
+* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
+
+
 0.3.1 (2026-03-06)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`)
