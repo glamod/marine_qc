@@ -12,7 +12,7 @@ lint = [
   "mypy >=1.20.0",
   "numpydoc >=1.10.0",
   "pylint >=4.0.4",
-  "ruff >=0.15.9",
+  "ruff >=0.15.11",
   "vulture >=2.14",
   "yamllint >=1.38.0"
 ]
@@ -37,7 +37,7 @@ docs = [
   "furo >=2023.9.10"
 ]
 tox = [
-  "tox >=4.52.0",
+  "tox >=4.53.0",
   "tox-gh >=1.7.1"
 ]
 dev = [

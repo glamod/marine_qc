@@ -122,6 +122,8 @@ def do_date_check(
     year: ValueIntType | None = None,
     month: ValueIntType | None = None,
     day: ValueIntType | None = None,
+    year_init: int | None = None,
+    year_end: int | None = None,
 ) -> ValueIntType:
     """
     Perform the date QC check on the report. Checks whether the given date or date components are valid.
@@ -140,6 +142,10 @@ def do_date_check(
     day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
         Day(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    year_init : int, optional
+        Initial valid year.
+    year_end : int, optional
+        Last valid year.
 
     Returns
     -------
@@ -164,7 +170,12 @@ def do_date_check(
 
     result_valid = np.full(year_valid.shape, failed, dtype=int)
 
-    year_ok = (year_valid >= 1850) & (year_valid <= 2025)
+    year_ok = np.full(year_valid.shape, True, dtype=bool)
+    if year_init:
+        year_ok[year_valid < year_init] = False
+    if year_end:
+        year_ok[year_valid > year_end] = False
+
     month_ok = (month_valid >= 1) & (month_valid <= 12)
 
     unique_years = np.unique(year_valid)
