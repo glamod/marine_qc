@@ -4,11 +4,26 @@ Changelog
 
 0.3.2 (unreleased)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trevor James Smith (:user:`Zeitsperre`)
 
 New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
+* `marine_qc` now fully supports Python 3.14. (:pull:`161`)
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Development dependencies ("dev", "docs") are now installed via the new `dependency-groups` conventions (`PEP 735 <https://peps.python.org/pep-0735/>`_) (:pull:`161`)
+* `prek` is now the suggested pre-commit runner (installed by default via `pip install --group dev`) (:pull:`161`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the project template and boilerplate code to address configuration issues and benefit from new workflows/conventions (:pull:`161`):
+    * A new workflow has been added to automatically accept minor/patch updates to GitHub Actions and Python deps coming from Dependabot.
+    * `tox.ini`` has migrated to `tox.toml` (new standard).
+    * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
+    * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
+    * Various dependency updates.
 
 0.3.1 (2026-03-06)
 ------------------
