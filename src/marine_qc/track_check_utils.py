@@ -138,15 +138,15 @@ def increment_position(
 
     Parameters
     ----------
-    alat1 : SequenceNumberType
+    alat1 : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of Latitude at starting point in degrees.
-    alon1 : SequenceNumberType
+    alon1 : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of Longitude at starting point in degrees.
-    avs : SequenceNumberType
+    avs : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of speed of ship in km/h.
-    ads : SequenceNumberType
+    ads : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of heading of ship in degrees.
-    timediff : SequenceNumberType
+    timediff : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of time difference between the points in hours.
 
     Returns
@@ -185,11 +185,11 @@ def direction_continuity(
 
     Parameters
     ----------
-    dsi : SequenceNumberType
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`
         Heading at current time step in degrees.
-    directions : SequenceNumberType
+    directions : :py:obj:`~marine_qc.SequenceNumberType`
         Calculated ship direction from reported positions in degrees.
-    dsi_previous : 1SequenceNumberType, optional
+    dsi_previous : :py:obj:`~marine_qc.SequenceNumberType`, optional
         Heading at previous time step in degrees.
         If None, get dsi_previous from dsi.
     max_direction_change : float
@@ -251,12 +251,12 @@ def speed_continuity(
 
     Parameters
     ----------
-    vsi : SequenceNumberType
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of reported speed in km/h at current time step.
-    speeds : SequenceNumberType
+    speeds : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of speed of ship calculated from locations
         at current and previous time steps in km/h.
-    vsi_previous : SequenceNumberType, optional
+    vsi_previous : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of reported speed in km/h at previous time step.
         If None, get vsi_previous from vsi.
     max_speed_change : float, optional
@@ -303,7 +303,7 @@ def check_distance_from_estimate(
     time_differences: SequenceNumberType,
     fwd_diff_from_estimated: SequenceNumberType,
     rev_diff_from_estimated: SequenceNumberType,
-    vsi_previous: np.ndarray | None = None,
+    vsi_previous: SequenceNumberType | None = None,
 ) -> np.ndarray:
     """
     Check that distances from estimated positions are less than calculated distance.
@@ -313,15 +313,15 @@ def check_distance_from_estimate(
 
     Parameters
     ----------
-    vsi : SequenceNumberType
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`
         Reported speed in km/h at current time step.
-    time_differences : SequenceNumberType
+    time_differences : :py:obj:`~marine_qc.SequenceNumberType`
         Calculated time differences between reports in hours.
-    fwd_diff_from_estimated : SequenceNumberType
+    fwd_diff_from_estimated : :py:obj:`~marine_qc.SequenceNumberType`
         Distance in km from estimated position, estimates made forward in time.
-    rev_diff_from_estimated : SequenceNumberType
+    rev_diff_from_estimated : :py:obj:`~marine_qc.SequenceNumberType`
         Distance in km from estimated position, estimates made backward in time.
-    vsi_previous : 1D np.ndarray of float, optional
+    vsi_previous : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of reported speed in km/h at previous time step.
         If None, get vsi_previous from vsi.
 
@@ -436,13 +436,13 @@ def calculate_speed_course_distance_time_difference(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     alternating : bool, default: False
@@ -507,19 +507,19 @@ def forward_discrepancy(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    vsi : SequenceNumberType
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : SequenceNumberType
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -577,19 +577,19 @@ def backward_discrepancy(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional latitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional longitude array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         One-dimensional date array.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    vsi : SequenceNumberType
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : SequenceNumberType
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -649,11 +649,11 @@ def calculate_midpoint(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional latitude array in degrees.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional longitude array in degrees.
-    timediff : SequenceNumberType
+    timediff : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional time difference array.
 
     Returns

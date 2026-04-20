@@ -38,13 +38,13 @@ def _geod_inv(
 
     Parameters
     ----------
-    lon1 : SequenceNumberType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat1 : SequenceNumberType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon2 : SequenceNumberType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
-    lat2 : SequenceNumberType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
 
     Returns
@@ -76,13 +76,13 @@ def angular_distance(
 
     Parameters
     ----------
-    lat1 : SequenceNumberType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceNumberType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceNumberType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceNumberType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
 
     Returns
@@ -127,13 +127,13 @@ def sphere_distance(
 
     Parameters
     ----------
-    lat1 : SequenceNumberType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceNumberType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceNumberType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceNumberType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
 
     Returns
@@ -174,13 +174,13 @@ def intermediate_point(
 
     Parameters
     ----------
-    lat1 : SequenceNumberType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceNumberType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceNumberType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceNumberType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
     f : float
         Fraction of distance between the two points.
@@ -227,18 +227,18 @@ def course_between_points(
 
     Parameters
     ----------
-    lat1 : SequenceNumberType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceNumberType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceNumberType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceNumberType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
 
     Returns
     -------
-    SequenceFloatType
+    :py:obj:`~marine_qc.SequenceFloatType`
         Initial true course in degrees at point one along the great circle between point
         one and point two.
 
@@ -270,9 +270,9 @@ def lat_lon_from_course_and_distance(
 
     Parameters
     ----------
-    lat1 : SequenceNumberType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceNumberType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
     tc : float
         True course measured clockwise from north in degrees.

@@ -115,7 +115,7 @@ def isvalid(inval: ValueNumberType) -> bool | npt.NDArray[np.bool_]:
 
     Parameters
     ----------
-    inval : ValueNumberType
+    inval : :py:obj:`~marine_qc.ValueNumberType`
         Input value(s) to be tested.
 
     Returns
@@ -212,7 +212,7 @@ def convert_to(value: SequenceNumberType, source_units: str, target_units: str) 
 
     Parameters
     ----------
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         A single float value, None, or a sequence (e.g., list, tuple, array-like)
         containing floats and/or None values. `None` values are passed through unchanged.
     source_units : str
@@ -224,7 +224,7 @@ def convert_to(value: SequenceNumberType, source_units: str, target_units: str) 
 
     Returns
     -------
-    SequenceNumberType
+    :py:obj:`~marine_qc.SequenceNumberType`
         The converted value(s), preserving the input structure (scalar, list, tuple, array).
         None values remain unchanged.
 

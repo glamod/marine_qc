@@ -656,9 +656,9 @@ def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) 
 
     Parameters
     ----------
-    times1 : SequenceDatetimeType
+    times1 : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional array of reference time points.
-    times2 : SequenceDatetimeType
+    times2 : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional array of time points to compare against ``times1``.
 
     Returns

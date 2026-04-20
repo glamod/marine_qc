@@ -57,16 +57,16 @@ def do_spike_check(
 
     Parameters
     ----------
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of values to be analyzed.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         One-dimensional array of datetime values.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     max_gradient_space : float, default: 0.5
@@ -187,19 +187,19 @@ def do_track_check(
 
     Parameters
     ----------
-    vsi : SequenceNumberType
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional reported speed array in km/h.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : SequenceNumberType
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional reported heading array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     max_direction_change : float, default: 60.0
@@ -340,7 +340,7 @@ def do_few_check(
 
     Parameters
     ----------
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of values to be analyzed.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
@@ -395,19 +395,19 @@ def find_saturated_runs(
 
     Parameters
     ----------
-    at : SequenceNumberType
+    at : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional air temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dpt : SequenceNumberType
+    dpt : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional dew point temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     min_time_threshold : float, default: 48.0
@@ -475,7 +475,7 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
 
     Parameters
     ----------
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     min_count : int, default: 20
@@ -542,7 +542,7 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
 
     Parameters
     ----------
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     min_count : int, default: 20
@@ -623,13 +623,13 @@ def do_iquam_track_check(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     speed_limit : float

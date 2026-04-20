@@ -38,11 +38,11 @@ QC Flags
 The QC checks output QC flags that indicate the status of each observation. There are four numbered
 flags:
 
-* 0 Passed - the report has passed this particular quality control check.
-* 1 Failed - the report has failed this particular quality control check.
-* 2 Untestable - the report cannot be tested using this quality control check, usually because one or
+* `0`: Passed - the report has passed this particular quality control check.
+* `1`: Failed - the report has failed this particular quality control check.
+* `2`: Untestable - the report cannot be tested using this quality control check, usually because one or
   more pieces of information are missing. For example, a climatology check with a missing climatology value.
-* 3 Untested - the report has not been tested for this quality control check.
+* `3`: Untested - the report has not been tested for this quality control check.
 
 Running the QC Checks
 ---------------------

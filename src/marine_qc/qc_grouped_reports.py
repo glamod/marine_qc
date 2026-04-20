@@ -27,8 +27,8 @@ from .auxiliary import (
 )
 from .buoy_tracking_qc import is_monotonic
 from .external_clim import (
-    ClimFloatType,
     ClimInputType,
+    ClimNumberType,
     Climatology,
     inspect_climatology,
 )
@@ -118,18 +118,18 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        lat : SequenceNumberType
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array.
-        lon : SequenceNumberType
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array.
-        value : SequenceNumberType
+        value : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional anomaly array.
-        date : SequenceDatetimeType, optional
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
             1-dimensional datetime array.
-        month : SequenceIntType, optional
+        month : :py:obj:`~marine_qc.SequenceIntType`, optional
             1-dimensional month array.
             Used if date is not provided.
-        day : SequenceIntType, optional
+        day : :py:obj:`~marine_qc.SequenceIntType`, optional
             1-dimensional day array.
             Used if date is not provided.
 
@@ -299,7 +299,7 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        pentad_stdev : :py:class:`.Climatology`
+        pentad_stdev : :py:class:`~marine_qc.Climatology`
             :py:class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
         limits : list[list[int]]
             List of the limits.
@@ -359,13 +359,13 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        stdev1 : :py:class:`.Climatology`
+        stdev1 : :py:class:`~marine_qc.Climatology`
             Field of standard deviations representing standard deviation of difference between target
             gridcell and complete neighbour average (grid area to neighbourhood difference).
-        stdev2 : :py:class:`.Climatology`
+        stdev2 : :py:class:`~marine_qc.Climatology`
             Field of standard deviations representing standard deviation of difference between a single
             observation and the target gridcell average (point to grid area difference).
-        stdev3 : :py:class:`.Climatology`
+        stdev3 : :py:class:`~marine_qc.Climatology`
             Field of standard deviations representing standard deviation of difference between random
             neighbour gridcell and full neighbour average (uncertainty in neighbour average).
         limits : list[int, int, int]
@@ -493,7 +493,7 @@ def do_mds_buddy_check(
     lon: SequenceNumberType,
     date: SequenceDatetimeType,
     value: SequenceNumberType,
-    climatology: ClimInputType | ClimFloatType,
+    climatology: ClimInputType | ClimNumberType,
     standard_deviation: Climatology,
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
@@ -512,18 +512,19 @@ def do_mds_buddy_check(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional anomaly array.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
+    climatology : :py:obj:`~marine_qc.ClimInputType` or :py:obj:`~marine_qc.ClimNumberType`
         The climatological average(s) used to calculate anomalies.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
-    standard_deviation : :py:class:`.Climatology`
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:obj:`~marine_qc.ClimNumberType`, or a :py:obj:`~marine_qc.ClimInputType`.
+    standard_deviation : :py:class:`~marine_qc.Climatology`
         Field of standard deviations of 1x1xpentad standard deviations.
     limits : list[list]
         Limits a list of lists. Each list member is a three-membered list specifying the longitudinal, latitudinal,
@@ -627,7 +628,7 @@ def do_bayesian_buddy_check(
     lon: SequenceNumberType,
     date: SequenceDatetimeType,
     value: SequenceNumberType,
-    climatology: ClimInputType | ClimFloatType,
+    climatology: ClimInputType | ClimNumberType,
     stdev1: Climatology,
     stdev2: Climatology,
     stdev3: Climatology,
@@ -648,24 +649,25 @@ def do_bayesian_buddy_check(
 
     Parameters
     ----------
-    lat : SequenceNumberType
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array.
-    lon : SequenceNumberType
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array.
-    date : SequenceDatetimeType
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    value : SequenceNumberType
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional anomaly array.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
+    climatology : :py:obj:`~marine_qc.ClimInputType` or :py:obj:`~marine_qc.ClimNumberType`
         The climatological average(s) used to calculate anomalies.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
-    stdev1 : :py:class:`.Climatology`
+        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, or a :py:obj:`~marine_qc.ClimInputType`.
+    stdev1 : :py:obj:`~marine_qc.Climatology`
         Field of standard deviations representing standard deviation of difference between
         target gridcell and complete neighbour average (grid area to neighbourhood difference).
-    stdev2 : :py:class:`.Climatology`
+    stdev2 : :py:obj:`~marine_qc.Climatology`
         Field of standard deviations representing standard deviation of difference between
         a single observation and the target gridcell average (point to grid area difference).
-    stdev3 : :py:class:`.Climatology`
+    stdev3 : :py:obj:`~marine_qc.Climatology`
         Field of standard deviations representing standard deviation of difference between
         random neighbour gridcell and full neighbour average (uncertainty in neighbour average).
     prior_probability_of_gross_error : float
