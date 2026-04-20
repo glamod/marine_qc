@@ -525,7 +525,9 @@ def forward_discrepancy(
 
     Returns
     -------
-    Same type as input, but with float values, shape (n,)
+    :py:obj:`~marine_qc.SequenceFloatType`
+        Same type as input, but with float values, shape (n,)
+
         One-dimensional array, sequence, or pandas Series containing distances from estimated positions.
 
     Raises
@@ -595,7 +597,9 @@ def backward_discrepancy(
 
     Returns
     -------
-    Same type as input, but with float values, shape (n,)
+    :py:obj:`~marine_qc.SequenceFloatType`
+        Same type as input, but with float values, shape (n,)
+
         One-dimensional array, sequence, or pandas Series containing distances from estimated positions.
 
     Raises

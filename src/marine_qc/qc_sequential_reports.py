@@ -349,10 +349,10 @@ def do_few_check(
     Returns
     -------
     :py:obj:`~marine_qc.SequenceIntType`
-      Same type as input, but with integer values
+        Same type as input, but with integer values
 
-      - Returns array/sequence/Series of 1s if number of observations is less than 3.
-      - Returns array/sequence/Series of 0s otherwise.
+        - Returns array/sequence/Series of 1s if number of observations is less than 3.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
