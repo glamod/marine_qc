@@ -23,6 +23,7 @@ repos:
       - id: fix-byte-order-marker
       - id: name-tests-test
         args: [ '--pytest-test-first' ]
+        exclude: ^tests/helpers/.*\.py$
       - id: no-commit-to-branch
         args: [ '--branch', 'main' ]
       - id: trailing-whitespace

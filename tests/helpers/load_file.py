@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import requests
 from platformdirs import user_cache_dir
 
+
 _default_cache_dir_ = Path(user_cache_dir("cdm-testdata", ".cache"))
 
 
@@ -33,7 +34,7 @@ def _get_remote_file(lfile: str | Path, url: str, name: str | Path) -> tuple[str
     remote_url = "/".join((url.rstrip("/"), name.as_posix()))
 
     lfile.parent.mkdir(exist_ok=True, parents=True)
-    logging.info(f"Attempting to fetch remote file: {name.as_posix()}")
+    logging.info("Attempting to fetch remote file: %s", name.as_posix())
 
     parsed = urlparse(remote_url)
     if parsed.scheme not in ("http", "https"):
@@ -56,7 +57,7 @@ def _check_md5s(f: Path, md5: str, mode: str = "error") -> bool:
         if mode == "error":
             raise OSError(msg)
         elif mode == "warning":
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=2)
             return False
     return True
 
@@ -72,7 +73,7 @@ def _rm_tree(path: Path) -> None:
     """
     # https://stackoverflow.com/questions/50186904/pathlib-recursively-remove-directory
     if not path.is_dir():
-        logging.warning(f"Could not clear cache. Directory {path.name} does not exist.")
+        logging.warning("Could not clear cache. Directory %s does not exist.", path.name)
         return
 
     for child in path.iterdir():
@@ -171,7 +172,7 @@ def load_file(
     if not github_url.lower().startswith("http"):
         raise ValueError(f"GitHub URL not safe: '{github_url}'.")
 
-    url = "/".join((github_url, "raw", branch))
+    url = f"{github_url}/raw/{branch}"
 
     local_file = _get_file(
         name=name,
