@@ -151,7 +151,7 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://securityscorecards.dev/viewer/?uri=github.com/glamod/marine_qc
         :alt: OpenSSF Scorecard
 
-.. |pre-commit-ci| image:: https://results.pre-commit.ci/badge/github/ludwiglierhammer/Marine-Quality-Control/main.svg
+.. |pre-commit-ci| image:: https://results.pre-commit.ci/badge/github/glamod/marine_qc/main.svg
         :target: https://results.pre-commit.ci/latest/github/glamod/marine_qc/main
         :alt: pre-commit.ci status
 
