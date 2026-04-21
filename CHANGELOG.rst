@@ -8,7 +8,7 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trev
 
 Announcements
 ^^^^^^^^^^^^^
-* `marine_qc` now fully supports Python 3.14 and drops support for Python 3.10. (:issue: `182`, :pull:`161`)
+* `marine_qc` now fully supports Python 3.14 and drops support for Python 3.10. (:issue:`182`, :pull:`161`)
 
 New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -37,7 +37,7 @@ Internal changes
 Bug fixes
 ^^^^^^^^^
 * Staging and deployment worksflows are now fully working again (:issue:`160`, :pull:`161`)
-* `bump-verion` workflow is now fully working again (:issue:`64`, :pull:`161`)
+* `bump-version` workflow is now fully working again (:issue:`64`, :pull:`161`)
 
 0.3.1 (2026-03-06)
 ------------------
