@@ -10,6 +10,10 @@ New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
 
+Internal changes
+^^^^^^^^^^^^^^^^
+* sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
+
 0.3.1 (2026-03-06)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John Kennedy (:user:`jjk-code-otter`) and Trevor James Smith (:user:`Zeitsperre`)
