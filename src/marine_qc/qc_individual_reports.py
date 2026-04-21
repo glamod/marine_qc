@@ -26,7 +26,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimInputType, ClimIntType, ClimNumberType, inspect_climatology
+from .external_clim import ClimArgType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
@@ -122,10 +122,10 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
 @convert_date(["year", "month", "day"])
 @inspect_arrays(["year", "month", "day"])
 def do_date_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
     year_init: int | None = None,
     year_end: int | None = None,
 ) -> ValueIntType:
@@ -203,8 +203,8 @@ def do_date_check(
 @convert_date(["hour"])
 @inspect_arrays(["hour"])
 def do_time_check(
-    date: ValueDatetimeType | None = None,
-    hour: ValueFloatType | None = None,
+    date: ValueDatetimeType = None,
+    hour: ValueFloatType = None,
 ) -> ValueIntType:
     """
     Check that the time is valid i.e. in the range 0.0 to 23.99999...
@@ -254,7 +254,7 @@ def _do_daytime_check(
     hour: np.ndarray,
     lat: np.ndarray,
     lon: np.ndarray,
-    time_since_sun_above_horizon: ScalarNumberType | None,
+    time_since_sun_above_horizon: ScalarNumberType,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
     """
@@ -369,14 +369,14 @@ def _do_daytime_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
-    hour: ValueFloatType | None = None,
-    lat: ValueNumberType | None = None,
-    lon: ValueNumberType | None = None,
-    time_since_sun_above_horizon: ScalarNumberType | None = None,
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
+    hour: ValueFloatType = None,
+    lat: ValueNumberType = None,
+    lon: ValueNumberType = None,
+    time_since_sun_above_horizon: ScalarNumberType = None,
 ) -> ValueIntType:
     """
     Determine if the sun was above the horizon a specified time before the report.
@@ -449,14 +449,14 @@ def do_day_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
-    hour: ValueFloatType | None = None,
-    lat: ValueNumberType | None = None,
-    lon: ValueNumberType | None = None,
-    time_since_sun_above_horizon: ScalarNumberType | None = None,
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
+    hour: ValueFloatType = None,
+    lat: ValueNumberType = None,
+    lon: ValueNumberType = None,
+    time_since_sun_above_horizon: ScalarNumberType = None,
 ) -> ValueIntType:
     """
     Determine if the sun was below the horizon a specified time before the report.
@@ -563,16 +563,16 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimInputType | ClimNumberType, **kwargs: Any) -> ValueIntType:
+def do_missing_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
     Parameters
     ----------
-    climatology : :py:obj:`~marine_qc.ClimInputType` or :py:obj:`~marine_qc.ClimNumberType`
+    climatology : :py:obj:`~marine_qc.ClimArgType`
         The input climatological value(s) to be tested.
         Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
-        a :py:class:`~marine_qc.ClimNumberType`, or a :py:obj:`~marine_qc.ClimInputType`.
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     \**kwargs : dict
         Additional keyword arguments passed by the decorator framework (unused).
 
@@ -591,8 +591,8 @@ def do_missing_value_clim_check(climatology: ClimInputType | ClimNumberType, **k
 
     Notes
     -----
-    If `climatology` is a :py:class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
-    arguments to extract the relevant climatological value.
+    If `climatology` is a :py:class:`~marine_qc.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`,
+    as keyword arguments to extract the relevant climatological value.
     """
     return value_check(climatology)
 
@@ -654,9 +654,9 @@ def do_hard_limit_check(
 @inspect_climatology("climatology", optional="standard_deviation")
 def do_climatology_check(
     value: ValueNumberType,
-    climatology: ClimInputType | ClimNumberType,
+    climatology: ClimArgType,
     maximum_anomaly: float,
-    standard_deviation: ValueNumberType = "default",
+    standard_deviation: ClimArgType = "default",
     standard_deviation_limits: tuple[int | float, int | float] | None = None,
     lowbar: int | float | None = None,
 ) -> ValueIntType:
@@ -675,17 +675,18 @@ def do_climatology_check(
     value : :py:obj:`~marine_qc.ValueNumberType`
         Value(s) to be compared to climatology.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    climatology : :py:obj:`~marine_qc.ClimInputType` or :py:obj:`~marine_qc.ClimNumberType`
+    climatology : :py:obj:`~marine_qc.ClimArgType`
         The climatological average(s) to which the values(s) will be compared.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series,
-        a :py:obj:`~marine_qc.ClimNumberType`, or a :py:obj:`~marine_qc.ClimInputType`.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     maximum_anomaly : float
         Largest allowed anomaly.
         If ``standard_deviation`` is provided, this is interpreted as the largest allowed standardised anomaly.
-    standard_deviation : :py:obj:`~marine_qc.ValueNumberType`, default: "default"
+    standard_deviation : :py:obj:`~marine_qc.ClimArgType`, default: "default"
         The standard deviation(s) used to standardise the anomaly
         If set to "default", it is internally treated as 1.0.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     standard_deviation_limits : tuple of float, optional
         A tuple of two floats representing the upper and lower limits for standard deviation used in the check.
     lowbar : float, optional
@@ -709,8 +710,8 @@ def do_climatology_check(
 
     Notes
     -----
-    If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
-    `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
+    If either `climatology` or `standard_deviation` is a :py:class:`~marine_qc.Climatology` object, pass `lon` and `lat`
+    and `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
     value_arr, climatology_arr = ensure_arrays(value=value, climatology=climatology)
 
@@ -997,7 +998,7 @@ def _do_mask_check(
 def do_landlocked_check(
     lat: ValueNumberType,
     lon: ValueNumberType,
-    land_sea_mask: ClimInputType | ClimIntType,
+    land_sea_mask: ClimArgType,
     land_flag: int,
 ) -> ValueIntType:
     """
@@ -1011,9 +1012,10 @@ def do_landlocked_check(
     lon : :py:obj:`~marine_qc.ValueNumberType`
         Longitude() of observation in degree.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    land_sea_mask : :py:obj:`~marine_qc.ClimInputType` or :py:obj:`~marine_qc.ClimIntType`
+    land_sea_mask : :py:obj:`~marine_qc.ClimArgType`
         Land-sea classification value(s) to which the latitude and longitude values(s) will be compared.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     land_flag : int
         Integer value in `land_sea_mask` that denotes a land point.
 
@@ -1043,7 +1045,7 @@ def do_landlocked_check(
 def do_maritime_check(
     lat: ValueNumberType,
     lon: ValueNumberType,
-    sea_land_mask: ClimInputType | ClimIntType,
+    sea_land_mask: ClimArgType,
     sea_flag: int,
 ) -> ValueIntType:
     """
@@ -1057,9 +1059,10 @@ def do_maritime_check(
     lon : :py:obj:`~marine_qc.ValueNumberType`
         Longitude() of observation in degree.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    sea_land_mask : :py:obj:`~marine_qc.ClimInputType` or :py:obj:`~marine_qc.ClimIntType`
+    sea_land_mask : :py:obj:`~marine_qc.ClimArgType`
         Sea-land classification value(s) to which the latitude and longitude values(s) will be compared.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     sea_flag : int
         Integer value in `sea_land_mask` that denotes a sea point.
 

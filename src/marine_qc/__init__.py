@@ -30,6 +30,7 @@ from .buoy_tracking_qc import (
     do_sst_start_tail_check,
 )
 from .external_clim import (
+    ClimArgType,
     ClimFloatType,
     ClimInputType,
     ClimIntType,

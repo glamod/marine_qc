@@ -68,6 +68,9 @@ autodoc_typehints_format = "fully-qualified"
 autodoc_typehints_description_target = "documented_params"
 python_use_unqualified_type_names = True
 
+# typehints_use_signature = True
+# typehints_fully_qualified = False
+
 autodoc_type_aliases = {
     "ScalarDatetimeType": ":data:`~marine_qc.ScalarDatetimeType`",
     "ScalarFloatType": ":data:`~marine_qc.ScalarFloatType`",

@@ -25,6 +25,7 @@ from .auxiliary import (
     SequenceNumberType,
     ValueFloatType,
     ValueIntType,
+    ValueNumberType,
     generic_decorator,
     isvalid,
     post_format_return_type,
@@ -113,7 +114,8 @@ def inspect_climatology(
 
     This decorator inspects the specified function arguments and normalizes them to concrete
     numerical values before the decorated function is executed. Supported input types include
-    raw numeric values, xarray objects, file paths, and :py:class:`~marine_qc.Climatology` instances.
+    raw numeric values, xarray objects, file paths, and :py:class:`~marine_qc.Climatology`
+    instances.
 
     Parameters
     ----------
@@ -496,7 +498,7 @@ class Climatology:
             Target units to which units must conform.
 
         source_units : str, optional
-            Source units if not specified in :py:class:`Climatology`.
+            Source units if not specified in :py:class:`~marine_qc.Climatology`.
 
         Notes
         -----
@@ -517,7 +519,7 @@ class Climatology:
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
-    ) -> ndarray | pd.Series:
+    ) -> np.ndarray | pd.Series:
         """
         Get the value from a climatology at the give position and time.
 
@@ -841,5 +843,6 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
 
 ClimIntType: TypeAlias = ValueIntType | Climatology
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
-ClimNumberType: TypeAlias = ValueIntType | ValueFloatType | Climatology
+ClimNumberType: TypeAlias = ValueNumberType | Climatology
 ClimInputType: TypeAlias = str | os.PathLike[str] | xr.DataArray | xr.Dataset
+ClimArgType: TypeAlias = ClimNumberType | ClimInputType

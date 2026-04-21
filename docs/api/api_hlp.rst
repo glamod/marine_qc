@@ -111,6 +111,7 @@ Internal data type aliases
 .. autodata:: marine_qc.ValueFloatType
 .. autodata:: marine_qc.ValueNumberType
 .. autodata:: marine_qc.ValueDatetimeType
+.. autodata:: marine_qc.ClimArgType
 .. autodata:: marine_qc.ClimIntType
 .. autodata:: marine_qc.ClimFloatType
 .. autodata:: marine_qc.ClimNumberType

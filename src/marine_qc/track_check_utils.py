@@ -173,7 +173,7 @@ def increment_position(
 def direction_continuity(
     dsi: SequenceNumberType,
     directions: SequenceNumberType,
-    dsi_previous: SequenceNumberType | None = None,
+    dsi_previous: SequenceNumberType = None,
     max_direction_change: float = 60.0,
 ) -> np.ndarray:
     """
@@ -239,7 +239,7 @@ def direction_continuity(
 def speed_continuity(
     vsi: SequenceNumberType,
     speeds: SequenceNumberType,
-    vsi_previous: SequenceNumberType | None = None,
+    vsi_previous: SequenceNumberType = None,
     max_speed_change: float | None = 10.0,
 ) -> np.ndarray:
     """
@@ -303,7 +303,7 @@ def check_distance_from_estimate(
     time_differences: SequenceNumberType,
     fwd_diff_from_estimated: SequenceNumberType,
     rev_diff_from_estimated: SequenceNumberType,
-    vsi_previous: SequenceNumberType | None = None,
+    vsi_previous: SequenceNumberType = None,
 ) -> np.ndarray:
     """
     Check that distances from estimated positions are less than calculated distance.
