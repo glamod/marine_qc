@@ -28,9 +28,9 @@ Internal changes
     * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
     * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
     * Various dependency updates.
-    
+
 * `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
-* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)    
+* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
 
 Bug fixes
 ^^^^^^^^^
