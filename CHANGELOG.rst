@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.3.2 (unreleased)
+0.3.2 (2023-04-21)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trevor James Smith (:user:`Zeitsperre`)
 
