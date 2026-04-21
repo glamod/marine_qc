@@ -23,12 +23,14 @@ Internal changes
 ^^^^^^^^^^^^^^^^
 * Updated the project template and boilerplate code to address configuration issues and benefit from new workflows/conventions (:pull:`161`):
 
-    * A new workflow has been added to automatically accept minor/patch updates to GitHub Actions and Python deps coming from Dependabot.
-    * `tox.ini`` has migrated to `tox.toml` (new standard).
-    * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
-    * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
-    * Various dependency updates.
+  * A new workflow has been added to automatically accept minor/patch updates to GitHub Actions and Python deps coming from Dependabot.
+  * `tox.ini`` has migrated to `tox.toml` (new standard).
+  * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
+  * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
+  * Various dependency updates.
 
+* sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
+* correct reporsitroy url in documentation (:pull:`185`)
 * `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
 * copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
 

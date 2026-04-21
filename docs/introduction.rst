@@ -38,11 +38,11 @@ QC Flags
 The QC checks output QC flags that indicate the status of each observation. There are four numbered
 flags:
 
-* 0 Passed - the report has passed this particular quality control check.
-* 1 Failed - the report has failed this particular quality control check.
-* 2 Untestable - the report cannot be tested using this quality control check, usually because one or
+* `0`: Passed - the report has passed this particular quality control check.
+* `1`: Failed - the report has failed this particular quality control check.
+* `2`: Untestable - the report cannot be tested using this quality control check, usually because one or
   more pieces of information are missing. For example, a climatology check with a missing climatology value.
-* 3 Untested - the report has not been tested for this quality control check.
+* `3`: Untested - the report has not been tested for this quality control check.
 
 Running the QC Checks
 ---------------------
@@ -57,13 +57,13 @@ So, for example, one can run a hard limit check like so::
   result = do_hard_limit_check(input_values, [-10., 40.])
 
 Additionally, some checks use climatological averages which can be provided like the other
-inputs, or passed as a :class:`.Climatology` object. For example, the climatology check can be run like so::
+inputs, or passed as a :class:`~marine_qc.Climatology` object. For example, the climatology check can be run like so::
 
   input_ssts = np.array([15.0, 17.3, 21.3, 32.0])
   climatological_averages = np.array([14.0, 15.8, 19.1, 20.3])
   result = do_climatology_check(input_ssts, climatological_averages, 8.0)
 
-Alternatively, the climatological values can be specified using a :class:`.Climatology` and providing the datetime and location
+Alternatively, the climatological values can be specified using a :class:`~marine_qc.Climatology` and providing the datetime and location
 of the reports as keyword arguments::
 
   input_ssts = np.array([15.0, 17.3, 21.3, 32.0])
@@ -104,5 +104,3 @@ The QC checks written using SI (and derived) units. Inputs can be converted when
 `units` keyword argument::
 
   temperature_in_K(25.0, units={"value": "degC"})
-
-.. _running_multiple_ind:

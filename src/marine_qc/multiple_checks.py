@@ -61,9 +61,9 @@ def _apply_qc_to_masked_rows(
         Keyword arguments constructed from requests.
     kwargs : Mapping[str, Any]
         Additional keyword arguments, typically from preprocessed variables.
-    data_index : pandas.Index
+    data_index : pd.Index
         Full index of the dataset for aligning the QC result.
-    mask : pandas.Series
+    mask : pd.Series
         Boolean mask indicating which rows the QC function applies to.
 
     Returns

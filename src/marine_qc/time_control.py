@@ -13,6 +13,7 @@ import pandas as pd
 
 from .auxiliary import (
     DECORATOR_KWARGS,
+    SequenceDatetimeType,
     ensure_arrays,
     generic_decorator,
     inspect_arrays,
@@ -649,15 +650,15 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
 
 @post_format_return_type(["times1", "times2"], dtype=float)
 @inspect_arrays(["times1", "times2"])
-def time_difference(times1: Sequence[datetime], times2: Sequence[datetime]) -> np.ndarray:
+def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) -> np.ndarray:
     """
     Convert two arrays of datetimes to the difference in hours.
 
     Parameters
     ----------
-    times1 : array-like of datetime, shape (n,)
+    times1 : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional array of reference time points.
-    times2 : array-like of datetime, shape (n,)
+    times2 : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional array of time points to compare against ``times1``.
 
     Returns

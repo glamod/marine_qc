@@ -41,13 +41,13 @@ The source for the **marine_qc** can be downloaded from the `GitHub repository`_
 
         .. code-block:: console
 
-            git clone git@github.com:ludwiglierhammer/Marine_Quality_Control.git
+            git clone git@github.com:glamod/marine_qc.git
 
-    * Download the `tarball <https://github.com/ludwiglierhammer/Marine-Quality-Control/tarball/main>`_:
+    * Download the `tarball <https://github.com/glamod/marine_qc/tarball/main>`_:
 
         .. code-block:: console
 
-            curl -OJL https://github.com/ludwiglierhammer/Marine-Quality-Control/tarball/main
+            curl -OJL https://github.com/glamod/marine_qc/tarball/main
 
 #. Once you have a copy of the source, you can install it with pip_:
 

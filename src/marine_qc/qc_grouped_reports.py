@@ -13,8 +13,8 @@ import pandas as pd
 
 from .auxiliary import (
     SequenceDatetimeType,
-    SequenceFloatType,
     SequenceIntType,
+    SequenceNumberType,
     convert_units,
     ensure_arrays,
     failed,
@@ -27,8 +27,7 @@ from .auxiliary import (
 )
 from .buoy_tracking_qc import is_monotonic
 from .external_clim import (
-    ClimFloatType,
-    ClimInputType,
+    ClimArgType,
     Climatology,
     inspect_climatology,
 )
@@ -106,30 +105,30 @@ class SuperObsGrid:
     @inspect_arrays(["lat", "lon", "value", "month", "day"])
     def add_multiple_observations(
         self,
-        lat: SequenceFloatType,
-        lon: SequenceFloatType,
-        value: SequenceFloatType,
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
+        value: SequenceNumberType,
         date: SequenceDatetimeType | None = None,
-        month: SequenceFloatType | None = None,
-        day: SequenceFloatType | None = None,
+        month: SequenceIntType | None = None,
+        day: SequenceIntType | None = None,
     ) -> None:
         """
         Add a series of observations to the grid and take the grid average.
 
         Parameters
         ----------
-        lat : array-like of float, shape (n,)
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array.
-        lon : array-like of float, shape (n,)
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array.
-        value : array-like of float, shape (n,)
+        value : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional anomaly array.
-        date : array-like of datetime, shape (n,), optional
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
             1-dimensional datetime array.
-        month : array-like of int, shape (n,), optional
+        month : :py:obj:`~marine_qc.SequenceIntType`, optional
             1-dimensional month array.
             Used if date is not provided.
-        day : array-like of int, shape (n,), optional
+        day : :py:obj:`~marine_qc.SequenceIntType`, optional
             1-dimensional day array.
             Used if date is not provided.
 
@@ -299,8 +298,8 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        pentad_stdev : :py:class:`.Climatology`
-            :py:class:`.Climatology` object containing the 3-dimensional latitude array containing the standard deviations.
+        pentad_stdev : :py:class:`~marine_qc.Climatology`
+            Climatology containing the 3-dimensional latitude array containing the standard deviations.
         limits : list[list[int]]
             List of the limits.
         number_of_obs_thresholds : list[list[int]]
@@ -359,13 +358,13 @@ class SuperObsGrid:
 
         Parameters
         ----------
-        stdev1 : :py:class:`.Climatology`
+        stdev1 : :py:class:`~marine_qc.Climatology`
             Field of standard deviations representing standard deviation of difference between target
             gridcell and complete neighbour average (grid area to neighbourhood difference).
-        stdev2 : :py:class:`.Climatology`
+        stdev2 : :py:class:`~marine_qc.Climatology`
             Field of standard deviations representing standard deviation of difference between a single
             observation and the target gridcell average (point to grid area difference).
-        stdev3 : :py:class:`.Climatology`
+        stdev3 : :py:class:`~marine_qc.Climatology`
             Field of standard deviations representing standard deviation of difference between random
             neighbour gridcell and full neighbour average (uncertainty in neighbour average).
         limits : list[int, int, int]
@@ -489,11 +488,11 @@ class SuperObsGrid:
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
 def do_mds_buddy_check(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
-    value: SequenceFloatType,
-    climatology: ClimInputType | ClimFloatType,
+    value: SequenceNumberType,
+    climatology: ClimArgType,
     standard_deviation: Climatology,
     limits: list[list[int]],
     number_of_obs_thresholds: list[list[int]],
@@ -512,18 +511,19 @@ def do_mds_buddy_check(
 
     Parameters
     ----------
-    lat : array-like of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array.
-    lon : array-like of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array.
-    date : array-like of datetime, shape (n,)
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    value : array-like of float, shape (n,)
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional anomaly array.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
+    climatology : :py:obj:`~marine_qc.ClimArgType`
         The climatological average(s) used to calculate anomalies.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
-    standard_deviation : :py:class:`.Climatology`
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
+    standard_deviation : :py:class:`~marine_qc.Climatology`
         Field of standard deviations of 1x1xpentad standard deviations.
     limits : list[list]
         Limits a list of lists. Each list member is a three-membered list specifying the longitudinal, latitudinal,
@@ -539,9 +539,11 @@ def do_mds_buddy_check(
 
     Returns
     -------
-    array-like of int, shape (n,)
-        1-dimensional array containing QC flags.
-        1 if buddy check fails, 0 otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the MDS buddy check fails
+        - Returns or array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -623,11 +625,11 @@ def do_mds_buddy_check(
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
 def do_bayesian_buddy_check(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
-    value: SequenceFloatType,
-    climatology: ClimInputType | ClimFloatType,
+    value: SequenceNumberType,
+    climatology: ClimArgType,
     stdev1: Climatology,
     stdev2: Climatology,
     stdev3: Climatology,
@@ -648,24 +650,25 @@ def do_bayesian_buddy_check(
 
     Parameters
     ----------
-    lat : array-like of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array.
-    lon : array-like of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array.
-    date : array-like of datetime, shape (n,)
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    value : array-like of float, shape (n,)
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional anomaly array.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology`, or ClimInputType
+    climatology : :py:obj:`~marine_qc.ClimArgType`
         The climatological average(s) used to calculate anomalies.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
-    stdev1 : :py:class:`.Climatology`
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
+    stdev1 : :py:class:`~marine_qc.Climatology`
         Field of standard deviations representing standard deviation of difference between
         target gridcell and complete neighbour average (grid area to neighbourhood difference).
-    stdev2 : :py:class:`.Climatology`
+    stdev2 : :py:class:`~marine_qc.Climatology`
         Field of standard deviations representing standard deviation of difference between
         a single observation and the target gridcell average (point to grid area difference).
-    stdev3 : :py:class:`.Climatology`
+    stdev3 : :py:class:`~marine_qc.Climatology`
         Field of standard deviations representing standard deviation of difference between
         random neighbour gridcell and full neighbour average (uncertainty in neighbour average).
     prior_probability_of_gross_error : float
@@ -690,9 +693,12 @@ def do_bayesian_buddy_check(
 
     Returns
     -------
-    array-like of int, shape (n,)
-        1-dimensional array containing passed, failed or untestable flags. Untestable flags will be set if there
-        are no buddies in the specified limits.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 2s if there are no buddies in the specified limits
+        - Returns array/sequence/Series of 1s if the bayesian buddy check fails
+        - Returns or array/sequence/Series of 0s otherwise.
 
     Raises
     ------
