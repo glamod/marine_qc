@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.13
+  python: python3
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
@@ -23,6 +23,7 @@ repos:
       - id: fix-byte-order-marker
       - id: name-tests-test
         args: [ '--pytest-test-first' ]
+        exclude: ^tests/helpers/.*\.py$
       - id: no-commit-to-branch
         args: [ '--branch', 'main' ]
       - id: trailing-whitespace

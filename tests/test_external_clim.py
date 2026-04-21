@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-from cdm_reader_mapper.common.getting_files import load_file
 
 from marine_qc.external_clim import (
     Climatology,
@@ -14,6 +13,8 @@ from marine_qc.external_clim import (
     get_climatological_value,
     inspect_climatology,
 )
+
+from .helpers.load_file import load_file
 
 
 @pytest.fixture(scope="session")

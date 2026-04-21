@@ -31,6 +31,8 @@ Internal changes
 
 * sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
 * correct reporsitroy url in documentation (:pull:`185`)
+* `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
+* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
 
 Bug fixes
 ^^^^^^^^^

@@ -89,7 +89,6 @@ classifiers = [
 ]
 dynamic = ["description", "version"]
 dependencies = [
-  "cdm_reader_mapper", # FIXME: not present in source files
   "cf_xarray",
   "joblib",
   "matplotlib",

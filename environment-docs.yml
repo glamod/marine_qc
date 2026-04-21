@@ -45,5 +45,4 @@ dependencies:
 
     #from pypi
     - pip:
-      - cdm_reader_mapper
       - pyproj  # FIXME: Why not use native conda package?
