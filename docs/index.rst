@@ -43,6 +43,11 @@ modular way via a standardised interface.
 
    apidoc/modules
 
+.. toctree::
+   :caption: GitHub Repository
+
+   glamod/Marine-Quality-Control <https://github.com/glamod/Marine-Quality-Control>
+
 About
 -----
 
