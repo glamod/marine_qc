@@ -18,7 +18,7 @@
       - '.yamllint.yaml'
       - '.github/workflows/*'
       - 'docs/Makefile'
-      - 'tox.ini'
+      - 'tox.toml'
       - 'CI/**/*'
       - 'Makefile'
 

@@ -4,17 +4,38 @@ Changelog
 
 0.3.2 (unreleased)
 ------------------
-Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trevor James Smith (:user:`Zeitsperre`)
+
+Announcements
+^^^^^^^^^^^^^
+* `marine_qc` now fully supports Python 3.14 and drops support for Python 3.10. (:issue: `182`, :pull:`161`)
 
 New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
 
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Development dependencies ("dev", "docs") are now installed via the new `dependency-groups` conventions (`PEP 735 <https://peps.python.org/pep-0735/>`_) (:pull:`161`)
+* `prek` is now the suggested pre-commit runner (installed by default via `pip install --group dev`) (:pull:`161`)
+
 Internal changes
 ^^^^^^^^^^^^^^^^
-* `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
-* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
+* Updated the project template and boilerplate code to address configuration issues and benefit from new workflows/conventions (:pull:`161`):
 
+    * A new workflow has been added to automatically accept minor/patch updates to GitHub Actions and Python deps coming from Dependabot.
+    * `tox.ini`` has migrated to `tox.toml` (new standard).
+    * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
+    * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
+    * Various dependency updates.
+    
+* `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
+* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)    
+
+Bug fixes
+^^^^^^^^^
+* Staging and deployment worksflows are now fully working again (:issue:`160`, :pull:`161`)
+* `bump-verion` workflow is now fully working again (:issue:`64`, :pull:`161`)
 
 0.3.1 (2026-03-06)
 ------------------
