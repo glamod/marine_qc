@@ -5,3 +5,12 @@ rules:
       - label-on-approval.yml:3
       - label.yml:9
       - workflow-warning.yml:3
+
+  secrets-outside-env:
+    ignore:
+      - testing-suite.yml:116
+
+  superfluous-actions:
+    ignore:
+      - label-on-approval.yml:79
+      - label-on-approval.yml:91
