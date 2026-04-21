@@ -22,12 +22,15 @@ Breaking changes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Updated the project template and boilerplate code to address configuration issues and benefit from new workflows/conventions (:pull:`161`):
+
     * A new workflow has been added to automatically accept minor/patch updates to GitHub Actions and Python deps coming from Dependabot.
     * `tox.ini`` has migrated to `tox.toml` (new standard).
     * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
     * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
     * Various dependency updates.
+
 * sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
+* correct reporsitroy url in documentation (:pull:`185`)
 
 Bug fixes
 ^^^^^^^^^
