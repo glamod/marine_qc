@@ -6,10 +6,13 @@ Changelog
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trevor James Smith (:user:`Zeitsperre`)
 
+Announcements
+^^^^^^^^^^^^^
+* `marine_qc` now fully supports Python 3.14 and drops support for Python 3.10. (:issue: `182`, :pull:`161`)
+
 New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
-* `marine_qc` now fully supports Python 3.14. (:pull:`161`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -24,6 +27,11 @@ Internal changes
     * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
     * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
     * Various dependency updates.
+
+Bug fixes
+^^^^^^^^^
+* Staging and deployment worksflows are now fully working again (:issue:`160`, :pull:`161`)
+* `bump-verion` workflow is now fully working again (:issue:`64`, :pull:`161`)
 
 0.3.1 (2026-03-06)
 ------------------
