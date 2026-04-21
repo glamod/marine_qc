@@ -27,7 +27,7 @@ Internal changes
     * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
     * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
     * Various dependency updates.
-* sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)    
+* sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
 
 Bug fixes
 ^^^^^^^^^
