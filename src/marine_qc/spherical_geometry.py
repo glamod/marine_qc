@@ -12,6 +12,7 @@ from pyproj import Geod
 
 from .auxiliary import (
     SequenceFloatType,
+    SequenceNumberType,
     convert_to,
     earths_radius,
     ensure_arrays,
@@ -27,23 +28,23 @@ geod = Geod(a=earths_radius, b=earths_radius)
 
 
 def _geod_inv(
-    lon1: SequenceFloatType,
-    lat1: SequenceFloatType,
-    lon2: SequenceFloatType,
-    lat2: SequenceFloatType,
+    lon1: SequenceNumberType,
+    lat1: SequenceNumberType,
+    lon2: SequenceNumberType,
+    lat2: SequenceNumberType,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute forward azimuth, back azimuth, and distance between two points using an ellipsoidal model.
 
     Parameters
     ----------
-    lon1 : SequenceFloatType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat1 : SequenceFloatType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon2 : SequenceFloatType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
-    lat2 : SequenceFloatType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
 
     Returns
@@ -62,10 +63,10 @@ def _geod_inv(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def angular_distance(
-    lat1: SequenceFloatType,
-    lon1: SequenceFloatType,
-    lat2: SequenceFloatType,
-    lon2: SequenceFloatType,
+    lat1: SequenceNumberType,
+    lon1: SequenceNumberType,
+    lat2: SequenceNumberType,
+    lon2: SequenceNumberType,
 ) -> np.ndarray:
     """
     Calculate the great-circle angular distance between two points on a sphere.
@@ -75,13 +76,13 @@ def angular_distance(
 
     Parameters
     ----------
-    lat1 : SequenceFloatType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceFloatType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceFloatType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceFloatType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
 
     Returns
@@ -108,10 +109,10 @@ def angular_distance(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def sphere_distance(
-    lat1: SequenceFloatType,
-    lon1: SequenceFloatType,
-    lat2: SequenceFloatType,
-    lon2: SequenceFloatType,
+    lat1: SequenceNumberType,
+    lon1: SequenceNumberType,
+    lat2: SequenceNumberType,
+    lon2: SequenceNumberType,
 ) -> np.ndarray:
     """
     Calculate the great circle angular distance between two points on a sphere.
@@ -126,13 +127,13 @@ def sphere_distance(
 
     Parameters
     ----------
-    lat1 : SequenceFloatType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceFloatType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceFloatType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceFloatType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
 
     Returns
@@ -158,10 +159,10 @@ def sphere_distance(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2", "f"], dtype=float, multiple=True)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2", "f"])
 def intermediate_point(
-    lat1: SequenceFloatType,
-    lon1: SequenceFloatType,
-    lat2: SequenceFloatType,
-    lon2: SequenceFloatType,
+    lat1: SequenceNumberType,
+    lon1: SequenceNumberType,
+    lat2: SequenceNumberType,
+    lon2: SequenceNumberType,
     f: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -173,13 +174,13 @@ def intermediate_point(
 
     Parameters
     ----------
-    lat1 : SequenceFloatType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceFloatType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceFloatType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceFloatType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
     f : float
         Fraction of distance between the two points.
@@ -216,28 +217,28 @@ def intermediate_point(
 @post_format_return_type(["lat1", "lon1", "lat2", "lon2"], dtype=float)
 @inspect_arrays(["lat1", "lon1", "lat2", "lon2"])
 def course_between_points(
-    lat1: SequenceFloatType,
-    lon1: SequenceFloatType,
-    lat2: SequenceFloatType,
-    lon2: SequenceFloatType,
+    lat1: SequenceNumberType,
+    lon1: SequenceNumberType,
+    lat2: SequenceNumberType,
+    lon2: SequenceNumberType,
 ) -> SequenceFloatType:
     """
     Given two points find the initial true course at point1 inputs are in degrees and output is in degrees.
 
     Parameters
     ----------
-    lat1 : SequenceFloatType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceFloatType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
-    lat2 : SequenceFloatType
+    lat2 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the second point in degrees.
-    lon2 : SequenceFloatType
+    lon2 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the second point in degrees.
 
     Returns
     -------
-    SequenceFloatType
+    :py:obj:`~marine_qc.SequenceFloatType`
         Initial true course in degrees at point one along the great circle between point
         one and point two.
 
@@ -255,8 +256,8 @@ def course_between_points(
 @post_format_return_type(["lat1", "lon1"], dtype=float, multiple=True)
 @inspect_arrays(["lat1", "lon1"])
 def lat_lon_from_course_and_distance(
-    lat1: SequenceFloatType,
-    lon1: SequenceFloatType,
+    lat1: SequenceNumberType,
+    lon1: SequenceNumberType,
     tc: float,
     d: float,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -269,9 +270,9 @@ def lat_lon_from_course_and_distance(
 
     Parameters
     ----------
-    lat1 : SequenceFloatType
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
         Latitude of the first point in degrees.
-    lon1 : SequenceFloatType
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
         Longitude of the first point in degrees.
     tc : float
         True course measured clockwise from north in degrees.

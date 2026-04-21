@@ -13,8 +13,8 @@ from scipy.ndimage import label
 
 from .auxiliary import (
     SequenceDatetimeType,
-    SequenceFloatType,
     SequenceIntType,
+    SequenceNumberType,
     convert_units,
     ensure_arrays,
     failed,
@@ -43,9 +43,9 @@ from .track_check_utils import (
 @inspect_arrays(["value", "lat", "lon", "date"], sortby="date")
 @convert_units(lat="degrees", lon="degrees")
 def do_spike_check(
-    value: SequenceFloatType,
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    value: SequenceNumberType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     max_gradient_space: float,
     max_gradient_time: float,
@@ -57,41 +57,35 @@ def do_spike_check(
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
-      One-dimensional array of values to be analyzed.
-      Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : :py:obj:`~marine_qc.SequenceNumberType`
+        One-dimensional array of values to be analyzed.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         One-dimensional array of datetime values.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     max_gradient_space : float, default: 0.5
         Maximum allowed spatial gradient.
         The unit is "units of value" per kilometer.
-
     max_gradient_time : float, default: 1.0
         Maximum allowed temporal gradient.
         The unit is "units of value" per hour.
-
     delta_t : float, default: 2.0
         Temperature delta used in the comparison.
         Typically set to 2.0 for ships and 1.0 for drifting buoys.
-
     n_neighbours : int, default: 5
         Number of neighboring points considered in the analysis.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-        One-dimensional array, sequence, or pandas Series of integer QC flags.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
         - Returns array/sequence/Series of 1s if the spike check fails.
         - Returns array/sequence/Series of 0s otherwise.
 
@@ -175,10 +169,10 @@ def do_spike_check(
 @inspect_arrays(["vsi", "dsi", "lat", "lon", "date"], sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 def do_track_check(
-    vsi: SequenceFloatType,
-    dsi: SequenceFloatType,
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    vsi: SequenceNumberType,
+    dsi: SequenceNumberType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     max_direction_change: float,
     max_speed_change: float,
@@ -194,44 +188,37 @@ def do_track_check(
 
     Parameters
     ----------
-    vsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional reported speed array in km/h.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dsi : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional reported heading array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     max_direction_change : float, default: 60.0
       Maximum valid direction change in degrees.
-
     max_speed_change : float, default: 10.0
       Maximum valid speed change in km/h.
-
     max_absolute_speed : float, default: 40.0
       Maximum valid absolute speed in km/h.
-
     max_midpoint_discrepancy : float, default: 150.0
       Maximum valid midpoint discrepancy in meters.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the track check fails.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the track check fails.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -348,23 +335,24 @@ def do_track_check(
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
 def do_few_check(
-    value: SequenceFloatType,
+    value: SequenceNumberType,
 ) -> SequenceIntType:
     """
     Check if number of observations is less than 3.
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of values to be analyzed.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if number of observations is less than 3.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if number of observations is less than 3.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -393,10 +381,10 @@ def do_few_check(
 @inspect_arrays(["at", "dpt", "lat", "lon", "date"], sortby="date")
 @convert_units(at="K", dpt="K", lat="degrees", lon="degrees")
 def find_saturated_runs(
-    at: SequenceFloatType,
-    dpt: SequenceFloatType,
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    at: SequenceNumberType,
+    dpt: SequenceNumberType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     min_time_threshold: float,
     shortest_run: int,
@@ -410,38 +398,33 @@ def find_saturated_runs(
 
     Parameters
     ----------
-    at : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    at : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional air temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    dpt : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    dpt : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional dew point temperature array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     min_time_threshold : float, default: 48.0
       Minimum time threshold in hours.
-
     shortest_run : int, default: 4
       Shortest number of observations.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if a saturated run is found.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if a saturated run is found.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -488,7 +471,7 @@ def find_saturated_runs(
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
+def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find instances when more than "threshold" of the observations are whole numbers and set the 'round' flag.
 
@@ -496,22 +479,21 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     min_count : int, default: 20
       Minimum number of rounded figures that will trigger the test.
-
     threshold : float, default: 0.5
       Minimum fraction of all observations that will trigger the test.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the value is a whole number.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the value is a whole number.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -556,7 +538,7 @@ def find_multiple_rounded_values(value: SequenceFloatType, min_count: int, thres
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: float) -> SequenceIntType:
+def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find cases where more than a given proportion of SSTs have the same value.
 
@@ -565,22 +547,21 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
 
     Parameters
     ----------
-    value : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    value : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional array of values.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     min_count : int, default: 20
       Minimum number of repeated values that will trigger the test.
-
     threshold : float, default: 0.7
       Smallest fraction of all observations that will trigger the test.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the value is repeated.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the value is repeated.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------
@@ -629,8 +610,8 @@ def find_repeated_values(value: SequenceFloatType, min_count: int, threshold: fl
 @inspect_arrays(["lat", "lon", "date"], sortby="date")
 @convert_units(lat="degrees", lon="degrees")
 def do_iquam_track_check(
-    lat: SequenceFloatType,
-    lon: SequenceFloatType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     speed_limit: float,
     delta_d: float,
@@ -648,37 +629,32 @@ def do_iquam_track_check(
 
     Parameters
     ----------
-    lat : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional latitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    lon : sequence of float, 1D np.ndarray of float, or pd.Series of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
       One-dimensional longitude array in degrees.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
-    date : sequence of datetime, 1D np.ndarray of datetime, or pd.Series of datetime, shape (n,)
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
       One-dimensional date array.
       Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-
     speed_limit : float
       Speed limit of platform in kilometers per hour.
       Typically, 60.0 for ships and 15.0 for drifting buoys.
-
     delta_d : float
       Latitude tolerance in degrees.
-
     delta_t : float
       Time tolerance in hundredths of an hour.
-
     n_neighbours : int
       Number of neighbouring points considered in the analysis.
 
     Returns
     -------
-    Same type as input, but with integer values, shape (n,)
-      One-dimensional array, sequence, or pandas Series of integer QC flags.
-      - Returns array/sequence/Series of 1s if the IQUAM QC fails.
-      - Returns array/sequence/Series of 0s otherwise.
+    :py:obj:`~marine_qc.SequenceIntType`
+        Same type as input, but with integer values
+
+        - Returns array/sequence/Series of 1s if the IQUAM QC fails.
+        - Returns array/sequence/Series of 0s otherwise.
 
     Raises
     ------

@@ -6,7 +6,6 @@ import os
 import warnings
 from collections import defaultdict
 from collections.abc import Callable, Sequence
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
@@ -21,9 +20,12 @@ from xclim.core.units import convert_units_to
 from .auxiliary import (
     DECORATOR_KWARGS,
     DECORATOR_NAMES,
-    SequenceFloatType,
+    SequenceDatetimeType,
+    SequenceIntType,
+    SequenceNumberType,
     ValueFloatType,
     ValueIntType,
+    ValueNumberType,
     generic_decorator,
     isvalid,
     post_format_return_type,
@@ -41,8 +43,8 @@ from .time_control import (
 def _select_point(
     i: int,
     da_slice: xr.DataArray,
-    lat_arr: SequenceFloatType,
-    lon_arr: SequenceFloatType,
+    lat_arr: SequenceNumberType,
+    lon_arr: SequenceNumberType,
     lat_axis: str,
     lon_axis: str,
 ) -> tuple[int, float]:
@@ -55,9 +57,9 @@ def _select_point(
         Index of the latitude/longitude pair.
     da_slice : xr.DataArray
         DataArray slice to sample from.
-    lat_arr : SequenceFloatType
+    lat_arr : :py:obj:`~marine_qc.SequenceNumberType`
         Array of latitude values.
-    lon_arr : SequenceFloatType
+    lon_arr : :py:obj:`~marine_qc.SequenceNumberType`
         Array of longitude values.
     lat_axis : str
         Name of the latitude dimension in `da_slice`.
@@ -112,7 +114,8 @@ def inspect_climatology(
 
     This decorator inspects the specified function arguments and normalizes them to concrete
     numerical values before the decorated function is executed. Supported input types include
-    raw numeric values, xarray objects, file paths, and `Climatology` instances.
+    raw numeric values, xarray objects, file paths, and :py:class:`~marine_qc.Climatology`
+    instances.
 
     Parameters
     ----------
@@ -123,9 +126,9 @@ def inspect_climatology(
         - a `xr.DataArray`
         - a `xr.Dataset`
         - a string or path-like object pointing to a valid NetCDF file on disk
-        - a `Climatology` instance
+        - a :py:class:`~marine_qc.Climatology` instance
 
-        If a `Climatology` object (or an object convertible to one) is detected,
+        If a :py:class:`~marine_qc.Climatology` object (or an object convertible to one) is detected,
         it will be resolved to a concrete value using its `.get_value_fast(**kwargs)` method.
 
     optional : str or sequence of str, optional
@@ -148,7 +151,7 @@ def inspect_climatology(
     Warns
     -----
     UserWarning
-        Issued if required keyword arguments for `Climatology.get_value_fast()`
+        Issued if required keyword arguments for :py:func:`~marine_qc.Climatology.get_value_fast()`
         are missing. This warning does not stop execution; missing values
         are replaced with `np.nan`.
 
@@ -156,10 +159,10 @@ def inspect_climatology(
     -----
     - `xr.Dataset` inputs require the keyword argument `clim_name` to select
       the relevant data variable.
-    - `xr.DataArray` inputs are automatically wrapped in a `Climatology` object.
+    - `xr.DataArray` inputs are automatically wrapped in a :py:class:`~marine_qc.Climatology` object.
     - String or path-like inputs must point to an existing file and are
-      opened via `Climatology.open_netcdf_file`.
-    - If a `Climatology` object is processed, it is resolved using
+      opened via :py:func:`~marine_qc.Climatology.open_netcdf_file`.
+    - If a :py:class:`~marine_qc.Climatology` object is processed, it is resolved using
       `.get_value_fast(**kwargs)`.
     - If required keyword arguments for `.get_value_fast()` are missing,
       a warning is issued.
@@ -173,15 +176,15 @@ def inspect_climatology(
 
     def pre_handler(arguments: dict[str, Any], **meta_kwargs: Any) -> None:
         r"""
-        Preprocess specified arguments, resoling Climatology objects to concrete values.
+        Preprocess specified arguments, resoling :py:class:`~marine_qc.Climatology` objects to concrete values.
 
         Parameters
         ----------
         arguments : dict
             Function arguments as a dictionary.
         \**meta_kwargs : dict
-            Additional keyword arguments to pass to `Climatology.get_value_fast()`,
-            `Climatology()` and/or `Climatology.open_netcdf_file()`.
+            Additional keyword arguments to pass to :py:func:`~marine_qc.Climatology.get_value_fast()`,
+            :py:class:`~marine_qc.Climatology` and/or :py:func:`~marine_qc.Climatology.open_netcdf_file()`.
 
         Returns
         -------
@@ -495,7 +498,7 @@ class Climatology:
             Target units to which units must conform.
 
         source_units : str, optional
-            Source units if not specified in :py:class:`Climatology`.
+            Source units if not specified in :py:class:`~marine_qc.Climatology`.
 
         Notes
         -----
@@ -511,26 +514,26 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value_fast(
         self,
-        lat: float | Sequence[float] | np.ndarray,
-        lon: float | Sequence[float] | np.ndarray,
-        date: datetime | None | Sequence[datetime | None] | np.ndarray = None,
-        month: int | None | Sequence[int | None] | np.ndarray = None,
-        day: int | None | Sequence[int | None] | np.ndarray = None,
-    ) -> ndarray | pd.Series:
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
+        date: SequenceDatetimeType | None = None,
+        month: SequenceIntType | None = None,
+        day: SequenceIntType | None = None,
+    ) -> np.ndarray | pd.Series:
         """
         Get the value from a climatology at the give position and time.
 
         Parameters
         ----------
-        lat : float, optional
+        lat : :py:obj:`~marine_qc.SequenceNumberType`, optional
             Latitude of location to extract value from in degrees.
-        lon : float, optional
+        lon : :py:obj:`~marine_qc.SequenceNumberType`, optional
             Longitude of location to extract value from in degrees.
-        date : datetime-like, optional
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
             Date for which the value is required.
-        month : int, optional
+        month : :py:obj:`~marine_qc.SequenceIntType`, optional
             Month for which the value is required.
-        day : int, optional
+        day : :py:obj:`~marine_qc.SequenceIntType`, optional
             Day for which the value is required.
 
         Returns
@@ -543,9 +546,11 @@ class Climatology:
         Assumes that the grid is a regular latitude longitude grid. The alternative method `get_value`
         works with non-regular grids.
         """
+        lat = np.array(lat, dtype=float)
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
+        lon = np.array(lon, dtype=float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
@@ -713,26 +718,26 @@ class Climatology:
     @convert_date(["month", "day"])
     def get_value(
         self,
-        lat: float | Sequence[float] | np.ndarray,
-        lon: float | Sequence[float] | np.ndarray,
-        date: datetime | None | Sequence[datetime | None] | np.ndarray = None,
-        month: int | None | Sequence[int | None] | np.ndarray = None,
-        day: int | None | Sequence[int | None] | np.ndarray = None,
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
+        date: SequenceDatetimeType | None = None,
+        month: SequenceIntType | None = None,
+        day: SequenceIntType | None = None,
     ) -> ndarray | pd.Series:
         """
         Get the value from a climatology at the give position and time.
 
         Parameters
         ----------
-        lat : float, optional
+        lat : :py:obj:`~marine_qc.SequenceNumberType`, optional
             Latitude of location to extract value from in degrees.
-        lon : float, optional
+        lon : :py:obj:`~marine_qc.SequenceNumberType`, optional
             Longitude of location to extract value from in degrees.
-        date : datetime-like, optional
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
             Date for which the value is required.
-        month : int, optional
+        month : :py:obj:`~marine_qc.SequenceIntType`, optional
             Month for which the value is required.
-        day : int, optional
+        day : :py:obj:`~marine_qc.SequenceIntType`, optional
             Day for which the value is required.
 
         Returns
@@ -744,8 +749,11 @@ class Climatology:
         -----
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
+        lat = np.array(lat, dtype=float)
         lat_arr = np.atleast_1d(lat)  # type: np.ndarray
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
+
+        lon = np.array(lon, dtype=float)
         lon_arr = np.atleast_1d(lon)  # type: np.ndarray
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
@@ -820,10 +828,10 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
 
     Parameters
     ----------
-    climatology : Climatology
+    climatology : :py:class:`~marine_qc.Climatology`
         Climatology class.
     \**kwargs : dict
-        Pass keyword-arguments to :py:class:~Climatology.get_value`.
+        Pass keyword-arguments to :py:func:~Climatology.get_value`.
 
     Returns
     -------
@@ -835,5 +843,6 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
 
 ClimIntType: TypeAlias = ValueIntType | Climatology
 ClimFloatType: TypeAlias = ValueFloatType | Climatology
-ClimNumberType: TypeAlias = ValueIntType | ValueFloatType | Climatology
+ClimNumberType: TypeAlias = ValueNumberType | Climatology
 ClimInputType: TypeAlias = str | os.PathLike[str] | xr.DataArray | xr.Dataset
+ClimArgType: TypeAlias = ClimNumberType | ClimInputType

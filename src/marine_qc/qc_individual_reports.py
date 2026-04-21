@@ -26,7 +26,7 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimInputType, ClimIntType, ClimNumberType, inspect_climatology
+from .external_clim import ClimArgType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 
 
@@ -42,13 +42,15 @@ def value_check(value: ValueNumberType) -> ValueIntType:
 
     Parameters
     ----------
-    value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    value : :py:obj:`~marine_qc.ValueNumberType`
         The input value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -78,16 +80,18 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
 
     Parameters
     ----------
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : :py:obj:`~marine_qc.ValueNumberType`
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : :py:obj:`~marine_qc.ValueNumberType`
         Longitude() of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if either latitude or longitude is out of the valid range.
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -118,10 +122,10 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
 @convert_date(["year", "month", "day"])
 @inspect_arrays(["year", "month", "day"])
 def do_date_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
     year_init: int | None = None,
     year_end: int | None = None,
 ) -> ValueIntType:
@@ -130,16 +134,16 @@ def do_date_check(
 
     Parameters
     ----------
-    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : :py:obj:`~marine_qc.ValueDatetimeType`, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    year : :py:obj:`~marine_qc.ValueIntType`, optional
         Year(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    month : :py:obj:`~marine_qc.ValueIntType`, optional
         Month(s) of observation (1-12).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+    day : :py:obj:`~marine_qc.ValueIntType`, optional
         Day(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     year_init : int, optional
@@ -149,7 +153,9 @@ def do_date_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of year, month, or day is numerically invalid or None,
         - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -197,24 +203,26 @@ def do_date_check(
 @convert_date(["hour"])
 @inspect_arrays(["hour"])
 def do_time_check(
-    date: ValueDatetimeType | None = None,
-    hour: ValueFloatType | None = None,
+    date: ValueDatetimeType = None,
+    hour: ValueFloatType = None,
 ) -> ValueIntType:
     """
     Check that the time is valid i.e. in the range 0.0 to 23.99999...
 
     Parameters
     ----------
-    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : :py:obj:`~marine_qc.ValueDatetimeType`, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+    hour : :py:obj:`~marine_qc.ValueFloatType`, optional
         Hour(s) of observation (minutes as decimal).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if hour is numerically invalid or None,
         - Returns 1 (or array/sequence/Series of 1s) if hour is not a valid hour,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -246,7 +254,7 @@ def _do_daytime_check(
     hour: np.ndarray,
     lat: np.ndarray,
     lon: np.ndarray,
-    time_since_sun_above_horizon: ScalarNumberType | None,
+    time_since_sun_above_horizon: ScalarNumberType,
     mode: Literal["day", "night"],
 ) -> np.ndarray:
     """
@@ -276,6 +284,7 @@ def _do_daytime_check(
     Returns
     -------
     np.ndarray of int
+
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
@@ -360,14 +369,14 @@ def _do_daytime_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
-    hour: ValueFloatType | None = None,
-    lat: ValueNumberType | None = None,
-    lon: ValueNumberType | None = None,
-    time_since_sun_above_horizon: ScalarNumberType | None = None,
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
+    hour: ValueFloatType = None,
+    lat: ValueNumberType = None,
+    lon: ValueNumberType = None,
+    time_since_sun_above_horizon: ScalarNumberType = None,
 ) -> ValueIntType:
     """
     Determine if the sun was above the horizon a specified time before the report.
@@ -379,25 +388,25 @@ def do_day_check(
 
     Parameters
     ----------
-    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : :py:obj:`~marine_qc.ValueDatetimeType`, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    year : :py:obj:`~marine_qc.ValueIntType`, optional
         Year(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    month : :py:obj:`~marine_qc.ValueIntType`, optional
         Month(s) of observation (1-12).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+    day : :py:obj:`~marine_qc.ValueIntType`, optional
         Day(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+    hour : :py:obj:`~marine_qc.ValueFloatType`, optional
         Hour(s) of observation (minutes as decimal).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : :py:obj:`~marine_qc.ValueNumberType`, optional
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : :py:obj:`~marine_qc.ValueNumberType`, optional
         Longitude() of observation in degree.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     time_since_sun_above_horizon : float
@@ -406,7 +415,9 @@ def do_day_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
@@ -438,14 +449,14 @@ def do_day_check(
 @inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
-    date: ValueDatetimeType | None = None,
-    year: ValueIntType | None = None,
-    month: ValueIntType | None = None,
-    day: ValueIntType | None = None,
-    hour: ValueFloatType | None = None,
-    lat: ValueNumberType | None = None,
-    lon: ValueNumberType | None = None,
-    time_since_sun_above_horizon: ScalarNumberType | None = None,
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
+    hour: ValueFloatType = None,
+    lat: ValueNumberType = None,
+    lon: ValueNumberType = None,
+    time_since_sun_above_horizon: ScalarNumberType = None,
 ) -> ValueIntType:
     """
     Determine if the sun was below the horizon a specified time before the report.
@@ -457,25 +468,25 @@ def do_night_check(
 
     Parameters
     ----------
-    date : datetime, None, sequence of datetime or None, 1D np.ndarray of datetime, or pd.Series of float, optional
+    date : :py:obj:`~marine_qc.ValueDatetimeType`, optional
         Date(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    year : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    year : :py:obj:`~marine_qc.ValueIntType`, optional
         Year(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    month : int, None, sequence of int or None, 1D np.ndarray of int, or pd.Series of int, optional
+    month : :py:obj:`~marine_qc.ValueIntType`, optional
         Month(s) of observation (1-12).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    day : int, None, sequence of int or None, 1D np.ndarray of int, or pd.series of int, optional
+    day : :py:obj:`~marine_qc.ValueIntType`, optional
         Day(s) of observation.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    hour : float, None, sequence of float or None, 1D np.ndarray of float, or pd.Series of float, optional
+    hour : :py:obj:`~marine_qc.ValueFloatType`, optional
         Hour(s) of observation (minutes as decimal).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : :py:obj:`~marine_qc.ValueNumberType`, optional
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : :py:obj:`~marine_qc.ValueNumberType`, optionalt
         Longitude() of observation in degree.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     time_since_sun_above_horizon : float
@@ -484,7 +495,9 @@ def do_night_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
@@ -529,13 +542,15 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
 
     Parameters
     ----------
-    value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    value : :py:obj:`~marine_qc.ValueNumberType`
         The input value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -548,21 +563,24 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimInputType | ClimNumberType, **kwargs: Any) -> ValueIntType:
+def do_missing_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
 
     Parameters
     ----------
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology` or ClimInputType
+    climatology : :py:obj:`~marine_qc.ClimArgType`
         The input climatological value(s) to be tested.
-        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     \**kwargs : dict
         Additional keyword arguments passed by the decorator framework (unused).
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -573,8 +591,8 @@ def do_missing_value_clim_check(climatology: ClimInputType | ClimNumberType, **k
 
     Notes
     -----
-    If `climatology` is a :py:class:`.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`, as keyword
-    arguments to extract the relevant climatological value.
+    If `climatology` is a :py:class:`~marine_qc.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`,
+    as keyword arguments to extract the relevant climatological value.
     """
     return value_check(climatology)
 
@@ -591,7 +609,7 @@ def do_hard_limit_check(
 
     Parameters
     ----------
-    value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    value : :py:obj:`~marine_qc.ValueNumberType`
         The value(s) to be tested against the limits.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     limits : tuple of float
@@ -599,7 +617,9 @@ def do_hard_limit_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if the upper limit is less than or equal
           to the lower limit, or if the input is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if value(s) are outside the specified limits.
@@ -634,9 +654,9 @@ def do_hard_limit_check(
 @inspect_climatology("climatology", optional="standard_deviation")
 def do_climatology_check(
     value: ValueNumberType,
-    climatology: ClimInputType | ClimNumberType,
+    climatology: ClimArgType,
     maximum_anomaly: float,
-    standard_deviation: ValueNumberType = "default",
+    standard_deviation: ClimArgType = "default",
     standard_deviation_limits: tuple[int | float, int | float] | None = None,
     lowbar: int | float | None = None,
 ) -> ValueIntType:
@@ -652,19 +672,21 @@ def do_climatology_check(
 
     Parameters
     ----------
-    value : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    value : :py:obj:`~marine_qc.ValueNumberType`
         Value(s) to be compared to climatology.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    climatology : float, None, sequence of float or None, 1D np.ndarray of float, pd.Series of float, :py:class:`.Climatology` or ClimInputType
+    climatology : :py:obj:`~marine_qc.ClimArgType`
         The climatological average(s) to which the values(s) will be compared.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     maximum_anomaly : float
         Largest allowed anomaly.
         If ``standard_deviation`` is provided, this is interpreted as the largest allowed standardised anomaly.
-    standard_deviation : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float, default: "default"
+    standard_deviation : :py:obj:`~marine_qc.ClimArgType`, default: "default"
         The standard deviation(s) used to standardise the anomaly
         If set to "default", it is internally treated as 1.0.
-        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     standard_deviation_limits : tuple of float, optional
         A tuple of two floats representing the upper and lower limits for standard deviation used in the check.
     lowbar : float, optional
@@ -672,7 +694,9 @@ def do_climatology_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if `standard_deviation_limits[1]` is less than or equal to
           `standard_deviation_limits[0]`, or if `maximum_anomaly` is less than or equal to 0, or if any of
           `value`, `climate_normal`, or `standard_deviation` is numerically invalid (None or NaN).
@@ -686,8 +710,8 @@ def do_climatology_check(
 
     Notes
     -----
-    If either `climatology` or `standard_deviation` is a :py:class:`.Climatology` object, pass `lon` and `lat` and
-    `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
+    If either `climatology` or `standard_deviation` is a :py:class:`~marine_qc.Climatology` object, pass `lon` and `lat`
+    and `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
     value_arr, climatology_arr = ensure_arrays(value=value, climatology=climatology)
 
@@ -746,16 +770,18 @@ def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> Valu
 
     Parameters
     ----------
-    dpt : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    dpt : :py:obj:`~marine_qc.ValueNumberType`
         Dewpoint temperature value(s).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    at2 : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    at2 : :py:obj:`~marine_qc.ValueNumberType`
         Air temperature values(s).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either dpt or at2 is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if supersaturation is detected,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -805,7 +831,7 @@ def do_sst_freeze_check(
 
     Parameters
     ----------
-    sst : float, None, sequence of float or None, 1D np.ndarray of float or pd.series of float
+    sst : :py:obj:`~marine_qc.ValueNumberType`
         Input sea-surface temperature value(s) to be checked.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     freezing_point : float, optional
@@ -818,7 +844,9 @@ def do_sst_freeze_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if any of `sst`, `freezing_point`, `sst_uncertainty`,
           or `n_sigma` is numerically invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if `sst` is below `freezing_point` by more than
@@ -873,16 +901,18 @@ def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: Value
 
     Parameters
     ----------
-    wind_speed : float, None, sequence of float or None, 1D np.ndarray of float or pd.series of float
+    wind_speed : :py:obj:`~marine_qc.ValueNumberType`
         Wind speed value(s).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    wind_direction : float, None, sequence of float or None, 1D np.ndarray of float or pd.series of float
+    wind_direction : :py:obj:`~marine_qc.ValueNumberType`
         Wind direction value(s).
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either wind_speed or wind_direction is invalid (None or NaN).
         - Returns 1 (or array/sequence/Series of 1s) if wind_speed and wind_direction are inconsistent,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
@@ -931,7 +961,9 @@ def _do_mask_check(
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if the position does not correspond to a land point
         - Returns 0 (or array/sequence/Series of 0s) otherwise
@@ -966,7 +998,7 @@ def _do_mask_check(
 def do_landlocked_check(
     lat: ValueNumberType,
     lon: ValueNumberType,
-    land_sea_mask: ClimInputType | ClimIntType,
+    land_sea_mask: ClimArgType,
     land_flag: int,
 ) -> ValueIntType:
     """
@@ -974,21 +1006,24 @@ def do_landlocked_check(
 
     Parameters
     ----------
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : :py:obj:`~marine_qc.ValueNumberType`
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : :py:obj:`~marine_qc.ValueNumberType`
         Longitude() of observation in degree.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    land_sea_mask : int or None, sequence of int or None, 1D np.ndarray of int, pd.Series of int, :py:class:`.Climatology` or ClimInputType
+    land_sea_mask : :py:obj:`~marine_qc.ClimArgType`
         Land-sea classification value(s) to which the latitude and longitude values(s) will be compared.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     land_flag : int
         Integer value in `land_sea_mask` that denotes a land point.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if the position does not correspond to a land point
         - Returns 0 (or array/sequence/Series of 0s) otherwise
@@ -1010,7 +1045,7 @@ def do_landlocked_check(
 def do_maritime_check(
     lat: ValueNumberType,
     lon: ValueNumberType,
-    sea_land_mask: ClimInputType | ClimIntType,
+    sea_land_mask: ClimArgType,
     sea_flag: int,
 ) -> ValueIntType:
     """
@@ -1018,21 +1053,24 @@ def do_maritime_check(
 
     Parameters
     ----------
-    lat : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lat : :py:obj:`~marine_qc.ValueNumberType`
         Latitude(s) of observation in degrees.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : float, None, sequence of float or None, 1D np.ndarray of float or pd.Series of float
+    lon : :py:obj:`~marine_qc.ValueNumberType`
         Longitude() of observation in degree.
         Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    sea_land_mask : int or None, sequence of int or None, 1D np.ndarray of int, pd.Series of int :py:class:`.Climatology` or ClimInputType
+    sea_land_mask : :py:obj:`~marine_qc.ClimArgType`
         Sea-land classification value(s) to which the latitude and longitude values(s) will be compared.
-        Can be a scalar, a sequence, a one-dimensional NumPy array, a pandas Series, a :py:class:`.Climatology`, or a ClimInputType.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
     sea_flag : int
         Integer value in `sea_land_mask` that denotes a sea point.
 
     Returns
     -------
-    Same type as input, but with integer values
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 2 (or array/sequence/Series of 2s) if either latitude or longitude is numerically invalid (None/NaN).
         - Returns 1 (or array/sequence/Series of 1s) if latitude and longitude denotes not a sea point
         - Returns 0 (or array/sequence/Series of 0s) otherwise

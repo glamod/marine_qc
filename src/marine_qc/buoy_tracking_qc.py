@@ -13,11 +13,10 @@ from collections.abc import Sequence
 from datetime import datetime
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
 from .astronomical_geometry import sunangle
-from .auxiliary import ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
+from .auxiliary import SequenceDatetimeType, SequenceNumberType, ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
 from .qc_sequential_reports import do_iquam_track_check
 from .spherical_geometry import sphere_distance
 from .statistics import trim_mean, trim_std
@@ -182,11 +181,11 @@ class SpeedChecker:
 
     Parameters
     ----------
-    lons : np.ndarray of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    lats : np.ndarray of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    dates : np.ndarray of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -201,9 +200,9 @@ class SpeedChecker:
 
     def __init__(
         self,
-        lons: npt.NDArray[np.floating],
-        lats: npt.NDArray[np.floating],
-        dates: npt.NDArray[np.datetime64],
+        lons: SequenceNumberType,
+        lats: SequenceNumberType,
+        dates: SequenceDatetimeType,
         speed_limit: float,
         min_win_period: float,
         max_win_period: float,
@@ -213,11 +212,11 @@ class SpeedChecker:
 
         Parameters
         ----------
-        lons : np.ndarray of float, shape (n,)
+        lons : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        lats : np.ndarray of float, shape (n,)
+        lats : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        dates : np.ndarray of datetime, shape (n,)
+        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -400,11 +399,11 @@ class NewSpeedChecker:
 
     Parameters
     ----------
-    lons : np.ndarray of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    lats : np.ndarray of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    dates : np.ndarray of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -424,9 +423,9 @@ class NewSpeedChecker:
 
     def __init__(
         self,
-        lons: npt.NDArray[np.floating],
-        lats: npt.NDArray[np.floating],
-        dates: npt.NDArray[np.datetime64],
+        lons: SequenceNumberType,
+        lats: SequenceNumberType,
+        dates: SequenceDatetimeType,
         speed_limit: float,
         min_win_period: float,
         ship_speed_limit: float,
@@ -439,11 +438,11 @@ class NewSpeedChecker:
 
         Parameters
         ----------
-        lons : np.ndarray of float, shape (n,)
+        lons : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        lats : np.ndarray of float, shape (n,)
+        lats : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        dates : np.ndarray of datetime, shape (n,)
+        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -638,11 +637,11 @@ class AgroundChecker:
 
     Parameters
     ----------
-    lons : np.ndarray of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    lats : np.ndarray of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    dates : np.ndarray of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     smooth_win : int
             Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -659,9 +658,9 @@ class AgroundChecker:
 
     def __init__(
         self,
-        lons: npt.NDArray[np.floating],
-        lats: npt.NDArray[np.floating],
-        dates: npt.NDArray[np.datetime64],
+        lons: SequenceNumberType,
+        lats: SequenceNumberType,
+        dates: SequenceDatetimeType,
         smooth_win: int,
         min_win_period: int,
         max_win_period: int | None,
@@ -671,11 +670,11 @@ class AgroundChecker:
 
         Parameters
         ----------
-        lons : np.ndarray of float, shape (n,)
+        lons : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        lats : np.ndarray of float, shape (n,)
+        lats : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        dates : np.ndarray of datetime, shape (n,)
+        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         smooth_win : int
             Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -887,19 +886,19 @@ class SSTTailChecker:
 
     Parameters
     ----------
-    lat : np.ndarray of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    lon : np.ndarray of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    sst : np.ndarray of float, shape (n,)
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of sea surface temperatures in K.
-    ostia : np.ndarray of float, shape (n,)
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of background field sea surface temperatures in K.
-    ice : np.ndarray of float, shape (n,)
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of ice concentrations in the range 0.0 to 1.0.
-    bgvar : np.ndarray of float, shape (n,)
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of background sea surface temperature fields variances in K^2.
-    dates : np.ndarray of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     long_win_len : int
             Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -924,13 +923,13 @@ class SSTTailChecker:
 
     def __init__(
         self,
-        lat: npt.NDArray[np.floating],
-        lon: npt.NDArray[np.floating],
-        sst: npt.NDArray[np.floating],
-        ostia: npt.NDArray[np.floating],
-        ice: npt.NDArray[np.floating],
-        bgvar: npt.NDArray[np.floating],
-        dates: npt.NDArray[np.datetime64],
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
+        sst: SequenceNumberType,
+        ostia: SequenceNumberType,
+        ice: SequenceNumberType,
+        bgvar: SequenceNumberType,
+        dates: SequenceDatetimeType,
         long_win_len: int,
         long_err_std_n: float,
         short_win_len: int,
@@ -945,19 +944,19 @@ class SSTTailChecker:
 
         Parameters
         ----------
-        lat : np.ndarray of float, shape (n,)
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        lon : np.ndarray of float, shape (n,)
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        sst : np.ndarray of float, shape (n,)
+        sst : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of sea surface temperatures in K.
-        ostia : np.ndarray of float, shape (n,)
+        ostia : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of background field sea surface temperatures in K.
-        ice : np.ndarray of float, shape (n,)
+        ice : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of ice concentrations in the range 0.0 to 1.0.
-        bgvar : np.ndarray of float, shape (n,)
+        bgvar : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of background sea surface temperature fields variances in K^2.
-        dates : np.ndarray of datetime, shape (n,)
+        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         long_win_len : int
             Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -1354,19 +1353,19 @@ class SSTBiasedNoisyChecker:
 
     Parameters
     ----------
-    lat : np.ndarray of float, shape (n,)
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    lon : np.ndarray of float, shape (n,)
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    dates : np.ndarray of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
-    sst : np.ndarray of float, shape (n,)
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional sea surface temperature array in K.
-    ostia : np.ndarray of float, shape (n,)
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional background field sea surface temperature array in K.
-    bgvar : np.ndarray of float, shape (n,)
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional background variance array in K^2.
-    ice : np.ndarray of float, shape (n,)
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional ice concentration array in range 0,1.
     n_eval : int
             The minimum number of drifter observations required to be assessed by the long-record check.
@@ -1387,13 +1386,13 @@ class SSTBiasedNoisyChecker:
 
     def __init__(
         self,
-        lat: npt.NDArray[np.floating],
-        lon: npt.NDArray[np.floating],
-        dates: npt.NDArray[np.datetime64],
-        sst: npt.NDArray[np.floating],
-        ostia: npt.NDArray[np.floating],
-        bgvar: npt.NDArray[np.floating],
-        ice: npt.NDArray[np.floating],
+        lat: SequenceNumberType,
+        lon: SequenceNumberType,
+        dates: SequenceDatetimeType,
+        sst: SequenceNumberType,
+        ostia: SequenceNumberType,
+        bgvar: SequenceNumberType,
+        ice: SequenceNumberType,
         n_eval: int,
         bias_lim: float,
         drif_intra: float,
@@ -1407,19 +1406,19 @@ class SSTBiasedNoisyChecker:
 
         Parameters
         ----------
-        lat : np.ndarray of float, shape (n,)
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        lon : np.ndarray of float, shape (n,)
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        dates : np.ndarray of datetime, shape (n,)
+        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
-        sst : np.ndarray of float, shape (n,)
+        sst : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional sea surface temperature array in K.
-        ostia : np.ndarray of float, shape (n,)
+        ostia : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional background field sea surface temperature array in K.
-        bgvar : np.ndarray of float, shape (n,)
+        bgvar : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional background variance array in K^2.
-        ice : np.ndarray of float, shape (n,)
+        ice : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional ice concentration array in range 0,1.
         n_eval : int
             The minimum number of drifter observations required to be assessed by the long-record check.
@@ -1728,9 +1727,9 @@ class SSTBiasedNoisyChecker:
 
 @inspect_arrays(["lons", "lats", "dates"])
 def do_speed_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
     speed_limit: float,
     min_win_period: float,
     max_win_period: float,
@@ -1740,11 +1739,11 @@ def do_speed_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     speed_limit : float
         Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -1784,9 +1783,9 @@ def do_speed_check(
 
 @inspect_arrays(["lons", "lats", "dates"])
 def do_new_speed_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
     speed_limit: float,
     min_win_period: float,
     ship_speed_limit: float,
@@ -1799,11 +1798,11 @@ def do_new_speed_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     speed_limit : float
         Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -1863,9 +1862,9 @@ def do_new_speed_check(
 
 @inspect_arrays(["lons", "lats", "dates"])
 def do_aground_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
     smooth_win: int,
     min_win_period: int,
     max_win_period: int,
@@ -1875,11 +1874,11 @@ def do_aground_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     smooth_win : int
         Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -1918,9 +1917,9 @@ def do_aground_check(
 
 @inspect_arrays(["lons", "lats", "dates"])
 def do_new_aground_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
     smooth_win: int,
     min_win_period: int,
 ) -> np.ndarray:
@@ -1929,11 +1928,11 @@ def do_new_aground_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     smooth_win : int
         Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -1967,13 +1966,13 @@ def do_new_aground_check(
 
 @inspect_arrays(["lats", "lons", "sst", "ostia", "ice", "bgvar", "dates"])
 def do_sst_start_tail_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
-    sst: Sequence[float],
-    ostia: Sequence[float],
-    ice: Sequence[float],
-    bgvar: Sequence[float],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
+    sst: SequenceNumberType,
+    ostia: SequenceNumberType,
+    ice: SequenceNumberType,
+    bgvar: SequenceNumberType,
     long_win_len: int,
     long_err_std_n: float,
     short_win_len: int,
@@ -1988,19 +1987,19 @@ def do_sst_start_tail_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    sst : array-like of float, shape (n,)
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
-    ostia : array-like of float, shape (n,)
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of background field sea surface temperatures in K.
-    ice : array-like of float, shape (n,)
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of ice concentrations in the range 0.0 to 1.0.
-    bgvar : array-like of float, shape (n,)
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of background sea surface temperature fields variances in K^2.
     long_win_len : int
         Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -2074,13 +2073,13 @@ def do_sst_start_tail_check(
 
 @inspect_arrays(["lats", "lons", "sst", "ostia", "ice", "bgvar", "dates"])
 def do_sst_end_tail_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
-    sst: Sequence[float],
-    ostia: Sequence[float],
-    ice: Sequence[float],
-    bgvar: Sequence[float],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
+    sst: SequenceNumberType,
+    ostia: SequenceNumberType,
+    ice: SequenceNumberType,
+    bgvar: SequenceNumberType,
     long_win_len: int,
     long_err_std_n: float,
     short_win_len: int,
@@ -2095,19 +2094,19 @@ def do_sst_end_tail_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    sst : array-like of float, shape (n,)
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
-    ostia : array-like of float, shape (n,)
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of background field sea surface temperatures in K.
-    ice : array-like of float, shape (n,)
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of ice concentrations in the range 0.0 to 1.0.
-    bgvar : array-like of float, shape (n,)
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of background sea surface temperature fields variances in K^2.
     long_win_len : int
         Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -2181,13 +2180,13 @@ def do_sst_end_tail_check(
 
 @inspect_arrays(["lats", "lons", "dates", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
-    sst: Sequence[float],
-    ostia: Sequence[float],
-    ice: Sequence[float],
-    bgvar: Sequence[float],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
+    sst: SequenceNumberType,
+    ostia: SequenceNumberType,
+    ice: SequenceNumberType,
+    bgvar: SequenceNumberType,
     n_eval: int,
     bias_lim: float,
     drif_intra: float,
@@ -2201,20 +2200,20 @@ def do_sst_biased_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    sst : array-like of float, shape (n,)
-        1-dimensional sea surface temperature array in K.
-    ostia : array-like of float, shape (n,)
-        1-dimensional background sea surface temperature array in K.
-    ice : array-like of float, shape (n,)
-        1-dimensional sea ice concentration array in range 0.0 to 1.0.
-    bgvar : array-like of float, shape (n,)
-        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of sea surface temperatures in K.
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of background field sea surface temperatures in K.
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of background sea surface temperature fields variances in K^2.
     n_eval : int
         The minimum number of drifter observations required to be assessed by the long-record check.
     bias_lim : float
@@ -2280,13 +2279,13 @@ def do_sst_biased_check(
 
 @inspect_arrays(["lats", "lons", "dates", "sst", "ostia", "bgvar", "ice"])
 def do_sst_noisy_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
-    sst: Sequence[float],
-    ostia: Sequence[float],
-    ice: Sequence[float],
-    bgvar: Sequence[float],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
+    sst: SequenceNumberType,
+    ostia: SequenceNumberType,
+    ice: SequenceNumberType,
+    bgvar: SequenceNumberType,
     n_eval: int,
     bias_lim: float,
     drif_intra: float,
@@ -2300,20 +2299,20 @@ def do_sst_noisy_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    sst : array-like of float, shape (n,)
-        1-dimensional sea surface temperature array in K.
-    ostia : array-like of float, shape (n,)
-        1-dimensional background sea surface temperature array in K.
-    ice : array-like of float, shape (n,)
-        1-dimensional sea ice concentration array in range 0.0 to 1.0.
-    bgvar : array-like of float, shape (n,)
-        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of sea surface temperatures in K.
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of background field sea surface temperatures in K.
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of background sea surface temperature fields variances in K^2.
     n_eval : int
         The minimum number of drifter observations required to be assessed by the long-record check.
     bias_lim : float
@@ -2379,13 +2378,13 @@ def do_sst_noisy_check(
 
 @inspect_arrays(["lats", "lons", "dates", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_noisy_short_check(
-    lons: Sequence[float],
-    lats: Sequence[float],
-    dates: Sequence[datetime],
-    sst: Sequence[float],
-    ostia: Sequence[float],
-    ice: Sequence[float],
-    bgvar: Sequence[float],
+    lons: SequenceNumberType,
+    lats: SequenceNumberType,
+    dates: SequenceDatetimeType,
+    sst: SequenceNumberType,
+    ostia: SequenceNumberType,
+    ice: SequenceNumberType,
+    bgvar: SequenceNumberType,
     n_eval: int,
     bias_lim: float,
     drif_intra: float,
@@ -2399,20 +2398,20 @@ def do_sst_biased_noisy_short_check(
 
     Parameters
     ----------
-    lons : array-like of float, shape (n,)
+    lons : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional longitude array in degrees.
-    lats : array-like of float, shape (n,)
+    lats : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : array-like of datetime, shape (n,)
+    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
-    sst : array-like of float, shape (n,)
-        1-dimensional sea surface temperature array in K.
-    ostia : array-like of float, shape (n,)
-        1-dimensional background sea surface temperature array in K.
-    ice : array-like of float, shape (n,)
-        1-dimensional sea ice concentration array in range 0.0 to 1.0.
-    bgvar : array-like of float, shape (n,)
-        1-dimensional background sea surface temperature variance array in degrees squared or K squared.
+    sst : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of sea surface temperatures in K.
+    ostia : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of background field sea surface temperatures in K.
+    ice : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of ice concentrations in the range 0.0 to 1.0.
+    bgvar : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional array of background sea surface temperature fields variances in K^2.
     n_eval : int
         The minimum number of drifter observations required to be assessed by the long-record check.
     bias_lim : float

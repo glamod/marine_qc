@@ -66,6 +66,30 @@ autosummary_generate = True
 autodoc_typehints = "description"
 autodoc_typehints_format = "fully-qualified"
 autodoc_typehints_description_target = "documented_params"
+python_use_unqualified_type_names = True
+
+# typehints_use_signature = True
+# typehints_fully_qualified = False
+
+autodoc_type_aliases = {
+    "ScalarDatetimeType": ":data:`~marine_qc.ScalarDatetimeType`",
+    "ScalarFloatType": ":data:`~marine_qc.ScalarFloatType`",
+    "ScalarIntType": ":data:`~marine_qc.ScalarIntType`",
+    "ScalarNumberType": ":data:`~marine_qc.ScalarNumberType`",
+    "SequenceDatetimeType": ":data:`~marine_qc.SequenceDatetimeType`",
+    "SequenceFloatType": ":data:`~marine_qc.SequenceFloatType`",
+    "SequenceIntType": ":data:`~marine_qc.SequenceIntType`",
+    "SequenceNumberType": ":data:`~marine_qc.SequenceNumberType`",
+    "ValueDatetimeType": ":data:`~marine_qc.ValueDatetimeType`",
+    "ValueFloatType": ":data:`~marine_qc.ValueFloatType`",
+    "ValueIntType": ":data:`~marine_qc.ValueIntType`",
+    "ValueNumberType": ":data:`~marine_qc.ValueNumberType`",
+    "ClimFloatType": ":data:`~marine_qc.ClimFloatType`",
+    "ClimInputType": ":data:`~marine_qc.ClimInputType`",
+    "ClimIntType": ":data:`~marine_qc.ClimIntType`",
+    "ClimNumberType": ":data:`~marine_qc.ClimNumberType`",
+    "Climatology": ":data:`~marine_qc.Climatology`",
+}
 
 napoleon_numpy_docstring = True
 napoleon_use_rtype = False

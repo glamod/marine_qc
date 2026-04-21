@@ -2,6 +2,22 @@
 
 from __future__ import annotations
 
+from .auxiliary import (
+    PandasNAType,
+    PandasNaTType,
+    ScalarDatetimeType,
+    ScalarFloatType,
+    ScalarIntType,
+    ScalarNumberType,
+    SequenceDatetimeType,
+    SequenceFloatType,
+    SequenceIntType,
+    SequenceNumberType,
+    ValueDatetimeType,
+    ValueFloatType,
+    ValueIntType,
+    ValueNumberType,
+)
 from .buoy_tracking_qc import (
     do_aground_check,
     do_new_aground_check,
@@ -12,6 +28,14 @@ from .buoy_tracking_qc import (
     do_sst_end_tail_check,
     do_sst_noisy_check,
     do_sst_start_tail_check,
+)
+from .external_clim import (
+    ClimArgType,
+    ClimFloatType,
+    ClimInputType,
+    ClimIntType,
+    ClimNumberType,
+    Climatology,
 )
 from .multiple_checks import do_multiple_grouped_check, do_multiple_individual_check, do_multiple_sequential_check
 from .plot_qc_outcomes import (

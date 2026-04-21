@@ -45,7 +45,7 @@ arrays. For example
     climatology = np.array([274.3, 274.7, 275.3])
     result = do_climatology_check(values, climatology, 8.0)
 
-Alternatively, we can provide a :class:`.Climatology` object and the locations of the reports like so:
+Alternatively, we can provide a :class:`~marine_qc.Climatology` object and the locations of the reports like so:
 
 .. code-block:: python
 
@@ -58,7 +58,7 @@ Alternatively, we can provide a :class:`.Climatology` object and the locations o
         values, climatology, 8.0, lat=latitudes, lon=longitudes, date=dates
     )
 
-This will automatically extract the climatological values from the :class:`.Climatology` at the location of the
+This will automatically extract the climatological values from the :class:`~marine_qc.Climatology` at the location of the
 reports and pass them to the function.
 
 We can also convert the units from degrees Celsius to Kelvin (the preferred SI unit).
