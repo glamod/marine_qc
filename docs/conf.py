@@ -195,7 +195,7 @@ htmlhelp_basename = "marine_qcdoc"
 # -- Options for LaTeX output ------------------------------------------
 
 latex_engine = "pdflatex"
-latex_logo = "_static/images/mascot_ship.png"
+latex_logo = "_static/images/mascot_dolphin.png"
 
 # -- Options for manual page output ---------------------------------------
 

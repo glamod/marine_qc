@@ -62,17 +62,17 @@ About
 .. raw:: html
 
    <div style="text-align: right;">
-       <img src="https://raw.githubusercontent.com/ludwiglierhammer/marine_qc/mascot/docs/_static/images/copernicus.png" width="150">
-       <img src="https://raw.githubusercontent.com/ludwiglierhammer/marine_qc/mascot/docs/_static/images/logo_c3s-392x154.png" width="150">
+       <img src="https://raw.githubusercontent.com/glamod/marine_qc/main/docs/_static/images/copernicus.png" width="150">
+       <img src="https://raw.githubusercontent.com/glamod/marine_qc/main/docs/_static/images/logo_c3s-392x154.png" width="150">
    </div>
 
 
 .. raw:: html
 
    <div style="text-align: right;">
-       <img src="https://raw.githubusercontent.com/ludwiglierhammer/marine_qc/mascot/docs/_static/images/logo_DWD_RGB.png" width="150">
-       <img src="https://raw.githubusercontent.com/ludwiglierhammer/marine_qc/mascot/docs/_static/images/logo_metoffice_rbg.png" width="150">
-       <img src="https://raw.githubusercontent.com/ludwiglierhammer/marine_qc/mascot/docs/_static/images/LOGO_2025_NOC.png" width="150">
+       <img src="https://raw.githubusercontent.com/glamod/marine_qc/main/docs/_static/images/logo_DWD_RGB.png" width="150">
+       <img src="https://raw.githubusercontent.com/glamod/marine_qc/main/docs/_static/images/logo_metoffice_rbg.png" width="150">
+       <img src="https://raw.githubusercontent.com/glamod/marine_qc/main/docs/_static/images/LOGO_2025_NOC.png" width="150">
    </div>
 
 
