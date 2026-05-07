@@ -3,6 +3,18 @@
 QC checks on individual reports
 -------------------------------
 
+.. autofunction:: marine_qc.do_valid_value_check
+   :noindex:
+
+.. autofunction:: marine_qc.do_valid_value_clim_check
+   :noindex:
+
+.. autofunction:: marine_qc.do_missing_value_check
+   :noindex:
+
+.. autofunction:: marine_qc.do_missing_value_clim_check
+   :noindex:
+
 .. autofunction:: marine_qc.do_position_check
    :noindex:
 
@@ -13,12 +25,6 @@ QC checks on individual reports
    :noindex:
 
 .. autofunction:: marine_qc.do_day_check
-   :noindex:
-
-.. autofunction:: marine_qc.do_missing_value_check
-   :noindex:
-
-.. autofunction:: marine_qc.do_missing_value_clim_check
    :noindex:
 
 .. autofunction:: marine_qc.do_night_check

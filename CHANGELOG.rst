@@ -2,6 +2,18 @@
 Changelog
 =========
 
+0.3.3 (unreleased)
+------------------
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+
+New features and environments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* new_functions: `do_valid_value_check` and `do_valid_value_clim_check` are copies of the old versions from `do_missing_value_check` and `do_missing_value_clim_check` that return `1` (fail) for numerically invalid values, otherwise `0` (pass) (:issue:`205`, :pull:`206`)
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Both `do_mising_value_check` and `do_missing_value_clim_check` now return `0` (pass) for numerically invalid values, otherwise `1` (fail) (:issue:`205`, :pull:`206`)
+
 0.3.2 (2023-04-21)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trevor James Smith (:user:`Zeitsperre`)

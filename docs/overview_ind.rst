@@ -13,6 +13,38 @@ The tests in `qc_individual_reports.py` work on individual marine reports, eithe
 change the outcome). These include simple checks of whether the location, time and date of the observation are
 valid as well as more complex checks involving comparison to climatologies.
 
+:func:`.do_valid_value_check`
+===============================
+
+Tests that the value is present.
+
+Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 1, fail,
+otherwise it is set to 0, pass.
+
+:func:`.do_valid_value_clim_check`
+====================================
+
+Tests whether there is a valid climatological value at the report location.
+
+Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
+value is valid, the flag is set to 0, pass otherwise it is set to 1, fail.
+
+:func:`.do_missing_value_check`
+===============================
+
+Tests that the value is present.
+
+Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 0, pass,
+otherwise it is set to 1, fail.
+
+:func:`.do_missing_value_clim_check`
+====================================
+
+Tests whether there is a valid climatological value at the report location.
+
+Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
+value is valid, the flag is set to 1, fail otherwise it is set to 0, pass.
+
 :func:`.do_position_check`
 ==========================
 
@@ -42,25 +74,19 @@ like) then the flag is set to 2, i.e. untestable.
 
 Tests whether the report was during the day.
 
+Checks whether an observation was made during the day (flag set to 0, pass) or night (flag set to 1, fail). The
+definition of day is between a specified amount of time after sunrise and the same amount of time after sunset. If
+any of the inputs are numerically invalid, the flag is set to 2, untestable.
+
+:func:`.do_night_check`
+=======================
+
+Tests whether the report was during the night.
+
 Checks whether an observation was made during the day (flag set to 1, fail) or night (flag set to 0, pass). The
 definition of day is between a specified amount of time after sunrise and the same amount of time after sunset. If
 any of the inputs are numerically invalid, the flag is set to 2, untestable.
 
-:func:`.do_missing_value_check`
-===============================
-
-Tests that the value is present.
-
-Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 1, fail,
-otherwise it is set to 0, pass.
-
-:func:`.do_missing_value_clim_check`
-====================================
-
-Tests whether there is a valid climatological value at the report location.
-
-Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
-value is valid, the flag is set to 0, pass otherwise it is set to 1, fail.
 
 :func:`.do_hard_limit_check`
 ============================
@@ -165,6 +191,8 @@ Currently, the following QC checks can be used:
 * :func:`.do_supersaturation_check`,
 * :func:`.do_time_check`,
 * :func:`.do_wind_consistency_check`
+* :func:`.do_valid_value_check`,
+* :func:`.do_valid_value_clim_check`,
 
 And the following preprocessing functions:
 

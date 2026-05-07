@@ -57,6 +57,8 @@ from .qc_individual_reports import (
     do_sst_freeze_check,
     do_supersaturation_check,
     do_time_check,
+    do_valid_value_check,
+    do_valid_value_clim_check,
     do_wind_consistency_check,
 )
 from .qc_sequential_reports import (
