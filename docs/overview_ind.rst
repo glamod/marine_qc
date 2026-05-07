@@ -191,6 +191,8 @@ Currently, the following QC checks can be used:
 * :func:`.do_supersaturation_check`,
 * :func:`.do_time_check`,
 * :func:`.do_wind_consistency_check`
+* :func:`.do_valid_value_check`,
+* :func:`.do_valid_value_clim_check`,
 
 And the following preprocessing functions:
 
