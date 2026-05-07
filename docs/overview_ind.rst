@@ -79,7 +79,7 @@ definition of day is between a specified amount of time after sunrise and the sa
 any of the inputs are numerically invalid, the flag is set to 2, untestable.
 
 :func:`.do_night_check`
-=====================
+=======================
 
 Tests whether the report was during the night.
 
