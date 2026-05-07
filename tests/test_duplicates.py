@@ -1,17 +1,10 @@
 from __future__ import annotations
-import inspect
-from collections.abc import Callable, Mapping, Sequence
-from typing import Annotated, Any, Literal, get_type_hints
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
-import pytest
 
-from marine_qc import (
-    do_hard_limit_check,
-)
-from marine_qc.duplicate_checker.duplicates import remove_duplicates, flag_duplicates
+from marine_qc.duplicate_checker.duplicates import flag_duplicates, remove_duplicates
+
 
 def test_remove_duplicates():
     station_id = ["A", "B", "A"]
@@ -20,7 +13,7 @@ def test_remove_duplicates():
     date = ["2010-07-12 12:00:00", "2010-07-12 12:00:00", "2010-07-12 12:00:00"]
     vsi = [25, 25, 25]
     dsi = [45, 45, 45]
-    
+
     result = remove_duplicates(
         station_id=station_id,
         lat=lat,
@@ -30,7 +23,7 @@ def test_remove_duplicates():
         dsi=dsi,
         test=1,
     )
-    
+
     assert isinstance(result, tuple)
     assert len(result) == 7
     assert result[0] == ["A", "B"]
@@ -58,7 +51,7 @@ def test_flag_duplicates():
         dsi=dsi,
         test=1,
     )
-    
+
     assert isinstance(result, tuple)
     assert len(result) == 2
     assert result[0] == [1, 0, 3]

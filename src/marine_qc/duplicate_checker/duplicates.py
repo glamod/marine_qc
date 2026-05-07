@@ -1,8 +1,6 @@
 """Common Data Model (CDM) pandas duplicate check."""
 
 from __future__ import annotations
-import datetime
-from collections.abc import Iterable
 from copy import deepcopy
 from typing import Any
 
@@ -10,13 +8,14 @@ import numpy as np
 import pandas as pd
 import recordlinkage as rl
 
-from ._duplicate_settings import Compare, _compare_kwargs, _method_kwargs
 from ..auxiliary import (
     SequenceDatetimeType,
-    SequenceStrType,
     SequenceNumberType,
+    SequenceStrType,
     post_format_return_type,
 )
+from ._duplicate_settings import Compare, _compare_kwargs, _method_kwargs
+
 
 def convert_series(df: pd.DataFrame, conversion: dict[Any, Any]) -> pd.DataFrame:
     """
@@ -62,6 +61,7 @@ def convert_series(df: pd.DataFrame, conversion: dict[Any, Any]) -> pd.DataFrame
 
     df = df.infer_objects(copy=False).fillna(9999.0)
     return df
+
 
 class DupDetect:
     """
@@ -356,26 +356,34 @@ class DupDetect:
         indexes_df = indexes_df.drop_duplicates(subset=[drop])
         indexes_df = replace_keeps_and_drops(indexes_df, keep)
 
-        dup_keep = indexes_df.groupby(indexes_df[keep]).apply(
-            lambda x: _get_duplicates(x, drop),
-            include_groups=False,
-        ).iloc[:, 0]
-        dup_drop = indexes_df.groupby(indexes_df[drop]).apply(
-            lambda x: _get_duplicates(x, keep),
-            include_groups=False,
-        ).iloc[:, 0]
+        dup_keep = (
+            indexes_df.groupby(indexes_df[keep])
+            .apply(
+                lambda x: _get_duplicates(x, drop),
+                include_groups=False,
+            )
+            .iloc[:, 0]
+        )
+        dup_drop = (
+            indexes_df.groupby(indexes_df[drop])
+            .apply(
+                lambda x: _get_duplicates(x, keep),
+                include_groups=False,
+            )
+            .iloc[:, 0]
+        )
 
         indexes_good = indexes_df[keep].values.tolist()
         indexes_bad = indexes_df[drop].values.tolist()
-        
+
         flags = pd.Series([0] * len(self.data), index=self.data.index, name="duplicate_flags")
         flags.loc[indexes_good] = 1
         flags.loc[indexes_bad] = 3
-        
+
         duplicates = pd.Series([pd.NA] * len(self.data), index=self.data.index, name="duplicates")
         duplicates.loc[indexes_good] = dup_keep.loc[indexes_good]
         duplicates.loc[indexes_bad] = dup_drop.loc[indexes_bad]
-        
+
         return flags.values.tolist(), duplicates.values.tolist()
 
     def remove_duplicates(
@@ -673,7 +681,7 @@ def duplicate_check(
     ----------
     station_id : :py:obj:`~marine_qc.SequenceStrType`
         One-dimensional array of station IDs.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.    
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
@@ -688,7 +696,7 @@ def duplicate_check(
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.                
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     method : str, default: SortedNeighbourhood
         Duplicate check method for recordlinkage.
     method_kwargs : dict, optional
@@ -715,24 +723,25 @@ def duplicate_check(
     null_label : str, optional
         Null label which is used if `reindex_by_null` is True.
     \**kwargs : dict
-        Additional data to be used for checking duplicates. 
+        Additional data to be used for checking duplicates.
 
     Returns
     -------
     cdm_reader_mapper.DupDetect
         A DupDetect instance.
     """
-    data = pd.DataFrame({
-        "station_id": station_id,
-        "lat": lat,
-        "lon": lon,
-        "date": date,
-        "vsi": vsi,
-        "dsi": dsi,
-        
-    })
+    data = pd.DataFrame(
+        {
+            "station_id": station_id,
+            "lat": lat,
+            "lon": lon,
+            "date": date,
+            "vsi": vsi,
+            "dsi": dsi,
+        }
+    )
     data = data.assign(**kwargs)
-    
+
     if reindex_by_null is True:
         data = reindex_nulls(data, null_label=null_label)
 
@@ -811,12 +820,12 @@ def remove_duplicates(
 ) -> tuple[SequenceStrType, SequenceNumberType, SequenceNumberType, SequenceDatetimeType, SequenceNumberType, SequenceNumberType, ...]:
     r"""
     Remove duplicates from inputs.
-    
+
     Parameters
     ----------
     station_id : :py:obj:`~marine_qc.SequenceStrType`
         One-dimensional array of station IDs.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.    
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
@@ -831,22 +840,23 @@ def remove_duplicates(
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series. 
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     \**kwargs : Any
         Any keyword-arguments passed to `duplicate_check`.
-    
+
     Returns
     -------
     tuple of Any
         All inputs with removed duplicates.
     """
     dup_detect = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
-    
+
     result = dup_detect.remove_duplicates()
-    
+
     return tuple(result[col].tolist() for col in result.columns)
 
-@post_format_return_type(["station_id"])    
+
+@post_format_return_type(["station_id"])
 def flag_duplicates(
     station_id: SequenceStrType,
     lat: SequenceNumberType,
@@ -858,12 +868,12 @@ def flag_duplicates(
 ) -> tuple[SequenceIntType, list[Any]]:
     r"""
     Flag duplicates from inputs.
-    
+
     Parameters
     ----------
     station_id : :py:obj:`~marine_qc.SequenceStrType`
         One-dimensional array of station IDs.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.    
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
@@ -878,18 +888,18 @@ def flag_duplicates(
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
-        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series. 
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     \**kwargs : Any
         Any keyword-arguments passed to `duplicate_check`.
-    
+
     Returns
     -------
     tuple of list of int and list of Any
         A tuple containing:
-        
+
           - list of duplicate flags
           - list of detected duplicates per row
-    """ 
+    """
     dup_detect = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
-    
-    return dup_detect.flag_duplicates()    
+
+    return dup_detect.flag_duplicates()

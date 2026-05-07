@@ -9,7 +9,6 @@ from typing import Any, Literal
 
 import numpy as np
 
-from .astronomical_geometry import sunangle
 from ..auxiliary import (
     ScalarNumberType,
     ValueDatetimeType,
@@ -26,6 +25,7 @@ from ..auxiliary import (
     post_format_return_type,
     untestable,
 )
+from .astronomical_geometry import sunangle
 from .external_clim import ClimArgType, inspect_climatology
 from .time_control import convert_date, day_in_year, get_month_lengths
 

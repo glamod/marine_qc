@@ -14,9 +14,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from . import spherical_geometry as sg
-from . import spherical_geometry as sph
-from . import time_control
 from ..auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
@@ -28,6 +25,9 @@ from ..auxiliary import (
     isvalid,
     post_format_return_type,
 )
+from . import spherical_geometry as sg
+from . import spherical_geometry as sph
+from . import time_control
 from .spherical_geometry import (
     course_between_points,
     intermediate_point,
