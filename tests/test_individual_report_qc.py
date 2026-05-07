@@ -20,6 +20,8 @@ from marine_qc import (
     do_sst_freeze_check,
     do_supersaturation_check,
     do_time_check,
+    do_valid_value_check,
+    do_valid_value_clim_check,
     do_wind_consistency_check,
 )
 from marine_qc.auxiliary import (
@@ -132,12 +134,9 @@ def test_do_position_check(latitude, longitude, expected):
     assert do_position_check(latitude, longitude, units=units) == expected
 
 
-def _test_do_position_check_raises_value_error():
-    # Make sure that an exception is raised if latitude or longitude is missing
-    with pytest.raises(ValueError):
-        _ = do_position_check(None, 0.0)
-    with pytest.raises(ValueError):
-        _ = do_position_check(0.0, None)
+def test_do_position_check_untestable():
+    assert do_position_check(None, 0.0) == 2
+    assert do_position_check(0.0, None) == 2
 
 
 @pytest.mark.parametrize(
@@ -450,22 +449,30 @@ def test_do_night_check(year, month, day, hour, latitude, longitude, time, expec
     assert result == expected
 
 
-@pytest.mark.parametrize("at, expected", [(5.6, passed), (None, failed), (np.nan, failed)])  # not sure if np.nan should trigger FAIL
-def test_do_air_temperature_missing_value_check(at, expected):
-    assert do_missing_value_check(at) == expected
+@pytest.mark.parametrize("value, expected", [(5.6, failed), (None, passed), (np.nan, passed)])  # not sure if np.nan should trigger FAIL
+def test_do_missing_value_check(value, expected):
+    assert do_missing_value_check(value) == expected
 
 
 @pytest.mark.parametrize(
-    "at_climatology, expected",
+    "clim, expected",
+    [(5.5, failed), (None, passed), (np.nan, passed), (56, failed)],
+)  # not sure if np.nan should trigger FAIL
+def test_do_missing_value_clim_check(clim, expected):
+    assert do_missing_value_clim_check(clim) == expected
+
+
+@pytest.mark.parametrize("value, expected", [(5.6, passed), (None, failed), (np.nan, failed)])  # not sure if np.nan should trigger FAIL
+def test_do_valid_value_check(value, expected):
+    assert do_valid_value_check(value) == expected
+
+
+@pytest.mark.parametrize(
+    "clim, expected",
     [(5.5, passed), (None, failed), (np.nan, failed), (56, passed)],
 )  # not sure if np.nan should trigger FAIL
-def test_do_air_temperature_missing_value_clim_check(at_climatology, expected):
-    assert do_missing_value_clim_check(at_climatology) == expected
-
-
-@pytest.mark.parametrize("sst, expected", [(5.6, passed), (None, failed), (np.nan, failed)])  # not sure if np.nan should trigger FAIL
-def test_do_sst_missing_value_check(sst, expected):
-    assert do_missing_value_check(sst) == expected
+def test_do_valid_value_clim_check(clim, expected):
+    assert do_valid_value_clim_check(clim) == expected
 
 
 # fmt: off

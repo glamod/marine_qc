@@ -36,7 +36,7 @@ vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float,
 
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
-def value_check(value: ValueNumberType) -> ValueIntType:
+def value_check(value: ValueNumberType, valid_flag: int = passed, invalid_flag: int = failed) -> ValueIntType:
     """
     Check if a value is equal to None or numerically invalid (NaN).
 
@@ -45,6 +45,10 @@ def value_check(value: ValueNumberType) -> ValueIntType:
     value : :py:obj:`~marine_qc.ValueNumberType`
         The input value(s) to be tested.
         Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    valid_flag : int, default: 0
+        Integer value how to flag valid values.
+    invalid_flag : int, default: 1
+        Integer value how to flag invalid values.
 
     Returns
     -------
@@ -62,7 +66,7 @@ def value_check(value: ValueNumberType) -> ValueIntType:
     (value_arr,) = ensure_arrays(value=value)
 
     valid_mask = isvalid(value_arr)
-    result = np.where(valid_mask, passed, failed)
+    result = np.where(valid_mask, valid_flag, invalid_flag)
 
     return result
 
@@ -551,6 +555,67 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
     :py:obj:`~marine_qc.ValueIntType`
         Same type as input, but with integer values
 
+        - Returns 0 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
+        - Returns 1 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    TypeError
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+    """
+    return value_check(value, valid_flag=failed, invalid_flag=passed)
+
+
+@inspect_climatology("climatology")
+def do_missing_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueIntType:
+    r"""
+    Check if a climatological value is equal to None or numerically invalid (NaN).
+
+    Parameters
+    ----------
+    climatology : :py:obj:`~marine_qc.ClimArgType`
+        The input climatological value(s) to be tested.
+        Can be a scalar, sequence, a one-dimensional NumPy array, a pandas Series,
+        a :py:class:`~marine_qc.Climatology`, a path-like string on disk, a xarray Dataset or a xarray DataArray.
+    \**kwargs : dict
+        Additional keyword arguments passed by the decorator framework (unused).
+
+    Returns
+    -------
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
+        - Returns 0 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
+        - Returns 1 (or array/sequence/Series of 0s) otherwise.
+
+    Raises
+    ------
+    TypeError
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+
+    Notes
+    -----
+    If `climatology` is a :py:class:`~marine_qc.Climatology` object, pass `lon` and `lat` and `date`, or `month` and `day`,
+    as keyword arguments to extract the relevant climatological value.
+    """
+    return value_check(climatology, valid_flag=failed, invalid_flag=passed)
+
+
+def do_valid_value_check(value: ValueNumberType) -> ValueIntType:
+    """
+    Check if a value is not equal to None or numerically valid.
+
+    Parameters
+    ----------
+    value : :py:obj:`~marine_qc.ValueNumberType`
+        The input value(s) to be tested.
+        Can be a scalar, sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+
+    Returns
+    -------
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
+
         - Returns 1 (or array/sequence/Series of 1s) if the input value is None or numerically invalid (NaN)
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
@@ -563,9 +628,9 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
 
 
 @inspect_climatology("climatology")
-def do_missing_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueIntType:
+def do_valid_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueIntType:
     r"""
-    Check if a climatological value is equal to None or numerically invalid (NaN).
+    Check if a climatological value is not equal to None or numerically valid.
 
     Parameters
     ----------
