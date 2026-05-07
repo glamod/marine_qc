@@ -11,7 +11,7 @@ from marine_qc import (
     do_multiple_sequential_check,
 )
 from marine_qc.auxiliary import failed, passed, untested
-from marine_qc.multiple_checks import (
+from marine_qc.quality_control.multiple_checks import (
     _apply_qc_to_masked_rows,
     _do_multiple_check,
     _get_function,

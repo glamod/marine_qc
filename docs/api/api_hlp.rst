@@ -103,14 +103,17 @@ Internal data type aliases
 .. autodata:: marine_qc.ScalarFloatType
 .. autodata:: marine_qc.ScalarNumberType
 .. autodata:: marine_qc.ScalarDatetimeType
+.. autodata:: marine_qc.ScalarStrType
 .. autodata:: marine_qc.SequenceIntType
 .. autodata:: marine_qc.SequenceFloatType
 .. autodata:: marine_qc.SequenceNumberType
 .. autodata:: marine_qc.SequenceDatetimeType
+.. autodata:: marine_qc.SequenceStrType
 .. autodata:: marine_qc.ValueIntType
 .. autodata:: marine_qc.ValueFloatType
 .. autodata:: marine_qc.ValueNumberType
 .. autodata:: marine_qc.ValueDatetimeType
+.. autodata:: marine_qc.ValueStrType
 .. autodata:: marine_qc.ClimArgType
 .. autodata:: marine_qc.ClimIntType
 .. autodata:: marine_qc.ClimFloatType

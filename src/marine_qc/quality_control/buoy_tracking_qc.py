@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 from .astronomical_geometry import sunangle
-from .auxiliary import SequenceDatetimeType, SequenceNumberType, ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
+from ..auxiliary import SequenceDatetimeType, SequenceNumberType, ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
 from .qc_sequential_reports import do_iquam_track_check
 from .spherical_geometry import sphere_distance
 from .statistics import trim_mean, trim_std

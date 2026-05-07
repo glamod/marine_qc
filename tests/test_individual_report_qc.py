@@ -30,7 +30,7 @@ from marine_qc.auxiliary import (
     passed,
     untestable,
 )
-from marine_qc.qc_individual_reports import value_check
+from marine_qc.quality_control.qc_individual_reports import value_check
 
 
 @pytest.fixture

@@ -4,7 +4,7 @@ import copy
 import numpy as np
 import pytest
 
-from marine_qc.statistics import (
+from marine_qc.quality_control.statistics import (
     missing_mean,
     p_data_given_good,
     p_data_given_gross,

@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 from pyproj import Geod
 
-from .auxiliary import (
+from ..auxiliary import (
     SequenceFloatType,
     SequenceNumberType,
     convert_to,

@@ -17,7 +17,7 @@ import pandas as pd
 from . import spherical_geometry as sg
 from . import spherical_geometry as sph
 from . import time_control
-from .auxiliary import (
+from ..auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
     SequenceNumberType,

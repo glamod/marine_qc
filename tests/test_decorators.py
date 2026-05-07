@@ -15,7 +15,7 @@ from marine_qc.auxiliary import (
     is_scalar_like,
     post_format_return_type,
 )
-from marine_qc.time_control import convert_date
+from marine_qc.quality_control.time_control import convert_date
 
 
 @convert_units(value="K")

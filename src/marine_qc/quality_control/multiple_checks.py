@@ -6,7 +6,7 @@ from typing import Any, Literal, cast
 
 import pandas as pd
 
-from .auxiliary import failed, passed, untested
+from ..auxiliary import failed, passed, untested
 from .external_clim import get_climatological_value  # noqa: F401
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,

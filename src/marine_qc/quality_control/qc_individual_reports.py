@@ -10,7 +10,7 @@ from typing import Any, Literal
 import numpy as np
 
 from .astronomical_geometry import sunangle
-from .auxiliary import (
+from ..auxiliary import (
     ScalarNumberType,
     ValueDatetimeType,
     ValueFloatType,

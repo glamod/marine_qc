@@ -29,16 +29,19 @@ ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
 ScalarNumberType: TypeAlias = ScalarIntType | ScalarFloatType
 ScalarDatetimeType: TypeAlias = datetime.datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
+ScalarStrType: TypeAlias = str | None
 
 SequenceIntType: TypeAlias = Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray
 SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray
 SequenceNumberType: TypeAlias = SequenceIntType | SequenceFloatType
 SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
+SequenceStrType: TypeAlias = Sequence[ScalarStrType] | npt.NDArray[np.str_] | pd.Series | np.ndarray
 
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueNumberType: TypeAlias = ValueIntType | ValueFloatType
 ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
+ValueStrType: TypeAlias = ScalarStrType | SequenceStrType
 
 # --- DECORATOR HELPERS ---
 DECORATOR_HANDLERS: dict[Callable[..., Any], list[Callable[..., Any]]] = {}
@@ -200,6 +203,8 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     if isinstance(input_value, pd.Series):
         return pd.Series(result_array, index=input_value.index, dtype=dtype)
     if isinstance(input_value, (list, tuple)):
+        if isinstance(result_array, tuple) and isinstance(result_array[0], (list, tuple)):
+            return tuple([type(input_value)(result_array[i]) for i in range(len(result_array))])
         return type(input_value)(result_array.tolist())
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
         return result_array.to_numpy()

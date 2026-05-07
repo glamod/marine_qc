@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import marine_qc.spherical_geometry as sg
+import marine_qc.quality_control.spherical_geometry as sg
 from marine_qc.auxiliary import earths_radius
 
 

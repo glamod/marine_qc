@@ -14,14 +14,14 @@ from marine_qc import (
     find_saturated_runs,
 )
 from marine_qc.auxiliary import failed, passed
-from marine_qc.spherical_geometry import (
+from marine_qc.quality_control.spherical_geometry import (
     course_between_points,
     intermediate_point,
     lat_lon_from_course_and_distance,
     sphere_distance,
 )
-from marine_qc.time_control import time_difference
-from marine_qc.track_check_utils import (
+from marine_qc.quality_control.time_control import time_difference
+from marine_qc.quality_control.track_check_utils import (
     backward_discrepancy,
     calculate_course_parameters,
     calculate_midpoint,

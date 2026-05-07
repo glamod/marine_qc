@@ -17,7 +17,7 @@ from joblib import Parallel, delayed
 from numpy import ndarray
 from xclim.core.units import convert_units_to
 
-from .auxiliary import (
+from ..auxiliary import (
     DECORATOR_KWARGS,
     DECORATOR_NAMES,
     SequenceDatetimeType,

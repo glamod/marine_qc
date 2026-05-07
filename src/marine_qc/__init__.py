@@ -9,16 +9,24 @@ from .auxiliary import (
     ScalarFloatType,
     ScalarIntType,
     ScalarNumberType,
+    ScalarStrType,
     SequenceDatetimeType,
     SequenceFloatType,
     SequenceIntType,
     SequenceNumberType,
+    SequenceStrType,
     ValueDatetimeType,
     ValueFloatType,
     ValueIntType,
     ValueNumberType,
+    ValueStrType,
 )
-from .buoy_tracking_qc import (
+from .duplicate_checker.duplicates import flag_duplicates, remove_duplicates
+from .plotting.plot_qc_outcomes import (
+    latitude_longitude_plot,
+    latitude_variable_plot,
+)
+from .quality_control.buoy_tracking_qc import (
     do_aground_check,
     do_new_aground_check,
     do_new_speed_check,
@@ -29,7 +37,7 @@ from .buoy_tracking_qc import (
     do_sst_noisy_check,
     do_sst_start_tail_check,
 )
-from .external_clim import (
+from .quality_control.external_clim import (
     ClimArgType,
     ClimFloatType,
     ClimInputType,
@@ -37,13 +45,9 @@ from .external_clim import (
     ClimNumberType,
     Climatology,
 )
-from .multiple_checks import do_multiple_grouped_check, do_multiple_individual_check, do_multiple_sequential_check
-from .plot_qc_outcomes import (
-    latitude_longitude_plot,
-    latitude_variable_plot,
-)
-from .qc_grouped_reports import do_bayesian_buddy_check, do_mds_buddy_check
-from .qc_individual_reports import (
+from .quality_control.multiple_checks import do_multiple_grouped_check, do_multiple_individual_check, do_multiple_sequential_check
+from .quality_control.qc_grouped_reports import do_bayesian_buddy_check, do_mds_buddy_check
+from .quality_control.qc_individual_reports import (
     do_climatology_check,
     do_date_check,
     do_day_check,
@@ -61,7 +65,7 @@ from .qc_individual_reports import (
     do_valid_value_clim_check,
     do_wind_consistency_check,
 )
-from .qc_sequential_reports import (
+from .quality_control.qc_sequential_reports import (
     do_few_check,
     do_iquam_track_check,
     do_spike_check,

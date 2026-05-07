@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import label
 
-from .auxiliary import (
+from ..auxiliary import (
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,

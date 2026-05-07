@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-import marine_qc.calculate_humidity as ch
+import marine_qc.quality_control.calculate_humidity as ch
 
 
 def test_vap_from_example():
