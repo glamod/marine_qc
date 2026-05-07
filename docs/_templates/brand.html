@@ -1,0 +1,11 @@
+{% extends "!sidebar/brand.html" %}
+
+{% block brand_content %}
+  {{ super() }}
+
+  <div style="text-align: center; margin-top: 0.5rem;">
+    <img src="{{ pathto('_static/images/mascot_dolphin.png', 1) }}"
+         alt="Mascot"
+         style="max-width: 120px;">
+  </div>
+{% endblock %}

@@ -167,14 +167,18 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# html_theme = "sphinx_rtd_theme"
+html_title = "marine_qc Official Documentation"
+html_short_title = "marine_qc"
 html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {"style_external_links": True}
+html_theme_options = {
+    "light_logo": "images/mascot_dolphin.png",
+    "dark_logo": "images/mascot_dolphin.png",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -187,6 +191,11 @@ html_static_path = ["_static"]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "marine_qcdoc"
+
+# -- Options for LaTeX output ------------------------------------------
+
+latex_engine = "pdflatex"
+latex_logo = "_static/images/mascot_dolphin.png"
 
 # -- Options for manual page output ---------------------------------------
 
