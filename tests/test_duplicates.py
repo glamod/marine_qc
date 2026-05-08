@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from marine_qc import flag_duplicates
+from marine_qc import flag_duplicates, remove_duplicates
 from marine_qc.duplicate_checker._duplicate_settings import (
     Compare,
     _compare_kwargs,
@@ -24,7 +24,7 @@ from marine_qc.duplicate_checker.duplicates import (
 
 @pytest.fixture
 def dummy_data():
-    df = pd.DataFrame(
+    return pd.DataFrame(
         {
             "station_id": ["S1", "S1", "S2", "S2", "S1", "S1"],
             "lon": [0.1, 0.1, 0.2, 0.1, 0.1, 0.1],
@@ -45,8 +45,88 @@ def dummy_data():
         },
         index=["A", "B", "C", "D", "E", "F"],
     )
-    df.index = [0, 1, 2, 3, 4, 5]
-    return df
+
+
+@pytest.fixture
+def expert_data():
+    index = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+    station_id = ["AA", "AA", "AA", "AA", "AA", "AA", "AA", "AA", "AA", "AA", "AA", "AA", "AB", "AA", "BB", "AA", "AA", "AA", "AA", "AA", "AA"]
+    lon = [22.3, 29.7, 32.0, 8.1, -21.2, -21.2, 21.2, 29.7, 29.7, 32.0, 8.5, 8.15, 8.1, 8.05, 8.1, -21.4, -21.1, 29.7, 29.7, 29.7, 29.7]
+    lat = [71.3, 71.3, 71.2, 66.0, 65.8, 65.8, -65.8, 71.3, 71.3, 71.2, 66.0, 66.05, 66.0, 65.95, 66.0, 65.6, 65.9, 71.3, 71.3, 71.3, 71.3]
+    qc1 = [2, 0, 2, 0, 2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0]
+    vsi = [0.0, 4.11552, np.nan, 0.0, 0.0, 0.0, 0.0, 4.11552, 4.11552, np.nan, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.11552, 4.0, 4.11552, np.nan]
+    dsi = [0.0, 315.0, np.nan, 0.0, 0.0, 0.0, 0.0, 315.0, 315.0, np.nan, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 316.0, 315.0, np.nan, 315.0]
+    date = pd.to_datetime(
+        [
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:01:00",
+            "2022-02-02 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+            "2022-02-01 00:00:00",
+        ]
+    )
+    qc2 = [1, 1, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1]
+    qc3 = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    return pd.DataFrame(
+        {
+            "station_id": station_id,
+            "lon": lon,
+            "lat": lat,
+            "date": date,
+            "qc1": qc1,
+            "vsi": vsi,
+            "dsi": dsi,
+            "qc2": qc2,
+            "qc3": qc3,
+            "index": index,
+        },
+        index=index,
+    )
+
+
+exp1 = {
+    "duplicate_status": [0, 1, 1, 1, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 0, 0, 0],
+    "report_quality": [1, 1, 0, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1],
+    "duplicates": [
+        None,
+        "{ICOADS-302-N688DT}",
+        "{ICOADS-302-N688DW}",
+        "{ICOADS-302-N688EC,ICOADS-302-N688EE}",
+        "{ICOADS-302-N688EW,ICOADS-302-N688EY}",
+        "{ICOADS-302-N688EI}",
+        None,
+        "{ICOADS-302-N688DS}",
+        None,
+        "{ICOADS-302-N688DV}",
+        None,
+        "{ICOADS-302-N688EH}",
+        None,
+        "{ICOADS-302-N688EH}",
+        None,
+        None,
+        "{ICOADS-302-N688EI}",
+        None,
+        None,
+        None,
+        None,
+    ],
+}
 
 
 def test_convert_series_basic():
@@ -330,6 +410,7 @@ def test_get_duplicates_raises(dummy_data):
         dd.get_duplicates(keep=1)
 
 
+@pytest.mark.parametrize("directly", [True, False])
 @pytest.mark.parametrize(
     "keep, exp_duplicate_status",
     [
@@ -339,10 +420,12 @@ def test_get_duplicates_raises(dummy_data):
         (-1, [1, 0, 0, 0, 0, 3]),
     ],
 )
-def test_flag_duplicates_inclass(dummy_data, keep, exp_duplicate_status):
-    dd = duplicate_check(**dummy_data.to_dict())
-
-    result = dd.flag_duplicates(keep=keep)
+def test_flag_duplicates_basic(directly, dummy_data, keep, exp_duplicate_status):
+    if directly is True:
+        result = flag_duplicates(**dummy_data.to_dict(), keep=keep)
+    elif directly is False:
+        dd = duplicate_check(**dummy_data.to_dict())
+        result = dd.flag_duplicates(keep=keep)
 
     assert isinstance(result, tuple)
     assert len(result) == 2
@@ -358,6 +441,7 @@ def test_flag_duplicates_inclass(dummy_data, keep, exp_duplicate_status):
     assert result[1][5] == [np.int64(0)]
 
 
+@pytest.mark.parametrize("directly", [True, False])
 @pytest.mark.parametrize(
     "keep, exp_idx",
     [
@@ -367,10 +451,12 @@ def test_flag_duplicates_inclass(dummy_data, keep, exp_duplicate_status):
         (-1, [0, 1, 2, 3, 4]),
     ],
 )
-def test_remove_duplicates_inclass(dummy_data, keep, exp_idx):
-    dd = duplicate_check(**dummy_data.to_dict())
-
-    result = dd.remove_duplicates(keep=keep)
+def test_remove_duplicates_basic(directly, dummy_data, keep, exp_idx):
+    if directly is True:
+        result = remove_duplicates(**dummy_data.to_dict(), keep=keep)
+    elif directly is False:
+        dd = duplicate_check(**dummy_data.to_dict())
+        result = dd.remove_duplicates(keep=keep)
 
     assert isinstance(result, tuple)
     assert len(result) == 7
@@ -387,54 +473,281 @@ def test_remove_duplicates_inclass(dummy_data, keep, exp_idx):
 
 
 @pytest.mark.parametrize(
-    "keep, exp_duplicate_status",
+    "kwargs, flags, duplicates",
     [
-        ("first", [1, 0, 0, 0, 0, 3]),
-        ("last", [3, 0, 0, 0, 0, 1]),
-        (0, [3, 0, 0, 0, 0, 1]),
-        (-1, [1, 0, 0, 0, 0, 3]),
+        (
+            {},
+            [0, 1, 1, 1, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 0, 0, 0],
+            [
+                np.nan,
+                ["H"],
+                ["J"],
+                ["L", "N"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                np.nan,
+                ["D"],
+                np.nan,
+                ["D"],
+                np.nan,
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            ],
+        ),
+        (
+            {"ignore_entries": {"station_id": ["AA", "BB"]}},
+            [0, 1, 1, 3, 1, 3, 0, 3, 0, 3, 0, 3, 1, 3, 3, 0, 3, 0, 0, 0, 0],
+            [
+                np.nan,
+                ["H"],
+                ["J"],
+                ["M"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                np.nan,
+                ["M"],
+                ["D", "L", "O", "N"],
+                ["M"],
+                ["M"],
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            ],
+        ),
+        (
+            {"ignore_entries": {"vsi": np.nan, "dsi": np.nan}},
+            [0, 1, 1, 1, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3],
+            [
+                np.nan,
+                ["H", "T", "U"],
+                ["J"],
+                ["L", "N"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                np.nan,
+                ["D"],
+                np.nan,
+                ["D"],
+                np.nan,
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                ["B"],
+                ["B"],
+            ],
+        ),
+        (
+            {
+                "ignore_entries": {
+                    "station_id": ["AA", "BB"],
+                    "vsi": np.nan,
+                    "dsi": np.nan,
+                }
+            },
+            [0, 1, 1, 3, 1, 3, 0, 3, 0, 3, 0, 3, 1, 3, 3, 0, 3, 0, 0, 3, 3],
+            [
+                np.nan,
+                ["H", "T", "U"],
+                ["J"],
+                ["M"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                np.nan,
+                ["M"],
+                ["D", "L", "N", "O"],
+                ["M"],
+                ["M"],
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                ["B"],
+                ["B"],
+            ],
+        ),
+        (
+            {"method_kwargs": {"left_on": "date", "window": 7, "block_on": ["station_id"]}},
+            [0, 1, 1, 1, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 0, 0, 0],
+            [
+                np.nan,
+                ["H"],
+                ["J"],
+                ["L", "N"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                np.nan,
+                ["D"],
+                np.nan,
+                ["D"],
+                np.nan,
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            ],
+        ),
+        (
+            {"compare_kwargs": {"station_id": {"method": "exact"}, "date": {"method": "date2", "kwargs": {"method": "gauss", "offset": 60.0}}}},
+            [1, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 0, 3, 0, 3, 3, 3, 3, 3, 3],
+            [
+                ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "N", "P", "Q", "R", "S", "T", "U"],
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+                np.nan,
+                ["A"],
+                ["A"],
+                ["A"],
+                np.nan,
+                ["A"],
+                np.nan,
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+                ["A"],
+            ],
+        ),
+        (
+            {"ignore_columns": ["station_id"]},
+            [0, 1, 1, 1, 1, 3, 0, 3, 0, 3, 0, 3, 3, 3, 3, 0, 3, 0, 0, 0, 0],
+            [
+                np.nan,
+                ["H"],
+                ["J"],
+                ["L", "N", "M", "O"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                np.nan,
+                ["D"],
+                ["D"],
+                ["D"],
+                ["D"],
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            ],
+        ),
+        (
+            {"offsets": {"lat": 1.0, "lon": 1.0, "date": 360}},
+            [0, 1, 1, 1, 1, 3, 0, 3, 0, 3, 3, 3, 0, 3, 0, 3, 3, 0, 0, 0, 0],
+            [
+                np.nan,
+                ["H"],
+                ["J"],
+                ["K", "L", "N"],
+                ["F", "P", "Q"],
+                ["E"],
+                np.nan,
+                ["B"],
+                np.nan,
+                ["C"],
+                ["D"],
+                ["D"],
+                np.nan,
+                ["D"],
+                np.nan,
+                ["E"],
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            ],
+        ),
+        (
+            {"method": "Block", "method_kwargs": {"left_on": "date"}},
+            [0, 0, 1, 1, 1, 3, 0, 0, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 0, 0, 0],
+            [
+                np.nan,
+                np.nan,
+                ["J"],
+                ["L", "N"],
+                ["F", "Q"],
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                ["C"],
+                np.nan,
+                ["D"],
+                np.nan,
+                ["D"],
+                np.nan,
+                np.nan,
+                ["E"],
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            ],
+        ),
     ],
 )
-def test_flag_duplicates_directly(dummy_data, keep, exp_duplicate_status):
-    result = flag_duplicates(**dummy_data.to_dict(), keep=keep)
+def test_flag_duplicates_expert(expert_data, kwargs, flags, duplicates):
+    result = flag_duplicates(
+        **expert_data.to_dict(),
+        **kwargs,
+    )
 
     assert isinstance(result, tuple)
     assert len(result) == 2
-    for i in [0, 1]:
-        assert isinstance(result[i], np.ndarray)
+    assert isinstance(result[0], np.ndarray)
+    assert isinstance(result[1], np.ndarray)
+    assert len(result[0]) == len(flags)
+    assert len(result[1]) == len(duplicates)
 
-    exp_flag = np.array(exp_duplicate_status)
-
-    np.testing.assert_array_equal(result[0], exp_flag)
-    assert result[1][0] == [np.int64(5)]
-    for i in [1, 2, 3, 4]:
-        assert np.isnan(result[1][i])
-    assert result[1][5] == [np.int64(0)]
-
-
-@pytest.mark.parametrize(
-    "keep, exp_idx",
-    [
-        ("first", [0, 1, 2, 3, 4]),
-        ("last", [1, 2, 3, 4, 5]),
-        (0, [1, 2, 3, 4, 5]),
-        (-1, [0, 1, 2, 3, 4]),
-    ],
-)
-def test_remove_duplicates_directly(dummy_data, keep, exp_idx):
-    dd = duplicate_check(**dummy_data.to_dict())
-
-    result = dd.remove_duplicates(keep=keep)
-
-    assert isinstance(result, tuple)
-    assert len(result) == 7
-    for i in [0, 1, 2, 3, 4, 5, 6]:
-        assert isinstance(result[i], np.ndarray)
-
-    np.testing.assert_equal(result[0], dummy_data["station_id"].iloc[exp_idx])
-    np.testing.assert_equal(result[1], dummy_data["lat"].iloc[exp_idx])
-    np.testing.assert_equal(result[2], dummy_data["lon"].iloc[exp_idx])
-    np.testing.assert_equal(result[3], dummy_data["date"].iloc[exp_idx])
-    np.testing.assert_equal(result[4], dummy_data["vsi"].iloc[exp_idx])
-    np.testing.assert_equal(result[5], dummy_data["dsi"].iloc[exp_idx])
-    np.testing.assert_equal(result[6], dummy_data["flag"].iloc[exp_idx])
+    for i in range(len(flags)):
+        assert result[0][i] == flags[i]
+        res_dup = result[1][i]
+        exp_dup = duplicates[i]
+        if isinstance(exp_dup, list):
+            assert len(res_dup) == len(exp_dup)
+            for j in range(len(exp_dup)):
+                assert exp_dup[j] in res_dup
+        elif np.isnan(exp_dup):
+            assert np.isnan(res_dup)
+        else:
+            assert res_dup == exp_dup
