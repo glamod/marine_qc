@@ -173,17 +173,17 @@ def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
     return tuple(arrays)
 
 
-def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type = int) -> Any:
+def format_return_type(result_array: np.ndarray | tuple[np.ndarray, ...], *input_values: Any, dtype: type = int) -> Any:
     r"""
-    Convert the result numpy array(s) to the same type as the input `value`.
+    Convert the result numpy array(s) to the same type as the input value.
 
-    If `result_array` is a sequence of arrays, format each element recursively,
+    If `result_array` is a tuple of arrays, format each element recursively,
     preserving the container type.
 
     Parameters
     ----------
-    result_array : np.ndarray
-        The numpy array of results.
+    result_array : np.ndarray or tuple of np.ndarray
+        The numpy array(s) of results.
     \*input_values : Any
         One or more original input values to infer the desired return type from.
     dtype : type, optional
@@ -196,19 +196,39 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
     """
     input_value = next((val for val in input_values if val is not None), None)
 
-    if input_value is None or is_scalar_like(input_value):
-        if np.ndim(result_array) > 0:
-            result_array = result_array[0]
-        return dtype(result_array)
-    if isinstance(input_value, pd.Series):
-        return pd.Series(result_array, index=input_value.index, dtype=dtype)
-    if isinstance(input_value, (list, tuple)):
-        if isinstance(result_array, tuple) and isinstance(result_array[0], (list, tuple)):
-            return tuple([type(input_value)(result_array[i]) for i in range(len(result_array))])
-        return type(input_value)(result_array.tolist())
-    if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
-        return result_array.to_numpy()
-    return result_array  # np.ndarray or fallback
+    def _format_return_type(i_value: Any, o_value: np.ndarray) -> Any:
+        """
+        Convert the result numpy array to the same type as the input value.
+
+        Parameters
+        ----------
+        i_value : Any
+            Original input value to infer the desired return type from.
+        o_value : np.ndarray
+            The numpy array of result.
+
+        Returns
+        -------
+        Same type as input
+            The result formatted to match the type of the input value.
+        """
+        if i_value is None or is_scalar_like(i_value):
+            if np.ndim(o_value) > 0:
+                o_value = o_value[0]
+            return dtype(o_value)
+        if isinstance(i_value, pd.Series):
+            return pd.Series(o_value, index=i_value.index, dtype=dtype)
+        if isinstance(i_value, (list, tuple)):
+            return type(i_value)(o_value.tolist())
+        if isinstance(i_value, np.ndarray) and isinstance(o_value, pd.Series):
+            return o_value.to_numpy()
+        return o_value  # np.ndarray or fallback
+
+    if isinstance(result_array, tuple):
+        results = [_format_return_type(input_value, result) for result in result_array]
+        return tuple(results)
+
+    return _format_return_type(input_value, result_array)
 
 
 def convert_to(value: SequenceNumberType, source_units: str, target_units: str) -> SequenceNumberType:
