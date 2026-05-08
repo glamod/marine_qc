@@ -216,6 +216,7 @@ def test_duplicate_check_basic():
         vsi=vsi,
         dsi=dsi,
     )
+
     assert isinstance(detector, DupDetect)
     exp_data = pd.DataFrame(
         {

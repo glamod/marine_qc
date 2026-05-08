@@ -871,7 +871,7 @@ def remove_duplicates(
     """
     dup_detect = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
 
-    return dup_detect.remove_duplicates()  # type: ignore[return-value]
+    return dup_detect.remove_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)  # type: ignore[return-value]
 
 
 @post_format_return_type(["station_id"])
