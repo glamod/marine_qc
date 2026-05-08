@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-import marine_qc.quality_control.external_clim as clim
+import marine_qc.helpers.external_clim as clim
 from marine_qc import do_bayesian_buddy_check, do_mds_buddy_check
-from marine_qc.auxiliary import (
+from marine_qc.helpers.auxiliary import (
     failed,
     passed,
     untestable,

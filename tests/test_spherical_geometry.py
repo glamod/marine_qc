@@ -3,8 +3,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import marine_qc.quality_control.spherical_geometry as sg
-from marine_qc.auxiliary import earths_radius
+import marine_qc.helpers.spherical_geometry as sg
+from marine_qc.helpers.auxiliary import earths_radius
 
 
 def test_same_start_and_end_have_zero_distance():

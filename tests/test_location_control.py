@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pytest
 
-from marine_qc.quality_control.location_control import (
+from marine_qc.helpers.location_control import (
     fill_missing_vals,
     get_four_surrounding_points,
     lat_to_yindex,

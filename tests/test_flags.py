@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from marine_qc.auxiliary import (
+from marine_qc.helpers.auxiliary import (
     failed,
     passed,
     untestable,

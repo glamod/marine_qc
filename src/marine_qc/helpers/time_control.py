@@ -11,7 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ..auxiliary import (
+from .auxiliary import (
     DECORATOR_KWARGS,
     SequenceDatetimeType,
     ensure_arrays,

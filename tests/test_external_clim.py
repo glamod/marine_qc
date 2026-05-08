@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from marine_qc.quality_control.external_clim import (
+from marine_qc.helpers.external_clim import (
     Climatology,
     _empty_dataarray,
     _select_point,

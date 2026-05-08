@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import label
 
-from ..auxiliary import (
+from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,
@@ -23,8 +23,8 @@ from ..auxiliary import (
     passed,
     post_format_return_type,
 )
-from .spherical_geometry import sphere_distance
-from .time_control import time_difference
+from ..helpers.spherical_geometry import sphere_distance
+from ..helpers.time_control import time_difference
 from .track_check_utils import (
     backward_discrepancy,
     calculate_course_parameters,

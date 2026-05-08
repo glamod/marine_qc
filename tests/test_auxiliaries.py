@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from marine_qc.auxiliary import (
+from marine_qc.helpers.auxiliary import (
     convert_to,
     is_scalar_like,
     isvalid,

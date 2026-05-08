@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pytest
 
-from marine_qc.quality_control.astronomical_geometry import (
+from marine_qc.helpers.astronomical_geometry import (
     calculate_azimuth,
     calculate_sun_parameters,
     convert_degrees,

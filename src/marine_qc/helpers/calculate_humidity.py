@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..auxiliary import isvalid
+from .auxiliary import isvalid
 
 
 def vap(td: float, t: float, p: float, roundit: bool = True) -> float:

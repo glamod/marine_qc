@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import recordlinkage as rl
 
-from ..auxiliary import (
+from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,
@@ -551,7 +551,7 @@ def reindex_nulls(df: pd.DataFrame, null_label: Any) -> pd.DataFrame:
           True if the value (or any nested value) is missing, otherwise False.
         """
         if isinstance(x, (list, tuple, np.ndarray)):
-            return any(is_missing(x_) for x_ in x)
+            return any(is_missing(v) for v in x)
 
         if pd.isna(x):
             return True
@@ -737,13 +737,12 @@ def duplicate_check(
         }
     )
     data = data.assign(**kwargs)
+    index = data.index
 
     if reindex_by_null is True:
         data = reindex_nulls(data, null_label=null_label)
 
-    index = data.index
     data.reset_index(drop=True)
-
     if table_name:
         data = data[table_name]
     if not method_kwargs:
@@ -751,13 +750,13 @@ def duplicate_check(
     if not compare_kwargs:
         compare_kwargs = deepcopy(_compare_kwargs)
     if ignore_columns:
+        print(method_kwargs)
         method_kwargs = remove_ignores(method_kwargs, ignore_columns)
         compare_kwargs = remove_ignores(compare_kwargs, ignore_columns)
     if offsets:
         compare_kwargs = change_offsets(compare_kwargs, offsets)
 
     dtypes = data.dtypes
-
     comparer = Comparer(
         data=data,
         method=method,
@@ -766,13 +765,13 @@ def duplicate_check(
         convert_data=True,
     )
     compared = comparer.compared
-    data_ = comparer.data
 
     if ignore_entries is None:
+        data.set_index(index, inplace=True)
         return DupDetect(data, compared, method, method_kwargs, compare_kwargs)
 
     compared = [compared]
-
+    data_ = comparer.data
     for column_, entry_ in ignore_entries.items():
         if not isinstance(entry_, list):
             entry_ = [entry_]

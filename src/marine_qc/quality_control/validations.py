@@ -19,8 +19,8 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from ..auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS
-from .external_clim import get_climatological_value  # noqa: F401
+from ..helpers.auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS
+from ..helpers.external_clim import get_climatological_value  # noqa: F401
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,
     do_mds_buddy_check,
