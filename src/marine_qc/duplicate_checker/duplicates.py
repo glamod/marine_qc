@@ -381,11 +381,11 @@ class DupDetect:
         flags.loc[indexes_good] = 1
         flags.loc[indexes_bad] = 3
 
-        duplicates = pd.Series([pd.NA] * len(self.data), index=self.data.index, name="duplicates")
+        duplicates = pd.Series([np.nan] * len(self.data), index=self.data.index, name="duplicates")
         duplicates.loc[indexes_good] = dup_keep.loc[indexes_good]
         duplicates.loc[indexes_bad] = dup_drop.loc[indexes_bad]
 
-        return flags, duplicates
+        return flags.values, duplicates.values
 
     def remove_duplicates(
         self,
@@ -818,6 +818,9 @@ def remove_duplicates(
     date: SequenceDatetimeType,
     vsi: SequenceNumberType,
     dsi: SequenceNumberType,
+    keep: str | int = "first",
+    limit: str | float | None = "default",
+    equal_musts: str | list[str] | None = None,
     **kwargs: Any,
 ) -> tuple[
     SequenceStrType,
@@ -851,6 +854,13 @@ def remove_duplicates(
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    keep : str or int, default: first
+        Which entry should be kept in result dataset.
+    limit : str, int or float, optional
+        Limit of total score that as to be exceeded to be declared as a duplicate.
+        Defaults to .991.
+    equal_musts : str or list, optional
+        Hashable of column name(s) that must totally be equal to be declared as a duplicate.
     \**kwargs : Any
         Any keyword-arguments passed to `duplicate_check`.
 
@@ -872,6 +882,9 @@ def flag_duplicates(
     date: SequenceDatetimeType,
     vsi: SequenceNumberType,
     dsi: SequenceNumberType,
+    keep: str | int = "first",
+    limit: str | float | None = "default",
+    equal_musts: str | list[str] | None = None,
     **kwargs: Any,
 ) -> tuple[SequenceIntType, SequenceNumberType]:
     r"""
@@ -897,6 +910,14 @@ def flag_duplicates(
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    keep : str or int, default: first
+        Which entry should be kept in result dataset.
+    limit : str, int or float, optional
+        Limit of total score that as to be exceeded to be declared as a duplicate.
+        Defaults to .991.
+    equal_musts : str or list, optional
+        Hashable of column name(s) that must totally be equal to be declared as a duplicate.
+        Default: All column names found in method_kwargs.
     \**kwargs : Any
         Any keyword-arguments passed to `duplicate_check`.
 
@@ -910,4 +931,4 @@ def flag_duplicates(
     """
     dup_detect = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
 
-    return dup_detect.flag_duplicates()
+    return dup_detect.flag_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
