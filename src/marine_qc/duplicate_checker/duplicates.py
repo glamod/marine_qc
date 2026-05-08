@@ -260,8 +260,7 @@ class DupDetect:
               is found, returns `(None, None)`.
             """
             if drop_dict[drop] in keeps:
-                drops = drop_dict[drop]
-                keeps = drop_dict[keep]
+                drops, keeps = drop_dict[drop], drop_dict[keep]
                 try:
                     return int(drops), int(keeps)
                 except ValueError:
@@ -286,8 +285,7 @@ class DupDetect:
                 Series containing a single key "dups" with the list of unique
                 duplicate values found in the specified column.
             """
-            b = list(set(x[last].values))
-            return pd.Series({"duplicates": b})
+            return pd.Series({"duplicates": list(set(x[last].values))})
 
         def _delete_values_equal_keys(dictionary: dict[Any, Any]) -> tuple[dict[Any, Any], list[Any]]:
             """
@@ -305,13 +303,12 @@ class DupDetect:
                 - A filtered dictionary with identical key-value pairs removed
                 - A list of values that were removed because key == value
             """
-            new_dictionary = {}
-            drops = []
+            new_dictionary, drops = {}, []
             for k, v in dictionary.items():
                 if k == v:
                     drops.append(v)
-                    continue
-                new_dictionary[k] = v
+                else:
+                    new_dictionary[k] = v
             return new_dictionary, drops
 
         def replace_keeps_and_drops(df: pd.DataFrame, keep: Any) -> pd.DataFrame:
@@ -337,12 +334,10 @@ class DupDetect:
                 replaces = df.apply(lambda row, keeps=keeps: _get_similars(row, keeps), axis=1)
                 replaces = {k: v for k, v in dict(replaces.values).items() if k is not None}
                 replaces, drops = _delete_values_equal_keys(replaces)
-                keys = replaces.keys()
-                values = replaces.values()
-                if len(drops) > 0:
+                if drops:
                     df = df.drop(drops, axis="index")
                 df[keep] = df[keep].replace(replaces)
-                if not set(keys).intersection(values):
+                if not set(replaces.keys()).intersection(replaces.values()):
                     return df
 
         self.get_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
@@ -381,7 +376,8 @@ class DupDetect:
         flags.loc[indexes_good] = 1
         flags.loc[indexes_bad] = 3
 
-        duplicates = pd.Series([np.nan] * len(self.data), index=self.data.index, name="duplicates")
+        duplicates = pd.Series([np.nan] * len(self.data), index=self.data.index, name="duplicates", dtype="object")
+
         duplicates.loc[indexes_good] = dup_keep.loc[indexes_good]
         duplicates.loc[indexes_bad] = dup_drop.loc[indexes_bad]
 
@@ -411,11 +407,9 @@ class DupDetect:
             A tuple of np.ndarray containing all original input data with the duplicates removed.
         """
         self.get_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
-        drops = self.matches.index.get_level_values(self.drop)
-        result = self.data.copy()
-        result = result.drop(drops)
+        result = self.data.drop(self.matches.index.get_level_values(self.drop))
         result = result.sort_index(ascending=True)
-        return tuple(result[col].values for col in result.columns)
+        return tuple(result[col].to_numpy() for col in result.columns)
 
 
 def set_comparer(compare_dict: dict[Any, Any]) -> Compare:
