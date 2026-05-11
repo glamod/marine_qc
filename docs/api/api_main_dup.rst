@@ -1,7 +1,7 @@
 .. _api_qc_dup:
 
-QC checks on individual reports
--------------------------------
+Function to detect potentially duplicated observations
+------------------------------------------------------
 
 .. autofunction:: marine_qc.duplicate_check
    :noindex:

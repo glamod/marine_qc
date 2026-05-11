@@ -154,7 +154,7 @@ def _make_plot(
 
 def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
     """
-    Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC oucomes.
+    Plot a graph of points showing the latitude and value of a set of observations coloured according to flagged oucomes.
 
     Parameters
     ----------
@@ -186,7 +186,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
 
 def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
     """
-    Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
+    Plot a graph of points showing the latitude and longitude of a set of observations coloured according to flagged outcomes.
 
     Parameters
     ----------
