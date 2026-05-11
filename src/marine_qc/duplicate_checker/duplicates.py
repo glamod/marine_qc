@@ -213,7 +213,7 @@ class DupDetect:
         keep: str | int = "first",
         limit: str | float | None = "default",
         equal_musts: str | list[str] | None = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[pd.Series, pd.Series]:
         r"""
         Get result dataset with flagged duplicates.
 
@@ -230,7 +230,7 @@ class DupDetect:
 
         Returns
         -------
-        tuple of np.ndarray
+        tuple of pd.Series
             Tuple containing duplicate flags and indexes of corresponding duplicates.
 
         References
@@ -285,7 +285,7 @@ class DupDetect:
                 Series containing a single key "dups" with the list of unique
                 duplicate values found in the specified column.
             """
-            return pd.Series({"duplicates": list(set(x[last].values))})
+            return pd.Series({"duplicates": list(sorted(set(x[last].values)))})
 
         def _delete_values_equal_keys(dictionary: dict[Any, Any]) -> tuple[dict[Any, Any], list[Any]]:
             """
@@ -381,14 +381,14 @@ class DupDetect:
         duplicates.loc[indexes_good] = dup_keep.loc[indexes_good]
         duplicates.loc[indexes_bad] = dup_drop.loc[indexes_bad]
 
-        return flags.values, duplicates.values
+        return flags, duplicates
 
     def remove_duplicates(
         self,
         keep: str | int = "first",
         limit: str | float | None = "default",
         equal_musts: str | list[str] | None = None,
-    ) -> tuple[np.ndarray, ...]:
+    ) -> tuple[pd.Series, ...]:
         """
         Remove duplicate entries from the dataset.
 
@@ -403,13 +403,13 @@ class DupDetect:
 
         Returns
         -------
-        tuple of np.ndarray
-            A tuple of np.ndarray containing all original input data with the duplicates removed.
+        tuple of pd.Series
+            A tuple of pd.Series containing all original input data with the duplicates removed.
         """
         self.get_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
         result = self.data.drop(self.matches.index.get_level_values(self.drop))
         result = result.sort_index(ascending=True)
-        return tuple(result[col].to_numpy() for col in result.columns)
+        return tuple(result[col] for col in result.columns)
 
 
 def set_comparer(compare_dict: dict[Any, Any]) -> Compare:
@@ -750,7 +750,6 @@ def duplicate_check(
     if not compare_kwargs:
         compare_kwargs = deepcopy(_compare_kwargs)
     if ignore_columns:
-        print(method_kwargs)
         method_kwargs = remove_ignores(method_kwargs, ignore_columns)
         compare_kwargs = remove_ignores(compare_kwargs, ignore_columns)
     if offsets:
@@ -803,14 +802,15 @@ def duplicate_check(
     return DupDetect(data, compared, method, method_kwargs, compare_kwargs)
 
 
-@post_format_return_type(["station_id"])
+@post_format_return_type(["detected", "station_id", "lat", "lon", "date", "vsi", "dsi"], multiple=True, dtype=None, keep_index=True)
 def remove_duplicates(
-    station_id: SequenceStrType,
-    lat: SequenceNumberType,
-    lon: SequenceNumberType,
-    date: SequenceDatetimeType,
-    vsi: SequenceNumberType,
-    dsi: SequenceNumberType,
+    station_id: SequenceStrType | None = None,
+    lat: SequenceNumberType | None = None,
+    lon: SequenceNumberType | None = None,
+    date: SequenceDatetimeType | None = None,
+    vsi: SequenceNumberType | None = None,
+    dsi: SequenceNumberType | None = None,
+    detected: DupDetect | None = None,
     keep: str | int = "first",
     limit: str | float | None = "default",
     equal_musts: str | list[str] | None = None,
@@ -847,6 +847,8 @@ def remove_duplicates(
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    detected : :py:obj:`DupDetect`
+        A `DupDetect` instance that already contains detected duplicates to flag.
     keep : str or int, default: first
         Which entry should be kept in result dataset.
     limit : str, int or float, optional
@@ -861,20 +863,38 @@ def remove_duplicates(
     -------
     tuple of Any
         All inputs with removed duplicates.
+
+    Raises
+    ------
+    ValueError
+        If none of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` is set.
+
+    Notes
+    -----
+    If `detected` is set, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` are ignored.
+    If `detected` is set, the function always returns a tuple of pd.Series.
     """
-    dup_detect = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
+    if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi)):
+        raise ValueError(
+            "None of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` is set."
+            "Set `dupdetect` or at least one of `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi`."
+        )
 
-    return dup_detect.remove_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)  # type: ignore[return-value]
+    if detected is None:
+        detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
+
+    return detected.remove_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
 
 
-@post_format_return_type(["station_id"])
+@post_format_return_type(["detected", "station_id", "lat", "lon", "date", "vsi", "dsi"], multiple=True, dtype=[int, object])
 def flag_duplicates(
-    station_id: SequenceStrType,
-    lat: SequenceNumberType,
-    lon: SequenceNumberType,
-    date: SequenceDatetimeType,
-    vsi: SequenceNumberType,
-    dsi: SequenceNumberType,
+    station_id: SequenceStrType | None = None,
+    lat: SequenceNumberType | None = None,
+    lon: SequenceNumberType | None = None,
+    date: SequenceDatetimeType | None = None,
+    vsi: SequenceNumberType | None = None,
+    dsi: SequenceNumberType | None = None,
+    detected: DupDetect | None = None,
     keep: str | int = "first",
     limit: str | float | None = "default",
     equal_musts: str | list[str] | None = None,
@@ -903,6 +923,8 @@ def flag_duplicates(
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    detected : :py:obj:`DupDetect`
+        A `DupDetect` instance that already contains detected duplicates to flag.
     keep : str or int, default: first
         Which entry should be kept in result dataset.
     limit : str, int or float, optional
@@ -921,7 +943,24 @@ def flag_duplicates(
 
           - list of duplicate flags
           - list of detected duplicates per row
-    """
-    dup_detect = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
 
-    return dup_detect.flag_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
+    Raises
+    ------
+    ValueError
+        If none of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` is set.
+
+    Notes
+    -----
+    If `detected` is set, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` are ignored.
+    If `detected` is set, the function always returns a tuple of pd.Series.
+    """
+    if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi)):
+        raise ValueError(
+            "None of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` is set."
+            "Set `dupdetect` or at least one of `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi`."
+        )
+
+    if detected is None:
+        detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
+
+    return detected.flag_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
