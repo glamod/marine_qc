@@ -1,4 +1,4 @@
-.. _api_qc_ind:
+.. _api_qc_dup:
 
 QC checks on individual reports
 -------------------------------
