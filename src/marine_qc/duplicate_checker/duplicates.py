@@ -144,10 +144,7 @@ class DupDetect:
         """
         equal_musts: list[str] = []
         for value in self.compare_kwargs.keys():
-            if isinstance(value, str):
-                value_lst = [value]
-            else:
-                value_lst = list(value)
+            value_lst = [value] if isinstance(value, str) else list(value)
             equal_musts.extend(v for v in value_lst if v in self.data.columns)
         return equal_musts
 
@@ -221,13 +218,20 @@ class DupDetect:
         Parameters
         ----------
         keep : str or int, default: first
-            Which entry should be kept in result dataset.
-        limit : str, int or float, optional
-            Limit of total score that as to be exceeded to be declared as a duplicate.
-            Defaults to .991.
-        equal_musts : str or list, optional
-            Hashable of column name(s) that must totally be equal to be declared as a duplicate.
-            Default: All column names found in method_kwargs.
+            Determines which duplicate entry should be retained.
+
+            - ``"first"`` keeps the first occurrence.
+            - ``"last"`` keeps the last occurrence.
+            - Integer values keep the specified positional match.
+        limit : str, int or float, default: 0.991, optional
+            Minimum duplicate score threshold required for removal.
+            Duplicate candidates with scores below this threshold are retained.
+            If ``"default"``, the internal default threshold is used.
+        equal_musts : str or list of str, optional
+            Column names that must match exactly for observations to be treated
+            as duplicates.
+            This can be used to enforce strict equality for specific fields,
+            even when other comparison tolerances are applied.
 
         Returns
         -------
@@ -396,11 +400,19 @@ class DupDetect:
         Parameters
         ----------
         keep : str or int
-            Which entry to keep ('first' or 'last').
-        limit : str or float, optional
-            Minimum similarity score to declare duplicates.
-        equal_musts : str or list[str], optional
-            Columns that must exactly match.
+            Determines which duplicate entry should be retained.
+
+            - ``"first"`` keeps the first occurrence.
+            - ``"last"`` keeps the last occurrence.
+            - Integer values keep the specified positional match.
+        limit : str, int or float, default: 0.991, optional
+            Minimum duplicate score threshold required for removal.
+            Duplicate candidates with scores below this threshold are retained.
+        equal_musts : str or list of str, optional
+            Column names that must match exactly for observations to be treated
+            as duplicates.
+            This can be used to enforce strict equality for specific fields,
+            even when other comparison tolerances are applied.
 
         Returns
         -------
@@ -672,9 +684,13 @@ def duplicate_check(
     **kwargs: dict[str, Any],
 ) -> DupDetect:
     r"""
-    Run a duplicate check on a dataset using recordlinkage.
+    Detect potentially duplicated observations using ``recordlinkage``.
 
-    Returns a DupDetect object.
+    This function builds a pandas DataFrame from the provided observation
+    metadata and compares records using a configurable record linkage method.
+    The comparison result is returned as a :py:class:`DupDetect`
+    object containing both the processed data and the duplicate comparison
+    scores.
 
     Parameters
     ----------
@@ -697,38 +713,192 @@ def duplicate_check(
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     obs : :py:obj:`~marine_qc.SequenceNumberType` or list of :py:obj:`~marine_qc.SequenceNumberType`, optional
-        One-dimensional reported observation value.
+        One-dimensional reported observation value(s).
+        If multiple sequences are supplied, columns are internally named ``obs_1``, ``obs_2``, etc.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     method : str, default: SortedNeighbourhood
-        Duplicate check method for recordlinkage.
+        Record linkage indexing method.
+
+        This determines which record pairs are considered potential duplicates
+        before detailed comparison is performed.
+
+        Common methods include:
+
+          - ``"SortedNeighbourhood"``
+          - ``"Block"``
+          - ``"Full"``
+
     method_kwargs : dict, optional
-        Keyword arguments for recordlinkage duplicate check.
-        Defaults to _method_kwargs.
+        Keyword arguments passed to the record linkage indexing method.
+        If omitted, internal default values are used.
+
+        Defaults to::
+
+            method_kwargs = {
+               "left_on": "date",
+               "window": 5,
+               "block_on": ["station_id"],
+            }
     compare_kwargs : dict, optional
-        Keyword arguments for recordlinkage.Compare object.
-        Defaults to _compare_kwargs.
+        Configuration for the comparison step.
+        Each key corresponds to a column name and defines how values should
+        be compared and tolerated.
+        If omitted, internal defaults are used.
+
+        Defaults to::
+
+            compare_kwargs = {
+               "station_id": {"method": "exact"},
+                   "lon": {
+                   "method": "numeric",
+                   "kwargs": {"method": "step", "offset": 0.11},
+               },
+               "lat": {
+                   "method": "numeric",
+                   "kwargs": {"method": "step", "offset": 0.11},
+               },
+               "date": {
+                   "method": "date2",
+                   "kwargs": {"method": "gauss", "offset": 60.0},
+               },
+               "vsi": {
+                   "method": "numeric",
+                   "kwargs": {"method": "step", "offset": 0.09},
+               },
+               "dsi": {
+                   "method": "numeric",
+                   "kwargs": {"method": "step", "offset": 0.9},
+               },
+               "obs": {
+                   "method": "numeric",
+                   "kwargs": {"method": "step", "offset": 0.9},
+               },
+           }
     ignore_columns : str or list, optional
-        Name of data columns to be ignored for duplicate check.
+        Column names to exclude entirely from duplicate detection.
+        Ignored columns are removed from both indexing and comparison steps.
     ignore_entries : dict, optional
-        Key: Column name.
-        Value: value to be ignored.
-        E.g. offsets={"station_speed": null}.
+        Ignore specific values for selected columns during comparison.
+
+        This is useful when placeholder or invalid values should not prevent
+        duplicate matches.
+
+        For rows containing ignored values, an additional comparison is
+        performed where the affected columns are excluded.
+
+        Keys correspond to column names and values correspond to entries
+        to ignore.
+
+        Ignore missing station IDs::
+
+            ignore_entries = {
+                "station_id": "UNKNOWN",
+            }
+
+        Ignore multiple values::
+
+            ignore_entries = {
+                "station_id": ["UNKNOWN", "MISSING"],
+            }
     offsets : dict, optional
-        Change offsets for recordlinkage Compare object.
-        Key: Column name.
-        Value: new offset.
-        E.g. offsets={"latitude": 0.1}.
+        Override comparison offsets for selected columns.
+        This modifies the tolerance used during comparison.
+
+        Example::
+
+            offsets = {
+                "lat": 0.05,
+                "lon": 0.05,
+            }
     reindex_by_null : bool, optional
-        If True data is re-indexed in ascending order according to the number of nulls in each row.
+        If True, rows are reordered according to the number of missing values.
+
+        Rows with fewer missing values are processed first. This can improve
+        duplicate matching performance and consistency when null values are
+        present.
     null_label : str, optional
-        Null label which is used if `reindex_by_null` is True.
+        Placeholder value used internally when ``reindex_by_null=True``.
     \**kwargs : dict
-        Additional data to be used for checking duplicates.
+        Additional columns to include in duplicate detection.
+
+        Extra keyword arguments are added directly to the internal DataFrame.
+
+        Example::
+
+           duplicate_check(
+               station_id,
+               lat,
+               lon,
+               date,
+               vsi,
+               dsi,
+               platform_type=platform_type,
+               source=source,
+           )
 
     Returns
     -------
     cdm_reader_mapper.DupDetect
-        A DupDetect instance.
+        Duplicate detection result object.
+
+        The returned object contains:
+
+        - The processed input data.
+        - Pairwise comparison scores.
+        - Duplicate linkage metadata.
+        - Comparison configuration information.
+
+    Examples
+    --------
+    Basic usage:
+
+    >>> dup = duplicate_check(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ... )
+
+    Using additional observations:
+
+    >>> dup = duplicate_check(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     obs=[temperature, salinity],
+    ... )
+
+    Ignoring placeholder station IDs:
+
+    >>> dup = duplicate_check(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     ignore_entries={"station_id": "UNKNOWN"},
+    ... )
+
+    Increasing spatial tolerances:
+
+    >>> dup = duplicate_check(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     offsets={
+    ...         "lat": 1.0,
+    ...         "lon": 1.0,
+    ...     },
+    ... )
     """
     if not method_kwargs:
         method_kwargs = deepcopy(_method_kwargs)
@@ -840,46 +1010,73 @@ def remove_duplicates(
     *tuple[SequenceNumberType, ...],
 ]:
     r"""
-    Remove duplicates from inputs.
+    Remove potentially duplicated observations using ``recordlinkage``.
+
+    This function removes observations identified as duplicates either from
+    a precomputed :py:class:`DupDetect` instance or by running
+    :py:func:`duplicate_check` internally.
+
+    Duplicate detection scores are evaluated using the duplicate comparison
+    results stored in ``DupDetect``. Records classified as duplicates according
+    to ``limit`` are removed according to the selected ``keep`` strategy.
 
     Parameters
     ----------
     station_id : :py:obj:`~marine_qc.SequenceStrType`
         One-dimensional array of station IDs.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     lon : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         One-dimensional array of datetime values.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     vsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     obs : :py:obj:`~marine_qc.SequenceNumberType` or list of :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional reported observation value.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    detected : :py:obj:`DupDetect`
+        Ignored if ``detected`` is provided.
+    detected : :py:class:`DupDetect`
         A `DupDetect` instance that already contains detected duplicates to flag.
+        If provided, duplicate detection is not rerun and all input data arguments
+        (``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi``, and ``obs``) are ignored.
     keep : str or int, default: first
-        Which entry should be kept in result dataset.
-    limit : str, int or float, optional
-        Limit of total score that as to be exceeded to be declared as a duplicate.
+        Determines which duplicate entry should be retained.
+
+        - ``"first"`` keeps the first occurrence.
+        - ``"last"`` keeps the last occurrence.
+        - Integer values keep the specified positional match.
+    limit : str, int or float, default: 0.991, optional
+        Minimum duplicate score threshold required for removal.
+        Duplicate candidates with scores below this threshold are retained.
         Defaults to .991.
-    equal_musts : str or list, optional
-        Hashable of column name(s) that must totally be equal to be declared as a duplicate.
+    equal_musts : str or list of str, optional
+        Column names that must match exactly for observations to be treated
+        as duplicates.
+        This can be used to enforce strict equality for specific fields,
+        even when other comparison tolerances are applied.
     \**kwargs : Any
-        Any keyword-arguments passed to `duplicate_check`.
+        Additional keyword arguments passed to :py:func:`duplicate_check`
+        when ``detected`` is not provided.
 
     Returns
     -------
     tuple of Any
+        Same type as input, but with integer values
         All inputs with removed duplicates.
 
     Raises
@@ -891,6 +1088,54 @@ def remove_duplicates(
     -----
     If `detected` is set, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` are ignored.
     If `detected` is set, the function always returns a tuple of pd.Series.
+
+    Examples
+    --------
+    Remove duplicates directly from raw observations:
+
+    >>> station_id_clean, lat_clean, lon_clean, date_clean, vsi_clean, dsi_clean = remove_duplicates(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ... )
+
+    Use a precomputed duplicate detection result:
+    >>> detected = duplicate_check(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ... )
+    ... station_id_clean, lat_clean, lon_clean, date_clean, vsi_clean, dsi_clean = remove_duplicates(
+    ...     detected=detected,
+    ... )
+
+    Require exact station ID matches:
+    >>> station_id_clean, lat_clean, lon_clean, date_clean, vsi_clean, dsi_clean = remove_duplicates(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     equal_musts="station_id",
+    ... )
+
+    Use astricter duplicate threshold:
+    >>> station_id_clean, lat_clean, lon_clean, date_clean, vsi_clean, dsi_clean = remove_duplicates(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     limit=0.999,
+    ... )
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi)):
         raise ValueError(
@@ -920,48 +1165,72 @@ def flag_duplicates(
     **kwargs: Any,
 ) -> tuple[SequenceIntType, SequenceNumberType]:
     r"""
-    Flag duplicates from inputs.
+    Flag potentially duplicated observations using ``recordlinkage``.
+
+    This function flags observations identified as duplicates either from
+    a precomputed :py:class:`DupDetect` instance or by running
+    :py:func:`duplicate_check` internally.
+
+    Duplicate detection scores are evaluated using the duplicate comparison
+    results stored in ``DupDetect``. Records classified as duplicates according
+    to ``limit`` are flagged according to the selected ``keep`` strategy.
 
     Parameters
     ----------
     station_id : :py:obj:`~marine_qc.SequenceStrType`, optional
         One-dimensional array of station IDs.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     lat : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     lon : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
         One-dimensional array of datetime values.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     vsi : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     dsi : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     obs : :py:obj:`~marine_qc.SequenceNumberType` or list of :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional reported observation value.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+        Ignored if ``detected`` is provided.
     detected : :py:obj:`DupDetect`, optional
         A `DupDetect` instance that already contains detected duplicates to flag.
+        If provided, duplicate detection is not rerun and all input data arguments
+        (``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi``, and ``obs``) are ignored.
     keep : str or int, default: first
-        Which entry should be kept in result dataset.
-    limit : str, int or float, optional
-        Limit of total score that as to be exceeded to be declared as a duplicate.
-        Defaults to .991.
-    equal_musts : str or list, optional
-        Hashable of column name(s) that must totally be equal to be declared as a duplicate.
-        Default: All column names found in method_kwargs.
+        Determines which duplicate entry should be retained.
+
+        - ``"first"`` keeps the first occurrence.
+        - ``"last"`` keeps the last occurrence.
+        - Integer values keep the specified positional match.
+    limit : str, int or float, default: 0.991, optional
+        Minimum duplicate score threshold required for removal.
+        Duplicate candidates with scores below this threshold are retained.
+    equal_musts : str or list of str, optional
+        Column names that must match exactly for observations to be treated
+        as duplicates.
+        This can be used to enforce strict equality for specific fields,
+        even when other comparison tolerances are applied.
     \**kwargs : Any
-        Any keyword-arguments passed to `duplicate_check`.
+        Additional keyword arguments passed to :py:func:`duplicate_check`
+        when ``detected`` is not provided.
 
     Returns
     -------
-    tuple of list of int and list of Any
-        A tuple containing:
+    tuple of :py:obj:`~marine_qc.ValueIntType` and array of Any
+        Same type as input, but with integer values
 
           - list of duplicate flags
           - list of detected duplicates per row
@@ -975,6 +1244,52 @@ def flag_duplicates(
     -----
     If `detected` is set, `station_id`, `lat`, `lon`, `date`, `vsi` and `dsi` are ignored.
     If `detected` is set, the function always returns a tuple of pd.Series.
+
+    Examples
+    --------
+    Flag duplicates directly from raw observations:
+
+    >>> flags, duplicates = flag_duplicates(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ... )
+
+    Use a precomputed duplicate detection result:
+    >>> detected = duplicate_check(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ... )
+    ... flags, duplicates = flag_duplicates(detected=detected)
+
+    Require exact station ID matches:
+    >>> flags, duplicates = flag_duplicates(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     equal_musts="station_id",
+    ... )
+
+    Use astricter duplicate threshold:
+    >>> flag, duplicates = flag_duplicates(
+    ...     station_id=station_id,
+    ...     lat=lat,
+    ...     lon=lon,
+    ...     date=date,
+    ...     vsi=vsi,
+    ...     dsi=dsi,
+    ...     limit=0.999,
+    ... )
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi)):
         raise ValueError(
