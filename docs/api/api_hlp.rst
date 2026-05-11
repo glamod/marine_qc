@@ -58,13 +58,13 @@ Helpers in statistical functions module
 .. autofunction:: marine_qc.helpers.statistics._trim_stat
    :noindex:
 
-Helpers in plotting module
---------------------------
+Helpers in visualization module
+-------------------------------
 
-.. autofunction:: marine_qc.plotting.plot_qc_outcomes._get_colours_labels
+.. autofunction:: marine_qc.visualization.plot_qc_outcomes._get_colours_labels
    :noindex:
 
-.. autofunction:: marine_qc.plotting.plot_qc_outcomes._make_plot
+.. autofunction:: marine_qc.visualization.plot_qc_outcomes._make_plot
    :noindex:
 
 Static methods of buoy tracking QC classes

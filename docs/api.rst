@@ -17,8 +17,8 @@ Main QC functions
    api/api_main_grp
    api/api_main_buoy
 
-Main plotting functions
-=======================
+Main visualization functions
+============================
 
 .. toctree::
    :maxdepth: 1

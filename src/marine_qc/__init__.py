@@ -30,7 +30,7 @@ from .helpers.external_clim import (
     ClimNumberType,
     Climatology,
 )
-from .plotting.plot_qc_outcomes import (
+from .visualization.plot_qc_outcomes import (
     latitude_longitude_plot,
     latitude_variable_plot,
 )
