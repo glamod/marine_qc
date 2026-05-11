@@ -30,10 +30,6 @@ from .helpers.external_clim import (
     ClimNumberType,
     Climatology,
 )
-from .visualization.plot_qc_outcomes import (
-    latitude_longitude_plot,
-    latitude_variable_plot,
-)
 from .quality_control.buoy_tracking_qc import (
     do_aground_check,
     do_new_aground_check,
@@ -73,6 +69,10 @@ from .quality_control.qc_sequential_reports import (
     find_multiple_rounded_values,
     find_repeated_values,
     find_saturated_runs,
+)
+from .visualization.plot_qc_outcomes import (
+    latitude_longitude_plot,
+    latitude_variable_plot,
 )
 
 
