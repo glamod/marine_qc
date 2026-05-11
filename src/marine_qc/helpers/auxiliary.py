@@ -173,7 +173,12 @@ def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
     return tuple(arrays)
 
 
-def format_return_type(result_array: np.ndarray | tuple[np.ndarray, ...], *input_values: Any, dtype: type = int) -> Any:
+def format_return_type(
+    result_array: np.ndarray | pd.Series | tuple[np.ndarray, ...] | tuple[pd.Series, ...],
+    *input_values: Any,
+    dtype: type | None = int,
+    keep_index: bool = False,
+) -> Any:
     r"""
     Convert the result numpy array(s) to the same type as the input value.
 
@@ -186,8 +191,10 @@ def format_return_type(result_array: np.ndarray | tuple[np.ndarray, ...], *input
         The numpy array(s) of results.
     \*input_values : Any
         One or more original input values to infer the desired return type from.
-    dtype : type, optional
-        Desired data type of the result. Default is int.
+    dtype : type, optional, default: int
+        Desired data type of the result.
+    keep_index : bool, default: True
+        If True keep indexes from `result_array`, otherwise take indexes from `input_values`.
 
     Returns
     -------
@@ -195,40 +202,26 @@ def format_return_type(result_array: np.ndarray | tuple[np.ndarray, ...], *input
         The result formatted to match the type of the first valid input value.
     """
     input_value = next((val for val in input_values if val is not None), None)
-
-    def _format_return_type(i_value: Any, o_value: np.ndarray) -> Any:
-        """
-        Convert the result numpy array to the same type as the input value.
-
-        Parameters
-        ----------
-        i_value : Any
-            Original input value to infer the desired return type from.
-        o_value : np.ndarray
-            The numpy array of result.
-
-        Returns
-        -------
-        Same type as input
-            The result formatted to match the type of the input value.
-        """
-        if i_value is None or is_scalar_like(i_value):
-            if np.ndim(o_value) > 0:
-                o_value = o_value[0]
-            return dtype(o_value)
-        if isinstance(i_value, pd.Series):
-            return pd.Series(o_value, index=i_value.index, dtype=dtype)
-        if isinstance(i_value, (list, tuple)):
-            return type(i_value)(o_value.tolist())
-        if isinstance(i_value, np.ndarray) and isinstance(o_value, pd.Series):
-            return o_value.to_numpy()
-        return o_value  # np.ndarray or fallback
-
-    if isinstance(result_array, tuple):
-        results = [_format_return_type(input_value, result) for result in result_array]
-        return tuple(results)
-
-    return _format_return_type(input_value, result_array)
+    if input_value is None or is_scalar_like(input_value):
+        if np.ndim(result_array) > 0:
+            result_array = result_array[0]
+        if dtype is not None:
+            return dtype(result_array)
+    if isinstance(input_value, pd.Series):
+        if keep_index is True and isinstance(result_array, pd.Series):
+            index = result_array.index
+        else:
+            index = input_value.index
+        if dtype is None:
+            return pd.Series(result_array, index=index)
+        return pd.Series(result_array, index=index, dtype=dtype)
+    if isinstance(input_value, (list, tuple)):
+        if isinstance(result_array, np.ndarray):
+            return type(input_value)(result_array.tolist())
+        return type(input_value)(result_array)
+    if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
+        return result_array.to_numpy()
+    return result_array  # np.ndarray or fallback
 
 
 def convert_to(value: SequenceNumberType, source_units: str, target_units: str) -> SequenceNumberType:
@@ -439,7 +432,9 @@ def generic_decorator(
     return decorator
 
 
-def post_format_return_type(params: list[str], dtype: type = int, multiple: bool = False) -> Callable[..., Any]:
+def post_format_return_type(
+    params: list[str], dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
+) -> Callable[..., Any]:
     """
     Decorator to format a function's return value to match the type of its original input(s).
 
@@ -454,12 +449,15 @@ def post_format_return_type(params: list[str], dtype: type = int, multiple: bool
     params : list of str
         List of parameter names whose original input types should be used to
         format the return value.
-    dtype : type, optional
-        Desired data type of the result. Default is int.
+    dtype : type or list of type, optional, default: int
+        Desired data type of the result.
+        If `multiple` is True `dtype` can be a list of types.
     multiple : bool, optional
         If True, assumes the function returns a sequence of results (e.g., a tuple),
         and applies `format_return_type` to each element individually.
         If False (default), applies `format_return_type` once on the entire result.
+    keep_index : bool, default: True
+        If True keep indexes from result, otherwise take indexes from input.
 
     Returns
     -------
@@ -500,9 +498,13 @@ def post_format_return_type(params: list[str], dtype: type = int, multiple: bool
         input_values = [original_call[param] for param in params if param in original_call]
 
         if multiple:
-            return tuple(format_return_type(r, *input_values, dtype=dtype) for r in result)
-        else:
-            return format_return_type(result, *input_values, dtype=dtype)
+            if isinstance(dtype, type) or dtype is None:
+                return tuple(format_return_type(r, *input_values, dtype=dtype, keep_index=keep_index) for r in result)
+            return_list = [format_return_type(result[i], *input_values, dtype=dtype[i], keep_index=keep_index) for i in range(len(result))]
+            return tuple(return_list)
+        if isinstance(dtype, list):
+            raise TypeError(f"`dtype` has incompatible type: {type(dtype)}")
+        return format_return_type(result, *input_values, dtype=dtype, keep_index=keep_index)
 
     return generic_decorator(post_handler=post_handler)
 
