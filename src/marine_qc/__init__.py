@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .duplicate_checker.duplicates import flag_duplicates, remove_duplicates
+from .duplicate_checker.duplicates import duplicate_check, flag_duplicates, remove_duplicates
 from .helpers.auxiliary import (
     PandasNAType,
     PandasNaTType,
