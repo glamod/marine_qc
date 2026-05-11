@@ -335,7 +335,8 @@ def test_duplicate_check_reindex(dummy_data):
 
     result = dd.compared
 
-    exp_idx = pd.MultiIndex.from_tuples([(1, 0), (3, 2), (4, 0), (4, 1), (5, 0), (5, 1), (5, 4)])
+    exp_idx = pd.MultiIndex.from_tuples([("B", "A"), ("D", "C"), ("E", "A"), ("E", "B"), ("F", "A"), ("F", "B"), ("F", "E")])
+
     pd.testing.assert_index_equal(dd.compared.index, exp_idx)
 
     assert list(result.columns) == [
@@ -356,7 +357,7 @@ def test_get_total_score(dummy_data):
 
     expected = pd.Series(
         [5.0 / 6.0, 0.5, 2.0 / 3.0, 0.5, 1.0, 5.0 / 6.0, 2.0 / 3.0],
-        index=pd.MultiIndex.from_tuples([(1, 0), (3, 2), (4, 0), (4, 1), (5, 0), (5, 1), (5, 4)]),
+        index=pd.MultiIndex.from_tuples([("B", "A"), ("D", "C"), ("E", "A"), ("E", "B"), ("F", "A"), ("F", "B"), ("F", "E")]),
     )
     pd.testing.assert_series_equal(dd.score, expected)
 
@@ -364,14 +365,14 @@ def test_get_total_score(dummy_data):
 @pytest.mark.parametrize(
     "kwargs, exp_ids",
     [
-        ({}, [(5, 0)]),
-        ({"offsets": {"lat": 0.22}}, [(1, 0), (5, 0), (5, 1)]),
+        ({}, [("F", "A")]),
+        ({"offsets": {"lat": 0.22}}, [("B", "A"), ("F", "A"), ("F", "B")]),
         (
             {"ignore_columns": ["vsi", "dsi"]},
-            [(4, 0), (5, 0), (5, 4)],
+            [("E", "A"), ("F", "A"), ("F", "E")],
         ),
-        ({"ignore_entries": {"station_id": "S2"}}, [(5, 0), (3, 0), (3, 5)]),
-        ({"ignore_entries": {"station_id": ["S2"]}}, [(5, 0), (3, 0), (3, 5)]),
+        ({"ignore_entries": {"station_id": "S2"}}, [("F", "A"), ("D", "A"), ("D", "F")]),
+        ({"ignore_entries": {"station_id": ["S2"]}}, [("F", "A"), ("D", "A"), ("D", "F")]),
     ],
 )
 def test_get_duplicates_kwargs(dummy_data, kwargs, exp_ids):
@@ -390,15 +391,15 @@ def test_get_duplicates_limit_and_equal_musts(dummy_data):
     dd = duplicate_check(**dummy_data.to_dict())
 
     matches_default = dd.get_duplicates(keep="first", limit=0.5)
-    expected_indexes = pd.MultiIndex.from_tuples([(5, 0)])
+    expected_indexes = pd.MultiIndex.from_tuples([("F", "A")])
     pd.testing.assert_index_equal(matches_default.index, expected_indexes)
 
     matches_eq_str = dd.get_duplicates(keep="first", equal_musts="station_id")
-    expected_indexes = pd.MultiIndex.from_tuples([(5, 0)])
+    expected_indexes = pd.MultiIndex.from_tuples([("F", "A")])
     pd.testing.assert_index_equal(matches_eq_str.index, expected_indexes)
 
     matches_eq_list = dd.get_duplicates(keep="first", equal_musts=["station_id", "lon"])
-    expected_indexes = pd.MultiIndex.from_tuples([(5, 0)])
+    expected_indexes = pd.MultiIndex.from_tuples([("F", "A")])
     pd.testing.assert_index_equal(matches_eq_list.index, expected_indexes)
 
 
@@ -412,7 +413,7 @@ def test_get_duplicates_raises(dummy_data):
 
 @pytest.mark.parametrize("directly", [True, False])
 @pytest.mark.parametrize(
-    "keep, exp_duplicate_status",
+    "keep, exp_flag",
     [
         ("first", [1, 0, 0, 0, 0, 3]),
         ("last", [3, 0, 0, 0, 0, 1]),
@@ -420,7 +421,7 @@ def test_get_duplicates_raises(dummy_data):
         (-1, [1, 0, 0, 0, 0, 3]),
     ],
 )
-def test_flag_duplicates_basic(directly, dummy_data, keep, exp_duplicate_status):
+def test_flag_duplicates_basic(directly, dummy_data, keep, exp_flag):
     if directly is True:
         result = flag_duplicates(**dummy_data.to_dict(), keep=keep)
     elif directly is False:
@@ -432,13 +433,13 @@ def test_flag_duplicates_basic(directly, dummy_data, keep, exp_duplicate_status)
     for i in [0, 1]:
         assert isinstance(result[i], np.ndarray)
 
-    exp_flag = np.array(exp_duplicate_status)
+    exp_flag = np.array(exp_flag)
 
     np.testing.assert_array_equal(result[0], exp_flag)
-    assert result[1][0] == [np.int64(5)]
+    assert result[1][0] == ["F"]
     for i in [1, 2, 3, 4]:
         assert np.isnan(result[1][i])
-    assert result[1][5] == [np.int64(0)]
+    assert result[1][5] == ["A"]
 
 
 @pytest.mark.parametrize("directly", [True, False])
