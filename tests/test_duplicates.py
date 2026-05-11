@@ -430,8 +430,8 @@ def test_flag_duplicates_basic(directly, dummy_data, keep, exp_flag):
 
     assert isinstance(result, tuple)
     assert len(result) == 2
-    for i in [0, 1]:
-        assert isinstance(result[i], pd.Series)
+    for r in result:
+        assert isinstance(r, pd.Series)
 
     exp_flag = pd.Series(exp_flag, index=["A", "B", "C", "D", "E", "F"], name="duplicate_flags")
     exp_dups = pd.Series([["F"], np.nan, np.nan, np.nan, np.nan, ["A"]], index=["A", "B", "C", "D", "E", "F"], name="duplicates")
@@ -444,12 +444,10 @@ def test_flag_duplicates_detected(dummy_data):
     detected = duplicate_check(**dummy_data.to_dict())
     result = flag_duplicates(detected=detected)
 
-    print(result[0])
-
     assert isinstance(result, tuple)
     assert len(result) == 2
-    for i in [0, 1]:
-        assert isinstance(result[i], pd.Series)
+    for r in result:
+        assert isinstance(r, pd.Series)
 
     exp_flag = pd.Series([1, 0, 0, 0, 0, 3], index=["A", "B", "C", "D", "E", "F"], name="duplicate_flags")
     exp_dups = pd.Series([["F"], np.nan, np.nan, np.nan, np.nan, ["A"]], index=["A", "B", "C", "D", "E", "F"], name="duplicates")
@@ -471,8 +469,53 @@ def test_flag_duplicates_series(dummy_data):
 
     assert isinstance(result, tuple)
     assert len(result) == 2
-    for i in [0, 1]:
-        assert isinstance(result[i], pd.Series)
+    for r in result:
+        assert isinstance(r, pd.Series)
+
+    exp_flag = pd.Series([1, 0, 0, 0, 0, 3], index=["A", "B", "C", "D", "E", "F"], name="duplicate_flags")
+    exp_dups = pd.Series([["F"], np.nan, np.nan, np.nan, np.nan, ["A"]], index=["A", "B", "C", "D", "E", "F"], name="duplicates")
+
+    pd.testing.assert_series_equal(result[0], exp_flag)
+    pd.testing.assert_series_equal(result[1], exp_dups)
+
+
+def test_flag_duplicates_obs_single(dummy_data):
+    result = flag_duplicates(**dummy_data.to_dict(), obs=[1, 1, 1, 1, 1, 2])
+
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+    for r in result:
+        assert isinstance(r, pd.Series)
+
+    exp_flag = pd.Series([0] * 6, index=["A", "B", "C", "D", "E", "F"], name="duplicate_flags")
+    exp_dups = pd.Series([np.nan] * 6, index=["A", "B", "C", "D", "E", "F"], name="duplicates", dtype=object)
+
+    pd.testing.assert_series_equal(result[0], exp_flag)
+    pd.testing.assert_series_equal(result[1], exp_dups)
+
+
+def test_flag_duplicates_obs_multiple(dummy_data):
+    result = flag_duplicates(**dummy_data.to_dict(), obs=[[1, 1, 1, 1, 1, 1], [2, 3, 3, 3, 3, 3]])
+
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+    for r in result:
+        assert isinstance(r, pd.Series)
+
+    exp_flag = pd.Series([0] * 6, index=["A", "B", "C", "D", "E", "F"], name="duplicate_flags")
+    exp_dups = pd.Series([np.nan] * 6, index=["A", "B", "C", "D", "E", "F"], name="duplicates", dtype=object)
+
+    pd.testing.assert_series_equal(result[0], exp_flag)
+    pd.testing.assert_series_equal(result[1], exp_dups)
+
+
+def test_flag_duplicates_obs_offsets(dummy_data):
+    result = flag_duplicates(**dummy_data.to_dict(), obs=[[1.0, 1.0, 1.0, 1.0, 1.0, 1.4], [2, 3, 3, 3, 3, 3]], offsets={"obs_1": 0.5, "obs_2": 1})
+
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+    for r in result:
+        assert isinstance(r, pd.Series)
 
     exp_flag = pd.Series([1, 0, 0, 0, 0, 3], index=["A", "B", "C", "D", "E", "F"], name="duplicate_flags")
     exp_dups = pd.Series([["F"], np.nan, np.nan, np.nan, np.nan, ["A"]], index=["A", "B", "C", "D", "E", "F"], name="duplicates")
@@ -500,8 +543,8 @@ def test_remove_duplicates_basic(directly, dummy_data, keep, exp_idx):
 
     assert isinstance(result, tuple)
     assert len(result) == 7
-    for i in [0, 1, 2, 3, 4, 5, 6]:
-        assert isinstance(result[i], pd.Series)
+    for r in result:
+        assert isinstance(r, pd.Series)
 
     pd.testing.assert_series_equal(result[0], dummy_data["station_id"].iloc[exp_idx])
     pd.testing.assert_series_equal(result[1], dummy_data["lat"].iloc[exp_idx])
@@ -518,8 +561,8 @@ def test_remove_duplicates_detected(dummy_data):
 
     assert isinstance(result, tuple)
     assert len(result) == 7
-    for i in [0, 1, 2, 3, 4, 5, 6]:
-        assert isinstance(result[i], pd.Series)
+    for r in result:
+        assert isinstance(r, pd.Series)
 
     exp_idx = [0, 1, 2, 3, 4]
     pd.testing.assert_series_equal(result[0], dummy_data["station_id"].iloc[exp_idx])
@@ -541,10 +584,11 @@ def test_remove_duplicates_series(dummy_data):
         dsi=dummy_data["dsi"],
         flag=dummy_data["flag"],
     )
+
     assert isinstance(result, tuple)
     assert len(result) == 7
-    for i in [0, 1, 2, 3, 4, 5, 6]:
-        assert isinstance(result[i], pd.Series)
+    for r in result:
+        assert isinstance(r, pd.Series)
 
     exp_idx = [0, 1, 2, 3, 4]
     pd.testing.assert_series_equal(result[0], dummy_data["station_id"].iloc[exp_idx])
@@ -554,6 +598,68 @@ def test_remove_duplicates_series(dummy_data):
     pd.testing.assert_series_equal(result[4], dummy_data["vsi"].iloc[exp_idx])
     pd.testing.assert_series_equal(result[5], dummy_data["dsi"].iloc[exp_idx])
     pd.testing.assert_series_equal(result[6], dummy_data["flag"].iloc[exp_idx])
+
+
+def test_remove_duplicates_obs_single(dummy_data):
+    obs = [1, 1, 1, 1, 1, 2]
+    result = remove_duplicates(**dummy_data.to_dict(), obs=obs)
+
+    assert isinstance(result, tuple)
+    assert len(result) == 8
+    for r in result:
+        assert isinstance(r, pd.Series)
+
+    pd.testing.assert_series_equal(result[0], dummy_data["station_id"])
+    pd.testing.assert_series_equal(result[1], dummy_data["lat"])
+    pd.testing.assert_series_equal(result[2], dummy_data["lon"])
+    pd.testing.assert_series_equal(result[3], dummy_data["date"])
+    pd.testing.assert_series_equal(result[4], dummy_data["vsi"])
+    pd.testing.assert_series_equal(result[5], dummy_data["dsi"])
+    pd.testing.assert_series_equal(result[6], pd.Series(obs, index=dummy_data.index, name="obs"))
+    pd.testing.assert_series_equal(result[7], dummy_data["flag"])
+
+
+def test_remove_duplicates_obs_multiple(dummy_data):
+    obs_1 = [1, 1, 1, 1, 1, 1]
+    obs_2 = [2, 3, 3, 3, 3, 3]
+    result = remove_duplicates(**dummy_data.to_dict(), obs=[obs_1, obs_2])
+
+    assert isinstance(result, tuple)
+    assert len(result) == 9
+    for r in result:
+        assert isinstance(r, pd.Series)
+
+    pd.testing.assert_series_equal(result[0], dummy_data["station_id"])
+    pd.testing.assert_series_equal(result[1], dummy_data["lat"])
+    pd.testing.assert_series_equal(result[2], dummy_data["lon"])
+    pd.testing.assert_series_equal(result[3], dummy_data["date"])
+    pd.testing.assert_series_equal(result[4], dummy_data["vsi"])
+    pd.testing.assert_series_equal(result[5], dummy_data["dsi"])
+    pd.testing.assert_series_equal(result[6], pd.Series(obs_1, index=dummy_data.index, name="obs_1"))
+    pd.testing.assert_series_equal(result[7], pd.Series(obs_2, index=dummy_data.index, name="obs_2"))
+    pd.testing.assert_series_equal(result[8], dummy_data["flag"])
+
+
+def test_remove_duplicates_obs_offsets(dummy_data):
+    obs_1 = [1.0, 1.0, 1.0, 1.0, 1.0, 1.4]
+    obs_2 = [2, 3, 3, 3, 3, 3]
+    result = remove_duplicates(**dummy_data.to_dict(), obs=[obs_1, obs_2], offsets={"obs_1": 0.5, "obs_2": 1})
+
+    assert isinstance(result, tuple)
+    assert len(result) == 9
+    for r in result:
+        assert isinstance(r, pd.Series)
+
+    exp_idx = [0, 1, 2, 3, 4]
+    pd.testing.assert_series_equal(result[0], dummy_data["station_id"].iloc[exp_idx])
+    pd.testing.assert_series_equal(result[1], dummy_data["lat"].iloc[exp_idx])
+    pd.testing.assert_series_equal(result[2], dummy_data["lon"].iloc[exp_idx])
+    pd.testing.assert_series_equal(result[3], dummy_data["date"].iloc[exp_idx])
+    pd.testing.assert_series_equal(result[4], dummy_data["vsi"].iloc[exp_idx])
+    pd.testing.assert_series_equal(result[5], dummy_data["dsi"].iloc[exp_idx])
+    pd.testing.assert_series_equal(result[6], pd.Series([1.0, 1.0, 1.0, 1.0, 1.0], index=["A", "B", "C", "D", "E"], name="obs_1"))
+    pd.testing.assert_series_equal(result[7], pd.Series([2, 3, 3, 3, 3], index=["A", "B", "C", "D", "E"], name="obs_2"))
+    pd.testing.assert_series_equal(result[8], dummy_data["flag"].iloc[exp_idx])
 
 
 @pytest.mark.parametrize(

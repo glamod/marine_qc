@@ -13,6 +13,7 @@ from ..helpers.auxiliary import (
     SequenceIntType,
     SequenceNumberType,
     SequenceStrType,
+    is_scalar_like,
     post_format_return_type,
 )
 from ._duplicate_settings import Compare, _compare_kwargs, _method_kwargs
@@ -636,6 +637,8 @@ class Comparer:
         convert_data : bool, default False
           Whether to convert data using `compare_kwargs` conversion dictionary.
         """
+        compare_kwargs = {k: v for k, v in compare_kwargs.items() if k in data.columns}
+
         indexer = getattr(rl.index, method)(**method_kwargs)
         comparer = set_comparer(compare_kwargs)
         if convert_data is True:
@@ -657,10 +660,10 @@ def duplicate_check(
     date: SequenceDatetimeType,
     vsi: SequenceNumberType,
     dsi: SequenceNumberType,
+    obs: SequenceNumberType | list[SequenceNumberType] | None = None,
     method: str = "SortedNeighbourhood",
     method_kwargs: dict[Any, Any] | None = None,
     compare_kwargs: dict[Any, Any] | None = None,
-    table_name: str | None = None,
     ignore_columns: str | None = None,
     ignore_entries: dict[str, Any] | None = None,
     offsets: dict[str, Any] | None = None,
@@ -693,6 +696,9 @@ def duplicate_check(
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    obs : :py:obj:`~marine_qc.SequenceNumberType` or list of :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional reported observation value.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     method : str, default: SortedNeighbourhood
         Duplicate check method for recordlinkage.
     method_kwargs : dict, optional
@@ -701,8 +707,6 @@ def duplicate_check(
     compare_kwargs : dict, optional
         Keyword arguments for recordlinkage.Compare object.
         Defaults to _compare_kwargs.
-    table_name : str, optional
-        Name of the CDM table to be selected from data.
     ignore_columns : str or list, optional
         Name of data columns to be ignored for duplicate check.
     ignore_entries : dict, optional
@@ -726,6 +730,11 @@ def duplicate_check(
     cdm_reader_mapper.DupDetect
         A DupDetect instance.
     """
+    if not method_kwargs:
+        method_kwargs = deepcopy(_method_kwargs)
+    if not compare_kwargs:
+        compare_kwargs = deepcopy(_compare_kwargs)
+
     data = pd.DataFrame(
         {
             "station_id": station_id,
@@ -736,6 +745,15 @@ def duplicate_check(
             "dsi": dsi,
         }
     )
+    if obs is not None:
+        if is_scalar_like(obs[0]):
+            data["obs"] = obs
+        else:
+            for i in range(len(obs)):
+                data[f"obs_{i + 1}"] = obs[i]
+                compare_kwargs[f"obs_{i + 1}"] = deepcopy(compare_kwargs["obs"])
+            del compare_kwargs["obs"]
+
     data = data.assign(**kwargs)
     index = data.index
 
@@ -743,19 +761,15 @@ def duplicate_check(
         data = reindex_nulls(data, null_label=null_label)
 
     data.reset_index(drop=True)
-    if table_name:
-        data = data[table_name]
-    if not method_kwargs:
-        method_kwargs = deepcopy(_method_kwargs)
-    if not compare_kwargs:
-        compare_kwargs = deepcopy(_compare_kwargs)
+
+    dtypes = data.dtypes
+
     if ignore_columns:
         method_kwargs = remove_ignores(method_kwargs, ignore_columns)
         compare_kwargs = remove_ignores(compare_kwargs, ignore_columns)
     if offsets:
         compare_kwargs = change_offsets(compare_kwargs, offsets)
 
-    dtypes = data.dtypes
     comparer = Comparer(
         data=data,
         method=method,
@@ -810,6 +824,7 @@ def remove_duplicates(
     date: SequenceDatetimeType | None = None,
     vsi: SequenceNumberType | None = None,
     dsi: SequenceNumberType | None = None,
+    obs: SequenceNumberType | list[SequenceNumberType] | None = None,
     detected: DupDetect | None = None,
     keep: str | int = "first",
     limit: str | float | None = "default",
@@ -847,6 +862,9 @@ def remove_duplicates(
     dsi : :py:obj:`~marine_qc.SequenceNumberType`
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    obs : :py:obj:`~marine_qc.SequenceNumberType` or list of :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional reported observation value.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
     detected : :py:obj:`DupDetect`
         A `DupDetect` instance that already contains detected duplicates to flag.
     keep : str or int, default: first
@@ -881,7 +899,7 @@ def remove_duplicates(
         )
 
     if detected is None:
-        detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
+        detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, obs, **kwargs)
 
     return detected.remove_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)
 
@@ -894,6 +912,7 @@ def flag_duplicates(
     date: SequenceDatetimeType | None = None,
     vsi: SequenceNumberType | None = None,
     dsi: SequenceNumberType | None = None,
+    obs: SequenceNumberType | list[SequenceNumberType] | None = None,
     detected: DupDetect | None = None,
     keep: str | int = "first",
     limit: str | float | None = "default",
@@ -905,25 +924,28 @@ def flag_duplicates(
 
     Parameters
     ----------
-    station_id : :py:obj:`~marine_qc.SequenceStrType`
+    station_id : :py:obj:`~marine_qc.SequenceStrType`, optional
         One-dimensional array of station IDs.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lat : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of latitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of longitudes in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    date : :py:obj:`~marine_qc.SequenceDatetimeType`
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
         One-dimensional array of datetime values.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    vsi : :py:obj:`~marine_qc.SequenceNumberType`
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional reported speed array in km/h.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    dsi : :py:obj:`~marine_qc.SequenceNumberType`
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
-    detected : :py:obj:`DupDetect`
+    obs : :py:obj:`~marine_qc.SequenceNumberType` or list of :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional reported observation value.
+        Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    detected : :py:obj:`DupDetect`, optional
         A `DupDetect` instance that already contains detected duplicates to flag.
     keep : str or int, default: first
         Which entry should be kept in result dataset.
@@ -961,6 +983,6 @@ def flag_duplicates(
         )
 
     if detected is None:
-        detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, **kwargs)
+        detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, obs, **kwargs)
 
     return detected.flag_duplicates(keep=keep, limit=limit, equal_musts=equal_musts)

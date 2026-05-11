@@ -37,6 +37,10 @@ _compare_kwargs = {
         "method": "numeric",
         "kwargs": {"method": "step", "offset": 0.9},
     },
+    "obs": {
+        "method": "numeric",
+        "kwargs": {"method": "step", "offset": 0.9},
+    },
 }
 
 
