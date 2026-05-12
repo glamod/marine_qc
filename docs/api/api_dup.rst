@@ -1,5 +1,5 @@
-Individual report functions
----------------------------
+Duplicate checker classes and functions
+---------------------------------------
 
 .. autoclass:: marine_qc.duplicate_checker.duplicates.Comparer
    :noindex:
