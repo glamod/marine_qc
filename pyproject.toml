@@ -161,9 +161,6 @@ source = ["marine_qc"]
 [tool.deptry]
 ignore_notebooks = true
 
-[tool.deptry.per_rule_ignores]
-DEP002 = ["cdm_reader_mapper"]
-
 [tool.flit.sdist]
 include = [
   ".zenodo.json",
