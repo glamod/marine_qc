@@ -13,8 +13,11 @@ from ..helpers.auxiliary import (
     SequenceIntType,
     SequenceNumberType,
     SequenceStrType,
+    best,
     is_scalar_like,
     post_format_return_type,
+    unique,
+    worst,
 )
 from ._duplicate_settings import Compare, _compare_kwargs, _method_kwargs
 
@@ -377,9 +380,9 @@ class DupDetect:
         indexes_good = indexes_df[keep].values.tolist()
         indexes_bad = indexes_df[drop].values.tolist()
 
-        flags = pd.Series([0] * len(self.data), index=self.data.index, name="duplicate_flags")
-        flags.loc[indexes_good] = 1
-        flags.loc[indexes_bad] = 3
+        flags = pd.Series([unique] * len(self.data), index=self.data.index, name="duplicate_flags")
+        flags.loc[indexes_good] = best
+        flags.loc[indexes_bad] = worst
 
         duplicates = pd.Series([np.nan] * len(self.data), index=self.data.index, name="duplicates", dtype="object")
 
@@ -684,11 +687,11 @@ def duplicate_check(
     **kwargs: dict[str, Any],
 ) -> DupDetect:
     r"""
-    Detect potentially duplicated observations using ``recordlinkage``.
+    Detect potentially duplicated observations using `Python Record Linkage Toolkit <https://recordlinkage.readthedocs.io/en/latest/>`_.
 
     This function builds a pandas DataFrame from the provided observation
     metadata and compares records using a configurable record linkage method.
-    The comparison result is returned as a :py:class:`DupDetect`
+    The comparison result is returned as a :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect`
     object containing both the processed data and the duplicate comparison
     scores.
 
@@ -838,7 +841,7 @@ def duplicate_check(
 
     Returns
     -------
-    cdm_reader_mapper.DupDetect
+    :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect`
         Duplicate detection result object.
 
         The returned object contains:
@@ -1010,15 +1013,15 @@ def remove_duplicates(
     *tuple[SequenceNumberType, ...],
 ]:
     r"""
-    Remove potentially duplicated observations using ``recordlinkage``.
+    Remove potentially duplicated observations using `Python Record Linkage Toolkit <https://recordlinkage.readthedocs.io/en/latest/>`_.
 
     This function removes observations identified as duplicates either from
-    a precomputed :py:class:`DupDetect` instance or by running
-    :py:func:`duplicate_check` internally.
+    a precomputed :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance or by running
+    :py:func:`~marine_qc.duplicate_check` internally.
 
-    Duplicate detection scores are evaluated using the duplicate comparison
-    results stored in ``DupDetect``. Records classified as duplicates according
-    to ``limit`` are removed according to the selected ``keep`` strategy.
+    Duplicate detection scores are evaluated using the duplicate comparison results stored in
+    :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect`. Records classified as duplicates
+    according to ``limit`` are removed according to the selected ``keep`` strategy.
 
     Parameters
     ----------
@@ -1050,8 +1053,9 @@ def remove_duplicates(
         One-dimensional reported observation value.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
         Ignored if ``detected`` is provided.
-    detected : :py:class:`DupDetect`
-        A `DupDetect` instance that already contains detected duplicates to flag.
+    detected : :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect`
+        A :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance that already contains
+        detected duplicates to flag.
         If provided, duplicate detection is not rerun and all input data arguments
         (``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi``, and ``obs``) are ignored.
     keep : str or int, default: first
@@ -1065,12 +1069,11 @@ def remove_duplicates(
         Duplicate candidates with scores below this threshold are retained.
         Defaults to .991.
     equal_musts : str or list of str, optional
-        Column names that must match exactly for observations to be treated
-        as duplicates.
+        Column names that must match exactly for observations to be treated as duplicates.
         This can be used to enforce strict equality for specific fields,
         even when other comparison tolerances are applied.
     \**kwargs : Any
-        Additional keyword arguments passed to :py:func:`duplicate_check`
+        Additional keyword arguments passed to :py:func:`~marine_qc.duplicate_check`
         when ``detected`` is not provided.
 
     Returns
@@ -1165,14 +1168,14 @@ def flag_duplicates(
     **kwargs: Any,
 ) -> tuple[SequenceIntType, SequenceNumberType]:
     r"""
-    Flag potentially duplicated observations using ``recordlinkage``.
+    Flag potentially duplicated observations using `Python Record Linkage Toolkit <https://recordlinkage.readthedocs.io/en/latest/>`_.
 
-    This function flags observations identified as duplicates either from
-    a precomputed :py:class:`DupDetect` instance or by running
-    :py:func:`duplicate_check` internally.
+    This function flags observations identified as duplicates either from a precomputed
+    :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance or by running
+    :py:func:`~marine_qc.duplicate_check` internally.
 
-    Duplicate detection scores are evaluated using the duplicate comparison
-    results stored in ``DupDetect``. Records classified as duplicates according
+    Duplicate detection scores are evaluated using the duplicate comparison results stored in
+    :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect`. Records classified as duplicates according
     to ``limit`` are flagged according to the selected ``keep`` strategy.
 
     Parameters
@@ -1205,8 +1208,9 @@ def flag_duplicates(
         One-dimensional reported observation value.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
         Ignored if ``detected`` is provided.
-    detected : :py:obj:`DupDetect`, optional
-        A `DupDetect` instance that already contains detected duplicates to flag.
+    detected : :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect`, optional
+        A :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance that already contains
+        detected duplicates to flag.
         If provided, duplicate detection is not rerun and all input data arguments
         (``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi``, and ``obs``) are ignored.
     keep : str or int, default: first
@@ -1216,15 +1220,14 @@ def flag_duplicates(
         - ``"last"`` keeps the last occurrence.
         - Integer values keep the specified positional match.
     limit : str, int or float, default: 0.991, optional
-        Minimum duplicate score threshold required for removal.
+        Minimum duplicate score threshold required for flagging.
         Duplicate candidates with scores below this threshold are retained.
     equal_musts : str or list of str, optional
-        Column names that must match exactly for observations to be treated
-        as duplicates.
+        Column names that must match exactly for observations to be treated as duplicates.
         This can be used to enforce strict equality for specific fields,
         even when other comparison tolerances are applied.
     \**kwargs : Any
-        Additional keyword arguments passed to :py:func:`duplicate_check`
+        Additional keyword arguments passed to :py:func:`~.marine_qc.duplicate_check`
         when ``detected`` is not provided.
 
     Returns
@@ -1280,7 +1283,7 @@ def flag_duplicates(
     ...     equal_musts="station_id",
     ... )
 
-    Use astricter duplicate threshold:
+    Use a stricter duplicate threshold:
     >>> flag, duplicates = flag_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,

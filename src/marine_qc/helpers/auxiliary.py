@@ -21,6 +21,11 @@ failed: int = 1
 untestable: int = 2
 untested: int = 3
 
+unique: int = 0
+best: int = 1
+duplicate: int = 2
+worst: int = 3
+
 # --- DATA TYPES ---
 PandasNAType: TypeAlias = missing.NAType
 PandasNaTType: TypeAlias = nattype.NaTType
