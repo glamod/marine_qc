@@ -24,6 +24,7 @@ modular way via a standardised interface.
    overview_seq
    overview_grp
    overview_buoy_tracking
+   overview_dup
    theoreticals
    contributing
    releasing
