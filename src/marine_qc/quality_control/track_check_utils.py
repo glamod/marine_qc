@@ -14,10 +14,10 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from . import spherical_geometry as sg
-from . import spherical_geometry as sph
-from . import time_control
-from .auxiliary import (
+from ..helpers import spherical_geometry as sg
+from ..helpers import spherical_geometry as sph
+from ..helpers import time_control
+from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
     SequenceNumberType,
@@ -28,12 +28,12 @@ from .auxiliary import (
     isvalid,
     post_format_return_type,
 )
-from .spherical_geometry import (
+from ..helpers.spherical_geometry import (
     course_between_points,
     intermediate_point,
     sphere_distance,
 )
-from .time_control import time_difference
+from ..helpers.time_control import time_difference
 
 
 def modal_speed(speeds: list[float]) -> float:

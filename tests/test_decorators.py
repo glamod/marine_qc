@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from pint.errors import DimensionalityError
 
-from marine_qc.auxiliary import (
+from marine_qc.helpers.auxiliary import (
     convert_to,
     convert_units,
     ensure_arrays,
@@ -15,7 +15,7 @@ from marine_qc.auxiliary import (
     is_scalar_like,
     post_format_return_type,
 )
-from marine_qc.time_control import convert_date
+from marine_qc.helpers.time_control import convert_date
 
 
 @convert_units(value="K")

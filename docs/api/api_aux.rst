@@ -1,7 +1,7 @@
 Auxiliary functions
 -------------------
 
-.. automodule:: marine_qc.auxiliary
+.. automodule:: marine_qc.helpers.auxiliary
    :members:
    :undoc-members:
    :show-inheritance:

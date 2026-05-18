@@ -17,13 +17,21 @@ Main QC functions
    api/api_main_grp
    api/api_main_buoy
 
-Main plotting functions
-=======================
+Main visualization functions
+============================
 
 .. toctree::
    :maxdepth: 1
 
    api/api_main_plt
+
+Main functions for detecting duplicates
+=======================================
+
+.. toctree::
+   :maxdepth: 1
+
+   api/api_main_dup
 
 For developers
 ==============
@@ -35,6 +43,7 @@ For developers
    api/api_seq
    api/api_grp
    api/api_buoy
+   api/api_dup
    api/api_val
    api/api_dec
    api/api_astro

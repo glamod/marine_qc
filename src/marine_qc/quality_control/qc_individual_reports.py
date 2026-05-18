@@ -9,8 +9,8 @@ from typing import Any, Literal
 
 import numpy as np
 
-from .astronomical_geometry import sunangle
-from .auxiliary import (
+from ..helpers.astronomical_geometry import sunangle
+from ..helpers.auxiliary import (
     ScalarNumberType,
     ValueDatetimeType,
     ValueFloatType,
@@ -26,8 +26,8 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimArgType, inspect_climatology
-from .time_control import convert_date, day_in_year, get_month_lengths
+from ..helpers.external_clim import ClimArgType, inspect_climatology
+from ..helpers.time_control import convert_date, day_in_year, get_month_lengths
 
 
 vectorized_day_in_year = np.vectorize(day_in_year)

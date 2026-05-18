@@ -4,7 +4,7 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from marine_qc.time_control import (
+from marine_qc.helpers.time_control import (
     convert_date_to_hours,
     day_in_year,
     day_in_year_array,

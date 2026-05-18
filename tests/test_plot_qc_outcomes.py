@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-from marine_qc.plot_qc_outcomes import (
+from marine_qc.visualization.plot_qc_outcomes import (
     _get_colours_labels,
     _make_plot,
     latitude_longitude_plot,
