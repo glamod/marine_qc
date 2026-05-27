@@ -95,7 +95,7 @@ dependencies = [
   "numpy",
   "pandas",
   "pyproj",
-  "recordlinkage",
+  "splink",
   "scipy",
   "xarray",
   "xclim"

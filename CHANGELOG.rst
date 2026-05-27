@@ -9,7 +9,7 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * new_functions: `do_valid_value_check` and `do_valid_value_clim_check` are copies of the old versions from `do_missing_value_check` and `do_missing_value_clim_check` that return `1` (fail) for numerically invalid values, otherwise `0` (pass) (:issue:`205`, :pull:`206`)
-* A new checker to detect (``marine_qc.duplicate_check``), remove (``marine_qc.remove_duplicates``) and flag (``marine_qc.flag_duplicates``) potentially duplicated observations using ``recordlinkage`` (:issue:`202`, :pull:`207`)
+* A new checker to detect (``marine_qc.duplicate_check``), get (``marine_qc.get_duplicates``), flag (``marine_qc.flag_duplicates``) and remove (``marine_qc.remove_duplicates``) potentially duplicated observations using ``splink`` (:issue:`202`, :issue:`210`, :pull:`207`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^

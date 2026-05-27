@@ -40,7 +40,7 @@ general_comparison = {
 
 class DupDetect:
     """
-    Class to detect, flag, and remove duplicate entries in a DataFrame using a comparison matrix from recordlinkage.
+    Class to detect, flag, and remove duplicate entries in a DataFrame using a comparison matrix from splink.
 
     Parameters
     ----------
