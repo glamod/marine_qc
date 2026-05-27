@@ -18,6 +18,26 @@ from ..helpers.auxiliary import (
 )
 
 
+general_settings = {
+    "link_type": "dedupe_only",
+    "probability_two_random_records_match": 0.01,
+    "retain_matching_columns": True,
+    "retain_intermediate_calculation_columns": True,
+}
+exact_match = ["station_id"]
+absolute_difference: dict[str, dict[str, Any]] = {
+    "lat": {"difference_threshold": 0.11},
+    "lon": {"difference_threshold": 0.11},
+    "vsi": {"difference_threshold": 0.09},
+    "dsi": {"difference_threshold": 0.9},
+    "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
+}
+general_comparison = {
+    "col_name": cll.NullLevel,
+    "nan_name": cll.ElseLevel,
+}
+
+
 class DupDetect:
     """
     Class to detect, flag, and remove duplicate entries in a DataFrame using a comparison matrix from recordlinkage.
@@ -256,6 +276,264 @@ def reindex_nulls(df: pd.DataFrame, null_label: Any) -> pd.DataFrame:
     return df.loc[sorted_index]
 
 
+def build_dataframe(
+    station_id: SequenceStrType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
+    vsi: SequenceNumberType,
+    dsi: SequenceNumberType,
+    extra: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """
+    Build a pandas DataFrame from the supplied columns.
+
+    Parameters
+    ----------
+    station_id : :py:obj:`~marine_qc.SequenceStrType`, optional
+        One-dimensional array of station IDs.
+    lat : :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional array of latitudes in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional array of longitudes in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
+        One-dimensional array of datetime values.
+    vsi : :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional reported speed array in km/h.
+    dsi : :py:obj:`~marine_qc.SequenceNumberType`, optional
+        One-dimensional reported heading array in degrees.
+    extra : dict, optional
+        Additional column-value pairs.
+
+    Returns
+    -------
+    pd.DataFrame
+        A pandas DataFrame from the supplied columns.
+    """
+    extra = extra or {}
+    return pd.DataFrame(
+        {
+            "station_id": station_id,
+            "lat": lat,
+            "lon": lon,
+            "date": date,
+            "vsi": vsi,
+            "dsi": dsi,
+            **extra,
+        }
+    )
+
+
+def prepare_dataframe(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepare a pandas DataFrame for detecting duplicates.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        A pandas DataFrame that should be prepared for detecting duplicates.
+
+    Returns
+    -------
+    pd.DataFrame
+        A prepared pandas DataFrame for detecting duplicates.
+    """
+    data["unique_id"] = data.index
+
+    for column, dtype in data.dtypes.items():
+        if dtype == "str":
+            data[column] = data[column].astype(object)
+
+    return data
+
+
+def prepare_nan_handling(nan_handling: str | list[str] | bool | None, columns: pd.Index) -> list[str]:
+    """
+    Resolve which DataFrame columns should be considered when handling NaN values or duplicate detection.
+
+    Parameters
+    ----------
+    nan_handling : str, list of str, bool or None
+        Specifies how NaN values are treated for duplicate detection on the
+        selected columns.
+
+        * ``True``  - treat **all** columns in ``columns`` as NaN-sensitive.
+        * ``False`` - do not apply any NaN-handling (return an empty list).
+        * ``None`` - do not apply any NaN-handling (return an empty list).
+        * ``str``   - a single column name to which the NaN rule should be
+          applied.
+        * ``list[str]`` - an explicit list of column names to which the NaN
+          rule should be applied.
+    columns : pd.Index
+        The complete index of column names present in the DataFrame.
+
+    Returns
+    -------
+    list of str
+        A list of column names that should be used for NaN-aware duplicate
+        comparison, based on the value of ``nan_handling``:
+
+        * If ``nan_handling`` is ``True``, the function returns a list of **all**
+          column names.
+        * If ``nan_handling`` is a string, it returns a one-element list
+          containing that column.
+        * If ``nan_handling`` is an empty list, ``False`` or ``None``, it returns an empty
+          list (no NaN handling).
+        * If ``nan_handling`` is already a list of strings, it returns that list
+          unchanged.
+    """
+    if nan_handling is True:
+        return list(columns)
+    if isinstance(nan_handling, str):
+        return [nan_handling]
+    if not nan_handling:
+        return []
+    return nan_handling
+
+
+def make_comparison(
+    column: str,
+    compare_level_libraries: dict[str, Any],
+    offsets: dict[str, float],
+    ignore_entries: dict[str, Any],
+    ignore_nan_both: list[str],
+    ignore_nan_either: list[str],
+) -> cl.CustomComparison:
+    """
+    Build a ``cl.CustomComparison`` for *column*.
+
+    Parameters
+    ----------
+    column : str
+        Name of the data column.
+    compare_level_libraries : dict
+        Override comparison levels for selected columns.
+        This modifies the comparison level used during comparison.
+    offsets : dict
+        Override comparison offsets for selected columns.
+        This modifies the tolerance used during comparison.
+    ignore_entries : dict
+        Ignore specific values for selected columns during comparison.
+    ignore_nan_both : list of str
+        For selected columns, consider two observations as duplicates if both values being compared are NaN.
+    ignore_nan_either : list of str
+        For selected columns, consider two observations as duplicates if either value being compared is NaN.
+
+    Returns
+    -------
+    cl.CustomComparison
+        A splink comparison library instance.
+    """
+    clevel = None
+    cll_args: dict[str, Any] = {"col_name": column}
+
+    clevel = (
+        getattr(cll, compare_level_libraries.get(column, ""), None)
+        or (cll.ExactMatchLevel if column in exact_match else None)
+        or (cll.AbsoluteDifferenceLevel if column in absolute_difference and "difference_threshold" in absolute_difference[column] else None)
+        or (cll.AbsoluteTimeDifferenceLevel if column in absolute_difference and "metric" in absolute_difference[column] else None)
+    )
+
+    if clevel is None:
+        return None
+
+    if clevel in (cll.AbsoluteDifferenceLevel, cll.AbsoluteTimeDifferenceLevel):
+        cll_diff_args: dict[str, Any]
+        if column in offsets:
+            cll_diff_args = (
+                {"difference_threshold": offsets[column]}
+                if clevel is cll.AbsoluteDifferenceLevel
+                else {"threshold": offsets[column], "input_is_string": False, "metric": "second"}
+            )
+        elif column in absolute_difference:
+            cll_diff_args = absolute_difference[column]
+        else:
+            raise ValueError(
+                f"No offset or absolute-difference configuration found for column '{column}'. Provide an entry in `offsets` or `absolute_difference`."
+            )
+        cll_args = {**cll_args, **cll_diff_args}
+
+    sub_levels: list[Any] = [clevel(**cll_args)]
+
+    if column in ignore_entries:
+        entries = ignore_entries[column]
+        if not isinstance(entries, list):
+            entries = [entries]
+        # for entry in entries:
+        #    sub_levels.append(cll.CustomLevel(f"{column}_l = '{entry}' OR {column}_r = '{entry}'"))
+        sub_levels.extend(cll.CustomLevel(f"{column}_l = '{e}' OR {column}_r = '{e}'") for e in entries)
+
+    if column in ignore_nan_either:
+        sub_levels.append(cll.CustomLevel(f"{column}_l is NULL OR {column}_r is NULL"))
+    if column in ignore_nan_both:
+        sub_levels.append(cll.CustomLevel(f"{column}_l is NULL AND {column}_r is NULL"))
+
+    main_level = sub_levels[0] if len(sub_levels) == 1 else cll.Or(*sub_levels)
+
+    comparison_levels = [
+        main_level,
+        general_comparison["col_name"](column),
+        general_comparison["nan_name"](),
+    ]
+
+    return cl.CustomComparison(output_column_name=column, comparison_levels=comparison_levels)
+
+
+def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list[Any]]:
+    """
+    Re-order and group matched entity pairs according to a supplied ordering.
+
+    Parameters
+    ----------
+    matches : pd.DataFrame
+        A pandas DataFrame that must contain the columns ``unique_id_l`` and ``unique_id_r``.
+        Each row represents a candidate match between a left-hand identifier
+        (``unique_id_l``) and a right-hand identifier (``unique_id_r``).
+    order_map : dict[Any, Any]
+        Mapping from an identifier to a sortable rank (e.g. integer).  The
+        function uses this map to:
+
+        * decide whether to swap the left/right columns so that the left side
+          always has the smaller rank,
+        * sort the matches first by the left-hand rank and then by the
+          right-hand rank.
+
+    Returns
+    -------
+    list[list[Any]]
+        A list of groups, where each group is a list of identifiers that are
+        transitively connected through the matches.  For example, if the input
+        contains pairs ``(A, B)`` and ``(B, C)``, the result will contain a
+        single group ``[A, B, C]``.  Unconnected pairs appear as separate
+        two-element groups.
+    """
+    swap = matches["unique_id_l"].map(order_map) > matches["unique_id_r"].map(order_map)
+    matches.loc[swap, ["unique_id_l", "unique_id_r"]] = matches.loc[swap, ["unique_id_r", "unique_id_l"]].to_numpy(copy=True)
+
+    matches["rank_l"] = matches["unique_id_l"].map(order_map)
+    matches = matches.sort_values("rank_l").drop(columns="rank_l").reset_index(drop=True)
+    matches["rank_r"] = matches["unique_id_r"].map(order_map)
+    matches = matches.groupby("unique_id_l", sort=False).apply(lambda g: g.sort_values("rank_r")).reset_index(drop=False)
+
+    pairs = list(zip(matches["unique_id_l"], matches["unique_id_r"], strict=True))
+
+    groups: list[list[Any]] = []
+    for a, b in pairs:
+        placed = False
+        for group in groups:
+            if a in group or b in group:
+                if a not in group:
+                    group.append(a)
+                if b not in group:
+                    group.append(b)
+                placed = True
+                break
+
+        if not placed:
+            groups.append([a, b])
+    return groups
+
+
 def duplicate_check(
     station_id: SequenceStrType | None = None,
     lat: SequenceNumberType | None = None,
@@ -453,165 +731,45 @@ def duplicate_check(
     ... )
     """
     if data is None:
-        data = pd.DataFrame(
-            {
-                "station_id": station_id,
-                "lat": lat,
-                "lon": lon,
-                "date": date,
-                "vsi": vsi,
-                "dsi": dsi,
-                **kwargs,
-            }
-        )
+        data = build_dataframe(station_id, lat, lon, date, vsi, dsi, kwargs)
 
     data_orig = data.copy()
-
-    data["unique_id"] = data.index
 
     if reindex_by_null is True:
         data = reindex_nulls(data, null_label=null_label)
 
-    data.reset_index(drop=True)
+    data = prepare_dataframe(data)
 
-    for column, dtype in data.dtypes.items():
-        if dtype == "str":
-            data[column] = data[column].astype(object)
+    columns = data.columns
 
-    if ignore_entries is None:
-        ignore_entries = {}
+    ignore_entries = ignore_entries or {}
+    ignore_columns = ignore_columns or []
+    ignore_columns = [ignore_columns] if isinstance(ignore_columns, str) else ignore_columns
 
-    if ignore_nan_both is True:
-        ignore_nan_both = list(data.columns)
-    elif isinstance(ignore_nan_both, str):
-        ignore_nan_both = [ignore_nan_both]
-    elif ignore_nan_both is False:
-        ignore_nan_both = []
+    ignore_nan_both = prepare_nan_handling(ignore_nan_both, columns)
+    ignore_nan_either = prepare_nan_handling(ignore_nan_either, columns)
 
-    if ignore_nan_either is True:
-        ignore_nan_either = list(data.columns)
-    elif isinstance(ignore_nan_either, str):
-        ignore_nan_either = [ignore_nan_either]
-    elif ignore_nan_either is False:
-        ignore_nan_either = []
-    elif ignore_nan_either is None:
-        ignore_nan_either = []
-
-    if ignore_columns is None:
-        ignore_columns = []
-    if not isinstance(ignore_columns, list):
-        ignore_columns = [ignore_columns]
-
-    if offsets is None:
-        offsets = {}
-
-    if compare_level_libraries is None:
-        compare_level_libraries = {}
-
-    general_settings = {
-        "link_type": "dedupe_only",
-        "probability_two_random_records_match": 0.01,
-        "retain_matching_columns": True,
-        "retain_intermediate_calculation_columns": True,
-    }
-    exact_match = ["station_id"]
-    absolute_difference: dict[str, dict[str, Any]] = {
-        "lat": {"difference_threshold": 0.11},
-        "lon": {"difference_threshold": 0.11},
-        "vsi": {"difference_threshold": 0.09},
-        "dsi": {"difference_threshold": 0.9},
-        "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
-    }
-
-    general_comparison = {
-        "col_name": cll.NullLevel,
-        "nan_name": cll.ElseLevel,
-    }
+    offsets = offsets or {}
+    compare_level_libraries = compare_level_libraries or {}
 
     comparisons = []
-    for column in data.columns:
+    for column in columns:
         if column in ignore_columns:
             continue
 
-        comparison_levels = []
-        comparison_level = []
-
-        clevel = None
-
-        cll_args = {"col_name": column}
-
-        if column in compare_level_libraries:
-            clevel = getattr(cll, compare_level_libraries[column])
-        else:
-            if column in exact_match:
-                clevel = cll.ExactMatchLevel
-
-            if column in absolute_difference:
-                if "difference_threshold" in absolute_difference[column]:
-                    clevel = cll.AbsoluteDifferenceLevel
-                elif "metric" in absolute_difference[column]:
-                    clevel = cll.AbsoluteTimeDifferenceLevel
-                else:
-                    raise ValueError("sdafgsdag")
-
-        if clevel is None:
-            continue
-
-        if clevel == cll.AbsoluteDifferenceLevel:
-            if column in offsets:
-                cll_diff_args = {"difference_threshold": offsets[column]}
-            elif column in absolute_difference:
-                cll_diff_args = absolute_difference[column]
-            else:
-                raise ValueError("sgdasfdjhfg")
-            cll_args = {**cll_args, **cll_diff_args}
-
-        if clevel == cll.AbsoluteTimeDifferenceLevel:
-            if column in offsets:
-                cll_diff_args = {"threshold": offsets[column], "input_is_string": False, "metric": "second"}
-            elif column in absolute_difference:
-                cll_diff_args = absolute_difference[column]
-            else:
-                raise ValueError("sgdasfdjhfg")
-            cll_args = {**cll_args, **cll_diff_args}
-
-        comparison_level.append(clevel(**cll_args))
-
-        if column in ignore_entries:
-            entries = ignore_entries[column]
-            if not isinstance(entries, list):
-                entries = [entries]
-            for entry in entries:
-                ignored_entry = cll.CustomLevel(f"{column}_l = '{entry}' OR {column}_r = '{entry}'")
-                comparison_level.append(ignored_entry)
-
-        if column in ignore_nan_either:
-            addition = cll.CustomLevel(f"{column}_l is NULL OR {column}_r is NULL")
-            comparison_level.append(addition)
-        if column in ignore_nan_both:
-            addition = cll.CustomLevel(f"{column}_l is NULL AND {column}_r is NULL")
-            comparison_level.append(addition)
-
-        if len(comparison_level) == 0:
-            continue
-
-        if len(comparison_level) == 1:
-            comparison_level = comparison_level[0]
-        else:
-            comparison_level = cll.Or(*comparison_level)
-
-        comparison_levels = [
-            comparison_level,
-            general_comparison["col_name"](column),
-            general_comparison["nan_name"](),
-        ]
-
-        comparisons.append(
-            cl.CustomComparison(
-                output_column_name=column,
-                comparison_levels=comparison_levels,
-            )
+        comp = make_comparison(
+            column,
+            compare_level_libraries,
+            offsets,
+            ignore_entries,
+            ignore_nan_both,
+            ignore_nan_either,
         )
+
+        if comp is None:
+            continue
+
+        comparisons.append(comp)
 
     settings = {
         **general_settings,
@@ -627,30 +785,7 @@ def duplicate_check(
 
     order_map = {uid: i for i, uid in enumerate(data.index)}
 
-    swap = matches["unique_id_l"].map(order_map) > matches["unique_id_r"].map(order_map)
-    matches.loc[swap, ["unique_id_l", "unique_id_r"]] = matches.loc[swap, ["unique_id_r", "unique_id_l"]].to_numpy(copy=True)
-
-    matches["rank_l"] = matches["unique_id_l"].map(order_map)
-    matches = matches.sort_values("rank_l").drop(columns="rank_l").reset_index(drop=True)
-    matches["rank_r"] = matches["unique_id_r"].map(order_map)
-    matches = matches.groupby("unique_id_l", sort=False).apply(lambda g: g.sort_values("rank_r")).reset_index(drop=False)
-
-    pairs = list(zip(matches["unique_id_l"], matches["unique_id_r"], strict=True))
-
-    groups: list[list[Any]] = []
-    for a, b in pairs:
-        placed = False
-        for group in groups:
-            if a in group or b in group:
-                if a not in group:
-                    group.append(a)
-                if b not in group:
-                    group.append(b)
-                placed = True
-                break
-
-        if not placed:
-            groups.append([a, b])
+    groups = group_matches(matches, order_map)
 
     return DupDetect(groups, settings, data_orig)
 
