@@ -3,11 +3,17 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+import splink.comparison_library as cl
 
 from marine_qc import flag_duplicates, get_duplicates, remove_duplicates
 from marine_qc.duplicate_checker.duplicates import (
     DupDetect,
+    build_dataframe,
     duplicate_check,
+    group_matches,
+    make_comparison,
+    prepare_dataframe,
+    prepare_nan_handling,
     reindex_nulls,
 )
 
@@ -114,7 +120,7 @@ def expert_data():
     )
 
 
-def test_reindex_nulls_orders_by_null_count():
+def test_reindex_nulls_orders_single():
     df = pd.DataFrame({"a": ["null", 1, "null", 2], "b": ["null", 2, 3, "null"]})
     result = reindex_nulls(df, null_label="null")
 
@@ -122,10 +128,302 @@ def test_reindex_nulls_orders_by_null_count():
     assert list(result.index) == expected_order
 
 
+def test_reindex_nulls_handles_nested():
+    df = pd.DataFrame(
+        {
+            "a": [
+                [1, 2],
+                [1, "null"],
+                [1, 2, 3],
+            ]
+        }
+    )
+
+    result = reindex_nulls(df, null_label="null")
+
+    expected_order = [0, 2, 1]
+    assert list(result.index) == expected_order
+
+
 def test_reindex_nulls_empty_df():
     df = pd.DataFrame()
     result = reindex_nulls(df, null_label="null")
     assert result.equals(df)
+
+
+def test_build_dataframe(dummy_data):
+    df = build_dataframe(
+        station_id=dummy_data["station_id"],
+        lat=dummy_data["lat"],
+        lon=dummy_data["lon"],
+        date=dummy_data["date"],
+        vsi=dummy_data["vsi"],
+        dsi=dummy_data["dsi"],
+    )
+    pd.testing.assert_frame_equal(df, dummy_data[["station_id", "lat", "lon", "date", "vsi", "dsi"]])
+
+    df = build_dataframe(
+        station_id=dummy_data["station_id"],
+        lat=dummy_data["lat"],
+        lon=dummy_data["lon"],
+        date=dummy_data["date"],
+        vsi=dummy_data["vsi"],
+        dsi=dummy_data["dsi"],
+        extra={"flag": dummy_data["flag"]},
+    )
+    pd.testing.assert_frame_equal(df, dummy_data[["station_id", "lat", "lon", "date", "vsi", "dsi", "flag"]])
+
+
+def test_prepare_dataframe(dummy_data):
+    df = prepare_dataframe(dummy_data)
+    df_exp = dummy_data.copy()
+    df_exp["unique_id"] = dummy_data.index
+    df_exp["station_id"] = df_exp["station_id"].astype(object)
+    df_exp["unique_id"] = df_exp["unique_id"].astype(object)
+
+    pd.testing.assert_frame_equal(df, df_exp)
+
+
+def test_prepare_nan_handling(dummy_data):
+    columns = dummy_data.columns
+    assert prepare_nan_handling(True, columns) == list(columns)
+    assert prepare_nan_handling("station_id", columns) == ["station_id"]
+    assert prepare_nan_handling(False, columns) == []
+    assert prepare_nan_handling(None, columns) == []
+    assert prepare_nan_handling(["lat", "lon"], columns) == ["lat", "lon"]
+
+
+def test_make_comparison_returns_unknown_column():
+    result = make_comparison(
+        column="unknown",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={},
+        ignore_nan_both=[],
+        ignore_nan_either=[],
+    )
+    assert result is None
+
+
+def test_make_comparison_exact_match():
+    result = make_comparison(
+        column="station_id",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={},
+        ignore_nan_both=[],
+        ignore_nan_either=[],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "station_id"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_absolute_difference():
+    result = make_comparison(
+        column="lat",
+        compare_level_libraries={},
+        offsets={"lat": 0.5},
+        ignore_entries={},
+        ignore_nan_both=[],
+        ignore_nan_either=[],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "lat"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_absolute_time_difference():
+    result = make_comparison(
+        column="date",
+        compare_level_libraries={},
+        offsets={"date": 30},
+        ignore_entries={},
+        ignore_nan_both=[],
+        ignore_nan_either=[],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "date"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_ignore_single_entry():
+    result = make_comparison(
+        column="station_id",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={"station_id": "UNKNOWN"},
+        ignore_nan_both=[],
+        ignore_nan_either=[],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "station_id"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_ignore_multiple_entries():
+    result = make_comparison(
+        column="station_id",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={"station_id": ["UNKNOWN", "MISSING"]},
+        ignore_nan_both=[],
+        ignore_nan_either=[],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "station_id"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_ignore_nan_either():
+    result = make_comparison(
+        column="station_id",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={},
+        ignore_nan_both=[],
+        ignore_nan_either=["station_id"],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "station_id"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_ignore_nan_both():
+    result = make_comparison(
+        column="station_id",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={},
+        ignore_nan_both=["station_id"],
+        ignore_nan_either=[],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "station_id"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_ignore_both_nan():
+    result = make_comparison(
+        column="station_id",
+        compare_level_libraries={},
+        offsets={},
+        ignore_entries={},
+        ignore_nan_both=["station_id"],
+        ignore_nan_either=["station_id"],
+    )
+
+    assert isinstance(result, cl.CustomComparison)
+    assert result.__dict__["_output_column_name"] == "station_id"
+    assert "_comparison_levels" in result.__dict__
+    assert result.__dict__["_description"] is None
+
+
+def test_make_comparison_raises():
+    with pytest.raises(ValueError, match="No offset or absolute-difference configuration found for column"):
+        make_comparison(
+            column="extra",
+            compare_level_libraries={"extra": "AbsoluteDifferenceLevel"},
+            offsets={},
+            ignore_entries={},
+            ignore_nan_both=[],
+            ignore_nan_either=[],
+        )
+
+
+def test_group_matches_one_pair():
+    df = pd.DataFrame(
+        {
+            "unique_id_l": ["B", "A"],
+            "unique_id_r": ["A", "B"],
+        }
+    )
+
+    order_map = {"A": 0, "B": 1}
+
+    result = group_matches(df.copy(), order_map)
+
+    assert result == [["A", "B"]]
+
+
+def test_group_matches_two_pairs():
+    df = pd.DataFrame(
+        {
+            "unique_id_l": ["A", "C"],
+            "unique_id_r": ["B", "D"],
+        }
+    )
+
+    order_map = {"A": 0, "B": 1, "C": 2, "D": 3}
+
+    result = group_matches(df, order_map)
+
+    assert result == [["A", "B"], ["C", "D"]]
+
+
+def test_group_matches_chain_direct():
+    df = pd.DataFrame(
+        {
+            "unique_id_l": ["A", "B"],
+            "unique_id_r": ["B", "C"],
+        }
+    )
+
+    order_map = {"A": 0, "B": 1, "C": 2}
+
+    result = group_matches(df, order_map)
+
+    assert result == [["A", "B", "C"]]
+
+
+def test_group_matches_chain_indirect():
+    df = pd.DataFrame(
+        {
+            "unique_id_l": ["A", "C"],
+            "unique_id_r": ["B", "B"],
+        }
+    )
+
+    order_map = {"A": 0, "B": 1, "C": 2}
+
+    result = group_matches(df, order_map)
+
+    assert result == [["A", "B", "C"]]
+
+
+def test_group_matches_empty():
+    df = pd.DataFrame(columns=["unique_id_l", "unique_id_r"])
+    result = group_matches(df, {})
+    assert result == []
+
+
+def test_group_matches_groupby_sorting():
+    df = pd.DataFrame(
+        {
+            "unique_id_l": ["A", "A"],
+            "unique_id_r": ["C", "B"],
+        }
+    )
+
+    order_map = {"A": 0, "B": 1, "C": 2}
+
+    result = group_matches(df.copy(), order_map)
+
+    assert result[0][0] == "A"
 
 
 def test_duplicate_check_basic():
@@ -206,12 +504,17 @@ def test_get_duplicates_basic(dummy_data):
     pd.testing.assert_series_equal(detector.duplicates, dups_exp)
 
 
-def test_get_duplicates_raises(dummy_data):
+def test_get_duplicates_invalid_keep(dummy_data):
     dd = duplicate_check(
         **dummy_data.to_dict(),
     )
     with pytest.raises(ValueError):
         dd.get_duplicates(keep=1)
+
+
+def test_get_duplicates_raises():
+    with pytest.raises(ValueError, match="None of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi`, `dsi` and `data` is set."):
+        get_duplicates()
 
 
 @pytest.mark.parametrize("directly", [True, False])
@@ -319,6 +622,11 @@ def test_flag_duplicates_obs_offsets(dummy_data):
 
     flags_exp = pd.Series([3, 0, 0, 0, 0, 1], index=dummy_data.index, name="duplicate_flags")
     pd.testing.assert_series_equal(result, flags_exp)
+
+
+def test_fla_duplicates_raises():
+    with pytest.raises(ValueError, match="None of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi`, `dsi` and `data` is set."):
+        flag_duplicates()
 
 
 @pytest.mark.parametrize("directly", [True, False])
@@ -467,6 +775,11 @@ def test_remove_duplicates_obs_offsets(dummy_data):
     pd.testing.assert_series_equal(result[6], data["flag"].iloc[exp_idx])
     pd.testing.assert_series_equal(result[7], data["obs1"].iloc[exp_idx])
     pd.testing.assert_series_equal(result[8], data["obs2"].iloc[exp_idx])
+
+
+def test_remove_duplicates_raises():
+    with pytest.raises(ValueError, match="None of `detected`, `station_id`, `lat`, `lon`, `date`, `vsi`, `dsi` and `data` is set."):
+        remove_duplicates()
 
 
 @pytest.mark.parametrize(

@@ -427,6 +427,9 @@ def make_comparison(
     clevel = None
     cll_args: dict[str, Any] = {"col_name": column}
 
+    if compare_level_libraries == {}:
+        compare_level_libraries = dict()
+
     clevel = (
         getattr(cll, compare_level_libraries.get(column, ""), None)
         or (cll.ExactMatchLevel if column in exact_match else None)
@@ -505,6 +508,7 @@ def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list
         single group ``[A, B, C]``.  Unconnected pairs appear as separate
         two-element groups.
     """
+    matches = matches.copy()
     swap = matches["unique_id_l"].map(order_map) > matches["unique_id_r"].map(order_map)
     matches.loc[swap, ["unique_id_l", "unique_id_r"]] = matches.loc[swap, ["unique_id_r", "unique_id_l"]].to_numpy(copy=True)
 
@@ -514,7 +518,6 @@ def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list
     matches = matches.groupby("unique_id_l", sort=False).apply(lambda g: g.sort_values("rank_r")).reset_index(drop=False)
 
     pairs = list(zip(matches["unique_id_l"], matches["unique_id_r"], strict=True))
-    print(pairs)
     groups: list[list[Any]] = []
     for a, b in pairs:
         placed = False
