@@ -478,7 +478,7 @@ def is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     ----------
     name : str
         Name of variable.
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Pandas Series or DataFrame to be tested.
 
     Returns
@@ -489,7 +489,7 @@ def is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     Raises
     ------
     TypeError
-        If data type is not pd.Series or pd.DataFrame.
+        If data type is not pandas Series or pandas DataFrame.
     """
     if isinstance(data, pd.Series):
         return bool(data.name == name)

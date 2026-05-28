@@ -95,7 +95,7 @@ def do_spike_check(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -226,7 +226,7 @@ def do_track_check(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -360,7 +360,7 @@ def do_few_check(
         If either input is not 1-dimensional.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     (value,) = ensure_arrays(value=value)
 
@@ -432,7 +432,7 @@ def find_saturated_runs(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -501,7 +501,7 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
         If `threshold` is not between 0.0 and 1.0.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -569,7 +569,7 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
         - If `threshold` is not between 0.0 and 1.0.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -662,7 +662,7 @@ def do_iquam_track_check(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----

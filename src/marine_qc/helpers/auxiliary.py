@@ -66,14 +66,14 @@ def is_scalar_like(x: Any) -> bool:
 
     - Built-in Python scalars: int, float, bool, None
     - Strings and bytes
-    - NumPy scalars (subclasses of np.generic), e.g. np.int32, np.float64,
-      np.datetime64
-    - Zero-dimensional NumPy arrays (e.g. np.array(5))
+    - NumPy scalars (subclasses of numpy.generic), e.g. numpy.int32, numpy.float64,
+      numpy.datetime64
+    - Zero-dimensional NumPy arrays (e.g. numpy.array(5))
     - Pandas scalar types:
-        - pd.Timestamp
-        - pd.Timedelta
-        - pd.NA
-        - pd.NaT
+        - pandas.Timestamp
+        - pandas.Timedelta
+        - pandas.NA
+        - pandas.NaT
     - Python datetime types:
         - datetime.date
         - datetime.datetime
@@ -128,7 +128,7 @@ def isvalid(inval: ValueNumberType) -> bool | npt.NDArray[np.bool_]:
 
     Returns
     -------
-    bool or np.ndarray of bool
+    bool or numpy.ndarray of bool
         Returns False where the input is None or NaN, True otherwise.
         Returns a boolean scalar if input is scalar, else a boolean array.
     """
@@ -161,7 +161,7 @@ def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
 
     Returns
     -------
-    tuple of np.ndarray
+    tuple of numpy.ndarray
         A tuple containing the NumPy arrays corresponding to the input values,
         in the same order as provided.
 
@@ -192,7 +192,7 @@ def format_return_type(
 
     Parameters
     ----------
-    result_array : np.ndarray or tuple of np.ndarray
+    result_array : numpy.ndarray or tuple of numpy.ndarray
         The numpy array(s) of results.
     \*input_values : Any
         One or more original input values to infer the desired return type from.

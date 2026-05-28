@@ -151,7 +151,7 @@ def increment_position(
 
     Returns
     -------
-    1D np.ndarray of float
+    1D numpy.ndarray of float
         Returns latitude and longitude increment or None and None if timediff is None.
     """
     alat1 = np.array(alat1, dtype=float)
@@ -197,7 +197,7 @@ def direction_continuity(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Returned array elements are 10.0 if the difference between reported and calculated direction is greater
         than the max_direction_change (default, 60 degrees), 0.0 otherwise.
     """
@@ -264,7 +264,7 @@ def speed_continuity(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Returned array elements are 10 if the reported and calculated speeds differ by more than 10 knots,
         0 otherwise.
     """
@@ -327,14 +327,14 @@ def check_distance_from_estimate(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Returned array elements set to 10 if estimated and reported positions differ by more than the reported
         speed multiplied by the calculated time difference, 0 otherwise.
 
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     vsi = np.array(vsi, dtype=float)
     time_differences = np.array(time_differences, dtype=float)
@@ -450,7 +450,7 @@ def calculate_speed_course_distance_time_difference(
 
     Returns
     -------
-    tuple of np.ndarray, each with float values, shape (n,)
+    tuple of numpy.ndarray, each with float values, shape (n,)
         A tuple containing four one-dimensional arrays representing: speed, distance, course, and time difference.
     """
     lat = np.array(lat, dtype=float)
@@ -536,7 +536,7 @@ def forward_discrepancy(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)
 
@@ -608,7 +608,7 @@ def backward_discrepancy(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)
 
@@ -662,7 +662,7 @@ def calculate_midpoint(
 
     Returns
     -------
-    1D np.ndarray of float
+    1D numpy.ndarray of float
         One-dimensional array of distances from estimated positions in kilometers.
 
     Raises

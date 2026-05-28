@@ -135,7 +135,7 @@ class SuperObsGrid:
         Raises
         ------
         TypeError
-            If `inspect_arrays` does not return np.ndarrays.
+            If `inspect_arrays` does not return numpy ndarrays.
 
         Notes
         -----
@@ -548,7 +548,7 @@ def do_mds_buddy_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -703,7 +703,7 @@ def do_bayesian_buddy_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----

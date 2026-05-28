@@ -8,6 +8,7 @@ Overview of QC functions for sequential reports
 
 This page gives a brief overview of each of the QC functions currently implemented. For more detailed documentation
 please see the API. Titles of individual sections below link to the relevant pages in the API.
+The titles of the individual sections below link directly to the corresponding API pages.
 
 Some test work on sequences of reports from a single ship, drifter or other platform. They include tests that
 compare values at different times and locations to assess data quality.

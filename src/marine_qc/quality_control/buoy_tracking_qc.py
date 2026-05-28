@@ -248,7 +248,7 @@ class SpeedChecker:
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             Array of QC flags for each observation (0 = passed, 1 = failed, untested otherwise).
         """
         return self.qc_outcomes
@@ -487,7 +487,7 @@ class NewSpeedChecker:
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             Array of QC flags for each observation (0 = valid, 1 = flagged, untested otherwise).
         """
         return self.qc_outcomes
@@ -1137,7 +1137,7 @@ class SSTTailChecker:
             Ice concentration value matched to this observation.
         bgvar : float
             Background variance value matched to this observation.
-        dates : np.datetime
+        dates : datetime.datetime
             Date and time of the observation.
 
         Returns
@@ -1764,7 +1764,7 @@ def do_speed_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -1827,7 +1827,7 @@ def do_new_speed_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -1898,7 +1898,7 @@ def do_aground_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -1948,7 +1948,7 @@ def do_new_aground_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -2031,7 +2031,7 @@ def do_sst_start_tail_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -2138,7 +2138,7 @@ def do_sst_end_tail_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -2239,7 +2239,7 @@ def do_sst_biased_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -2338,7 +2338,7 @@ def do_sst_noisy_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -2437,7 +2437,7 @@ def do_sst_biased_noisy_short_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----

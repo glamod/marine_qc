@@ -48,7 +48,7 @@ class DupDetect:
         Groups of index pairs of potentially duplicated observations.
     settings : dict
         Settings dict used for duplicate detection.
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Original dataset.
     """
 
@@ -67,7 +67,7 @@ class DupDetect:
             Groups of index pairs of potentially duplicated observations.
         settings : dict
             Settings dict used for duplicate detection.
-        data : pd.DataFrame
+        data : pandas.DataFrame
             Original dataset.
         """
         self.groups = groups
@@ -95,8 +95,8 @@ class DupDetect:
 
         Returns
         -------
-        pd.Series
-            Series containing the indexes of the corresponding duplicate(s).
+        pandas.Series
+            A pandas Series containing the indexes of the corresponding duplicate(s).
         """
         if keep not in ["first", "last", -1, 0]:
             raise ValueError("keep has to be one of 'first', 'last', -1 or 0.")
@@ -159,7 +159,7 @@ class DupDetect:
 
         Returns
         -------
-        pd.Series
+        pandas.Series
             Series containing duplicate flags for the detected observations.
 
         References
@@ -192,8 +192,8 @@ class DupDetect:
 
         Returns
         -------
-        tuple of pd.Series
-            A tuple of pd.Series containing all original input data with the duplicates removed.
+        tuple of pandas.Series
+            A tuple of pandas Series containing all original input data with the duplicates removed.
         """
         if not hasattr(self, "_best_duplicates") or not hasattr(self, "_worst_duplicates"):
             self.get_duplicates(keep=keep)
@@ -208,14 +208,14 @@ def reindex_nulls(df: pd.DataFrame, null_label: Any) -> pd.DataFrame:
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         Input DataFrame. Cells with the string "null" are counted as nulls.
     null_label : Any
         Missing value representative.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         DataFrame reindexed so that rows with fewer 'null' values appear first.
         Original row order is preserved for rows with the same null count.
     """
@@ -257,7 +257,7 @@ def reindex_nulls(df: pd.DataFrame, null_label: Any) -> pd.DataFrame:
 
         Parameters
         ----------
-        row : pd.Series
+        row : pandas.Series
             Input row or Series to evaluate.
 
         Returns
@@ -307,7 +307,7 @@ def build_dataframe(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         A pandas DataFrame from the supplied columns.
     """
     extra = extra or {}
@@ -330,12 +330,12 @@ def prepare_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         A pandas DataFrame that should be prepared for detecting duplicates.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         A prepared pandas DataFrame for detecting duplicates.
     """
     data["unique_id"] = data.index
@@ -364,7 +364,7 @@ def prepare_nan_handling(nan_handling: str | list[str] | bool | None, columns: p
           applied.
         * ``list[str]`` - an explicit list of column names to which the NaN
           rule should be applied.
-    columns : pd.Index
+    columns : pandas.Index
         The complete index of column names present in the DataFrame.
 
     Returns
@@ -459,8 +459,6 @@ def make_comparison(
         entries = ignore_entries[column]
         if not isinstance(entries, list):
             entries = [entries]
-        # for entry in entries:
-        #    sub_levels.append(cll.CustomLevel(f"{column}_l = '{entry}' OR {column}_r = '{entry}'"))
         sub_levels.extend(cll.CustomLevel(f"{column}_l = '{e}' OR {column}_r = '{e}'") for e in entries)
 
     if column in ignore_nan_either:
@@ -485,7 +483,7 @@ def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list
 
     Parameters
     ----------
-    matches : pd.DataFrame
+    matches : pandas.DataFrame
         A pandas DataFrame that must contain the columns ``unique_id_l`` and ``unique_id_r``.
         Each row represents a candidate match between a left-hand identifier
         (``unique_id_l``) and a right-hand identifier (``unique_id_r``).
@@ -516,7 +514,7 @@ def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list
     matches = matches.groupby("unique_id_l", sort=False).apply(lambda g: g.sort_values("rank_r")).reset_index(drop=False)
 
     pairs = list(zip(matches["unique_id_l"], matches["unique_id_r"], strict=True))
-
+    print(pairs)
     groups: list[list[Any]] = []
     for a, b in pairs:
         placed = False
@@ -590,8 +588,8 @@ def duplicate_check(
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
         Ignored if ``data`` is provided.
-    data : pd.DataFrame, optional
-        A pd.DataFrame containing the relevant input data.
+    data : pandas.DataFrame, optional
+        A pandas DataFrame containing the relevant input data.
         If provided, all input data arguments (``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi``)
         are ignored.
     ignore_columns : str or list, optional
@@ -618,10 +616,10 @@ def duplicate_check(
                 "station_id": ["UNKNOWN", "MISSING"],
             }
     ignore_nan_both : str, list of str or bool, default: True
-        For selected columns, consider two observations as duplicates if both values being compared are NaN.
+        For selected columns, consider two observations as duplicates whenever both compared value are NaN.
         If True, all columns are affected.
     ignore_nan_either : str, list of str or bool, optional
-        For selected columns, consider two observations as duplicates if either value being compared is NaN.
+        For selected columns, consider two observations as duplicates whenever either compared value is NaN.
         If True, all columns are affected.
     offsets : dict, optional
         Override comparison offsets for selected columns.
@@ -676,6 +674,57 @@ def duplicate_check(
         - The processed input data.
         - Detected duplicate groups.
         - Comparison configuration information.
+
+    Warnings
+    --------
+    If `ignore_nan_either` is set, this can lead to misleading duplicate chains.
+
+    In this example, we focus on only two input variables:
+
+    .. code-block:: python
+
+        df = pd.DataFrame(
+            {
+                "station_id": ["A", "A", "B", "A", None],
+                "lon": [29.7, -29.7, 29.7, np.nan, 29.7],
+            }
+        )
+        print(df)
+
+    .. code-block:: text
+
+          station_id   lon
+        0          A  29.7
+        1          A -29.7
+        2          B  29.7
+        3          A   NaN
+        4       None  29.7
+
+    This produces the following duplicate pairs:
+
+    .. code-block:: python
+
+        detected = duplicate_check(data=df, ignore_nan_either=True)
+
+    * (0,3): (["A", 29.7  ], ["A" , np.nan])
+    * (0,4): (["A", 29.7  ], [None, 29.7])
+    * (1,3): (["A", -29.7 ], ["A" , np.nan])
+    * (2,4): (["B", 29.7  ], [None, 29.7])
+    * (3,4): (["A", np.nan], [None, 29.7])
+
+    All of these duplicates pairs are reasonable if two observations are considered as duplicates whenever either compared value is NaN.
+
+    However, this also produces the following misleading duplicate chains, even though the connected observations are clearly not duplicates:
+
+    * 0 -> 3 -> 1
+    * 0 -> 4 -> 2
+
+    Since (3,4) is also considered a duplicate pair, all entries are connected, resulting in:
+
+    .. code-block:: python
+
+        print(detected.groups)
+        >>> [[0, 3, 4, 1, 2]]
 
     Examples
     --------
@@ -816,7 +865,7 @@ def remove_duplicates(
 
     This function identifies duplicate observations either from a precomputed
     :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance or by internally calling
-    :py:func:`~marine_qc.duplicate_check`.
+    :py:func:`~marine_qc.duplicate_checker.duplicates.duplicate_check`.
 
     Candidate record pairs are generated using the SPLINK framework, after which only pairs satisfying
     all configured comparison conditions are retained as duplicates.
@@ -849,8 +898,8 @@ def remove_duplicates(
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
         Ignored if ``detected`` or ``data`` is provided.
-    data : pd.DataFrame, optional
-        A pd.DataFrame containing the relevant input data.
+    data : pandas.DataFrame, optional
+        A pandas.DataFrame containing the relevant input data.
         Ignored if ``detected`` is provided.
         If provided, all input data arguments (``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi``)
         are ignored.
@@ -866,7 +915,8 @@ def remove_duplicates(
         - ``"last"`` keeps the last occurrence.
         - Integer values keep the specified positional match.
     \**kwargs : Any
-        Additional keyword arguments passed to :py:func:`~.marine_qc.duplicate_check` when ``detected`` is not provided.
+        Additional keyword arguments passed to :py:func:`~marine_qc.duplicate_checker.duplicates.duplicate_check`
+        when ``detected`` is not provided.
         Additionally, that could be extra input data as well.
 
     Returns
@@ -883,7 +933,7 @@ def remove_duplicates(
     Notes
     -----
     If ``detected`` is set, ``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi`` and ``data`` are ignored.
-    If ``detected`` is set, the function always returns pd.Series.
+    If ``detected`` is set, the function always returns pandas.Series.
     If ``data`` is set, ``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi`` are ignored.
 
     Examples
@@ -940,7 +990,7 @@ def flag_duplicates(
 
     This function identifies duplicate observations either from a precomputed
     :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance or by internally calling
-    :py:func:`~marine_qc.duplicate_check`.
+    :py:func:`~marine_qc.duplicate_checker.duplicates.duplicate_check`.
 
     Candidate record pairs are generated using the SPLINK framework, after which only pairs satisfying
     all configured comparison conditions are retained as duplicates.
@@ -973,8 +1023,8 @@ def flag_duplicates(
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
         Ignored if ``detected`` or ``data`` is provided.
-    data : pd.DataFrame, optional
-        A pd.DataFrame containing the relevant input data.
+    data : pandas.DataFrame, optional
+        A pandas.DataFrame containing the relevant input data.
         Ignored if ``detected`` is provided.
         If provided, all input data arguments (``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi``)
         are ignored.
@@ -990,7 +1040,8 @@ def flag_duplicates(
         - ``"last"`` keeps the last occurrence.
         - Integer values keep the specified positional match.
     \**kwargs : Any
-        Additional keyword arguments passed to :py:func:`~.marine_qc.duplicate_check` when ``detected`` is not provided.
+        Additional keyword arguments passed to :py:func:`~marine_qc.duplicate_checker.duplicates.duplicate_check`
+        when ``detected`` is not provided.
         Additionally, that could be extra input data as well.
 
     Returns
@@ -1010,7 +1061,7 @@ def flag_duplicates(
     Notes
     -----
     If ``detected`` is set, ``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi`` and ``data`` are ignored.
-    If ``detected`` is set, the function always returns pd.Series.
+    If ``detected`` is set, the function always returns pandas.Series.
     If ``data`` is set, ``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi`` are ignored.
 
     Examples
@@ -1067,7 +1118,7 @@ def get_duplicates(
 
     This function identifies duplicate observations either from a precomputed
     :py:class:`~marine_qc.duplicate_checker.duplicates.DupDetect` instance or by internally calling
-    :py:func:`~marine_qc.duplicate_check`.
+    :py:func:`~marine_qc.duplicate_checker.duplicates.duplicate_check`.
 
     Candidate record pairs are generated using the SPLINK framework, after which only pairs satisfying
     all configured comparison conditions are retained as duplicates.
@@ -1100,8 +1151,8 @@ def get_duplicates(
         One-dimensional reported heading array in degrees.
         Can be a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
         Ignored if ``detected`` or ``data`` is provided.
-    data : pd.DataFrame, optional
-        A pd.DataFrame containing the relevant input data.
+    data : pandas.DataFrame, optional
+        A pandas.DataFrame containing the relevant input data.
         Ignored if ``detected`` is provided.
         If provided, all input data arguments (``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi``)
         are ignored.
@@ -1117,7 +1168,8 @@ def get_duplicates(
         - ``"last"`` keeps the last occurrence.
         - Integer values keep the specified positional match.
     \**kwargs : Any
-        Additional keyword arguments passed to :py:func:`~.marine_qc.duplicate_check` when ``detected`` is not provided.
+        Additional keyword arguments passed to :py:func:`~marine_qc.duplicate_checker.duplicates.duplicate_check`
+        when ``detected`` is not provided.
         Additionally, that could be extra input data as well.
 
     Returns
@@ -1135,7 +1187,7 @@ def get_duplicates(
     Notes
     -----
     If ``detected`` is set, ``station_id``, ``lat``, ``lon``, ``date``, ``vsi``, ``dsi`` and ``data`` are ignored.
-    If ``detected`` is set, the function always returns pd.Series.
+    If ``detected`` is set, the function always returns pandas.Series.
     If ``data`` is set, ``station_id``, ``lat``, ``lon``, ``date``, ``vsi`` and ``dsi`` are ignored.
 
     Examples

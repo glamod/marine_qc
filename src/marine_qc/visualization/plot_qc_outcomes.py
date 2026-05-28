@@ -15,12 +15,12 @@ def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[lines
 
     Parameters
     ----------
-    qc_outcomes : np.ndarray
+    qc_outcomes : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
 
     Returns
     -------
-    tuple of (list of str, list of Line2D)
+    tuple of (numpy.ndarray, list of lines.Line2D)
         Color names and legend elements.
     """
     colour_passed = "#55ff55"
@@ -89,11 +89,11 @@ def _make_plot(
 
     Parameters
     ----------
-    xvalue : np.ndarray
+    xvalue : numpy.ndarray
         Array of x values.
-    yvalue : np.ndarray
+    yvalue : numpy.ndarray
         Array of y values.
-    flags : np.ndarray
+    flags : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
     xlim : list of float or None
         If not None: set xlim for plotting.
@@ -158,11 +158,11 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
 
     Parameters
     ----------
-    lat : np.ndarray
+    lat : numpy.ndarray
         Array of latitude values in degrees.
-    value : np.ndarray
+    value : numpy.ndarray
         Array of observed values for the variable.
-    qc_outcomes : np.ndarray
+    qc_outcomes : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
     filename : str or None
         Filename to save the figure to. If None, the figure is saved with a standard name.
@@ -190,11 +190,11 @@ def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.nd
 
     Parameters
     ----------
-    lat : np.ndarray
+    lat : numpy.ndarray
         Array of latitude values in degrees.
-    lon : np.ndarray
+    lon : numpy.ndarray
         Array of longitude values in degrees.
-    qc_outcomes : np.ndarray
+    qc_outcomes : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
     filename : str or None
         Filename to save the figure to. If None, the figure is saved with a standard name.
