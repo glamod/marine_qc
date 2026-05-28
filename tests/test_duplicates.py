@@ -478,6 +478,12 @@ def test_duplicate_check_reindex(dummy_data):
 
 
 def test_get_duplicates_basic(dummy_data):
+    dups_res = get_duplicates(data=dummy_data)
+    dups_exp = pd.Series(["F", np.nan, np.nan, np.nan, np.nan, "A"], dtype=object, index=dummy_data.index, name="duplicates")
+    pd.testing.assert_series_equal(dups_res, dups_exp)
+
+
+def test_get_duplicates_detector(dummy_data):
     detector = duplicate_check(data=dummy_data)
     detector.get_duplicates()
 
