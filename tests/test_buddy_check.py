@@ -7,17 +7,17 @@ import pytest
 import xarray as xr
 
 import marine_qc.helpers.external_clim as clim
-from marine_qc import do_bayesian_buddy_check, do_mds_buddy_check
-from marine_qc.helpers.auxiliary import (
-    failed,
-    passed,
-    untestable,
-    untested,
-)
+from marine_qc import Flags, do_bayesian_buddy_check, do_mds_buddy_check
 from marine_qc.quality_control.qc_grouped_reports import (
     SuperObsGrid,
     get_threshold_multiplier,
 )
+
+
+failed = Flags.failed
+passed = Flags.passed
+untestable = Flags.untestable
+untested = Flags.untested
 
 
 def _create_dataarray(array, name):

@@ -8,7 +8,12 @@ import pandas as pd
 import pytest
 
 import marine_qc.quality_control.buoy_tracking_qc as tqc
-from marine_qc.helpers.auxiliary import failed, passed, untestable
+from marine_qc import Flags
+
+
+failed = Flags.failed
+passed = Flags.passed
+untestable = Flags.untestable
 
 
 @pytest.mark.parametrize(
