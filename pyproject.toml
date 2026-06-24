@@ -97,7 +97,7 @@ dependencies = [
   "pyproj",
   "scipy",
   "xarray",
-  "xclim"
+  "xclim>=0.56"
 ]
 
 [project.urls]
