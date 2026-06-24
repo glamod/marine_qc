@@ -14,6 +14,8 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * Both `do_mising_value_check` and `do_missing_value_clim_check` now return `0` (pass) for numerically invalid values, otherwise `1` (fail) (:issue:`205`, :pull:`206`)
 
+* The minimum versions of several dependencies have been set to support Python 3.11 or higher (numpy >= 1.24.0, pandas >= 3.0.0, scipy >= 1.11.0, xarray >= v2025.07.0, xclim >= 0.56) (:pull:`224`)
+
 0.3.2 (2023-04-21)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trevor James Smith (:user:`Zeitsperre`)
