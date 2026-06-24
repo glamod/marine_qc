@@ -505,7 +505,7 @@ def post_format_return_type(
         if multiple:
             if isinstance(dtype, type) or dtype is None:
                 return tuple(format_return_type(r, *input_values, dtype=dtype, keep_index=keep_index) for r in result)
-            return_list = [format_return_type(result[i], *input_values, dtype=dtype[i], keep_index=keep_index) for i in range(len(result))]
+            return_list = [format_return_type(val, *input_values, dtype=dtype[i], keep_index=keep_index) for i, val in enumerate(result)]
             return tuple(return_list)
         if isinstance(dtype, list):
             raise TypeError(f"`dtype` has incompatible type: {type(dtype)}")
