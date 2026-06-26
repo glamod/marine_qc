@@ -3,6 +3,7 @@ External climatology class
 
 .. autoclass:: marine_qc.Climatology
    :members:
+   :noindex:
 
 External climatology functions
 ------------------------------
