@@ -1,7 +1,7 @@
 Statistics functions
 --------------------
 
-.. automodule:: marine_qc.statistics
+.. automodule:: marine_qc.helpers.statistics
    :members:
    :undoc-members:
    :show-inheritance:

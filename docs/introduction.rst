@@ -6,13 +6,14 @@ Basic Guide
 
 .. include:: ./description.rst
 
-The `MarineQC` package comprises quality control tests of three kinds:
+The `MarineQC` package comprises quality control tests of four kinds:
 
 1. tests that are performed on individual reports and only use information from a single report, such that they can
    be performed individually.
 2. tests that are performed on sequences of reports from a single ship or platform.
 3. tests that are performed on a group of reports for a specified area and period, potentially comprising reports
    from many platforms and platform types.
+4. tests that are performed on the whole dataset to detect, flag and/or remove possibly duplicated observations.
 
 The following sections describe the quality control (QC) tests in more detail. The tests are based on
 those developed in:
@@ -32,17 +33,29 @@ Atkinson, C. P., N. A. Rayner, J. Roberts-Jones, and R. O. Smith (2013), Assessi
 surface temperature observations from drifting buoys and ships on a platform-by-platform basis, J.
 Geophys. Res. Oceans, 118, 3507-3529,  https://doi.org/10.1002/jgrc.20257
 
+.. _flags:
+
 QC Flags
 --------
 
-The QC checks output QC flags that indicate the status of each observation. There are four numbered
-flags:
+The `MarineQC` package comprises quality flags of two kids:
 
-* `0`: Passed - the report has passed this particular quality control check.
-* `1`: Failed - the report has failed this particular quality control check.
-* `2`: Untestable - the report cannot be tested using this quality control check, usually because one or
-  more pieces of information are missing. For example, a climatology check with a missing climatology value.
-* `3`: Untested - the report has not been tested for this quality control check.
+1. The QC checks (see above 1.-3.) output QC flags that indicate the quality status of each observation.
+   There are four numbered flags:
+
+   * `0`: Passed - the report has passed this particular quality control check.
+   * `1`: Failed - the report has failed this particular quality control check.
+   * `2`: Untestable - the report cannot be tested using this quality control check, usually because one or
+     more pieces of information are missing. For example, a climatology check with a missing climatology value.
+   * `3`: Untested - the report has not been tested for this quality control check.
+
+2. The duplicate checks (see above 4.) output QC flags that indicate the duplicate status of each observation.
+   There are four numbered flags:
+
+   * `0`: Unique - the report is an unique observation.
+   * `1`: Best - the report is the best of the duplicated observations.
+   * `2`: Duplicate - the report is any of the duplicated observations.
+   * `3`: Worst - the report is the worst of the duplicated observations.
 
 Running the QC Checks
 ---------------------
@@ -75,7 +88,7 @@ of the reports as keyword arguments::
 
 This will automatically extract the climatological values at the specified times and locations.
 
-We have four different types of QC checks:
+We have five different types of QC checks:
 
 * QC functions for individual reports
 
@@ -96,6 +109,11 @@ We have four different types of QC checks:
 
   * for an overview see :ref:`overview_buoy`
   * for API references see :ref:`api_qc_buoy`
+
+* QC functions for the whole bunch of reports (e.g. duplicate checks)
+
+  * for an overview see :ref:`overview_dup`
+  * for API references see :ref:`api_qc_dup`
 
 Unit Conversions
 ----------------

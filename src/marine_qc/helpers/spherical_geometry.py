@@ -49,7 +49,7 @@ def _geod_inv(
 
     Returns
     -------
-    tuple of (np.ndarray, np.ndarray, np.ndarray)
+    tuple of (numpy.ndarray, numpy.ndarray, numpy.ndarray)
         A tuple containing:
         - Forward azimuth(s) from point 1 to point 2 in degrees.
         - Back azimuth(s) from point 2 to point 1 in degrees.
@@ -87,14 +87,14 @@ def angular_distance(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Angular great-circle distance between the two points in radians.
         NaN is returned for any invalid input values.
 
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
@@ -138,13 +138,13 @@ def sphere_distance(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Angular great-circle distance between the two points in kilometres.
 
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
@@ -187,7 +187,7 @@ def intermediate_point(
 
     Returns
     -------
-    tuple of (np.ndarray, np.ndarray)
+    tuple of (numpy.ndarray, numpy.ndarray)
         A tuple containing:
         - Latitude(s) of the intermediate point(s) in degrees.
         - Longitude(s) of the intermediate point(s) in degrees.
@@ -196,7 +196,7 @@ def intermediate_point(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
@@ -245,7 +245,7 @@ def course_between_points(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
 
@@ -290,7 +290,7 @@ def lat_lon_from_course_and_distance(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)
 

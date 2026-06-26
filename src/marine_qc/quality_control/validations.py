@@ -19,8 +19,8 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from .auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS
-from .external_clim import get_climatological_value  # noqa: F401
+from ..helpers.auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS
+from ..helpers.external_clim import get_climatological_value  # noqa: F401
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,
     do_mds_buddy_check,
@@ -478,7 +478,7 @@ def is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     ----------
     name : str
         Name of variable.
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Pandas Series or DataFrame to be tested.
 
     Returns
@@ -489,7 +489,7 @@ def is_in_data(name: str, data: pd.Series | pd.DataFrame) -> bool:
     Raises
     ------
     TypeError
-        If data type is not pd.Series or pd.DataFrame.
+        If data type is not pandas Series or pandas DataFrame.
     """
     if isinstance(data, pd.Series):
         return bool(data.name == name)
