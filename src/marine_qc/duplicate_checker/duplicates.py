@@ -1227,3 +1227,9 @@ def get_duplicates(
         detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, data, **kwargs)
 
     return detected.get_duplicates(keep=keep)
+
+
+duplicate_check.__module__ = "marine_qc.duplicates"
+flag_duplicates.__module__ = "marine_qc.duplicates"
+get_duplicates.__module__ = "marine_qc.duplicates"
+remove_duplicates.__module__ = "marine_qc.duplicates"

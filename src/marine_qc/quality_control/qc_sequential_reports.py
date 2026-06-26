@@ -723,3 +723,12 @@ def do_iquam_track_check(
         count_speed_violations[most_fails] = 0.0
 
     return iquam_track
+
+
+do_few_check.__module__ = "marine_qc.qc_sequential_reports"
+do_iquam_track_check.__module__ = "marine_qc.qc_sequential_reports"
+do_spike_check.__module__ = "marine_qc.qc_sequential_reports"
+do_track_check.__module__ = "marine_qc.qc_sequential_reports"
+find_multiple_rounded_values.__module__ = "marine_qc.qc_sequential_reports"
+find_repeated_values.__module__ = "marine_qc.qc_sequential_reports"
+find_saturated_runs.__module__ = "marine_qc.qc_sequential_reports"

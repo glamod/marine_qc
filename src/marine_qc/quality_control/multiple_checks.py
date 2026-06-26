@@ -801,3 +801,8 @@ def do_multiple_grouped_check(
         preproc_dict=preproc_dict,
         return_method=return_method,
     )
+
+
+do_multiple_grouped_check.__module__ = "marine_qc.multiple_checks"
+do_multiple_individual_check.__module__ = "marine_qc.multiple_checks"
+do_multiple_sequential_check.__module__ = "marine_qc.multiple_checks"

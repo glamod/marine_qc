@@ -2473,3 +2473,14 @@ def do_sst_biased_noisy_short_check(
     )
     checker.do_sst_biased_noisy_check()
     return checker.get_qc_outcomes_short()
+
+
+do_aground_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_new_aground_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_new_speed_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_speed_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_sst_biased_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_sst_biased_noisy_short_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_sst_end_tail_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_sst_noisy_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_sst_start_tail_check.__module__ = "marine_qc.buoy_tracking_qc"

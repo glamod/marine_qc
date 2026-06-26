@@ -214,3 +214,7 @@ def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.nd
         ylabel="Latitude",
         filename=filename,
     )
+
+
+latitude_longitude_plot.__module__ = "marine_qc.visualization"
+latitude_variable_plot.__module__ = "marine_qc.visualization"

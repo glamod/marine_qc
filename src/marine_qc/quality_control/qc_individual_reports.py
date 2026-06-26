@@ -1148,3 +1148,21 @@ def do_maritime_check(
     lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=sea_land_mask)
 
     return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=sea_flag)
+
+
+do_climatology_check.__module__ = "marine_qc.quality_control"
+do_date_check.__module__ = "marine_qc.quality_control"
+do_day_check.__module__ = "marine_qc.quality_control"
+do_hard_limit_check.__module__ = "marine_qc.quality_control"
+do_landlocked_check.__module__ = "marine_qc.quality_control"
+do_maritime_check.__module__ = "marine_qc.quality_control"
+do_missing_value_check.__module__ = "marine_qc.quality_control"
+do_missing_value_clim_check.__module__ = "marine_qc.quality_control"
+do_night_check.__module__ = "marine_qc.quality_control"
+do_position_check.__module__ = "marine_qc.quality_control"
+do_sst_freeze_check.__module__ = "marine_qc.quality_control"
+do_supersaturation_check.__module__ = "marine_qc.quality_control"
+do_time_check.__module__ = "marine_qc.quality_control"
+do_wind_consistency_check.__module__ = "marine_qc.quality_control"
+do_valid_value_check.__module__ = "marine_qc.quality_control"
+do_valid_value_clim_check.__module__ = "marine_qc.quality_control"
