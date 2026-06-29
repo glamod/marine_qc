@@ -90,7 +90,7 @@ jobs:
         with:
           path: |
             .tox
-          key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-lint
+          key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-testpypi
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
