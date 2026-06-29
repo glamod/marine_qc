@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from marine_qc import (
+    Flags,
     do_few_check,
     do_iquam_track_check,
     do_spike_check,
@@ -13,21 +14,24 @@ from marine_qc import (
     find_repeated_values,
     find_saturated_runs,
 )
-from marine_qc.auxiliary import failed, passed
-from marine_qc.spherical_geometry import (
+from marine_qc.helpers.spherical_geometry import (
     course_between_points,
     intermediate_point,
     lat_lon_from_course_and_distance,
     sphere_distance,
 )
-from marine_qc.time_control import time_difference
-from marine_qc.track_check_utils import (
+from marine_qc.helpers.time_control import time_difference
+from marine_qc.quality_control.track_check_utils import (
     backward_discrepancy,
     calculate_course_parameters,
     calculate_midpoint,
     calculate_speed_course_distance_time_difference,
     forward_discrepancy,
 )
+
+
+passed = Flags.passed
+failed = Flags.failed
 
 
 def generic_frame(in_pt):

@@ -342,14 +342,14 @@ def which_pentad_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    month : ndarray
+    month : numpy.ndarray
         Month containing the day for which we want to calculate the pentad.
-    day : ndarray
+    day : numpy.ndarray
         Day for the day for which we want to calculate the pentad.
 
     Returns
     -------
-    ndarray
+    numpy.ndarray
         Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
     """
     pentad = ((day_in_year_array(month=month, day=day) - 1) / 5).astype(int)
@@ -362,14 +362,14 @@ def day_in_year_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    month : 1D np.ndarray
+    month : 1D numpy.ndarray
         Array of months.
-    day : 1D np.ndarray
+    day : 1D numpy.ndarray
         Array of days.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Array of day number from 1-365.
     """
     cumulative_month_lengths = np.array([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334])
@@ -670,7 +670,7 @@ def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) 
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     times1_arr, times2_arr = ensure_arrays(times1=times1, times2=times2)
 
