@@ -2,16 +2,19 @@
 
 .. _overview_grp:
 
-------------------------------------------------
+--------------------------------------------
 Overview of QC functions for grouped reports
-------------------------------------------------
+--------------------------------------------
 
 This page gives a brief overview of each of the QC functions currently implemented. For more detailed documentation
 please see the API. Titles of individual sections below link to the relevant pages in the API.
+The titles of the individual sections below link directly to the corresponding API pages.
 
 The final type of tests are those performed on a group of reports, potentially comprising reports from many platforms
 and platform types. The reports can cover large areas and multiple months. The tests currently include so-called
 "buddy" checks in which the values for each report are compared to those of their neighbours.
+
+For more information about the flagging schema see :ref:`flags`.
 
 :func:`.do_mds_buddy_check`
 ===========================

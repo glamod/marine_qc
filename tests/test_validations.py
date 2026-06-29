@@ -11,7 +11,7 @@ import pytest
 from marine_qc import (
     do_hard_limit_check,
 )
-from marine_qc.validations import (
+from marine_qc.quality_control.validations import (
     _safe_isinstance,
     _validate_iterable,
     _validate_mapping,

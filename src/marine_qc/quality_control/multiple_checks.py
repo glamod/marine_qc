@@ -6,8 +6,8 @@ from typing import Any, Literal, cast
 
 import pandas as pd
 
-from .auxiliary import failed, passed, untested
-from .external_clim import get_climatological_value  # noqa: F401
+from ..helpers.auxiliary import failed, passed, untested
+from ..helpers.external_clim import get_climatological_value  # noqa: F401
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,
     do_mds_buddy_check,
@@ -61,14 +61,14 @@ def _apply_qc_to_masked_rows(
         Keyword arguments constructed from requests.
     kwargs : Mapping[str, Any]
         Additional keyword arguments, typically from preprocessed variables.
-    data_index : pd.Index
+    data_index : pandas.Index
         Full index of the dataset for aligning the QC result.
-    mask : pd.Series
+    mask : pandas.Series
         Boolean mask indicating which rows the QC function applies to.
 
     Returns
     -------
-    pd.Series
+    pandas.Series
         A Series indexed by ``data_index`` containing QC results for masked rows
         and default values elsewhere.
     """
@@ -98,7 +98,7 @@ def _run_qc_engine(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     qc_inputs : Mapping
         Dictionary of QC inputs, each containing:
@@ -114,7 +114,7 @@ def _run_qc_engine(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         DataFrame of QC results with the same index as `data` and columns
         corresponding to QC names.
     """
@@ -160,14 +160,14 @@ def _normalize_groupby(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     groupby : DataFrameGroupBy or object
         A groupby object or column(s) to group by. If None, the full DataFrame is returned as a single group.
 
     Returns
     -------
-    list[tuple[Any, pd.DataFrame]]
+    list[tuple[Any, pandas.DataFrame]]
         A list of tuples containing the group name (or None) and the corresponding DataFrame slice.
     """
     if groupby is None:
@@ -199,7 +199,7 @@ def _group_iterator(
 
     Parameters
     ----------
-    data : pd.DataFrame or pd.Series
+    data : pandas.DataFrame or pandas.Series
         The DataFrame to iterate over in groups.
     groupby : str, iterable of str, DataFrameGroupBy, or None
         Column(s) or a groupby object to split `data` into groups. If None,
@@ -207,7 +207,7 @@ def _group_iterator(
 
     Yields
     ------
-    tuple of (Any, pd.DataFrame)
+    tuple of (Any, pandas.DataFrame)
         Tuples containing the group key (or None) and the corresponding
         DataFrame for that group.
     """
@@ -236,7 +236,7 @@ def _get_requests_from_params(
         and values are the names of columns or variables in data.
     func : Callable
         Function for which the parameters will be checked.
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         DataSeries or DataFrame containing the data to be extracted.
 
     Returns
@@ -330,7 +330,7 @@ def _prepare_functions(
     ----------
     config : Mapping[str, Mapping[str, Any]]
         Dictionary describing functions, their inputs, and arguments.
-    data : pd.DataFrame or pd.Series
+    data : pandas.DataFrame or pandas.Series
         Data used to extract requested parameters.
     preprocessed : Mapping[str, Any], optional
         Previously computed preprocessed variables (used for QC functions).
@@ -390,7 +390,7 @@ def _prepare_all_inputs(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     qc_dict : Mapping or None
         Dictionary defining QC functions and their arguments.
@@ -399,7 +399,7 @@ def _prepare_all_inputs(
 
     Returns
     -------
-    tuple of (Mapping, pd.Series, pd.DataFrame)
+    tuple of (Mapping, pandas.Series, pandas.DataFrame)
         - QC inputs dictionary: {qc_name: {function, requests, kwargs}}.
         - Initial boolean mask Series (all True).
         - Empty results DataFrame with shape (n_rows, n_qcs).
@@ -428,14 +428,14 @@ def _normalize_input(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     return_method : {'all', 'passed', 'failed'}
         Specifies which rows to return; must be one of 'all', 'passed', or 'failed'.
 
     Returns
     -------
-    tuple of (pd.DataFrame, bool)
+    tuple of (pandas.DataFrame, bool)
         - Normalized DataFrame version of the input.
         - Boolean indicating if the original input was a Series.
     """
@@ -462,7 +462,7 @@ def _do_multiple_check(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     groupby : str, iterable of str, or pandas GroupBy, optional
         Specifies how the data should be grouped before applying QC functions.
@@ -494,7 +494,7 @@ def _do_multiple_check(
 
     Returns
     -------
-    pd.DataFrame or pd.Series
+    pandas.DataFrame or pandas.Series
         A DataFrame (or Series if the input was a Series) whose columns correspond
         to the QC names in ``qc_dict`` and whose values contain QC flags for each row.
         Flags depend on the QC functions used.
@@ -517,7 +517,7 @@ def do_multiple_individual_check(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     qc_dict : Mapping, optional
         Nested QC dictionary.
@@ -542,7 +542,7 @@ def do_multiple_individual_check(
 
     Returns
     -------
-    pd.DataFrame or pd.Series
+    pandas.DataFrame or pandas.Series
         A DataFrame (or Series if the input was a Series) whose columns correspond
         to the QC names in ``qc_dict`` and whose values contain QC flags for each row.
         Flags depend on the QC functions used.
@@ -673,7 +673,7 @@ def do_multiple_sequential_check(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     groupby : str, iterable of str, or pandas GroupBy, optional
         Specifies how the data should be grouped before applying QC functions.
@@ -705,7 +705,7 @@ def do_multiple_sequential_check(
 
     Returns
     -------
-    pd.DataFrame or pd.Series
+    pandas.DataFrame or pandas.Series
         A DataFrame (or Series if the input was a Series) whose columns correspond
         to the QC names in ``qc_dict`` and whose values contain QC flags for each row.
         Flags depend on the QC functions used.
@@ -747,7 +747,7 @@ def do_multiple_grouped_check(
 
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pandas.Series or pandas.DataFrame
         Hashable input data.
     qc_dict : Mapping, optional
         Nested QC dictionary.
@@ -772,7 +772,7 @@ def do_multiple_grouped_check(
 
     Returns
     -------
-    pd.DataFrame or pd.Series
+    pandas.DataFrame or pandas.Series
         A DataFrame (or Series if the input was a Series) whose columns correspond
         to the QC names in ``qc_dict`` and whose values contain QC flags for each row.
         Flags depend on the QC functions used.
@@ -801,3 +801,8 @@ def do_multiple_grouped_check(
         preproc_dict=preproc_dict,
         return_method=return_method,
     )
+
+
+do_multiple_grouped_check.__module__ = "marine_qc.multiple_checks"
+do_multiple_individual_check.__module__ = "marine_qc.multiple_checks"
+do_multiple_sequential_check.__module__ = "marine_qc.multiple_checks"

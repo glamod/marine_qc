@@ -9,10 +9,20 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 New features and environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * new_functions: `do_valid_value_check` and `do_valid_value_clim_check` are copies of the old versions from `do_missing_value_check` and `do_missing_value_clim_check` that return `1` (fail) for numerically invalid values, otherwise `0` (pass) (:issue:`205`, :pull:`206`)
+* A new checker to detect (``marine_qc.duplicate_check``), get (``marine_qc.get_duplicates``), flag (``marine_qc.flag_duplicates``) and remove (``marine_qc.remove_duplicates``) potentially duplicated observations using ``splink`` (:issue:`202`, :issue:`210`, :pull:`207`)
+* flag definitions can now directly be imported via ``marine_qc.Flags`` (:pull:`207`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Both `do_mising_value_check` and `do_missing_value_clim_check` now return `0` (pass) for numerically invalid values, otherwise `1` (fail) (:issue:`205`, :pull:`206`)
+* The minimum versions of several dependencies have been set to support Python 3.11 or higher (numpy >= 1.24.0, pandas >= 3.0.0, scipy >= 1.11.0, xarray >= v2025.07.0, xclim >= 0.56) (:pull:`224`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* move helper modules to ``src.marine_qc.helpers`` (:pull:`207`)
+* move QC modules to ``src.marine_qc.quality_control`` (:pull:`207`)
+* move visualization modules to ``src.marine_qc.visualization`` (:pull:`207`)
+* locally import some members in submodules ``src.marine_qc.duplicate_checker``, ``src.marine_qc.helpers``, ``src.marine_qc.quality_control`` and ``src.marine_qc.visualization`` (:pull:`207`)
 
 0.3.2 (2023-04-21)
 ------------------
