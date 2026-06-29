@@ -52,7 +52,6 @@ jobs:
 
   test-pypi:
     name: Test with Python${{ matrix.python-version }}
-    needs: lint
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
