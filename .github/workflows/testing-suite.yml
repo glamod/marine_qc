@@ -1,5 +1,4 @@
 name: marine QC Testing Suite
-
 on:
   push:
     branches:
@@ -17,46 +16,80 @@ permissions:
   pull-requests: read
 
 jobs:
+  lint:
+    name: Lint (Python${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.14" ]
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+      - name: Checkout Repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Python${{ matrix.python-version }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install CI libraries
+        run: |
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Environment Caching
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            .tox
+          key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-lint
+      - name: Run linting suite
+        run: |
+          python -m tox -e lint
+
   test-pypi:
     name: Test with Python${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    environment: ci
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
-
+        os: [ 'ubuntu-latest' ]
+        python-version: [ "3.11", "3.12", "3.13", "3.14" ] # "3.10" disabled due to project's Python requirement
     env:
+      # UV_ENV_FILE: pyproject.toml ; disabled since UV_ENV_FILE requires a .env and in addition it is not needed so far
       PYTHON_VERSION: ${{ matrix.python-version }}
-      UV_CACHE_DIR: /tmp/.uv-cache
-
+      UV_CACHE_DIR: /tmp/.uv-cache-test-pypi-${{ matrix.python-version }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           disable-sudo: true
           egress-policy: audit
 
       - name: Checkout Repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Fetch all history for all branches and tags.
           persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
           cache-local-path: ${{ env.UV_CACHE_DIR }}
 
       - name: Restore uv cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ env.UV_CACHE_DIR }}
-          key: uv-${{ runner.os }}-${{ runner.arch }}-py${{ matrix.python-version }}-${{ hashFiles(env.UV_ENV_FILE) }}
+          key: uv-${{ runner.os }}-${{ runner.arch }}-py${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            uv-${{ runner.os }}-${{ runner.arch }}-py${{ matrix.python-version }}-${{ hashFiles(env.UV_ENV_FILE) }}
-            uv-${{ runner.os }}-${{ runner.arch }}-py${{ matrix.python-version }}
+            uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles(env.UV_ENV_FILE) }}
+            uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}
 
       - name: Install marine QC toolbox
         run: |
@@ -72,16 +105,15 @@ jobs:
 
       - name: Run tests
         timeout-minutes: 10
-        run: |
-          uv run pytest tests \
-            --cov=marine_qc \
-            --cov-report=xml \
-            --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
+        run: uv run pytest tests
+          --cov=marine_qc
+          --cov-report=xml
+          --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
 
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN}}
           files: ./coverage.xml
           flags: unittests
           env_vars: RUNNER_OS,PYTHON_VERSION
