@@ -9,8 +9,8 @@ from typing import Any, Literal
 
 import numpy as np
 
-from .astronomical_geometry import sunangle
-from .auxiliary import (
+from ..helpers.astronomical_geometry import sunangle
+from ..helpers.auxiliary import (
     ScalarNumberType,
     ValueDatetimeType,
     ValueFloatType,
@@ -26,8 +26,8 @@ from .auxiliary import (
     post_format_return_type,
     untestable,
 )
-from .external_clim import ClimArgType, inspect_climatology
-from .time_control import convert_date, day_in_year, get_month_lengths
+from ..helpers.external_clim import ClimArgType, inspect_climatology
+from ..helpers.time_control import convert_date, day_in_year, get_month_lengths
 
 
 vectorized_day_in_year = np.vectorize(day_in_year)
@@ -61,7 +61,7 @@ def value_check(value: ValueNumberType, valid_flag: int = passed, invalid_flag: 
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     (value_arr,) = ensure_arrays(value=value)
 
@@ -103,7 +103,7 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     lat_arr, lon_arr = ensure_arrays(lat=lat, lon=lon)
 
@@ -167,7 +167,7 @@ def do_date_check(
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     year_arr, month_arr, day_arr = ensure_arrays(year=year, month=month, day=day)
 
@@ -234,7 +234,7 @@ def do_time_check(
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     (hour_arr,) = ensure_arrays(hour=hour)
 
@@ -266,17 +266,17 @@ def _do_daytime_check(
 
     Parameters
     ----------
-    year : 1D np.ndarray of int
+    year : 1D numpy.ndarray of int
         Year(s) of observation.
-    month : 1D np.ndarray of int
+    month : 1D numpy.ndarray of int
         Month(s) of observation (1-12).
-    day : 1D np.ndarray of int
+    day : 1D numpy.ndarray of int
         Day(s) of observation.
-    hour : 1D np.ndarray of float
+    hour : 1D numpy.ndarray of float
         Hour(s) of observation (minutes as decimal).
-    lat : 1D np.ndarray of float
+    lat : 1D numpy.ndarray of float
         Latitude(s) of observation in degrees.
-    lon : 1D np.ndarray of float
+    lon : 1D numpy.ndarray of float
         Longitude() of observation in degree.
     time_since_sun_above_horizon : float
         Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
@@ -287,7 +287,7 @@ def _do_daytime_check(
 
     Returns
     -------
-    np.ndarray of int
+    numpy.ndarray of int
 
         - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
           returns 2.
@@ -431,7 +431,7 @@ def do_day_check(
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
 
     See Also
     --------
@@ -514,7 +514,7 @@ def do_night_check(
         If `mode` is not in valid list ["day", "night"].
 
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
 
     See Also
     --------
@@ -561,7 +561,7 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return numpy ndarrays.
     """
     return value_check(value, valid_flag=failed, invalid_flag=passed)
 
@@ -591,7 +591,7 @@ def do_missing_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> Valu
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return numpy ndarrays.
 
     Notes
     -----
@@ -622,7 +622,7 @@ def do_valid_value_check(value: ValueNumberType) -> ValueIntType:
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return numpy ndarrays.
     """
     return value_check(value)
 
@@ -652,7 +652,7 @@ def do_valid_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueI
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` in :py:func:`value_check` does not return np.ndarrays.
+        If decorator `inspect_arrays` in :py:func:`value_check` does not return numpy ndarrays.
 
     Notes
     -----
@@ -771,7 +771,7 @@ def do_climatology_check(
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -854,7 +854,7 @@ def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> Valu
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     dpt_arr, at2_arr = ensure_arrays(dpt=dpt, at2=at2)
 
@@ -921,7 +921,7 @@ def do_sst_freeze_check(
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -985,7 +985,7 @@ def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: Value
     Raises
     ------
     TypeError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     wind_speed_arr, wind_direction_arr = ensure_arrays(wind_speed=wind_speed, wind_direction=wind_direction)
 
@@ -1015,11 +1015,11 @@ def _do_mask_check(
 
     Parameters
     ----------
-    lat : 1D np.ndarray of float
+    lat : 1D numpy.ndarray of float
         Latitude(s) of observation in degrees.
-    lon : 1D np.ndarray of float
+    lon : 1D numpy.ndarray of float
         Longitude() of observation in degree.
-    mask : 1D np.ndarray of int
+    mask : 1D numpy.ndarray of int
         Masked classification value(s) to which the latitude and longitude values(s) will be compared.
     flag : int
         Integer value in `mask` that denotes a specific point.
@@ -1036,7 +1036,7 @@ def _do_mask_check(
     Raises
     ------
     ValueError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     if mask.ndim == 0:
         mask_arr = np.full_like(lat, mask)
@@ -1096,7 +1096,7 @@ def do_landlocked_check(
     Raises
     ------
     ValueError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=land_sea_mask)
 
@@ -1143,8 +1143,26 @@ def do_maritime_check(
     Raises
     ------
     ValueError
-        If decorator `inspect_arrays` does not return np.ndarrays.
+        If decorator `inspect_arrays` does not return numpy ndarrays.
     """
     lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=sea_land_mask)
 
     return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=sea_flag)
+
+
+do_climatology_check.__module__ = "marine_qc.quality_control"
+do_date_check.__module__ = "marine_qc.quality_control"
+do_day_check.__module__ = "marine_qc.quality_control"
+do_hard_limit_check.__module__ = "marine_qc.quality_control"
+do_landlocked_check.__module__ = "marine_qc.quality_control"
+do_maritime_check.__module__ = "marine_qc.quality_control"
+do_missing_value_check.__module__ = "marine_qc.quality_control"
+do_missing_value_clim_check.__module__ = "marine_qc.quality_control"
+do_night_check.__module__ = "marine_qc.quality_control"
+do_position_check.__module__ = "marine_qc.quality_control"
+do_sst_freeze_check.__module__ = "marine_qc.quality_control"
+do_supersaturation_check.__module__ = "marine_qc.quality_control"
+do_time_check.__module__ = "marine_qc.quality_control"
+do_wind_consistency_check.__module__ = "marine_qc.quality_control"
+do_valid_value_check.__module__ = "marine_qc.quality_control"
+do_valid_value_clim_check.__module__ = "marine_qc.quality_control"

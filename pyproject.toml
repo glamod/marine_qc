@@ -95,6 +95,7 @@ dependencies = [
   "numpy>=1.24.0",
   "pandas>=3.0.0",
   "pyproj",
+  "splink",
   "scipy>=1.11.0",
   "xarray>=v2025.07.0",
   "xclim>=0.56"
@@ -159,9 +160,6 @@ source = ["marine_qc"]
 
 [tool.deptry]
 ignore_notebooks = true
-
-[tool.deptry.per_rule_ignores]
-DEP002 = ["cdm_reader_mapper"]
 
 [tool.flit.sdist]
 include = [

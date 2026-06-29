@@ -1,7 +1,7 @@
 .. _api_plt:
 
-Plotting QC outcomes
---------------------
+Visualization of quality control or duplicate flags
+---------------------------------------------------
 
 .. autofunction:: marine_qc.latitude_longitude_plot
    :noindex:

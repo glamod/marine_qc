@@ -79,14 +79,14 @@ def mds_lat_to_yindex_fast(lat: np.ndarray, res: float) -> np.ndarray:
 
     Parameters
     ----------
-    lat : np.ndarray
+    lat : numpy.ndarray
         Latitude(s) of observation in degrees.
     res : float
         Resolution of grid in degrees.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Grid box indexes.
 
     Notes
@@ -209,14 +209,14 @@ def mds_lon_to_xindex_fast(lon: np.ndarray, res: float) -> np.ndarray:
 
     Parameters
     ----------
-    lon : np.ndarray
+    lon : numpy.ndarray
         Longitude(s) of observation in degrees.
     res : float
         Resolution of grid in degrees.
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         Grid box indexes.
 
     Notes

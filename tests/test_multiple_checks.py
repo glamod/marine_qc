@@ -5,13 +5,13 @@ import pandas as pd
 import pytest
 
 from marine_qc import (
+    Flags,
     do_hard_limit_check,
     do_multiple_grouped_check,
     do_multiple_individual_check,
     do_multiple_sequential_check,
 )
-from marine_qc.auxiliary import failed, passed, untested
-from marine_qc.multiple_checks import (
+from marine_qc.quality_control.multiple_checks import (
     _apply_qc_to_masked_rows,
     _do_multiple_check,
     _get_function,
@@ -24,6 +24,11 @@ from marine_qc.multiple_checks import (
     _prepare_functions,
     _run_qc_engine,
 )
+
+
+failed = Flags.failed
+passed = Flags.passed
+untested = Flags.untested
 
 
 def simple_test_function(in_param, **kwargs):

@@ -21,6 +21,11 @@ failed: int = 1
 untestable: int = 2
 untested: int = 3
 
+unique: int = 0
+best: int = 1
+duplicate: int = 2
+worst: int = 3
+
 # --- DATA TYPES ---
 PandasNAType: TypeAlias = missing.NAType
 PandasNaTType: TypeAlias = nattype.NaTType
@@ -29,16 +34,19 @@ ScalarIntType: TypeAlias = int | np.integer | PandasNAType | None
 ScalarFloatType: TypeAlias = float | np.floating | PandasNAType | None
 ScalarNumberType: TypeAlias = ScalarIntType | ScalarFloatType
 ScalarDatetimeType: TypeAlias = datetime.datetime | np.datetime64 | pd.Timestamp | PandasNaTType | None
+ScalarStrType: TypeAlias = str | None
 
 SequenceIntType: TypeAlias = Sequence[ScalarIntType] | npt.NDArray[np.integer] | pd.Series | np.ndarray
 SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floating] | pd.Series | np.ndarray
 SequenceNumberType: TypeAlias = SequenceIntType | SequenceFloatType
 SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
+SequenceStrType: TypeAlias = Sequence[ScalarStrType] | npt.NDArray[np.str_] | pd.Series | np.ndarray
 
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
 ValueNumberType: TypeAlias = ValueIntType | ValueFloatType
 ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
+ValueStrType: TypeAlias = ScalarStrType | SequenceStrType
 
 # --- DECORATOR HELPERS ---
 DECORATOR_HANDLERS: dict[Callable[..., Any], list[Callable[..., Any]]] = {}
@@ -58,14 +66,14 @@ def is_scalar_like(x: Any) -> bool:
 
     - Built-in Python scalars: int, float, bool, None
     - Strings and bytes
-    - NumPy scalars (subclasses of np.generic), e.g. np.int32, np.float64,
-      np.datetime64
-    - Zero-dimensional NumPy arrays (e.g. np.array(5))
+    - NumPy scalars (subclasses of numpy.generic), e.g. numpy.int32, numpy.float64,
+      numpy.datetime64
+    - Zero-dimensional NumPy arrays (e.g. numpy.array(5))
     - Pandas scalar types:
-        - pd.Timestamp
-        - pd.Timedelta
-        - pd.NA
-        - pd.NaT
+        - pandas.Timestamp
+        - pandas.Timedelta
+        - pandas.NA
+        - pandas.NaT
     - Python datetime types:
         - datetime.date
         - datetime.datetime
@@ -120,7 +128,7 @@ def isvalid(inval: ValueNumberType) -> bool | npt.NDArray[np.bool_]:
 
     Returns
     -------
-    bool or np.ndarray of bool
+    bool or numpy.ndarray of bool
         Returns False where the input is None or NaN, True otherwise.
         Returns a boolean scalar if input is scalar, else a boolean array.
     """
@@ -153,7 +161,7 @@ def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
 
     Returns
     -------
-    tuple of np.ndarray
+    tuple of numpy.ndarray
         A tuple containing the NumPy arrays corresponding to the input values,
         in the same order as provided.
 
@@ -170,21 +178,28 @@ def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
     return tuple(arrays)
 
 
-def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type = int) -> Any:
+def format_return_type(
+    result_array: np.ndarray | pd.Series | tuple[np.ndarray, ...] | tuple[pd.Series, ...],
+    *input_values: Any,
+    dtype: type | None = int,
+    keep_index: bool = False,
+) -> Any:
     r"""
-    Convert the result numpy array(s) to the same type as the input `value`.
+    Convert the result numpy array(s) to the same type as the input value.
 
-    If `result_array` is a sequence of arrays, format each element recursively,
+    If `result_array` is a tuple of arrays, format each element recursively,
     preserving the container type.
 
     Parameters
     ----------
-    result_array : np.ndarray
-        The numpy array of results.
+    result_array : numpy.ndarray or tuple of numpy.ndarray
+        The numpy array(s) of results.
     \*input_values : Any
         One or more original input values to infer the desired return type from.
-    dtype : type, optional
-        Desired data type of the result. Default is int.
+    dtype : type, optional, default: int
+        Desired data type of the result.
+    keep_index : bool, default: True
+        If True keep indexes from `result_array`, otherwise take indexes from `input_values`.
 
     Returns
     -------
@@ -192,15 +207,23 @@ def format_return_type(result_array: np.ndarray, *input_values: Any, dtype: type
         The result formatted to match the type of the first valid input value.
     """
     input_value = next((val for val in input_values if val is not None), None)
-
     if input_value is None or is_scalar_like(input_value):
         if np.ndim(result_array) > 0:
             result_array = result_array[0]
-        return dtype(result_array)
+        if dtype is not None:
+            return dtype(result_array)
     if isinstance(input_value, pd.Series):
-        return pd.Series(result_array, index=input_value.index, dtype=dtype)
+        if keep_index is True and isinstance(result_array, pd.Series):
+            index = result_array.index
+        else:
+            index = input_value.index
+        if dtype is None:
+            return pd.Series(result_array, index=index)
+        return pd.Series(result_array, index=index, dtype=dtype)
     if isinstance(input_value, (list, tuple)):
-        return type(input_value)(result_array.tolist())
+        if isinstance(result_array, np.ndarray):
+            return type(input_value)(result_array.tolist())
+        return type(input_value)(result_array)
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
         return result_array.to_numpy()
     return result_array  # np.ndarray or fallback
@@ -414,7 +437,9 @@ def generic_decorator(
     return decorator
 
 
-def post_format_return_type(params: list[str], dtype: type = int, multiple: bool = False) -> Callable[..., Any]:
+def post_format_return_type(
+    params: list[str], dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
+) -> Callable[..., Any]:
     """
     Decorator to format a function's return value to match the type of its original input(s).
 
@@ -429,12 +454,15 @@ def post_format_return_type(params: list[str], dtype: type = int, multiple: bool
     params : list of str
         List of parameter names whose original input types should be used to
         format the return value.
-    dtype : type, optional
-        Desired data type of the result. Default is int.
+    dtype : type or list of type, optional, default: int
+        Desired data type of the result.
+        If `multiple` is True `dtype` can be a list of types.
     multiple : bool, optional
         If True, assumes the function returns a sequence of results (e.g., a tuple),
         and applies `format_return_type` to each element individually.
         If False (default), applies `format_return_type` once on the entire result.
+    keep_index : bool, default: True
+        If True keep indexes from result, otherwise take indexes from input.
 
     Returns
     -------
@@ -475,9 +503,13 @@ def post_format_return_type(params: list[str], dtype: type = int, multiple: bool
         input_values = [original_call[param] for param in params if param in original_call]
 
         if multiple:
-            return tuple(format_return_type(r, *input_values, dtype=dtype) for r in result)
-        else:
-            return format_return_type(result, *input_values, dtype=dtype)
+            if isinstance(dtype, type) or dtype is None:
+                return tuple(format_return_type(r, *input_values, dtype=dtype, keep_index=keep_index) for r in result)
+            return_list = [format_return_type(val, *input_values, dtype=dtype[i], keep_index=keep_index) for i, val in enumerate(result)]
+            return tuple(return_list)
+        if isinstance(dtype, list):
+            raise TypeError(f"`dtype` has incompatible type: {type(dtype)}")
+        return format_return_type(result, *input_values, dtype=dtype, keep_index=keep_index)
 
     return generic_decorator(post_handler=post_handler)
 

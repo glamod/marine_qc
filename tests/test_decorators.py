@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from pint.errors import DimensionalityError
 
-from marine_qc.auxiliary import (
+from marine_qc.helpers.auxiliary import (
     convert_to,
     convert_units,
     ensure_arrays,
@@ -15,7 +15,7 @@ from marine_qc.auxiliary import (
     is_scalar_like,
     post_format_return_type,
 )
-from marine_qc.time_control import convert_date
+from marine_qc.helpers.time_control import convert_date
 
 
 @convert_units(value="K")
@@ -48,15 +48,15 @@ def _date_function2(date, year=None, month=None, day=None):
     return year, month, day
 
 
-@post_format_return_type(["value"])
-def _format_function(value):
-    return pd.Series(value) + 5
-
-
 @pytest.mark.parametrize("units", [{"value": "degC"}, "degC"])
 def test_convert_units(units):
     result = _convert_function(30.0, units=units)
     assert result == 30.0 + 273.15
+
+
+@post_format_return_type(["value"])
+def _format_function(value):
+    return pd.Series(value) + 5
 
 
 def test_convert_units_no_conversion():
@@ -134,7 +134,7 @@ def test_convert_date_raise():
         [1, 6, "scalar"],
     ],
 )
-def test_post_format_return_type(value, expected, array_type):
+def test_post_format_return_type_simple(value, expected, array_type):
     result = _format_function(value)
     if array_type == "list":
         np.testing.assert_equal(result, expected)
@@ -144,6 +144,46 @@ def test_post_format_return_type(value, expected, array_type):
         pd.testing.assert_series_equal(result, expected)
     elif array_type == "scalar":
         assert result == expected
+
+
+@pytest.mark.parametrize(
+    "dtype, multiple, expected_len",
+    [
+        ([int, int], True, 2),
+        (int, True, 2),
+    ],
+)
+def test_post_format_return_type_multiple(dtype, multiple, expected_len):
+    @post_format_return_type(
+        params=["value"],
+        dtype=dtype,
+        multiple=multiple,
+        keep_index=False,
+    )
+    def func(value):
+        return (
+            pd.Series([1, 2, 3]) + 1,
+            pd.Series([10, 20, 30]) + 1,
+        )
+
+    result = func([1, 2, 3])
+
+    assert isinstance(result, tuple)
+    assert len(result) == expected_len
+
+
+def test_post_format_return_type_raises():
+    @post_format_return_type(
+        params=["value"],
+        dtype=[int, int],
+        multiple=False,
+        keep_index=False,
+    )
+    def func(value):
+        return pd.Series([1, 2, 3]) + 1
+
+    with pytest.raises(TypeError, match="`dtype` has incompatible type"):
+        func([1, 2, 3])
 
 
 @pytest.mark.parametrize(

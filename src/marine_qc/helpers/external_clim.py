@@ -55,7 +55,7 @@ def _select_point(
     ----------
     i : int
         Index of the latitude/longitude pair.
-    da_slice : xr.DataArray
+    da_slice : xarray.DataArray
         DataArray slice to sample from.
     lat_arr : :py:obj:`~marine_qc.SequenceNumberType`
         Array of latitude values.
@@ -81,7 +81,7 @@ def _empty_dataarray() -> xr.DataArray:
 
     Returns
     -------
-    xr.DataArray
+    xarray.DataArray
         Empty 3D DataArray with latitude, time, and longitude dimensions.
     """
     lat = xr.DataArray(
@@ -123,8 +123,8 @@ def inspect_climatology(
         Names of required function arguments to be inspected. These should be arguments that may be:
 
         - a numeric value
-        - a `xr.DataArray`
-        - a `xr.Dataset`
+        - a xarray.DataArray
+        - a xarray.Dataset
         - a string or path-like object pointing to a valid NetCDF file on disk
         - a :py:class:`~marine_qc.Climatology` instance
 
@@ -145,7 +145,7 @@ def inspect_climatology(
     TypeError
         If a required climatology argument is missing from the decorated function call
     ValueError
-        If an `xr.Dataset` is provided without specifying `clim_name`, or
+        If an xarray.Dataset is provided without specifying `clim_name`, or
         if a string/Path input does not point to a valid file on disk.
 
     Warns
@@ -153,13 +153,13 @@ def inspect_climatology(
     UserWarning
         Issued if required keyword arguments for :py:func:`~marine_qc.Climatology.get_value_fast()`
         are missing. This warning does not stop execution; missing values
-        are replaced with `np.nan`.
+        are replaced with numpy.nan.
 
     Notes
     -----
-    - `xr.Dataset` inputs require the keyword argument `clim_name` to select
+    - xarray.Dataset inputs require the keyword argument `clim_name` to select
       the relevant data variable.
-    - `xr.DataArray` inputs are automatically wrapped in a :py:class:`~marine_qc.Climatology` object.
+    - xarray.DataArray inputs are automatically wrapped in a :py:class:`~marine_qc.Climatology` object.
     - String or path-like inputs must point to an existing file and are
       opened via :py:func:`~marine_qc.Climatology.open_netcdf_file`.
     - If a :py:class:`~marine_qc.Climatology` object is processed, it is resolved using
@@ -167,7 +167,7 @@ def inspect_climatology(
     - If required keyword arguments for `.get_value_fast()` are missing,
       a warning is issued.
     - If resolution fails due to `TypeError` or `ValueError`,
-      the value is replaced with `np.nan`.
+      the value is replaced with numpy.nan.
     """
     if isinstance(optional, str):
         optional = [optional]
@@ -328,12 +328,12 @@ def open_xrdataset(
 
         Parameters
         ----------
-        ds : xr.Dataset
+        ds : xarray.Dataset
           Input Dataset from which all coordinates will be removed.
 
         Returns
         -------
-        xr.Dataset
+        xarray.Dataset
             Dataset with all coordinates dropped.
         """
         return ds.reset_coords(drop=True)
@@ -366,7 +366,7 @@ class Climatology:
 
     Parameters
     ----------
-    data : xr.DataArray
+    data : xarray.DataArray
         Climatology data.
     time_axis : str, optional
         Name of time axis.
@@ -407,7 +407,7 @@ class Climatology:
 
         Parameters
         ----------
-        data : xr.DataArray
+        data : xarray.DataArray
           Climatology data.
         time_axis : str, optional
           Name of time axis.
@@ -538,7 +538,7 @@ class Climatology:
 
         Returns
         -------
-        ndarray or pd.Series
+        numpy.ndarray or pandas.Series
             Climatology value at specified location and time.
 
         Notes
@@ -620,14 +620,14 @@ class Climatology:
 
         Parameters
         ----------
-        lat_arr :  np.ndarray
+        lat_arr :  numpy.ndarray
             Array of latitudes.
-        lat_axis : np.ndarray
+        lat_axis : numpy.ndarray
             Array containing the latitude axis.
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             Array of indices.
         """
         lat_axis_0 = lat_axis[0]
@@ -655,14 +655,14 @@ class Climatology:
 
         Parameters
         ----------
-        lon_arr : ndarray
+        lon_arr : numpy.ndarray
             Array of longitudes.
-        lon_axis : ndarray
+        lon_axis : numpy.ndarray
             Array containing the longitude axis.
 
         Returns
         -------
-        ndarray
+        numpy.ndarray
             Array of indices.
         """
         lon_axis_0 = lon_axis[0]
@@ -690,9 +690,9 @@ class Climatology:
 
         Parameters
         ----------
-        month : ndarray
+        month : numpy.ndarray
             Array of months.
-        day : ndarray
+        day : numpy.ndarray
             Array of days.
         ntime : int
             Number of time points in the grid, valid values are 1, 73 (pentad resolution) and
@@ -700,7 +700,7 @@ class Climatology:
 
         Returns
         -------
-        ndarray
+        numpy.ndarray
             Array of indices.
         """
         n_points = len(month)
@@ -742,7 +742,7 @@ class Climatology:
 
         Returns
         -------
-        ndarray or pd.Series
+        ndarray or pandas.Series
             Climatology value at specified location and time.
 
         Notes

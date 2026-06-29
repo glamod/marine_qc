@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import label
 
-from .auxiliary import (
+from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,
@@ -23,8 +23,8 @@ from .auxiliary import (
     passed,
     post_format_return_type,
 )
-from .spherical_geometry import sphere_distance
-from .time_control import time_difference
+from ..helpers.spherical_geometry import sphere_distance
+from ..helpers.time_control import time_difference
 from .track_check_utils import (
     backward_discrepancy,
     calculate_course_parameters,
@@ -95,7 +95,7 @@ def do_spike_check(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -226,7 +226,7 @@ def do_track_check(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -360,7 +360,7 @@ def do_few_check(
         If either input is not 1-dimensional.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
     """
     (value,) = ensure_arrays(value=value)
 
@@ -432,7 +432,7 @@ def find_saturated_runs(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -501,7 +501,7 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
         If `threshold` is not between 0.0 and 1.0.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -569,7 +569,7 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
         - If `threshold` is not between 0.0 and 1.0.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -662,7 +662,7 @@ def do_iquam_track_check(
         If either input is not 1-dimensional or if their lengths do not match.
 
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -723,3 +723,12 @@ def do_iquam_track_check(
         count_speed_violations[most_fails] = 0.0
 
     return iquam_track
+
+
+do_few_check.__module__ = "marine_qc.qc_sequential_reports"
+do_iquam_track_check.__module__ = "marine_qc.qc_sequential_reports"
+do_spike_check.__module__ = "marine_qc.qc_sequential_reports"
+do_track_check.__module__ = "marine_qc.qc_sequential_reports"
+find_multiple_rounded_values.__module__ = "marine_qc.qc_sequential_reports"
+find_repeated_values.__module__ = "marine_qc.qc_sequential_reports"
+find_saturated_runs.__module__ = "marine_qc.qc_sequential_reports"

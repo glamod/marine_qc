@@ -11,7 +11,7 @@ import math
 import numpy as np
 import pandas as pd
 
-from .auxiliary import (
+from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,
@@ -25,24 +25,24 @@ from .auxiliary import (
     untestable,
     untested,
 )
-from .buoy_tracking_qc import is_monotonic
-from .external_clim import (
+from ..helpers.external_clim import (
     ClimArgType,
     Climatology,
     inspect_climatology,
 )
-from .location_control import (
+from ..helpers.location_control import (
     mds_lat_to_yindex,
     mds_lat_to_yindex_fast,
     mds_lon_to_xindex,
     mds_lon_to_xindex_fast,
 )
-from .statistics import p_gross
-from .time_control import (
+from ..helpers.statistics import p_gross
+from ..helpers.time_control import (
     convert_date,
     pentad_to_month_day,
     which_pentad,
 )
+from .buoy_tracking_qc import is_monotonic
 
 
 def get_threshold_multiplier(total_nobs: int, nob_limits: list[int], multiplier_values: list[float]) -> float:
@@ -135,7 +135,7 @@ class SuperObsGrid:
         Raises
         ------
         TypeError
-            If `inspect_arrays` does not return np.ndarrays.
+            If `inspect_arrays` does not return numpy ndarrays.
 
         Notes
         -----
@@ -548,7 +548,7 @@ def do_mds_buddy_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -703,7 +703,7 @@ def do_bayesian_buddy_check(
     Raises
     ------
     TypeError
-        If `inspect_arrays` does not return np.ndarrays.
+        If `inspect_arrays` does not return numpy ndarrays.
 
     Notes
     -----
@@ -788,3 +788,7 @@ def do_bayesian_buddy_check(
     del grid
 
     return qc_outcomes
+
+
+do_mds_buddy_check.__module__ = "marine_qc.qc_grouped_reports"
+do_bayesian_buddy_check.__module__ = "marine_qc.qc_grouped_reports"
