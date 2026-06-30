@@ -4,13 +4,6 @@ on:
   # Note: potential security risk from this action using pull_request_target.
   # Do not add actions in here which need a checkout of the repo, and do not use any caching in here.
   # See: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_target
-  workflow_dispatch:
-    inputs:
-      pr:
-        description: Pull Request number to test against
-        required: true
-        type: number
-  
   pull_request_target:
     types:
       - opened
@@ -21,8 +14,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
-  issues: write  
 
 jobs:
   comment-concerning-workflow-changes:
