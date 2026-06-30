@@ -53,9 +53,7 @@ jobs:
   test-pypi:
     name: Test with Python${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    environment: 
-      name: pytests
-      deployment: false
+    environment: automation
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
