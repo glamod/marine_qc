@@ -77,4 +77,4 @@ from .visualization import (
 
 __author__ = """Ludwig Lierhammer"""
 __email__ = "ludwig.lierhammer@dwd.de"
-__version__ = "0.3.3-dev.4"
+__version__ = "0.3.3-dev.5"
