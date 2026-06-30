@@ -4,6 +4,13 @@ on:
   # Note: potential security risk from this action using pull_request_target.
   # Do not add actions in here which need a checkout of the repo, and do not use any caching in here.
   # See: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_target
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull Request number to test against
+        required: true
+        type: number
+  
   pull_request_target:
     types:
       - opened
@@ -14,6 +21,8 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  issues: write  
 
 jobs:
   comment-concerning-workflow-changes:
@@ -69,7 +78,7 @@ jobs:
           $BODY"
             else
               # Create new note comment
-              gh pr comment "$PR_NUMBER" --body "$BODY"
+              gh api --method POST repos/$REPO/issues/$PR_NUMBER/comments -f body="$BODY"
             fi
 
             # Add reaction (hooray)
@@ -87,6 +96,6 @@ jobs:
           **It is very important for the reviewer to ensure that the workflow changes are appropriate.**"
 
             if [ -z "$WARNING_COMMENT_ID" ] || [ "$WARNING_COMMENT_ID" = "null" ]; then
-              gh pr comment "$PR_NUMBER" --body "$BODY"
+              gh api --method POST repos/$REPO/issues/$PR_NUMBER/comments -f body="$BODY"
             fi
           fi
