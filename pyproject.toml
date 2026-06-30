@@ -93,7 +93,7 @@ dependencies = [
   "joblib",
   "matplotlib",
   "numpy>=1.24.0",
-  "pandas>=3.0.0",
+  "pandas>=3.0.0,!=3.0.4",
   "pyproj",
   "splink",
   "scipy>=1.11.0",
