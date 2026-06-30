@@ -53,7 +53,7 @@ jobs:
   test-pypi:
     name: Test with Python${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    needs: lint
+    environment: ci
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
