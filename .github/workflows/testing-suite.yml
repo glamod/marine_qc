@@ -52,8 +52,8 @@ jobs:
 
   test-pypi:
     name: Test with Python${{ matrix.python-version }}
-    needs: lint
     runs-on: ${{ matrix.os }}
+    environment: ci
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
@@ -86,9 +86,9 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ env.UV_CACHE_DIR }}
-          key: uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles(env.UV_ENV_FILE) }}
+          key: uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles(env.UV_ENV_FILE) }}
+            uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles('pyproject.toml') }}
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}
 
       - name: Install marine QC toolbox
