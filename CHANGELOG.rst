@@ -23,6 +23,7 @@ Internal changes
 * move QC modules to ``src.marine_qc.quality_control`` (:pull:`207`)
 * move visualization modules to ``src.marine_qc.visualization`` (:pull:`207`)
 * locally import some members in submodules ``src.marine_qc.duplicate_checker``, ``src.marine_qc.helpers``, ``src.marine_qc.quality_control`` and ``src.marine_qc.visualization`` (:pull:`207`)
+* Upload coverage results to Coveralls instead of Codecov (:issue:`58`, :pull:`232`)
 
 0.3.2 (2023-04-21)
 ------------------

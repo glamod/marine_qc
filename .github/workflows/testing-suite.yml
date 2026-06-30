@@ -110,15 +110,26 @@ jobs:
           --cov-report=xml
           --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
 
-      - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
-        with:
-          token: ${{ secrets.CODECOV_TOKEN}}
-          files: ./coverage.xml
-          flags: unittests
-          env_vars: RUNNER_OS,PYTHON_VERSION
-          name: codecov-umbrella
-          fail_ci_if_error: false
+  finish:
+    name: Finish
+    needs:
+      - test-pypi
+    runs-on: ubuntu-latest
+    steps:
 
-      - name: Minimise uv cache
-        run: uv cache prune --ci
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          disable-sudo: false
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            coveralls.io:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e # v2.3.7
+        with:
+          parallel-finished: true
