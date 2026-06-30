@@ -34,12 +34,6 @@ jobs:
             api.github.com:443
             github.com:443
 
-      - name: Checkout Repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          fetch-depth: 1 # Fetch .git metadata only, not the full history.
-          persist-credentials: false
-
       - name: Manage Warning / Note Comments
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +45,7 @@ jobs:
           NOTE_TEXT="Workflow changes in this Pull Request have been approved!"
 
           # Fetch existing comments
-          COMMENTS=$(gh api repos/$REPO/issues/$PR_NUMBER/comments)
+          COMMENTS=$(gh api --repo "$REPO" repos/$REPO/issues/$PR_NUMBER/comments)
 
           # Find warning comment ID
           WARNING_COMMENT_ID=$(echo "$COMMENTS" | jq -r \
@@ -67,8 +61,9 @@ jobs:
 
             if [ -n "$NOTE_COMMENT_ID" ] && [ "$NOTE_COMMENT_ID" != "null" ]; then
               # Append to existing note comment
-              EXISTING=$(gh api repos/$REPO/issues/comments/$NOTE_COMMENT_ID --jq .body)
+              EXISTING=$(gh api --repo "$REPO" repos/$REPO/issues/comments/$NOTE_COMMENT_ID --jq .body)
               gh api \
+                --repo "$REPO" \
                 --method PATCH \
                 repos/$REPO/issues/comments/$NOTE_COMMENT_ID \
                 -f body="$EXISTING
@@ -76,12 +71,13 @@ jobs:
           $BODY"
             else
               # Create new note comment
-              gh pr comment "$PR_NUMBER" --body "$BODY"
+              gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$BODY"
             fi
 
             # Add reaction (hooray)
             if [ -n "$NOTE_COMMENT_ID" ] && [ "$NOTE_COMMENT_ID" != "null" ]; then
               gh api \
+                --repo "$REPO" \
                 --method POST \
                 repos/$REPO/issues/comments/$NOTE_COMMENT_ID/reactions \
                 -f content='hooray' \
@@ -94,6 +90,6 @@ jobs:
           **It is very important for the reviewer to ensure that the workflow changes are appropriate.**"
 
             if [ -z "$WARNING_COMMENT_ID" ] || [ "$WARNING_COMMENT_ID" = "null" ]; then
-              gh pr comment "$PR_NUMBER" --body "$BODY"
+              gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$BODY"
             fi
           fi
