@@ -135,7 +135,7 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://www.codefactor.io/repository/github/glamod/marine_qc
         :alt: CodeFactor
 
-.. |coveralls| .. image:: https://coveralls.io/repos/github/glamod/marine_qc/badge.svg?branch=main
+.. |coveralls| image:: https://coveralls.io/repos/github/glamod/marine_qc/badge.svg?branch=main
         :target: https://coveralls.io/github/glamod/marine_qc?branch=main
         :alt: Coveralls
 
