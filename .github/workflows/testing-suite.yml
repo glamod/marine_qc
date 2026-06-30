@@ -69,12 +69,13 @@ jobs:
           disable-sudo: false
           egress-policy: block
           allowed-endpoints: >
+            *.githubusercontent.com:443
             api.github.com:443
             coveralls.io:443
             github.com:443
             objects.githubusercontent.com:443
             release-assets.githubusercontent.com:443
-          
+
 
       - name: Checkout Repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -116,7 +117,7 @@ jobs:
           --cov=marine_qc
           --cov-report=lcov
           --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
-          
+
       - name: Report Coverage
         uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e # v2.3.7
         with:
