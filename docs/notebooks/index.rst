@@ -6,3 +6,4 @@ Examples
    :maxdepth: 1
 
    qc_individual
+   qc_sequential
