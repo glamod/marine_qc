@@ -26,6 +26,7 @@ modular way via a standardised interface.
    overview_buoy_tracking
    overview_dup
    theoreticals
+   notebooks/index
    contributing
    releasing
    dev_guide
