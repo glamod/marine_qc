@@ -85,6 +85,48 @@ def get_individual_data():
         }
     )
 
+def get_sequential_data():
+
+  np.random.seed(42)
+
+  n = 48  # 48 hourly points
+
+  time = pd.date_range("2026-07-01 00:00:00", periods=n, freq="1h")
+
+  lat0, lon0 = 45.0, -30.0
+
+  speed = np.clip(np.random.normal(0.25, 0.1, n), 0.02, 1.2)
+
+  heading = (np.cumsum(np.random.normal(5, 15, n)) % 360)
+
+  earth_radius = 6371000  # meters
+
+  dlat = (speed * 3600 / earth_radius) * (180 / np.pi) * np.cos(np.deg2rad(heading))
+  dlon = (speed * 3600 / earth_radius) * (180 / np.pi) / np.cos(np.deg2rad(lat0))
+
+  lat = lat0 + np.cumsum(dlat)
+  lon = lon0 + np.cumsum(dlon)
+
+  lat += np.random.normal(0, 0.01, n)
+  lon += np.random.normal(0, 0.015, n)
+
+  sst_base = 24 - 0.25 * (lat - 30)
+  diurnal = 0.4 * np.sin(2 * np.pi * np.arange(n) / 24)
+  noise = np.random.normal(0, 0.15, n)
+
+  sst = sst_base + diurnal + noise
+  sst = np.cumsum(np.random.normal(0, 0.02, n))
+
+  return pd.DataFrame({
+    "buoy_id": "drifter_001",
+    "date": time,
+    "lat": lat,
+    "lon": lon,
+    "sst": sst,
+    "vsi": speed * 3.6,
+    "dsi": heading
+  })
+
 
 def get_climatology_dataset():
     lat = np.arange(-90, 90, 1)
