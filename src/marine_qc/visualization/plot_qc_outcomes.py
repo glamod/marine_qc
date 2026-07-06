@@ -78,10 +78,11 @@ def _make_plot(
     xvalue: np.ndarray,
     yvalue: np.ndarray,
     flags: np.ndarray,
-    xlim: list[float] | None,
-    ylim: list[float] | None,
+    xlim: tuple[float, float] | None,
+    ylim: tuple[float, float] | None,
     xlabel: str,
     ylabel: str,
+    marker_size: int | None,
     filename: str | None,
 ) -> figure.Figure:
     """
@@ -95,16 +96,18 @@ def _make_plot(
         Array of y values.
     flags : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
-    xlim : list of float or None
+    xlim : tuple of float and float or None
         If not None: set xlim for plotting.
-    ylim : list of float or None
+    ylim : tuple of float and float or None
         If not None: set ylim for plotting.
     xlabel : str
         Name of the x axis.
     ylabel : str
         Name of the y axis.
+    marker_size : int
+        Marker size in points.
     filename : str or None
-        Filename to save the figure to. If None, the figure is saved with a standard name.
+        Filename to save the figure to. If None, the figure is not saved nut shown.
 
     Returns
     -------
@@ -124,9 +127,11 @@ def _make_plot(
 
     masks = [mask_passed, mask_failed, mask_other, np.ones_like(flags, dtype=bool)]
 
+    marker_size = marker_size or 1
+
     for i in range(4):
         ax = axes[i]
-        ax.scatter(xvalue[masks[i]], yvalue[masks[i]], c=colours[masks[i]], s=1)
+        ax.scatter(xvalue[masks[i]], yvalue[masks[i]], c=colours[masks[i]], s=marker_size)
         ax.set_title(titles[i])
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
@@ -151,7 +156,16 @@ def _make_plot(
 
     return fig
 
-def variable_longitude_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
+
+def variable_longitude_plot(
+    lon: np.ndarray,
+    value: np.ndarray,
+    qc_outcomes: np.ndarray,
+    xlim: tuple[float, float] | None,
+    ylim: tuple[float, float] | None,
+    marker_size: int | None = None,
+    filename: str | None = None,
+) -> figure.Figure:
     """
     Plot a graph of points showing the value and the longitude of a set of observations coloured according to flagged outcomes.
 
@@ -163,26 +177,44 @@ def variable_longitude_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.
         Array of observed values for the variable.
     qc_outcomes : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
-    filename : str or None
-        Filename to save the figure to. If None, the figure is saved with a standard name.
+    xlim : tuple of float and float, optional
+        Limits of the current x axis. If None, set to (-180.0, 180.0).
+    ylim : tuple of float and float, optional
+        Limits of the current y axis.
+    marker_size : int, optional
+        Marker size in points. If None, it is set to 1.
+    filename : str, optional
+        Filename to save the figure to. If None, the figure is not saved but shown.
 
     Returns
     -------
     Figure
         The main figure object created by `plt.subplots()`.
     """
+    if xlim is None:
+        xlim = (-180.0, 180.0)
     return _make_plot(
         xvalue=lon,
         yvalue=value,
         flags=qc_outcomes,
-        xlim=[-180.0,180.0],
+        xlim=None,
         ylim=None,
         xlabel="Longitude",
         ylabel="Variable",
+        marker_size=marker_size,
         filename=filename,
     )
 
-def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
+
+def latitude_variable_plot(
+    lat: np.ndarray,
+    value: np.ndarray,
+    qc_outcomes: np.ndarray,
+    xlim: tuple[float, float] | None,
+    ylim: tuple[float, float] | None,
+    marker_size: int | None = None,
+    filename: str | None = None,
+) -> figure.Figure:
     """
     Plot a graph of points showing the latitude and the value of a set of observations coloured according to flagged outcomes.
 
@@ -194,27 +226,44 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
         Array of observed values for the variable.
     qc_outcomes : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
-    filename : str or None
-        Filename to save the figure to. If None, the figure is saved with a standard name.
+    xlim : tuple of float and float, optional
+        Limits of the current x axis.
+    ylim : tuple of float and float, optional
+        Limits of the current y axis. If None, set to (-90.0, 90.0).
+    marker_size : int, optional
+        Marker size in points. If None, it is set to 1.
+    filename : str, optional
+        Filename to save the figure to. If None, the figure is not saved but shown.
 
     Returns
     -------
     Figure
         The main figure object created by `plt.subplots()`.
     """
+    if ylim is None:
+        ylim = (-90.0, 90.0)
     return _make_plot(
         xvalue=value,
         yvalue=lat,
         flags=qc_outcomes,
         xlim=None,
-        ylim=[-90.0, 90.0],
+        ylim=ylim,
         xlabel="Variable",
         ylabel="Latitude",
+        marker_size=marker_size,
         filename=filename,
     )
 
 
-def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
+def latitude_longitude_plot(
+    lat: np.ndarray,
+    lon: np.ndarray,
+    qc_outcomes: np.ndarray,
+    xlim: tuple[float, float] | None,
+    ylim: tuple[float, float] | None,
+    marker_size: int | None = None,
+    filename: str | None = None,
+) -> figure.Figure:
     """
     Plot a graph of points showing the latitude and the longitude of a set of observations coloured according to flagged outcomes.
 
@@ -226,25 +275,37 @@ def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.nd
         Array of longitude values in degrees.
     qc_outcomes : numpy.ndarray
         Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
-    filename : str or None
-        Filename to save the figure to. If None, the figure is saved with a standard name.
+    xlim : tuple of float and float, optional
+        Limits of the current x axis. If None, set to (-180.0, 180.0).
+    ylim : tuple of float and float, optional
+        Limits of the current y axis. If None, set to (-90.0, 90.0).
+    marker_size : int, optional
+        Marker size in points. If None, it is set to 1.
+    filename : str, optional
+        Filename to save the figure to. If None, the figure is not saved but shown.
 
     Returns
     -------
     Figure
         The main figure object created by `plt.subplots()`.
     """
+    if xlim is None:
+        xlim = (-180.0, 180.0)
+    if ylim is None:
+        ylim = (-90.0, 90.0)
     return _make_plot(
         xvalue=lon,
         yvalue=lat,
         flags=qc_outcomes,
-        xlim=[-180.0, 180.0],
-        ylim=[-90.0, 90.0],
+        xlim=xlim,
+        ylim=ylim,
         xlabel="Longitude",
         ylabel="Latitude",
+        marker_size=marker_size,
         filename=filename,
     )
 
 
 latitude_longitude_plot.__module__ = "marine_qc.visualization"
 latitude_variable_plot.__module__ = "marine_qc.visualization"
+variable_longitude_plot.__module__ = "marine_qc.visualization"
