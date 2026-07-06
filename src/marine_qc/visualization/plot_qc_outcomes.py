@@ -151,10 +151,40 @@ def _make_plot(
 
     return fig
 
+def variable_longitude_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
+    """
+    Plot a graph of points showing the value and the longitude of a set of observations coloured according to flagged outcomes.
+
+    Parameters
+    ----------
+    lon : numpy.ndarray
+        Array of longitude values in degrees.
+    value : numpy.ndarray
+        Array of observed values for the variable.
+    qc_outcomes : numpy.ndarray
+        Array containing the QC outcomes, with 0 meaning pass and non-zero entries indicating failure.
+    filename : str or None
+        Filename to save the figure to. If None, the figure is saved with a standard name.
+
+    Returns
+    -------
+    Figure
+        The main figure object created by `plt.subplots()`.
+    """
+    return _make_plot(
+        xvalue=lon,
+        yvalue=value,
+        flags=qc_outcomes,
+        xlim=[-180.0,180.0],
+        ylim=None,
+        xlabel="Longitude",
+        ylabel="Variable",
+        filename=filename,
+    )
 
 def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
     """
-    Plot a graph of points showing the latitude and value of a set of observations coloured according to flagged outcomes.
+    Plot a graph of points showing the latitude and the value of a set of observations coloured according to flagged outcomes.
 
     Parameters
     ----------
@@ -170,7 +200,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
     Returns
     -------
     Figure
-        The main figure obkect created by `plt.subplots()`.
+        The main figure object created by `plt.subplots()`.
     """
     return _make_plot(
         xvalue=value,
@@ -186,7 +216,7 @@ def latitude_variable_plot(lat: np.ndarray, value: np.ndarray, qc_outcomes: np.n
 
 def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.ndarray, filename: str | None = None) -> figure.Figure:
     """
-    Plot a graph of points showing the latitude and longitude of a set of observations coloured according to flagged outcomes.
+    Plot a graph of points showing the latitude and the longitude of a set of observations coloured according to flagged outcomes.
 
     Parameters
     ----------
@@ -202,7 +232,7 @@ def latitude_longitude_plot(lat: np.ndarray, lon: np.ndarray, qc_outcomes: np.nd
     Returns
     -------
     Figure
-        The main figure obkect created by `plt.subplots()`.
+        The main figure object created by `plt.subplots()`.
     """
     return _make_plot(
         xvalue=lon,
