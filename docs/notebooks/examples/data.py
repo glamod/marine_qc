@@ -125,7 +125,47 @@ def get_sequential_data():
     )
 
 
-def get_climatology_dataset():
+def get_grouped_data():
+    rng = np.random.default_rng(42)
+
+    start = pd.Timestamp("2026-07-01 12:00")
+
+    platforms = [
+        ("ship_001", 45.000, -30.000),
+        ("ship_002", 45.018, -29.982),
+        ("ship_003", 44.992, -30.015),
+        ("ship_004", 45.010, -30.008),
+        ("ship_005", 45.006, -29.995),
+    ]
+
+    rows = []
+
+    for i, (name, lat0, lon0) in enumerate(platforms):
+        for hour in range(6):
+            lat = lat0 + rng.normal(0, 0.003)
+            lon = lon0 + rng.normal(0, 0.003)
+
+            sst = 19.5 + 0.2 * np.sin(hour / 6 * 2 * np.pi) + rng.normal(0, 0.15)
+
+            rows.append(
+                dict(
+                    platform=name,
+                    date=start + pd.Timedelta(hours=hour),
+                    lat=lat,
+                    lon=lon,
+                    sst=sst,
+                )
+            )
+
+    df = pd.DataFrame(rows)
+
+    # One obvious bad observation
+    df.loc[(df.platform == "ship_003") & (df.date == start + pd.Timedelta(hours=3)), "sst"] += 4.5
+
+    return df
+
+
+def get_climatology_data():
     lat = np.arange(-90, 90, 1)
     lon = np.arange(-180, 180, 1)
     time = xr.DataArray(
@@ -186,7 +226,7 @@ def get_climatology_dataset():
     sst_2d = xr.where(ds.land_sea_mask.isel(time=0) == 0, sst_2d, np.nan)
     sst_3d = np.broadcast_to(sst_2d.values, (1, sst_2d.shape[0], sst_2d.shape[1]))
 
-    ds["sea_surface_temperature"] = (
+    ds["sst"] = (
         ("time", "latitude", "longitude"),
         sst_3d,
         {
@@ -197,6 +237,51 @@ def get_climatology_dataset():
             "grid_mapping": "crs",
         },
     )
+
+    lat_factor = np.sin(np.deg2rad(np.abs(lat2d)))
+    lon_factor = 0.5 * (1 + np.sin(np.deg2rad(lon2d)))
+
+    stdev1_2d = 0.25 + 0.20 * lat_factor + 0.05 * lon_factor
+
+    stdev2_2d = 0.55 + 0.25 * lat_factor + 0.08 * lon_factor
+
+    stdev3_2d = 0.12 + 0.10 * lat_factor + 0.03 * lon_factor
+
+    stdev1_2d = xr.where(ds.land_sea_mask.isel(time=0) == 0, stdev1_2d, np.nan)
+    stdev2_2d = xr.where(ds.land_sea_mask.isel(time=0) == 0, stdev2_2d, np.nan)
+    stdev3_2d = xr.where(ds.land_sea_mask.isel(time=0) == 0, stdev3_2d, np.nan)
+
+    stdev1_3d = np.broadcast_to(stdev1_2d.values, (1, *stdev1_2d.shape))
+    stdev2_3d = np.broadcast_to(stdev2_2d.values, (1, *stdev2_2d.shape))
+    stdev3_3d = np.broadcast_to(stdev3_2d.values, (1, *stdev3_2d.shape))
+
+    for name, data, long_name in [
+        (
+            "sst_stdev1",
+            stdev1_3d,
+            "Standard deviation of grid cell minus neighbourhood mean",
+        ),
+        (
+            "sst_stdev2",
+            stdev2_3d,
+            "Standard deviation of point observation minus grid cell mean",
+        ),
+        (
+            "sst_stdev3",
+            stdev3_3d,
+            "Standard deviation of neighbourhood mean uncertainty",
+        ),
+    ]:
+        ds[name] = (
+            ("time", "latitude", "longitude"),
+            data,
+            {
+                "units": "degC",
+                "coordinates": "time latitude longitude",
+                "grid_mapping": "crs",
+                "long_name": long_name,
+            },
+        )
 
     ds["crs"] = xr.DataArray(
         0,
