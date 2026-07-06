@@ -70,8 +70,9 @@ from .quality_control import (
     find_saturated_runs,
 )
 from .visualization import (
-    latitude_longitude_plot,
-    latitude_variable_plot,
+    plot_latitude_longitude,
+    plot_latitude_variable,
+    plot_variable_longitude,
 )
 
 

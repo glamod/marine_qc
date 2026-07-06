@@ -157,7 +157,7 @@ def _make_plot(
     return fig
 
 
-def variable_longitude_plot(
+def plot_variable_longitude(
     lon: np.ndarray,
     value: np.ndarray,
     qc_outcomes: np.ndarray,
@@ -206,7 +206,7 @@ def variable_longitude_plot(
     )
 
 
-def latitude_variable_plot(
+def plot_latitude_variable(
     lat: np.ndarray,
     value: np.ndarray,
     qc_outcomes: np.ndarray,
@@ -255,7 +255,7 @@ def latitude_variable_plot(
     )
 
 
-def latitude_longitude_plot(
+def plot_latitude_longitude(
     lat: np.ndarray,
     lon: np.ndarray,
     qc_outcomes: np.ndarray,
@@ -306,6 +306,6 @@ def latitude_longitude_plot(
     )
 
 
-latitude_longitude_plot.__module__ = "marine_qc.visualization"
-latitude_variable_plot.__module__ = "marine_qc.visualization"
-variable_longitude_plot.__module__ = "marine_qc.visualization"
+plot_latitude_longitude.__module__ = "marine_qc.visualization"
+plot_latitude_variable.__module__ = "marine_qc.visualization"
+plot_variable_longitude.__module__ = "marine_qc.visualization"
