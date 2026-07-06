@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-from marine_qc.visualization import latitude_longitude_plot, latitude_variable_plot
+from marine_qc.visualization import plot_latitude_longitude, plot_latitude_variable, plot_variable_longitude
 from marine_qc.visualization.plot_qc_outcomes import (
     _get_colours_labels,
     _make_plot,
@@ -48,8 +48,8 @@ def test_make_plot(tmp_path):
     filename.unlink()
 
 
-def test_latitude_variable_plot():
-    fig = latitude_variable_plot(
+def test_plot_latitude_variable():
+    fig = plot_latitude_variable(
         lat=np.array([-10, 0, 10]),
         value=np.array([5, 6, 7]),
         qc_outcomes=np.array([0, 1, 2]),
@@ -57,8 +57,17 @@ def test_latitude_variable_plot():
     plt.close(fig)
 
 
-def test_latitude_longitude_plot():
-    fig = latitude_longitude_plot(
+def test_plot_latitude_longitude():
+    fig = plot_latitude_longitude(
+        lat=np.array([-10, 0, 10]),
+        lon=np.array([-10, 0, 10]),
+        qc_outcomes=np.array([0, 1, 2]),
+    )
+    plt.close(fig)
+
+
+def test_plot_variable_longitude():
+    fig = plot_variable_longitude(
         lat=np.array([-10, 0, 10]),
         lon=np.array([-10, 0, 10]),
         qc_outcomes=np.array([0, 1, 2]),
