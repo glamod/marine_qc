@@ -14,7 +14,8 @@ New features and environments
 * new plotting routine that plots a graph of points showing the longitude and value of a set of observations coloured according to flagged outcomes: ``plot_variable_longitude`` (:issue:`240`, :pull:`244`)
 * add new input parameters ``xlim`` and ``ylim`` in the plotting routines (:issue:`240`, :pull:`244`)
 * add new input parameter ``marker_size`` in the plotting routines (:issue:`240`, :pull:`244`)
-* add new function to combine results from multiple QC checks into a single flag (:issue:`242`, :pull:`245`)
+* add new function to combine results from multiple QC checks into a single flag: combine_qr_results (:issue:`242`, :pull:`245`)
+* add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -29,6 +30,8 @@ Internal changes
 * locally import some members in submodules ``src.marine_qc.duplicate_checker``, ``src.marine_qc.helpers``, ``src.marine_qc.quality_control`` and ``src.marine_qc.visualization`` (:pull:`207`)
 * Upload coverage results to Coveralls instead of Codecov (:issue:`58`, :pull:`232`, :pull:`233`)
 * rename plotting routines: ``latitude_longitude_plot`` to ``plot_latitude_longitude`` and ``latitude_variable_plot`` to ``plot_latitude_variable`` (:issue:`240`, :pull:`244`)
+* new helper function quality_control.qc_individual_report._do_time_check that is used in both do_time_check and do_datetime_check (:pull:`246`)
+* new helper function quality_control.qc_individual_report._do_date_check that is used in both do_date_check and do_datetime_check (:pull:`246`)
 
 0.3.2 (2023-04-21)
 ------------------
