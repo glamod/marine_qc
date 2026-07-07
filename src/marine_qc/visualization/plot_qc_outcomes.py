@@ -161,8 +161,8 @@ def plot_variable_longitude(
     lon: np.ndarray,
     value: np.ndarray,
     qc_outcomes: np.ndarray,
-    xlim: tuple[float, float] | None,
-    ylim: tuple[float, float] | None,
+    xlim: tuple[float, float] | None = None,
+    ylim: tuple[float, float] | None = None,
     marker_size: int | None = None,
     filename: str | None = None,
 ) -> figure.Figure:
@@ -210,8 +210,8 @@ def plot_latitude_variable(
     lat: np.ndarray,
     value: np.ndarray,
     qc_outcomes: np.ndarray,
-    xlim: tuple[float, float] | None,
-    ylim: tuple[float, float] | None,
+    xlim: tuple[float, float] | None = None,
+    ylim: tuple[float, float] | None = None,
     marker_size: int | None = None,
     filename: str | None = None,
 ) -> figure.Figure:
@@ -259,8 +259,8 @@ def plot_latitude_longitude(
     lat: np.ndarray,
     lon: np.ndarray,
     qc_outcomes: np.ndarray,
-    xlim: tuple[float, float] | None,
-    ylim: tuple[float, float] | None,
+    xlim: tuple[float, float] | None = None,
+    ylim: tuple[float, float] | None = None,
     marker_size: int | None = None,
     filename: str | None = None,
 ) -> figure.Figure:

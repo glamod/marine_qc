@@ -31,6 +31,7 @@ def test_make_plot(tmp_path):
         "ylim": None,
         "xlabel": "longitude",
         "ylabel": "latitude",
+        "marker_size": 1,
     }
     fig = _make_plot(
         **plot_kwargs,
@@ -68,8 +69,8 @@ def test_plot_latitude_longitude():
 
 def test_plot_variable_longitude():
     fig = plot_variable_longitude(
-        lat=np.array([-10, 0, 10]),
         lon=np.array([-10, 0, 10]),
+        value=np.array([5, 6, 7]),
         qc_outcomes=np.array([0, 1, 2]),
     )
     plt.close(fig)
