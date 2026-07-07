@@ -31,6 +31,7 @@ from .helpers.external_clim import (
     ClimNumberType,
 )
 from .quality_control import (
+    combine_qc_results,
     do_aground_check,
     do_bayesian_buddy_check,
     do_climatology_check,
@@ -70,11 +71,12 @@ from .quality_control import (
     find_saturated_runs,
 )
 from .visualization import (
-    latitude_longitude_plot,
-    latitude_variable_plot,
+    plot_latitude_longitude,
+    plot_latitude_variable,
+    plot_variable_longitude,
 )
 
 
 __author__ = """Ludwig Lierhammer"""
 __email__ = "ludwig.lierhammer@dwd.de"
-__version__ = "0.3.3-dev.5"
+__version__ = "0.3.3-dev.7"

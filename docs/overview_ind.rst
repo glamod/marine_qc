@@ -279,3 +279,9 @@ Make use of both dictionaries:
             },
         },
     }
+
+The QC results can be combined into a single QC flag using :func:`.combine_qc_results`.
+By default, QC flags are prioritized in order the [1, 0, 3, 2], ],
+which means that any row containing a QC flag of 1 will be assigned a final flag of 1,
+followed by rows with a flag of 0, then 3, and finally 2,
+with a default flag of 2 assigned to any row that does not contain any of the prioritized flags.
