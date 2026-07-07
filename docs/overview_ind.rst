@@ -62,15 +62,23 @@ degrees.
 Tests whether the date of the report is valid.
 
 Checks whether the date specified either as a Datetime object or by year, month, and day, is a valid date. If any
-component of the input is numerically invalid (Nan, None or similar) then the flag is set to 2, i.e. untestable
+component of the input is numerically invalid (Nan, None, or similar) then the flag is set to 2, i.e. untestable
 
 :func:`.do_time_check`
 ======================
 
 Tests whether the time of the report is valid.
 
-Checks that the time of the report is valid. If the input Datetime or hour is not numerically valid (Nan, None, or the
-like) then the flag is set to 2, i.e. untestable.
+Checks that the time of the report is valid. If the input Datetime or hour is numerically invalid (Nan, None, or similar)
+then the flag is set to 2, i.e. untestable.
+
+:func:`.do_datetime_check`
+==========================
+
+Tests whether both the date and the time of the report are valid.
+
+Checks whether both the date and the hour specified either as a Datetime object or by year, month, day, and hour is a valid datetime.
+If any component of the input is numerically invalid (Nan, None, or similar) then the flag is set to 2, i.e. untestable.
 
 :func:`.do_day_check`
 =====================
