@@ -11,6 +11,9 @@ New features and environments
 * new_functions: `do_valid_value_check` and `do_valid_value_clim_check` are copies of the old versions from `do_missing_value_check` and `do_missing_value_clim_check` that return `1` (fail) for numerically invalid values, otherwise `0` (pass) (:issue:`205`, :pull:`206`)
 * A new checker to detect (``marine_qc.duplicate_check``), get (``marine_qc.get_duplicates``), flag (``marine_qc.flag_duplicates``) and remove (``marine_qc.remove_duplicates``) potentially duplicated observations using ``splink`` (:issue:`202`, :issue:`210`, :pull:`207`)
 * flag definitions can now directly be imported via ``marine_qc.Flags`` (:pull:`207`)
+* new plotting routine that plots a graph of points showing the longitude and value of a set of observations coloured according to flagged outcomes: ``plot_variable_longitude`` (:issue:`240`, :pull:`244`)
+* add new input parameters ``xlim`` and ``ylim`` in the plotting routines (:issue:`240`, :pull:`244`)
+* add new input parameter ``marker_size`` in the plotting routines (:issue:`240`, :pull:`244`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -24,6 +27,7 @@ Internal changes
 * move visualization modules to ``src.marine_qc.visualization`` (:pull:`207`)
 * locally import some members in submodules ``src.marine_qc.duplicate_checker``, ``src.marine_qc.helpers``, ``src.marine_qc.quality_control`` and ``src.marine_qc.visualization`` (:pull:`207`)
 * Upload coverage results to Coveralls instead of Codecov (:issue:`58`, :pull:`232`, :pull:`233`)
+* rename plotting routines: ``latitude_longitude_plot`` to ``plot_latitude_longitude`` and ``latitude_variable_plot`` to ``plot_latitude_variable`` (:issue:`240`, :pull:`244`)
 
 0.3.2 (2023-04-21)
 ------------------
