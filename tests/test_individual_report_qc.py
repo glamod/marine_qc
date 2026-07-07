@@ -10,6 +10,7 @@ from marine_qc import (
     Flags,
     do_climatology_check,
     do_date_check,
+    do_datetime_check,
     do_day_check,
     do_hard_limit_check,
     do_landlocked_check,
@@ -169,7 +170,7 @@ def test_do_date_check(year, month, day, expected):
         (2000, 2, 29, passed),  # 29th February 2000 PASS
     ],
 )
-def test_do_date_check_using_date(year, month, day, expected):
+def test_do_date_check_datetime(year, month, day, expected):
     result = do_date_check(date=datetime(year, month, day, 0))
     assert result == expected
 
@@ -222,6 +223,28 @@ def test_do_time_check(hour, expected):
 )
 def test_do_time_check_datetime(date, expected):
     assert do_time_check(date=date) == expected
+
+
+@pytest.mark.parametrize(
+    "year, month, day, hour, expected",
+    [
+        (2023, 1, 1, 1.0, passed),  # 1st January 2023 1hr PASS
+        (2023, 1, 1, -1.0, failed),  # 1st January 2023 -1hr FAIL
+        (2023, 2, 29, 1.0, failed),  # 29th February 2023 1hr FAIL
+        (2023, 1, 31, 29.0, failed),  # 31st January 2023 29hr FAIL
+        (0, 0, 0, 0, failed),  # 0th of 0 0 FAIL
+        (2024, 2, 29, 1.0, passed),  # 29th February 2024 1hr PASS
+        (2024, 2, 29, 25.0, failed),  # 29th February 2024 25hr FAIL
+        (1900, 2, 29, 1.0, failed),  # 29th February 1900 1hr FAIL
+        (1899, 3, None, 1.0, untestable),  # Missing day UNTESTABLE
+        (None, 1, 1, 1.0, untestable),  # Missing year UNTESTABLE
+        (1850, None, 1, 1.0, untestable),  # Missing month UNTESTABLE
+        (1850, 11, 1, None, untestable),  # Missing hour UNTESTABLE
+    ],
+)
+def test_do_datetime_check(year, month, day, hour, expected):
+    result = do_datetime_check(year=year, month=month, day=day, hour=hour)
+    assert result == expected
 
 
 @pytest.mark.parametrize(
