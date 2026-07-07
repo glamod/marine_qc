@@ -16,7 +16,7 @@ from .qc_individual_reports import (  # noqa: F401
     do_climatology_check,
     do_date_check,
     do_day_check,
-    do_maritime_check,
+    do_hard_limit_check,
     do_missing_value_check,
     do_missing_value_clim_check,
     do_night_check,
