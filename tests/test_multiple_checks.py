@@ -6,6 +6,7 @@ import pytest
 
 from marine_qc import (
     Flags,
+    combine_qc_results,
     do_hard_limit_check,
     do_multiple_grouped_check,
     do_multiple_individual_check,
@@ -612,3 +613,46 @@ def test_multiple_grouped_check(df_seq, qc_dict_grp):
             qc_dict=qc_dict_grp,
             return_method="all",
         )
+
+
+def test_combine_qc_results_series():
+    data = pd.Series([1, 0, 3, 2])
+    result = combine_qc_results(data)
+    expected = pd.Series([1, 0, 3, 2], name="QC_FLAG", dtype=int)
+    pd.testing.assert_series_equal(result, expected)
+
+
+def test_combine_qc_results_frame():
+    data = pd.DataFrame(
+        {
+            "qc1": [0, 0, 2, 2],
+            "qc2": [1, 2, 2, 2],
+            "qc3": [3, 2, 2, 2],
+            "qc4": [2, 3, 3, 2],
+        }
+    )
+    result = combine_qc_results(data)
+    expected = pd.Series([1, 0, 3, 2], name="QC_FLAG", dtype=int)
+    pd.testing.assert_series_equal(result, expected)
+
+
+def test_combine_qc_results_prio():
+    data = pd.DataFrame(
+        {
+            "qc1": [0, 0, 2, 2],
+            "qc2": [1, 2, 2, 2],
+            "qc3": [3, 2, 2, 2],
+            "qc4": [2, 3, 3, 2],
+        }
+    )
+    prioritization = [3, 2, 1, 0]
+    result = combine_qc_results(data, prioritization)
+    expected = pd.Series([3, 3, 3, 2], name="QC_FLAG", dtype=int)
+    pd.testing.assert_series_equal(result, expected)
+
+
+def test_combine_qc_results_empty():
+    data = pd.DataFrame(columns=["qc1", "qc2"])
+    result = combine_qc_results(data)
+    expected = pd.Series([], name="QC_FLAG", dtype=int)
+    pd.testing.assert_series_equal(result, expected)
