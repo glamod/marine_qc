@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Literal, cast
 
+import numpy as np
 import pandas as pd
 
 from ..helpers.auxiliary import failed, passed, untested
@@ -803,6 +804,33 @@ def do_multiple_grouped_check(
     )
 
 
+def combine_qc_results(data: pd.DataFrame | pd.Series, prioritization: list[int] | None = None) -> pd.Series:
+    """
+    Combine quality control (QC) results from multiple checks into a single flag.
+
+    Parameters
+    ----------
+    data : pandas.Series or pandas.DataFrame
+        A DataFrame (or Series) whose columns correspond to QC names and whose values
+        contain QC flags for each row.
+    prioritization : list of int, optional
+        A list of QC flag values to prioritize. If None, defaults to [1, 0, 3, 2].
+
+    Returns
+    -------
+    pd.Series
+        Series whose values contain QC flags for each row.
+    """
+    if isinstance(data, pd.Series):
+        result = data.values
+    else:
+        prioritization = prioritization or [1, 0, 3, 2]
+        conditions = [(data == value).any(axis=1) for value in prioritization]
+        result = np.select(conditions, prioritization, default=2)
+    return pd.Series(result, index=data.index, name="QC_FLAG")
+
+
+combine_qc_results.__module__ = "marine_qc.combine_qc_results"
 do_multiple_grouped_check.__module__ = "marine_qc.multiple_checks"
 do_multiple_individual_check.__module__ = "marine_qc.multiple_checks"
 do_multiple_sequential_check.__module__ = "marine_qc.multiple_checks"

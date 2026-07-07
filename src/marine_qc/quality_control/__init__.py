@@ -32,7 +32,7 @@ from .qc_individual_reports import (
     do_valid_value_clim_check,
     do_wind_consistency_check,
 )
-from .qc_multiple_checks import do_multiple_grouped_check, do_multiple_individual_check, do_multiple_sequential_check
+from .qc_multiple_checks import combine_qc_results, do_multiple_grouped_check, do_multiple_individual_check, do_multiple_sequential_check
 from .qc_sequential_reports import (
     do_few_check,
     do_iquam_track_check,
@@ -45,6 +45,7 @@ from .qc_sequential_reports import (
 
 
 __all__ = [
+    "combine_qc_results",
     "do_aground_check",
     "do_bayesian_buddy_check",
     "do_climatology_check",
