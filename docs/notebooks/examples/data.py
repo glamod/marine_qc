@@ -11,7 +11,6 @@ def get_individual_data():
                 "Mediterranean Sea",
                 "North Sea",
                 "South Pacific Ocean",
-                "New York, USA",
                 "Paris, France",
                 "Tokyo, Japan",
                 "Sydney, Australia",
@@ -22,8 +21,7 @@ def get_individual_data():
             "lat": [
                 36.0,
                 54.5,
-                -15.0,
-                40.7,
+                -140.0,
                 48.9,
                 35.7,
                 -33.9,
@@ -34,8 +32,7 @@ def get_individual_data():
             "lon": [
                 18.0,
                 3.0,
-                -140.0,
-                -74.0,
+                -15.0,
                 2.3,
                 139.7,
                 151.2,
@@ -48,11 +45,10 @@ def get_individual_data():
                     "2025-06-01 06:00:00",
                     "2025-06-01 12:00:00",
                     "2025-06-01 18:00:00",
-                    "2025-06-02 09:15:00",
                     "2025-06-02 14:30:00",
                     "2025-06-03 08:45:00",
                     "2025-06-03 20:10:00",
-                    "2025-06-04 11:00:00",
+                    None,
                     "2025-06-04 16:20:00",
                     "2025-06-05 07:50:00",
                 ]
@@ -64,17 +60,15 @@ def get_individual_data():
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
                 29.1,
                 28.3,
                 8.5,
             ],
-            "wind_speed": [5.2, 11.4, 7.8, 4.1, 3.5, 6.2, 8.1, 10.5, 5.9, 14.3],
+            "wind_speed": [5.2, 0.0, 7.8, 3.5, 6.2, 8.1, 10.5, 5.9, 14.3],
             "wind_direction": [
                 135,
                 270,
                 90,
-                180,
                 45,
                 225,
                 160,
@@ -140,7 +134,7 @@ def get_grouped_data():
 
     rows = []
 
-    for i, (name, lat0, lon0) in enumerate(platforms):
+    for _, (name, lat0, lon0) in enumerate(platforms):
         for hour in range(6):
             lat = lat0 + rng.normal(0, 0.003)
             lon = lon0 + rng.normal(0, 0.003)
