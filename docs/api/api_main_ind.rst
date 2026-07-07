@@ -24,6 +24,9 @@ QC checks on individual reports
 .. autofunction:: marine_qc.do_time_check
    :noindex:
 
+.. autofunction:: marine_qc.do_datetime_check
+   :noindex:
+
 .. autofunction:: marine_qc.do_day_check
    :noindex:
 

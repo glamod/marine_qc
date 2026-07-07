@@ -36,6 +36,7 @@ from .quality_control import (
     do_bayesian_buddy_check,
     do_climatology_check,
     do_date_check,
+    do_datetime_check,
     do_day_check,
     do_few_check,
     do_hard_limit_check,
