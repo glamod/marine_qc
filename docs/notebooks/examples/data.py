@@ -157,8 +157,12 @@ def get_grouped_data():
 
     df = pd.DataFrame(rows)
 
-    # One obvious bad observation
-    df.loc[(df.platform == "ship_003") & (df.date == start + pd.Timedelta(hours=3)), "sst"] += 4.5
+    # Add obvious bad observation
+    df.loc[(df.platform == "ship_1") & (df.date == start + pd.Timedelta(hours=1)), "sst"] += 4.5
+    df.loc[(df.platform == "ship_2") & (df.date == start + pd.Timedelta(hours=2)), "sst"] += 4.5
+    df.loc[(df.platform == "ship_3") & (df.date == start + pd.Timedelta(hours=3)), "sst"] += 4.5
+    df.loc[(df.platform == "ship_4") & (df.date == start + pd.Timedelta(hours=4)), "sst"] += 4.5
+    df.loc[(df.platform == "ship_5") & (df.date == start + pd.Timedelta(hours=5)), "sst"] += 4.5
 
     return df
 
