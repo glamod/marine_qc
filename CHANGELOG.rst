@@ -30,8 +30,9 @@ Internal changes
 * locally import some members in submodules ``src.marine_qc.duplicate_checker``, ``src.marine_qc.helpers``, ``src.marine_qc.quality_control`` and ``src.marine_qc.visualization`` (:pull:`207`)
 * Upload coverage results to Coveralls instead of Codecov (:issue:`58`, :pull:`232`, :pull:`233`)
 * rename plotting routines: ``latitude_longitude_plot`` to ``plot_latitude_longitude`` and ``latitude_variable_plot`` to ``plot_latitude_variable`` (:issue:`240`, :pull:`244`)
-* new helper function quality_control.qc_individual_report._do_time_check that is used in both do_time_check and do_datetime_check (:pull:`246`)
-* new helper function quality_control.qc_individual_report._do_date_check that is used in both do_date_check and do_datetime_check (:pull:`246`)
+* new helper function ``quality_control.qc_individual_report._do_time_check`` that is used in both "do_time_check" and "do_datetime_check" (:pull:`246`)
+* new helper function ``quality_control.qc_individual_report._do_date_check`` that is used in both "do_date_check" and "do_datetime_check" (:pull:`246`)
+* explicitly convert intermediate result in ``quality_control.helpers.time_control.dayin_year`` to a python integer to fix incompatible types assignment (:pull:`247`)
 
 0.3.2 (2023-04-21)
 ------------------
