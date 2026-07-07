@@ -81,12 +81,12 @@ def get_individual_data():
 
 
 def get_sequential_data():
-    n = 48
-    time = pd.date_range("2026-07-01 00:00:00", periods=n, freq="1h")
+    n = 24
+    datetime = pd.date_range("2026-07-01 00:00:00", periods=n, freq="1h")
     lat0, lon0 = 45.0, -30.0
 
-    base_speed = 0.25
-    amp_speed = 0.08
+    base_speed = 5.0
+    amp_speed = 1.0
     speed_ms = base_speed + amp_speed * np.sin(2 * np.pi * np.arange(n) / 24)
     speed_kmh = speed_ms * 3.6
 
@@ -106,10 +106,14 @@ def get_sequential_data():
     diurnal = 0.4 * np.sin(2 * np.pi * np.arange(n) / 24)
     sst = sst_base + diurnal
 
+    sst[1] += 15
+    sst[16] += 15
+    sst[19] += 15
+
     return pd.DataFrame(
         {
-            "buoy_id": "drifter_001",
-            "date": time,
+            "ship_id": "ship_1",
+            "date": datetime,
             "lat": lat,
             "lon": lon,
             "sst": sst,
@@ -125,11 +129,11 @@ def get_grouped_data():
     start = pd.Timestamp("2026-07-01 12:00")
 
     platforms = [
-        ("ship_001", 45.000, -30.000),
-        ("ship_002", 45.018, -29.982),
-        ("ship_003", 44.992, -30.015),
-        ("ship_004", 45.010, -30.008),
-        ("ship_005", 45.006, -29.995),
+        ("ship_1", 45.000, -30.000),
+        ("ship_2", 45.018, -29.982),
+        ("ship_3", 44.992, -30.015),
+        ("ship_4", 45.010, -30.008),
+        ("ship_5", 45.006, -29.995),
     ]
 
     rows = []
