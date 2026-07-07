@@ -31,6 +31,7 @@ from .helpers.external_clim import (
     ClimNumberType,
 )
 from .quality_control import (
+    combine_qc_results,
     do_aground_check,
     do_bayesian_buddy_check,
     do_climatology_check,

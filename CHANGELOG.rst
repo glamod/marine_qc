@@ -14,6 +14,7 @@ New features and environments
 * new plotting routine that plots a graph of points showing the longitude and value of a set of observations coloured according to flagged outcomes: ``plot_variable_longitude`` (:issue:`240`, :pull:`244`)
 * add new input parameters ``xlim`` and ``ylim`` in the plotting routines (:issue:`240`, :pull:`244`)
 * add new input parameter ``marker_size`` in the plotting routines (:issue:`240`, :pull:`244`)
+* add new function to combine results from multiple QC checks into a single flag (:issue:`242`, :pull:`245`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
