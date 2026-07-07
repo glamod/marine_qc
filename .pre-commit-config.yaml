@@ -67,7 +67,7 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
-        exclude: ^tests/
+        exclude: ^tests/|^docs
         additional_dependencies: [ 'numpy>=1.21' ]
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
