@@ -17,6 +17,7 @@ from .qc_grouped_reports import do_bayesian_buddy_check, do_mds_buddy_check
 from .qc_individual_reports import (
     do_climatology_check,
     do_date_check,
+    do_datetime_check,
     do_day_check,
     do_hard_limit_check,
     do_landlocked_check,
@@ -50,6 +51,7 @@ __all__ = [
     "do_bayesian_buddy_check",
     "do_climatology_check",
     "do_date_check",
+    "do_datetime_check",
     "do_day_check",
     "do_few_check",
     "do_hard_limit_check",

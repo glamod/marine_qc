@@ -34,6 +34,216 @@ vectorized_day_in_year = np.vectorize(day_in_year)
 vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float, float, float])
 
 
+def _do_time_check(hour: np.ndarray) -> np.ndarray:
+    """
+    Perform the date QC check on the report. Check that the time is valid i.e. in the range 0.0 to 23.99999...
+
+    Parameters
+    ----------
+    hour : 1D numpy.ndarray of float
+        Hour(s) of observation (minutes as decimal).
+
+    Returns
+    -------
+    numpy.ndarray of int
+
+        - Returns 2 (or array of 2s) if hour is numerically invalid or None,
+        - Returns 1 (or array of 1s) if hour is not a valid hour,
+        - Returns 0 (or array of 0s) otherwise.
+    """
+    result = np.full(hour.shape, untestable, dtype=int)
+
+    valid_indices = isvalid(hour)
+
+    cond_failed = np.full(hour.shape, True, dtype=bool)
+    cond_failed[valid_indices] = (hour[valid_indices] >= 24) | (hour[valid_indices] < 0)
+
+    result[valid_indices & cond_failed] = failed
+    result[valid_indices & ~cond_failed] = passed
+
+    return result
+
+
+def _do_date_check(
+    year: np.ndarray,
+    month: np.ndarray,
+    day: np.ndarray,
+    year_init: int | None,
+    year_end: int | None,
+) -> np.ndarray:
+    """
+    Perform the date QC check on the report. Checks whether the given date or date components are valid.
+
+    Parameters
+    ----------
+    year : 1D numpy.ndarray of int
+        Year(s) of observation.
+    month : 1D numpy.ndarray of int
+        Month(s) of observation (1-12).
+    day : 1D numpy.ndarray of int
+        Day(s) of observation.
+    year_init : int
+        Initial valid year.
+    year_end : int
+        Last valid year.
+
+    Returns
+    -------
+    numpy.ndarray
+
+        - Returns 2 (or array of 2s) if any of year, month, or day is numerically invalid or None,
+        - Returns 1 (or array of 1s) if date is not valid,
+        - Returns 0 (or array of 0s) otherwise.
+    """
+    result = np.full(year.shape, untestable, dtype=int)
+    valid = isvalid(year) & isvalid(month) & isvalid(day)
+
+    year_valid = year[valid].astype(int)
+    month_valid = month[valid].astype(int)
+    day_valid = day[valid].astype(int)
+
+    result_valid = np.full(year_valid.shape, failed, dtype=int)
+
+    year_ok = np.full(year_valid.shape, True, dtype=bool)
+    if year_init:
+        year_ok[year_valid < year_init] = False
+    if year_end:
+        year_ok[year_valid > year_end] = False
+
+    month_ok = (month_valid >= 1) & (month_valid <= 12)
+
+    unique_years = np.unique(year_valid)
+    month_length_map = {y: get_month_lengths(y) for y in unique_years}
+    max_days = np.array([month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid, strict=False)])
+
+    day_ok = (day_valid >= 1) & (day_valid <= max_days)
+
+    passed_mask = year_ok & month_ok & day_ok
+
+    result_valid[passed_mask] = passed
+
+    result[valid] = result_valid
+
+    return result
+
+
+def _do_daytime_check(
+    year: np.ndarray,
+    month: np.ndarray,
+    day: np.ndarray,
+    hour: np.ndarray,
+    lat: np.ndarray,
+    lon: np.ndarray,
+    time_since_sun_above_horizon: ScalarNumberType,
+    mode: Literal["day", "night"],
+) -> np.ndarray:
+    """
+    Determine if the sun was above the horizon a specified time before the report.
+
+    Parameters
+    ----------
+    year : 1D numpy.ndarray of int
+        Year(s) of observation.
+    month : 1D numpy.ndarray of int
+        Month(s) of observation (1-12).
+    day : 1D numpy.ndarray of int
+        Day(s) of observation.
+    hour : 1D numpy.ndarray of float
+        Hour(s) of observation (minutes as decimal).
+    lat : 1D numpy.ndarray of float
+        Latitude(s) of observation in degrees.
+    lon : 1D numpy.ndarray of float
+        Longitude() of observation in degree.
+    time_since_sun_above_horizon : float
+        Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
+        to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
+    mode : {"day", "night"}
+        If "day", check if the sun is above the horizon.
+        If "night", check if the sun is below the horizon.
+
+    Returns
+    -------
+    numpy.ndarray of int
+
+        - Returns 2 (or array of 2s) if any of do_position_check, do_date_check, or do_time_check
+          returns 2.
+        - Returns 1 (or array of 1s) if any of do_position_check, do_date_check, or do_time_check
+          returns 1 or if it is night (sun below horizon an hour ago).
+        - Returns 0 (or array of 0s) if it is day (sun above horizon an hour ago).
+
+    Raises
+    ------
+    ValueError
+        If `mode` is not in valid list ["day", "night"].
+    """
+    if mode not in ["day", "night"]:
+        raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
+
+    p_check = np.atleast_1d(do_position_check(lat, lon))
+    d_check = np.atleast_1d(do_date_check(year=year, month=month, day=day))
+    t_check = np.atleast_1d(do_time_check(hour=hour))
+
+    result = np.full(year.shape, untestable, dtype=int)
+
+    if mode == "day":
+        _failed = failed
+        _passed = passed
+    else:
+        _failed = passed
+        _passed = failed
+
+    failed_mask = (p_check == failed) | (d_check == failed) | (t_check == failed)
+    result[failed_mask] = failed
+
+    valid_mask = (~failed_mask) & (p_check != untestable) & (d_check != untestable) & (t_check != untestable)
+    if not np.any(valid_mask):
+        return result
+
+    valid_indices = np.where(valid_mask)[0]
+
+    year_valid = year[valid_indices].astype(int)
+    month_valid = month[valid_indices].astype(int)
+    day_valid = day[valid_indices].astype(int)
+    hour_valid = hour[valid_indices]
+
+    doy = vectorized_day_in_year(year_valid, month_valid, day_valid)
+    hour_whole = np.floor(hour_valid)
+    minute_valid = (hour_valid - hour_whole) * 60.0
+
+    if time_since_sun_above_horizon is not None:
+        hour_whole -= time_since_sun_above_horizon
+
+    lat_fixed = lat[valid_indices]
+    lat_fixed[lat_fixed == 0] = 0.0001
+    lon_fixed = lon[valid_indices]
+    lon_fixed[lon_fixed == 0] = 0.0001
+
+    underflow = hour_whole < 0
+    hour_whole[underflow] += 24
+    doy[underflow] -= 1
+
+    fix_indices = underflow & (doy <= 0)
+    if np.any(fix_indices):
+        year_valid[fix_indices] -= 1
+        doy[fix_indices] = vectorized_day_in_year(year_valid[fix_indices], 12, 31)
+
+    _azimuths, elevations, _rtas, _hras, _sids, _decs = vectorized_sunangle(
+        year_valid,
+        doy.astype(int),
+        hour_whole.astype(int),
+        minute_valid,
+        0,
+        0,
+        0,
+        lat_fixed,
+        lon_fixed,
+    )
+
+    result[valid_indices] = np.where(elevations > 0, _passed, _failed)
+
+    return result
+
+
 @post_format_return_type(["value"])
 @inspect_arrays(["value"])
 def value_check(value: ValueNumberType, valid_flag: int = passed, invalid_flag: int = failed) -> ValueIntType:
@@ -161,7 +371,7 @@ def do_date_check(
         Same type as input, but with integer values
 
         - Returns 2 (or array/sequence/Series of 2s) if any of year, month, or day is numerically invalid or None,
-        - Returns 1 (or array/sequence/Series of 1s) if the date is not valid,
+        - Returns 1 (or array/sequence/Series of 1s) if date is not valid,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
 
     Raises
@@ -171,36 +381,7 @@ def do_date_check(
     """
     year_arr, month_arr, day_arr = ensure_arrays(year=year, month=month, day=day)
 
-    result = np.full(year_arr.shape, untestable, dtype=int)
-    valid = isvalid(year_arr) & isvalid(month_arr) & isvalid(day_arr)
-
-    year_valid = year_arr[valid].astype(int)
-    month_valid = month_arr[valid].astype(int)
-    day_valid = day_arr[valid].astype(int)
-
-    result_valid = np.full(year_valid.shape, failed, dtype=int)
-
-    year_ok = np.full(year_valid.shape, True, dtype=bool)
-    if year_init:
-        year_ok[year_valid < year_init] = False
-    if year_end:
-        year_ok[year_valid > year_end] = False
-
-    month_ok = (month_valid >= 1) & (month_valid <= 12)
-
-    unique_years = np.unique(year_valid)
-    month_length_map = {y: get_month_lengths(y) for y in unique_years}
-    max_days = np.array([month_length_map[y][m - 1] for y, m in zip(year_valid, month_valid, strict=False)])
-
-    day_ok = (day_valid >= 1) & (day_valid <= max_days)
-
-    passed_mask = year_ok & month_ok & day_ok
-
-    result_valid[passed_mask] = passed
-
-    result[valid] = result_valid
-
-    return result
+    return _do_date_check(year_arr, month_arr, day_arr, year_init, year_end)
 
 
 @post_format_return_type(["date", "hour"])
@@ -211,7 +392,7 @@ def do_time_check(
     hour: ValueFloatType = None,
 ) -> ValueIntType:
     """
-    Check that the time is valid i.e. in the range 0.0 to 23.99999...
+    Perform the date QC check on the report. Check that the time is valid i.e. in the range 0.0 to 23.99999...
 
     Parameters
     ----------
@@ -238,133 +419,63 @@ def do_time_check(
     """
     (hour_arr,) = ensure_arrays(hour=hour)
 
-    result = np.full(hour_arr.shape, untestable, dtype=int)
-
-    valid_indices = isvalid(hour_arr)
-
-    cond_failed = np.full(hour_arr.shape, True, dtype=bool)
-    cond_failed[valid_indices] = (hour_arr[valid_indices] >= 24) | (hour_arr[valid_indices] < 0)
-
-    result[valid_indices & cond_failed] = failed
-    result[valid_indices & ~cond_failed] = passed
-
-    return result
+    return _do_time_check(hour_arr)
 
 
-def _do_daytime_check(
-    year: np.ndarray,
-    month: np.ndarray,
-    day: np.ndarray,
-    hour: np.ndarray,
-    lat: np.ndarray,
-    lon: np.ndarray,
-    time_since_sun_above_horizon: ScalarNumberType,
-    mode: Literal["day", "night"],
-) -> np.ndarray:
+@post_format_return_type(["date", "year"])
+@convert_date(["year", "month", "day", "hour"])
+@inspect_arrays(["year", "month", "day", "hour"])
+def do_datetime_check(
+    date: ValueDatetimeType = None,
+    year: ValueIntType = None,
+    month: ValueIntType = None,
+    day: ValueIntType = None,
+    hour: ValueFloatType = None,
+    year_init: int | None = None,
+    year_end: int | None = None,
+) -> ValueIntType:
     """
-    Determine if the sun was above the horizon a specified time before the report.
+    Perform the datetime QC check on the report.
+
+    - Checks whether the given date or date components are valid.
+    - Check that the time is valid i.e. in the range 0.0 to 23.99999...
 
     Parameters
     ----------
-    year : 1D numpy.ndarray of int
+    date : :py:obj:`~marine_qc.ValueDatetimeType`, optional
+        Date(s) of observation.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    year : :py:obj:`~marine_qc.ValueIntType`, optional
         Year(s) of observation.
-    month : 1D numpy.ndarray of int
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    month : :py:obj:`~marine_qc.ValueIntType`, optional
         Month(s) of observation (1-12).
-    day : 1D numpy.ndarray of int
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    day : :py:obj:`~marine_qc.ValueIntType`, optional
         Day(s) of observation.
-    hour : 1D numpy.ndarray of float
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    hour : :py:obj:`~marine_qc.ValueFloatType`, optional
         Hour(s) of observation (minutes as decimal).
-    lat : 1D numpy.ndarray of float
-        Latitude(s) of observation in degrees.
-    lon : 1D numpy.ndarray of float
-        Longitude() of observation in degree.
-    time_since_sun_above_horizon : float
-        Maximum time sun can have been above horizon (or below) to still count as night. Original QC test had this set
-        to 1.0 i.e. it was night between one hour after sundown and one hour after sunrise.
-    mode : {"day", "night"}
-        If "day", check if the sun is above the horizon.
-        If "night", check if the sun is below the horizon.
+        Can be a scalar, a sequence (e.g., list or tuple), a one-dimensional NumPy array, or a pandas Series.
+    year_init : int, optional
+        Initial valid year.
+    year_end : int, optional
+        Last valid year.
 
     Returns
     -------
-    numpy.ndarray of int
+    :py:obj:`~marine_qc.ValueIntType`
+        Same type as input, but with integer values
 
-        - Returns 2 (or array/sequence/Series of 2s) if any of do_position_check, do_date_check, or do_time_check
-          returns 2.
-        - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
-          returns 1 or if it is night (sun below horizon an hour ago).
-        - Returns 0 if it is day (sun above horizon an hour ago).
-
-    Raises
-    ------
-    ValueError
-        If `mode` is not in valid list ["day", "night"].
+        - Returns 2 (or array/sequence/Series of 2s) if any of year, month, day, or hour is numerically invalid or None,
+        - Returns 1 (or array/sequence/Series of 1s) if date is not valid or hour is not a valid hour,
+        - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    if mode not in ["day", "night"]:
-        raise ValueError(f"mode: {mode} is not in valid list ['day', 'night']")
+    year_arr, month_arr, day_arr, hour_arr = ensure_arrays(year=year, month=month, day=day, hour=hour)
 
-    p_check = np.atleast_1d(do_position_check(lat, lon))
-    d_check = np.atleast_1d(do_date_check(year=year, month=month, day=day))
-    t_check = np.atleast_1d(do_time_check(hour=hour))
-
-    result = np.full(year.shape, untestable, dtype=int)
-
-    if mode == "day":
-        _failed = failed
-        _passed = passed
-    else:
-        _failed = passed
-        _passed = failed
-
-    failed_mask = (p_check == failed) | (d_check == failed) | (t_check == failed)
-    result[failed_mask] = failed
-
-    valid_mask = (~failed_mask) & (p_check != untestable) & (d_check != untestable) & (t_check != untestable)
-    if not np.any(valid_mask):
-        return result
-
-    valid_indices = np.where(valid_mask)[0]
-
-    year_valid = year[valid_indices].astype(int)
-    month_valid = month[valid_indices].astype(int)
-    day_valid = day[valid_indices].astype(int)
-    hour_valid = hour[valid_indices]
-
-    doy = vectorized_day_in_year(year_valid, month_valid, day_valid)
-    hour_whole = np.floor(hour_valid)
-    minute_valid = (hour_valid - hour_whole) * 60.0
-
-    if time_since_sun_above_horizon is not None:
-        hour_whole -= time_since_sun_above_horizon
-
-    lat_fixed = lat[valid_indices]
-    lat_fixed[lat_fixed == 0] = 0.0001
-    lon_fixed = lon[valid_indices]
-    lon_fixed[lon_fixed == 0] = 0.0001
-
-    underflow = hour_whole < 0
-    hour_whole[underflow] += 24
-    doy[underflow] -= 1
-
-    fix_indices = underflow & (doy <= 0)
-    if np.any(fix_indices):
-        year_valid[fix_indices] -= 1
-        doy[fix_indices] = vectorized_day_in_year(year_valid[fix_indices], 12, 31)
-
-    _azimuths, elevations, _rtas, _hras, _sids, _decs = vectorized_sunangle(
-        year_valid,
-        doy.astype(int),
-        hour_whole.astype(int),
-        minute_valid,
-        0,
-        0,
-        0,
-        lat_fixed,
-        lon_fixed,
-    )
-
-    result[valid_indices] = np.where(elevations > 0, _passed, _failed)
-
+    result = _do_date_check(year_arr, month_arr, day_arr, year_init, year_end)
+    valid = result == passed
+    result[valid] = _do_time_check(hour_arr[valid])
     return result
 
 
@@ -426,7 +537,7 @@ def do_day_check(
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
           returns 1 or if it is night (sun below horizon an hour ago).
-        - Returns 0 if it is day (sun above horizon an hour ago).
+        - Returns 0 (or array/sequence/Series of 0s) if it is day (sun above horizon an hour ago).
 
     Raises
     ------
@@ -506,7 +617,7 @@ def do_night_check(
           returns 2.
         - Returns 1 (or array/sequence/Series of 1s) if any of do_position_check, do_date_check, or do_time_check
           returns 1 or if it is day (sun above horizon an hour ago).
-        - Returns 0 if it is night (sun below horizon an hour ago).
+        - Returns 0 (or array/sequence/Series of 0s) if it is night (sun below horizon an hour ago).
 
     Raises
     ------
