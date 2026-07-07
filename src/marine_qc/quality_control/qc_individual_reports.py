@@ -1263,6 +1263,7 @@ def do_maritime_check(
 
 do_climatology_check.__module__ = "marine_qc.quality_control"
 do_date_check.__module__ = "marine_qc.quality_control"
+do_datetime_check.__module__ = "marine_qc.quality_control"
 do_day_check.__module__ = "marine_qc.quality_control"
 do_hard_limit_check.__module__ = "marine_qc.quality_control"
 do_landlocked_check.__module__ = "marine_qc.quality_control"
