@@ -452,7 +452,7 @@ def day_in_year(year: int | None = None, month: int = 1, day: int = 1) -> int:
     elif year_not_specified and month == 2 and day == 29:
         day_index = day_in_year(month=3, day=1)
     else:
-        day_index = np.sum(month_lengths[0 : month - 1]) + day
+        day_index = int(np.sum(month_lengths[0 : month - 1])) + day
 
     assert (not year_not_specified and (1 <= day_index <= 366)) or (  # noqa: S101
         year_not_specified and (1 <= day_index <= 365)
