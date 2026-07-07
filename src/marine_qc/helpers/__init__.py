@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .auxiliary import best, duplicate, failed, passed, unique, untestable, untested, worst
-from .external_clim import Climatology, open_xrdataset
+from .external_clim import Climatology, get_climatological_value, open_xrdataset
 
 
 class Flags:
@@ -22,5 +22,6 @@ class Flags:
 __all__ = [
     "Climatology",
     "Flags",
+    "get_climatological_value",
     "open_xrdataset",
 ]
