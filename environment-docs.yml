@@ -44,3 +44,4 @@ dependencies:
     - sphinx-codeautolink >=0.16.2
     - sphinx-copybutton >=0.5.2
     - furo >=2023.9.10
+    - regionmask
