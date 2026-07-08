@@ -66,7 +66,7 @@ def test_plot_latitude_longitude():
         qc_outcomes=np.array([0, 1, 2]),
     )
     plt.close(fig)
-    
+
     fig = plot_latitude_longitude(
         lat=np.array([-10, 0, 10]),
         lon=np.array([-10, 0, 10]),
