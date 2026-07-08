@@ -169,6 +169,36 @@ def get_grouped_data():
     return df
 
 
+def get_buoy_data():
+    buoy_id = "buoy_1"
+    year = 2003
+    month = 12
+    day = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    hour = 0
+    lat = [0.0, 1.0, 2.0, 5.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 19.0, 19.0, 19.0]
+    lon = 0.0
+    sst = [22.0, 21.6, 21.2, 20.8, 20.4, 20.0, 21.6, 21.2, 20.8, 20.4, 20.0, 19.6, 19.2, 18.8, 18.4, 16.0, 16.0, 16.0, 16.0]
+
+    date = pd.DataFrame(
+        {
+            "year": year,
+            "month": month,
+            "day": day,
+            "hour": hour,
+        }
+    )
+
+    return pd.DataFrame(
+        {
+            "buoy_id": buoy_id,
+            "date": pd.to_datetime(date),
+            "lat": lat,
+            "lon": lon,
+            "sst": sst,
+        }
+    )
+
+
 def get_climatology_data():
     lat = np.arange(-90, 90, 1)
     lon = np.arange(-180, 180, 1)
