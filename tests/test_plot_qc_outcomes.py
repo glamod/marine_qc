@@ -32,6 +32,7 @@ def test_make_plot(tmp_path):
         "xlabel": "longitude",
         "ylabel": "latitude",
         "marker_size": 1,
+        "add_coastlines": False,
     }
     fig = _make_plot(
         **plot_kwargs,
@@ -63,6 +64,11 @@ def test_plot_latitude_longitude():
         lat=np.array([-10, 0, 10]),
         lon=np.array([-10, 0, 10]),
         qc_outcomes=np.array([0, 1, 2]),
+        add_coastlines=True,
+        marker_size=2,
+        xlim=(-15, 15),
+        ylim=(-15, 15),
+        filename="coast.png",
     )
     plt.close(fig)
 

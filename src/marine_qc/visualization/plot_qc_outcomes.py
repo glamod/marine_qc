@@ -4,6 +4,7 @@ Plot QC outcomes.
 Some plotting routines for QC outcomes
 """
 
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import figure, lines
@@ -84,6 +85,7 @@ def _make_plot(
     ylabel: str,
     marker_size: int | None,
     filename: str | None,
+    add_coastlines: bool,
 ) -> figure.Figure:
     """
     Make plot.
@@ -107,7 +109,9 @@ def _make_plot(
     marker_size : int
         Marker size in points.
     filename : str or None
-        Filename to save the figure to. If None, the figure is not saved nut shown.
+        Filename to save the figure to. If None, the figure is not saved not shown.
+    add_coastlines : bool
+        If True, add coastlines on PlateCarree projection.
 
     Returns
     -------
@@ -120,7 +124,19 @@ def _make_plot(
     mask_failed = flags == 1
     mask_other = (flags != 0) & (flags != 1)
 
-    fig, axes = plt.subplots(2, 2, figsize=(16, 9), sharex=True, sharey=True)
+    subplots_kwargs = {
+        "figsize": (16, 9),
+        "sharex": True,
+        "sharey": True,
+    }
+    scatter_kwargs = {"s": marker_size or 1}
+
+    if add_coastlines is True:
+        projection = ccrs.PlateCarree()
+        subplots_kwargs["subplot_kw"] = {"projection": projection}
+        scatter_kwargs["transform"] = projection
+
+    fig, axes = plt.subplots(2, 2, **subplots_kwargs)
     axes = axes.flatten()
 
     titles = ["QC == 0 (Passed)", "QC == 1 (Failed)", "QC == Other", "All Points"]
@@ -131,14 +147,18 @@ def _make_plot(
 
     for i in range(4):
         ax = axes[i]
-        ax.scatter(xvalue[masks[i]], yvalue[masks[i]], c=colours[masks[i]], s=marker_size)
+        ax.scatter(xvalue[masks[i]], yvalue[masks[i]], c=colours[masks[i]], **scatter_kwargs)
         ax.set_title(titles[i])
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
+
         if xlim:
             ax.set_xlim(*xlim)
         if ylim:
             ax.set_ylim(*ylim)
+
+        if add_coastlines is True:
+            ax.coastlines()
 
     fig.legend(
         handles=legend_elements,
@@ -164,6 +184,7 @@ def plot_variable_longitude(
     xlim: tuple[float, float] | None = None,
     ylim: tuple[float, float] | None = None,
     marker_size: int | None = None,
+    add_coastlines: bool = False,
     filename: str | None = None,
 ) -> figure.Figure:
     """
@@ -183,6 +204,8 @@ def plot_variable_longitude(
         Limits of the current y axis.
     marker_size : int, optional
         Marker size in points. If None, it is set to 1.
+    add_coastlines : bool
+        If True, add coastlines on PlateCarree projection.
     filename : str, optional
         Filename to save the figure to. If None, the figure is not saved but shown.
 
@@ -203,6 +226,7 @@ def plot_variable_longitude(
         ylabel="Variable",
         marker_size=marker_size,
         filename=filename,
+        add_coastlines=add_coastlines,
     )
 
 
@@ -213,6 +237,7 @@ def plot_latitude_variable(
     xlim: tuple[float, float] | None = None,
     ylim: tuple[float, float] | None = None,
     marker_size: int | None = None,
+    add_coastlines: bool = False,
     filename: str | None = None,
 ) -> figure.Figure:
     """
@@ -232,6 +257,8 @@ def plot_latitude_variable(
         Limits of the current y axis. If None, set to (-90.0, 90.0).
     marker_size : int, optional
         Marker size in points. If None, it is set to 1.
+    add_coastlines : bool
+        If True, add coastlines on PlateCarree projection.
     filename : str, optional
         Filename to save the figure to. If None, the figure is not saved but shown.
 
@@ -252,6 +279,7 @@ def plot_latitude_variable(
         ylabel="Latitude",
         marker_size=marker_size,
         filename=filename,
+        add_coastlines=add_coastlines,
     )
 
 
@@ -262,6 +290,7 @@ def plot_latitude_longitude(
     xlim: tuple[float, float] | None = None,
     ylim: tuple[float, float] | None = None,
     marker_size: int | None = None,
+    add_coastlines: bool = False,
     filename: str | None = None,
 ) -> figure.Figure:
     """
@@ -281,6 +310,8 @@ def plot_latitude_longitude(
         Limits of the current y axis. If None, set to (-90.0, 90.0).
     marker_size : int, optional
         Marker size in points. If None, it is set to 1.
+    add_coastlines : bool
+        If True, add coastlines on PlateCarree projection.
     filename : str, optional
         Filename to save the figure to. If None, the figure is not saved but shown.
 
@@ -303,6 +334,7 @@ def plot_latitude_longitude(
         ylabel="Latitude",
         marker_size=marker_size,
         filename=filename,
+        add_coastlines=add_coastlines,
     )
 
 

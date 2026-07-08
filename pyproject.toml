@@ -89,6 +89,7 @@ classifiers = [
 ]
 dynamic = ["description", "version"]
 dependencies = [
+  "cartopy",
   "cf_xarray",
   "joblib",
   "matplotlib",
