@@ -8,3 +8,4 @@ Examples
    qc_individual
    qc_sequential
    qc_grouped
+   duplicates
