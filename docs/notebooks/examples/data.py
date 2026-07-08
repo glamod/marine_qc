@@ -1,7 +1,9 @@
+import cartopy.io.shapereader as shpreader
 import numpy as np
 import pandas as pd
-import regionmask
 import xarray as xr
+from shapely.geometry import Point
+from shapely.ops import unary_union
 
 
 def get_individual_data():
@@ -179,9 +181,23 @@ def get_climatology_data():
         },
     )
 
-    land = regionmask.defined_regions.natural_earth_v5_0_0.land_110.mask(lon, lat)
-    mask_2d = xr.where(np.isnan(land), 0, 1).astype("int8")
-    mask_3d = np.broadcast_to(mask_2d.values, (1, mask_2d.shape[0], mask_2d.shape[1]))
+    lat2d, lon2d = np.meshgrid(lat, lon, indexing="ij")
+
+    # --- Land-sea mask ---
+
+    shp = shpreader.natural_earth(
+        resolution="110m",
+        category="physical",
+        name="land",
+    )
+    land = unary_union(list(shpreader.Reader(shp).geometries()))
+
+    mask_2d = np.array(
+        [land.contains(Point(x, y)) for x, y in zip(lon2d.ravel(), lat2d.ravel(), strict=False)],
+        dtype="int8",
+    ).reshape(lat.size, lon.size)
+
+    mask_3d = mask_2d[np.newaxis, :, :]
 
     ds = xr.Dataset(
         data_vars={
@@ -219,7 +235,7 @@ def get_climatology_data():
         },
     )
 
-    lat2d, lon2d = np.meshgrid(lat, lon, indexing="ij")
+    # --- Sea-surface temperature ---
 
     sst_2d = 28.0 * np.cos(np.deg2rad(lat2d)) ** 2
     sst_2d += 2.0 * np.sin(np.deg2rad(lon2d / 2.0)) * np.cos(np.deg2rad(lat2d))
@@ -242,6 +258,8 @@ def get_climatology_data():
 
     lat_factor = np.sin(np.deg2rad(np.abs(lat2d)))
     lon_factor = 0.5 * (1 + np.sin(np.deg2rad(lon2d)))
+
+    # --- Standard deviations ---
 
     stdev1_2d = 0.25 + 0.20 * lat_factor + 0.05 * lon_factor
 
@@ -284,6 +302,8 @@ def get_climatology_data():
                 "long_name": long_name,
             },
         )
+
+    # --- Information ---
 
     ds["crs"] = xr.DataArray(
         0,
