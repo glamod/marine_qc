@@ -89,6 +89,7 @@ classifiers = [
 ]
 dynamic = ["description", "version"]
 dependencies = [
+  "cartopy",
   "cf_xarray",
   "joblib",
   "matplotlib",
@@ -110,7 +111,7 @@ dependencies = [
 [tool]
 
 [tool.bumpversion]
-current_version = "0.3.3-dev.8"
+current_version = "0.3.3-dev.9"
 commit = true
 commit_args = "--no-verify --signoff"
 tag = false

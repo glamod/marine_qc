@@ -16,6 +16,7 @@ New features and environments
 * add new input parameter ``marker_size`` in the plotting routines (:issue:`240`, :pull:`244`)
 * add new function to combine results from multiple QC checks into a single flag: combine_qr_results (:issue:`242`, :pull:`245`)
 * add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
+* optionally, add coastlines in plots using visualization functions (:pull:`248`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
