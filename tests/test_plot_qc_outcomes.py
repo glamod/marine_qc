@@ -68,7 +68,6 @@ def test_plot_latitude_longitude():
         marker_size=2,
         xlim=(-15, 15),
         ylim=(-15, 15),
-        filename="coast.png",
     )
     plt.close(fig)
 
