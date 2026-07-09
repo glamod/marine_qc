@@ -16,6 +16,7 @@ New features and environments
 * add new input parameter ``marker_size`` in the plotting routines (:issue:`240`, :pull:`244`)
 * add new function to combine results from multiple QC checks into a single flag: combine_qr_results (:issue:`242`, :pull:`245`)
 * add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
+* optionally, add coastlines in plots using visualization functions (:pull:`248`)
 * add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
 
 Breaking changes
@@ -35,6 +36,9 @@ Internal changes
 * locally import some members in submodules ``src.marine_qc.duplicate_checker``, ``src.marine_qc.helpers``, ``src.marine_qc.quality_control`` and ``src.marine_qc.visualization`` (:pull:`207`)
 * Upload coverage results to Coveralls instead of Codecov (:issue:`58`, :pull:`232`, :pull:`233`)
 * rename plotting routines: ``latitude_longitude_plot`` to ``plot_latitude_longitude`` and ``latitude_variable_plot`` to ``plot_latitude_variable`` (:issue:`240`, :pull:`244`)
+* new helper function ``quality_control.qc_individual_report._do_time_check`` that is used in both "do_time_check" and "do_datetime_check" (:pull:`246`)
+* new helper function ``quality_control.qc_individual_report._do_date_check`` that is used in both "do_date_check" and "do_datetime_check" (:pull:`246`)
+* explicitly convert intermediate result in ``quality_control.helpers.time_control.dayin_year`` to a python integer to fix incompatible types assignment (:pull:`247`)
 * new helper function quality_control.qc_individual_report._do_time_check that is used in both do_time_check and do_datetime_check (:pull:`246`)
 * new helper function quality_control.qc_individual_report._do_date_check that is used in both do_date_check and do_datetime_check (:pull:`246`)
 * rename quality_control.buoy_tracking_qc into quality_control.qc_buoy_tracking (:issue:`249`, :pull:`250`)
