@@ -148,7 +148,7 @@ optional_value = "release"
 values = ["dev", "release"]
 
 [tool.codespell]
-skip = "docs/_build,src/marine_qc/*.json,docs/notebooks/*"
+skip = "docs/_build,src/marine_qc/*.json"
 ignore-words-list = "astroid,thirdparty"
 
 [tool.coverage.paths]
