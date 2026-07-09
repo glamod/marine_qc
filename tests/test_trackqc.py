@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import marine_qc.quality_control.buoy_tracking_qc as tqc
+import marine_qc.quality_control.qc_buoy_tracking as tqc
 from marine_qc import Flags
 
 
