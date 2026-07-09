@@ -70,28 +70,28 @@ Helpers in visualization module
 Static methods of buoy tracking QC classes
 ------------------------------------------
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTTailChecker._parse_rep
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTTailChecker._parse_rep
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTTailChecker._preprocess_reps
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTTailChecker._preprocess_reps
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTTailChecker._do_long_tail_check
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTTailChecker._do_long_tail_check
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTTailChecker._do_short_tail_check
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTTailChecker._do_short_tail_check
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTBiasedNoisyChecker._parse_rep
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTBiasedNoisyChecker._parse_rep
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTBiasedNoisyChecker._preprocess_reps
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTBiasedNoisyChecker._preprocess_reps
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTBiasedNoisyChecker._long_record_qc
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTBiasedNoisyChecker._long_record_qc
    :noindex:
 
-.. autofunction:: marine_qc.quality_control.buoy_tracking_qc.SSTBiasedNoisyChecker._short_record_qc
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.SSTBiasedNoisyChecker._short_record_qc
    :noindex:
 
 Internal data type aliases

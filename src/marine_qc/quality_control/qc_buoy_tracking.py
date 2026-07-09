@@ -7,20 +7,29 @@ Module containing QC functions for sequential reports from a single drifting buo
 # noqa: S101
 
 from __future__ import annotations
-import math
 import warnings
-from collections.abc import Sequence
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
-from ..helpers.astronomical_geometry import sunangle
-from ..helpers.auxiliary import SequenceDatetimeType, SequenceNumberType, ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
+from ..helpers.auxiliary import (
+    SequenceDatetimeType,
+    SequenceNumberType,
+    ensure_arrays,
+    failed,
+    inspect_arrays,
+    isvalid,
+    passed,
+    post_format_return_type,
+    untestable,
+    untested,
+)
 from ..helpers.spherical_geometry import sphere_distance
 from ..helpers.statistics import trim_mean, trim_std
-from ..helpers.time_control import convert_date_to_hours, day_in_year
+from ..helpers.time_control import convert_date_to_hours
 from .qc_sequential_reports import do_iquam_track_check
+from .track_check_utils import is_monotonic, track_day_test
 
 
 """
@@ -40,115 +49,6 @@ Atkinson, C.P., N.A. Rayner, J. Roberts-Jones, R.O. Smith, 2013:
 Assessing the quality of sea surface temperature observations from
 drifting buoys and ships on a platform-by-platform basis (doi:10.1002/jgrc.20257).
 """
-
-
-def track_day_test(
-    year: int,
-    month: int,
-    day: int,
-    hour: float,
-    lat: float,
-    lon: float,
-    elevdlim: float = -2.5,
-) -> bool:
-    """
-    Given date, time, lat and lon calculate if the sun elevation is > elevdlim.
-
-    This is the "day" test used by tracking QC to decide whether an SST measurement is night or day.
-    This is important because daytime diurnal heating can affect comparison with an SST background.
-    It uses the function sunangle to calculate the elevation of the sun. A default solar_zenith angle
-    of 92.5 degrees (elevation of -2.5 degrees) delimits night from day.
-
-    Parameters
-    ----------
-    year : int
-        Year.
-    month : int
-        Month.
-    day : int
-        Day.
-    hour : float
-        Hour expressed as decimal fraction (e.g. 20.75 = 20:45 pm).
-    lat : float
-        Latitude in degrees.
-    lon : float
-        Longitude in degrees.
-    elevdlim : float, default: -2.5
-        Elevation day/night delimiter in degrees above horizon.
-
-    Returns
-    -------
-    bool
-        True if daytime, else False.
-
-    Raises
-    ------
-    ValueError
-        If either year, month, day, hour, lat or lon is numerically invalid or None
-        of if either month, day, hour or lat is not in valid range.
-    """
-    if not isvalid(year):
-        raise ValueError("year is missing")
-    if not isvalid(month):
-        raise ValueError("month is missing")
-    if not isvalid(day):
-        raise ValueError("day is missing")
-    if not isvalid(hour):
-        raise ValueError("hour is missing")
-    if not isvalid(lat):
-        raise ValueError("lat is missing")
-    if not isvalid(lon):
-        raise ValueError("lon is missing")
-    if not (1 <= month <= 12):
-        raise ValueError("Month not in range 1-12")
-    if not (1 <= day <= 31):
-        raise ValueError("Day not in range 1-31")
-    if not (0 <= hour <= 24):
-        raise ValueError("Hour not in range 0-24")
-    if not (90 >= lat >= -90):
-        raise ValueError("Latitude not in range -90 to 90")
-
-    daytime = False
-
-    year2 = year
-    day2 = day_in_year(year, month, day)
-    hour2 = math.floor(hour)
-    minute2 = int((hour - math.floor(hour)) * 60.0)
-    lat2 = lat
-    lon2 = lon
-    if lat == 0:
-        lat2 = 0.0001
-    if lon == 0:
-        lon2 = 0.0001
-
-    _, elevation, _, _, _, _ = sunangle(year2, day2, hour2, minute2, 0, 0, 0, lat2, lon2)
-
-    if elevation > elevdlim:
-        daytime = True
-
-    return daytime
-
-
-def is_monotonic(inarr: np.ndarray | Sequence[int | float]) -> bool:
-    """
-    Test if elements in an array are increasing monotonically.
-
-    I.e. each element is greater than or equal to the preceding element.
-
-    Parameters
-    ----------
-    inarr : array-like of datetime, shape (n,)
-        1-dimensional date array.
-
-    Returns
-    -------
-    bool
-        True if array is increasing monotonically, False otherwise.
-    """
-    for i in range(1, len(inarr)):
-        if inarr[i] < inarr[i - 1]:
-            return False
-    return True
 
 
 class SpeedChecker:
@@ -181,11 +81,11 @@ class SpeedChecker:
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -200,9 +100,9 @@ class SpeedChecker:
 
     def __init__(
         self,
-        lons: SequenceNumberType,
-        lats: SequenceNumberType,
-        dates: SequenceDatetimeType,
+        lon: SequenceNumberType,
+        lat: SequenceNumberType,
+        date: SequenceDatetimeType,
         speed_limit: float,
         min_win_period: float,
         max_win_period: float,
@@ -212,11 +112,11 @@ class SpeedChecker:
 
         Parameters
         ----------
-        lons : :py:obj:`~marine_qc.SequenceNumberType`
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        lats : :py:obj:`~marine_qc.SequenceNumberType`
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -228,19 +128,19 @@ class SpeedChecker:
             (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
             min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
         """
-        self.lon = np.asarray(lons, dtype=float)
-        self.lat = np.asarray(lats, dtype=float)
-        self.nreps = len(lons)
+        self.lon = np.asarray(lon, dtype=float)
+        self.lat = np.asarray(lat, dtype=float)
+        self.nreps = len(lon)
 
-        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
-        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
+        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.speed_limit = speed_limit
         self.min_win_period = min_win_period
         self.max_win_period = max_win_period
 
         # Initialise QC outcomes with untested
-        self.qc_outcomes = np.zeros(self.nreps, dtype=float) + untested
+        self.qc_outcomes = np.zeros(self.nreps, dtype=int) + untested
 
     def get_qc_outcomes(self) -> np.ndarray:
         """
@@ -399,11 +299,11 @@ class NewSpeedChecker:
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -423,9 +323,9 @@ class NewSpeedChecker:
 
     def __init__(
         self,
-        lons: SequenceNumberType,
-        lats: SequenceNumberType,
-        dates: SequenceDatetimeType,
+        lon: SequenceNumberType,
+        lat: SequenceNumberType,
+        date: SequenceDatetimeType,
         speed_limit: float,
         min_win_period: float,
         ship_speed_limit: float,
@@ -438,11 +338,11 @@ class NewSpeedChecker:
 
         Parameters
         ----------
-        lons : :py:obj:`~marine_qc.SequenceNumberType`
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        lats : :py:obj:`~marine_qc.SequenceNumberType`
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -460,13 +360,13 @@ class NewSpeedChecker:
         n_neighbours : int
             Number of neighbours considered in the IQUAM track check.
         """
-        self.lon = np.asarray(lons, dtype=float)
-        self.lat = np.asarray(lats, dtype=float)
-        self.nreps = len(lons)
-        self.dates = np.asarray(dates, dtype=datetime)
+        self.lon = np.asarray(lon, dtype=float)
+        self.lat = np.asarray(lat, dtype=float)
+        self.nreps = len(lon)
+        self.date = np.asarray(date, dtype=datetime)
 
-        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
-        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
+        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.speed_limit = speed_limit
         self.min_win_period = min_win_period
@@ -479,7 +379,7 @@ class NewSpeedChecker:
         self.iquam_track_ship: np.ndarray = np.array([], dtype=int)
 
         # Initialise QC outcomes with untested
-        self.qc_outcomes = np.zeros(self.nreps) + untested
+        self.qc_outcomes = np.zeros(self.nreps, dtype=int) + untested
 
     def get_qc_outcomes(self) -> np.ndarray:
         """
@@ -557,7 +457,7 @@ class NewSpeedChecker:
         self.iquam_track_ship = do_iquam_track_check(
             self.lat,
             self.lon,
-            self.dates,
+            self.date,
             self.ship_speed_limit,
             self.delta_d,
             self.delta_t,
@@ -576,7 +476,7 @@ class NewSpeedChecker:
         self.perform_iquam_track_check()
 
         # Initialise
-        self.qc_outcomes = np.zeros(nrep) + passed
+        self.qc_outcomes = np.zeros(nrep, dtype=int) + passed
 
         # loop through timeseries to see if drifter is moving too fast and flag any occurrences
         index_arr = np.array(range(0, nrep))  # type: np.ndarray
@@ -637,11 +537,11 @@ class AgroundChecker:
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     smooth_win : int
             Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -658,9 +558,9 @@ class AgroundChecker:
 
     def __init__(
         self,
-        lons: SequenceNumberType,
-        lats: SequenceNumberType,
-        dates: SequenceDatetimeType,
+        lon: SequenceNumberType,
+        lat: SequenceNumberType,
+        date: SequenceDatetimeType,
         smooth_win: int,
         min_win_period: int,
         max_win_period: int | None,
@@ -670,11 +570,11 @@ class AgroundChecker:
 
         Parameters
         ----------
-        lons : :py:obj:`~marine_qc.SequenceNumberType`
+        lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        lats : :py:obj:`~marine_qc.SequenceNumberType`
+        lat : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional latitude array in degrees.
-        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         smooth_win : int
             Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -685,12 +585,12 @@ class AgroundChecker:
             than min_win_period and allow for erratic temporal sampling e.g. min_win_period+2 to allow for gaps of
             up to 2-days in sampling).
         """
-        self.lon = np.asarray(lons, dtype=float)
-        self.lat = np.asarray(lats, dtype=float)
-        self.nreps = len(lons)
+        self.lon = np.asarray(lon, dtype=float)
+        self.lat = np.asarray(lat, dtype=float)
+        self.nreps = len(lon)
 
-        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
-        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
+        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.smooth_win = smooth_win
         self.min_win_period = min_win_period
@@ -701,7 +601,7 @@ class AgroundChecker:
         self.hrs_smooth: np.ndarray = np.array([], dtype=float)
 
         # Initialise QC outcomes with untested
-        self.qc_outcomes = np.zeros(self.nreps) + untested
+        self.qc_outcomes = np.zeros(self.nreps, dtype=int) + untested
 
     def get_qc_outcomes(self) -> np.ndarray:
         """
@@ -898,7 +798,7 @@ class SSTTailChecker:
             1-dimensional array of ice concentrations in the range 0.0 to 1.0.
     bgvar : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of background sea surface temperature fields variances in K^2.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     long_win_len : int
             Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -929,7 +829,7 @@ class SSTTailChecker:
         ostia: SequenceNumberType,
         ice: SequenceNumberType,
         bgvar: SequenceNumberType,
-        dates: SequenceDatetimeType,
+        date: SequenceDatetimeType,
         long_win_len: int,
         long_err_std_n: float,
         short_win_len: int,
@@ -956,7 +856,7 @@ class SSTTailChecker:
             1-dimensional array of ice concentrations in the range 0.0 to 1.0.
         bgvar : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional array of background sea surface temperature fields variances in K^2.
-        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         long_win_len : int
             Length of window (in data-points) over which to make long tail-check (must be an odd number).
@@ -987,10 +887,10 @@ class SSTTailChecker:
         self.ostia = np.asarray(ostia, dtype=float)
         self.ice = np.asarray(ice, dtype=float)
         self.bgvar = np.asarray(bgvar, dtype=float)
-        self.dates = np.asarray(dates, dtype=datetime)
+        self.date = np.asarray(date, dtype=datetime)
 
-        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
-        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
+        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.reps_ind: np.ndarray = np.array([], dtype=float)
         self.sst_anom: np.ndarray = np.array([], dtype=float)
@@ -999,7 +899,7 @@ class SSTTailChecker:
         self.start_tail_ind: int
         self.end_tail_ind: int
 
-        self.qc_outcomes = np.zeros(self.nreps) + untested
+        self.qc_outcomes = np.zeros(self.nreps, dtype=int) + untested
 
         self.long_win_len = long_win_len
         self.long_err_std_n = long_err_std_n
@@ -1120,7 +1020,7 @@ class SSTTailChecker:
         ostia: float,
         ice: float,
         bgvar: float,
-        dates: datetime,
+        date: datetime,
     ) -> tuple[float, float, float, bool, bool]:
         """
         Process a report.
@@ -1137,7 +1037,7 @@ class SSTTailChecker:
             Ice concentration value matched to this observation.
         bgvar : float
             Background variance value matched to this observation.
-        dates : datetime.datetime
+        date : datetime.datetime
             Date and time of the observation.
 
         Returns
@@ -1156,10 +1056,10 @@ class SSTTailChecker:
 
         try:
             daytime = track_day_test(
-                dates.year,
-                dates.month,
-                dates.day,
-                dates.hour + dates.minute / 60,
+                date.year,
+                date.month,
+                date.day,
+                date.hour + date.minute / 60,
                 lat,
                 lon,
                 -2.5,
@@ -1198,7 +1098,7 @@ class SSTTailChecker:
                 self.ostia[ind],
                 self.ice[ind],
                 self.bgvar[ind],
-                self.dates[ind],
+                self.date[ind],
             )
             if invalid_ob:
                 invalid_series = True
@@ -1357,7 +1257,7 @@ class SSTBiasedNoisyChecker:
             1-dimensional latitude array in degrees.
     lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional sea surface temperature array in K.
@@ -1388,7 +1288,7 @@ class SSTBiasedNoisyChecker:
         self,
         lat: SequenceNumberType,
         lon: SequenceNumberType,
-        dates: SequenceDatetimeType,
+        date: SequenceDatetimeType,
         sst: SequenceNumberType,
         ostia: SequenceNumberType,
         bgvar: SequenceNumberType,
@@ -1410,7 +1310,7 @@ class SSTBiasedNoisyChecker:
             1-dimensional latitude array in degrees.
         lon : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional longitude array in degrees.
-        dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+        date : :py:obj:`~marine_qc.SequenceDatetimeType`
             1-dimensional date array.
         sst : :py:obj:`~marine_qc.SequenceNumberType`
             1-dimensional sea surface temperature array in K.
@@ -1438,7 +1338,7 @@ class SSTBiasedNoisyChecker:
         """
         self.lat = np.asarray(lat, dtype=float)
         self.lon = np.asarray(lon, dtype=float)
-        self.dates = np.asarray(dates, dtype=datetime)
+        self.date = np.asarray(date, dtype=datetime)
         self.sst = np.asarray(sst, dtype=float)
         self.ostia = np.asarray(ostia, dtype=float)
         self.bgvar = np.asarray(bgvar, dtype=float)
@@ -1446,8 +1346,8 @@ class SSTBiasedNoisyChecker:
 
         self.nreps = len(lat)
 
-        dates_list: list[datetime] = pd.to_datetime(dates).tolist()
-        self.hrs = np.asarray(convert_date_to_hours(dates_list), dtype=float)
+        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.n_eval = n_eval
         self.bias_lim = bias_lim
@@ -1461,9 +1361,9 @@ class SSTBiasedNoisyChecker:
         self.bgerr: np.ndarray = np.array([], dtype=float)
         self.bgvar_is_masked: bool
 
-        self.qc_outcomes_bias = np.zeros(self.nreps) + untested
-        self.qc_outcomes_noise = np.zeros(self.nreps) + untested
-        self.qc_outcomes_short = np.zeros(self.nreps) + untested
+        self.qc_outcomes_bias = np.zeros(self.nreps, dtype=int) + untested
+        self.qc_outcomes_noise = np.zeros(self.nreps, dtype=int) + untested
+        self.qc_outcomes_short = np.zeros(self.nreps, dtype=int) + untested
 
     def valid_parameters(self) -> bool:
         """
@@ -1575,7 +1475,7 @@ class SSTBiasedNoisyChecker:
         ostia: float,
         ice: float,
         bgvar: float,
-        dates: datetime,
+        date: datetime,
         background_err_lim: float,
     ) -> tuple[float, float, float, bool, bool, bool]:
         """
@@ -1593,7 +1493,7 @@ class SSTBiasedNoisyChecker:
             Ice concentration field value.
         bgvar : float
             Background variance field value.
-        dates : datetime
+        date : datetime
             Date and time of the observation to be parsed.
         background_err_lim : float
             Background error variance beyond which the SST background is deemed unreliable (degC squared or K squared).
@@ -1615,10 +1515,10 @@ class SSTBiasedNoisyChecker:
 
         try:
             daytime = track_day_test(
-                dates.year,
-                dates.month,
-                dates.day,
-                dates.hour + dates.minute / 60,
+                date.year,
+                date.month,
+                date.day,
+                date.hour + date.minute / 60,
                 lat,
                 lon,
                 -2.5,
@@ -1664,7 +1564,7 @@ class SSTBiasedNoisyChecker:
                 self.ostia[ind],
                 self.ice[ind],
                 self.bgvar[ind],
-                self.dates[ind],
+                self.date[ind],
                 self.background_err_lim,
             )
             if invalid_ob:
@@ -1725,11 +1625,12 @@ class SSTBiasedNoisyChecker:
             self.qc_outcomes_short[:] = failed
 
 
-@inspect_arrays(["lons", "lats", "dates"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lon", "lat", "date"])
 def do_speed_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     speed_limit: float,
     min_win_period: float,
     max_win_period: float,
@@ -1739,11 +1640,11 @@ def do_speed_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     speed_limit : float
         Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -1774,18 +1675,19 @@ def do_speed_check(
     * min_win_period = 0.8
     * max_win_perido = 1.8
     """
-    lons_arr, lats_arr, dates_arr = ensure_arrays(lons=lons, lats=lats, dates=dates)
+    lon_arr, lat_arr, date_arr = ensure_arrays(lon=lon, lat=lat, date=date)
 
-    checker = SpeedChecker(lons_arr, lats_arr, dates_arr, speed_limit, min_win_period, max_win_period)
+    checker = SpeedChecker(lon_arr, lat_arr, date_arr, speed_limit, min_win_period, max_win_period)
     checker.do_speed_check()
     return checker.get_qc_outcomes()
 
 
-@inspect_arrays(["lons", "lats", "dates"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lon", "lat", "date"])
 def do_new_speed_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     speed_limit: float,
     min_win_period: float,
     ship_speed_limit: float,
@@ -1798,11 +1700,11 @@ def do_new_speed_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     speed_limit : float
         Maximum allowable speed for an in situ drifting buoy (metres per second).
@@ -1843,12 +1745,12 @@ def do_new_speed_check(
     * delta_t = 0.01
     * n_neighbours = 5
     """
-    lons_arr, lats_arr, dates_arr = ensure_arrays(lons=lons, lats=lats, dates=dates)
+    lon_arr, lat_arr, date_arr = ensure_arrays(lon=lon, lat=lat, date=date)
 
     checker = NewSpeedChecker(
-        lons_arr,
-        lats_arr,
-        dates_arr,
+        lon_arr,
+        lat_arr,
+        date_arr,
         speed_limit,
         min_win_period,
         ship_speed_limit,
@@ -1860,11 +1762,12 @@ def do_new_speed_check(
     return checker.get_qc_outcomes()
 
 
-@inspect_arrays(["lons", "lats", "dates"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "date"])
 def do_aground_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     smooth_win: int,
     min_win_period: int,
     max_win_period: int,
@@ -1874,11 +1777,11 @@ def do_aground_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     smooth_win : int
         Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -1908,18 +1811,19 @@ def do_aground_check(
     * min_win_period = 8
     * max_win_period = 10
     """
-    lats_arr, lons_arr, dates_arr = ensure_arrays(lats=lats, lons=lons, dates=dates)
+    lat_arr, lon_arr, date_arr = ensure_arrays(lat=lat, lon=lon, date=date)
 
-    checker = AgroundChecker(lons_arr, lats_arr, dates_arr, smooth_win, min_win_period, max_win_period)
+    checker = AgroundChecker(lon_arr, lat_arr, date_arr, smooth_win, min_win_period, max_win_period)
     checker.do_aground_check()
     return checker.get_qc_outcomes()
 
 
-@inspect_arrays(["lons", "lats", "dates"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lon", "lat", "date"])
 def do_new_aground_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     smooth_win: int,
     min_win_period: int,
 ) -> np.ndarray:
@@ -1928,11 +1832,11 @@ def do_new_aground_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     smooth_win : int
         Length of window (odd number) in datapoints used for smoothing lon/lat.
@@ -1957,18 +1861,19 @@ def do_new_aground_check(
     * smooth_win = 41
     * min_win_period = 8
     """
-    lats_arr, lons_arr, dates_arr = ensure_arrays(lats=lats, lons=lons, dates=dates)
+    lat_arr, lon_arr, date_arr = ensure_arrays(lat=lat, lon=lon, date=date)
 
-    checker = AgroundChecker(lons_arr, lats_arr, dates_arr, smooth_win, min_win_period, None)
+    checker = AgroundChecker(lon_arr, lat_arr, date_arr, smooth_win, min_win_period, None)
     checker.do_aground_check()
     return checker.get_qc_outcomes()
 
 
-@inspect_arrays(["lats", "lons", "sst", "ostia", "ice", "bgvar", "dates"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
 def do_sst_start_tail_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
     ice: SequenceNumberType,
@@ -1987,11 +1892,11 @@ def do_sst_start_tail_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
@@ -2046,18 +1951,18 @@ def do_sst_start_tail_check(
     * drif_intra = 1.00
     * background_err_lim = 0.3
     """
-    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
-        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+        lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
     checker = SSTTailChecker(
-        lats_arr,
-        lons_arr,
+        lat_arr,
+        lon_arr,
         sst_arr,
         ostia_arr,
         ice_arr,
         bgvar_arr,
-        dates_arr,
+        date_arr,
         long_win_len,
         long_err_std_n,
         short_win_len,
@@ -2071,11 +1976,12 @@ def do_sst_start_tail_check(
     return checker.get_qc_outcomes()
 
 
-@inspect_arrays(["lats", "lons", "sst", "ostia", "ice", "bgvar", "dates"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
 def do_sst_end_tail_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
     ice: SequenceNumberType,
@@ -2094,11 +2000,11 @@ def do_sst_end_tail_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
@@ -2153,18 +2059,18 @@ def do_sst_end_tail_check(
     * drif_intra = 1.00
     * background_err_lim = 0.3
     """
-    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
-        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+        lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
     checker = SSTTailChecker(
-        lats_arr,
-        lons_arr,
+        lat_arr,
+        lon_arr,
         sst_arr,
         ostia_arr,
         ice_arr,
         bgvar_arr,
-        dates_arr,
+        date_arr,
         long_win_len,
         long_err_std_n,
         short_win_len,
@@ -2178,11 +2084,12 @@ def do_sst_end_tail_check(
     return checker.get_qc_outcomes()
 
 
-@inspect_arrays(["lats", "lons", "dates", "sst", "ostia", "bgvar", "ice"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
     ice: SequenceNumberType,
@@ -2200,11 +2107,11 @@ def do_sst_biased_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
@@ -2253,14 +2160,14 @@ def do_sst_biased_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
-    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
-        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+        lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
     checker = SSTBiasedNoisyChecker(
-        lats_arr,
-        lons_arr,
-        dates_arr,
+        lat_arr,
+        lon_arr,
+        date_arr,
         sst_arr,
         ostia_arr,
         bgvar_arr,
@@ -2277,11 +2184,12 @@ def do_sst_biased_check(
     return checker.get_qc_outcomes_bias()
 
 
-@inspect_arrays(["lats", "lons", "dates", "sst", "ostia", "bgvar", "ice"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_noisy_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
     ice: SequenceNumberType,
@@ -2299,11 +2207,11 @@ def do_sst_noisy_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
@@ -2352,14 +2260,14 @@ def do_sst_noisy_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
-    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
-        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+        lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
     checker = SSTBiasedNoisyChecker(
-        lats_arr,
-        lons_arr,
-        dates_arr,
+        lat_arr,
+        lon_arr,
+        date_arr,
         sst_arr,
         ostia_arr,
         bgvar_arr,
@@ -2376,11 +2284,12 @@ def do_sst_noisy_check(
     return checker.get_qc_outcomes_noise()
 
 
-@inspect_arrays(["lats", "lons", "dates", "sst", "ostia", "bgvar", "ice"])
+@post_format_return_type(["lat"])
+@inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_noisy_short_check(
-    lons: SequenceNumberType,
-    lats: SequenceNumberType,
-    dates: SequenceDatetimeType,
+    lat: SequenceNumberType,
+    lon: SequenceNumberType,
+    date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
     ice: SequenceNumberType,
@@ -2398,11 +2307,11 @@ def do_sst_biased_noisy_short_check(
 
     Parameters
     ----------
-    lons : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
-    lats : :py:obj:`~marine_qc.SequenceNumberType`
+    lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
-    dates : :py:obj:`~marine_qc.SequenceDatetimeType`
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
+    date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional array of sea surface temperatures in K.
@@ -2451,14 +2360,14 @@ def do_sst_biased_noisy_short_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
-    lats_arr, lons_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, dates_arr = ensure_arrays(
-        lats=lats, lons=lons, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, dates=dates
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+        lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
     checker = SSTBiasedNoisyChecker(
-        lats_arr,
-        lons_arr,
-        dates_arr,
+        lat_arr,
+        lon_arr,
+        date_arr,
         sst_arr,
         ostia_arr,
         bgvar_arr,
@@ -2475,12 +2384,12 @@ def do_sst_biased_noisy_short_check(
     return checker.get_qc_outcomes_short()
 
 
-do_aground_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_new_aground_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_new_speed_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_speed_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_sst_biased_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_sst_biased_noisy_short_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_sst_end_tail_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_sst_noisy_check.__module__ = "marine_qc.buoy_tracking_qc"
-do_sst_start_tail_check.__module__ = "marine_qc.buoy_tracking_qc"
+do_aground_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_new_aground_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_new_speed_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_speed_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_sst_biased_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_sst_biased_noisy_short_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_sst_end_tail_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_sst_noisy_check.__module__ = "marine_qc.qc_buoy_tracking"
+do_sst_start_tail_check.__module__ = "marine_qc.qc_buoy_tracking"

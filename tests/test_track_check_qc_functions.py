@@ -27,6 +27,8 @@ from marine_qc.quality_control.track_check_utils import (
     calculate_midpoint,
     calculate_speed_course_distance_time_difference,
     forward_discrepancy,
+    is_monotonic,
+    track_day_test,
 )
 
 
@@ -446,6 +448,54 @@ def test_forward_discrepancy_array(ship_frame):
     for i in range(1, len(result)):
         assert pytest.approx(result[i], abs=0.00001) == 0.0
     assert np.isnan(result[0])
+
+
+@pytest.mark.parametrize(
+    "inarr, expected",
+    [
+        ([2, 3, 4], True),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], True),
+        ([2, 3, 4, 5, 4], False),
+    ],
+)
+def test_is_monotonic(inarr, expected):
+    assert is_monotonic(inarr) == expected
+
+
+@pytest.mark.parametrize(
+    "year, month, day, hour, lat, lon, elevdlim, expected",
+    [
+        (2019, 6, 21, 12.0, 50.7, -3.5, -2.5, True),
+        (2019, 6, 21, 0.0, 50.7, -3.5, -2.5, False),
+        (2019, 6, 21, 0.0, 50.7, -3.5, 89.0, False),
+        (2022, 5, 3, 12.0, 0.0, 0.0, -2.5, True),
+        (2025, 5, 26, 4.0 + 55.0 / 60.0, -20.00, 23.42, -2.5, True),
+        (2025, 5, 26, 4.0 + 35.0 / 60.0, -20.00, 23.42, -2.5, False),
+    ],
+)
+def test_daytime(year, month, day, hour, lat, lon, elevdlim, expected):
+    datetime = track_day_test(year, month, day, hour, lat, lon, elevdlim=elevdlim)
+    assert datetime == expected
+
+
+@pytest.mark.parametrize(
+    "year, month, day, hour, lat, lon",
+    [
+        (2019, 13, 21, 0.0, 50.7, -3.5),
+        (None, 12, 21, 0.0, 50.7, -3.5),
+        (2019, None, 21, 0.0, 50.7, -3.5),
+        (2019, 12, None, 0.0, 50.7, -3.5),
+        (2019, 12, 21, None, 50.7, -3.5),
+        (2019, 12, 21, 0.0, None, -3.5),
+        (2019, 12, 21, 0.0, 50.7, None),
+        (2019, 12, 43, 0.0, 50.7, -3.5),
+        (2019, 12, 21, -5.0, 50.7, -3.5),
+        (2019, 12, 21, 0.0, -99.0, -3.5),
+    ],
+)
+def test_daytime_error_invalid_parameter(year, month, day, hour, lat, lon):
+    with pytest.raises(ValueError):
+        assert track_day_test(year, month, day, hour, lat, lon, elevdlim=-2.5)
 
 
 def test_calc_alternate_speeds(ship_frame):

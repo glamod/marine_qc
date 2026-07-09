@@ -9,6 +9,8 @@ assumed.
 """
 
 from __future__ import annotations
+import math
+from collections.abc import Sequence
 from datetime import datetime
 
 import numpy as np
@@ -17,6 +19,7 @@ import pandas as pd
 from ..helpers import spherical_geometry as sg
 from ..helpers import spherical_geometry as sph
 from ..helpers import time_control
+from ..helpers.astronomical_geometry import sunangle
 from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
@@ -33,7 +36,7 @@ from ..helpers.spherical_geometry import (
     intermediate_point,
     sphere_distance,
 )
-from ..helpers.time_control import time_difference
+from ..helpers.time_control import day_in_year, time_difference
 
 
 def modal_speed(speeds: list[float]) -> float:
@@ -699,3 +702,112 @@ def calculate_midpoint(
     midpoint_discrepancies = sphere_distance(lat, lon, est_midpoint_lat, est_midpoint_lon)
 
     return midpoint_discrepancies
+
+
+def track_day_test(
+    year: int,
+    month: int,
+    day: int,
+    hour: float,
+    lat: float,
+    lon: float,
+    elevdlim: float = -2.5,
+) -> bool:
+    """
+    Given date, time, lat and lon calculate if the sun elevation is > elevdlim.
+
+    This is the "day" test used by tracking QC to decide whether an SST measurement is night or day.
+    This is important because daytime diurnal heating can affect comparison with an SST background.
+    It uses the function sunangle to calculate the elevation of the sun. A default solar_zenith angle
+    of 92.5 degrees (elevation of -2.5 degrees) delimits night from day.
+
+    Parameters
+    ----------
+    year : int
+        Year.
+    month : int
+        Month.
+    day : int
+        Day.
+    hour : float
+        Hour expressed as decimal fraction (e.g. 20.75 = 20:45 pm).
+    lat : float
+        Latitude in degrees.
+    lon : float
+        Longitude in degrees.
+    elevdlim : float, default: -2.5
+        Elevation day/night delimiter in degrees above horizon.
+
+    Returns
+    -------
+    bool
+        True if daytime, else False.
+
+    Raises
+    ------
+    ValueError
+        If either year, month, day, hour, lat or lon is numerically invalid or None
+        of if either month, day, hour or lat is not in valid range.
+    """
+    if not isvalid(year):
+        raise ValueError("year is missing")
+    if not isvalid(month):
+        raise ValueError("month is missing")
+    if not isvalid(day):
+        raise ValueError("day is missing")
+    if not isvalid(hour):
+        raise ValueError("hour is missing")
+    if not isvalid(lat):
+        raise ValueError("lat is missing")
+    if not isvalid(lon):
+        raise ValueError("lon is missing")
+    if not (1 <= month <= 12):
+        raise ValueError("Month not in range 1-12")
+    if not (1 <= day <= 31):
+        raise ValueError("Day not in range 1-31")
+    if not (0 <= hour <= 24):
+        raise ValueError("Hour not in range 0-24")
+    if not (90 >= lat >= -90):
+        raise ValueError("Latitude not in range -90 to 90")
+
+    daytime = False
+
+    year2 = year
+    day2 = day_in_year(year, month, day)
+    hour2 = math.floor(hour)
+    minute2 = int((hour - math.floor(hour)) * 60.0)
+    lat2 = lat
+    lon2 = lon
+    if lat == 0:
+        lat2 = 0.0001
+    if lon == 0:
+        lon2 = 0.0001
+
+    _, elevation, _, _, _, _ = sunangle(year2, day2, hour2, minute2, 0, 0, 0, lat2, lon2)
+
+    if elevation > elevdlim:
+        daytime = True
+
+    return daytime
+
+
+def is_monotonic(inarr: np.ndarray | Sequence[int | float]) -> bool:
+    """
+    Test if elements in an array are increasing monotonically.
+
+    I.e. each element is greater than or equal to the preceding element.
+
+    Parameters
+    ----------
+    inarr : array-like of datetime, shape (n,)
+        1-dimensional date array.
+
+    Returns
+    -------
+    bool
+        True if array is increasing monotonically, False otherwise.
+    """
+    for i in range(1, len(inarr)):
+        if inarr[i] < inarr[i - 1]:
+            return False
+    return True
