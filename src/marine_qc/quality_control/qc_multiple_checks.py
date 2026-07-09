@@ -9,6 +9,17 @@ import pandas as pd
 
 from ..helpers.auxiliary import failed, passed, untested
 from ..helpers.external_clim import get_climatological_value  # noqa: F401
+from .qc_buoy_tracking import (  # noqa: F401
+    do_aground_check,
+    do_new_aground_check,
+    do_new_speed_check,
+    do_speed_check,
+    do_sst_biased_check,
+    do_sst_biased_noisy_short_check,
+    do_sst_end_tail_check,
+    do_sst_noisy_check,
+    do_sst_start_tail_check,
+)
 from .qc_grouped_reports import (  # noqa: F401
     do_bayesian_buddy_check,
     do_mds_buddy_check,
