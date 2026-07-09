@@ -111,7 +111,7 @@ dependencies = [
 [tool]
 
 [tool.bumpversion]
-current_version = "0.3.3-dev.10"
+current_version = "0.3.3-dev.11"
 commit = true
 commit_args = "--no-verify --signoff"
 tag = false
