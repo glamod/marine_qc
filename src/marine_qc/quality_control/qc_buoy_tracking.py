@@ -1739,8 +1739,8 @@ class SSTBiasedNoisyChecker:
 @post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_speed_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     speed_limit: float,
     min_win_period: float,
@@ -1751,10 +1751,10 @@ def do_speed_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     speed_limit : float
@@ -1796,8 +1796,8 @@ def do_speed_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_new_speed_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     speed_limit: float,
     min_win_period: float,
@@ -1811,10 +1811,10 @@ def do_new_speed_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     speed_limit : float
@@ -1874,10 +1874,10 @@ def do_new_speed_check(
 
 
 @post_format_return_type(["lat"])
-@inspect_arrays(["lon", "lat", "date"])
+@inspect_arrays(["lat", "lon", "date"])
 def do_aground_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     smooth_win: int,
     min_win_period: int,
@@ -1888,10 +1888,10 @@ def do_aground_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     smooth_win : int
@@ -1932,8 +1932,8 @@ def do_aground_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_new_aground_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     smooth_win: int,
     min_win_period: int,
@@ -1943,10 +1943,10 @@ def do_new_aground_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     smooth_win : int
@@ -1982,8 +1982,8 @@ def do_new_aground_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
 def do_sst_start_tail_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
@@ -2003,10 +2003,10 @@ def do_sst_start_tail_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
@@ -2090,8 +2090,8 @@ def do_sst_start_tail_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
 def do_sst_end_tail_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
@@ -2111,10 +2111,10 @@ def do_sst_end_tail_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
@@ -2198,8 +2198,8 @@ def do_sst_end_tail_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
@@ -2218,10 +2218,10 @@ def do_sst_biased_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
@@ -2298,8 +2298,8 @@ def do_sst_biased_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_noisy_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
@@ -2318,10 +2318,10 @@ def do_sst_noisy_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`
@@ -2398,8 +2398,8 @@ def do_sst_noisy_check(
 @post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_noisy_short_check(
-    lon: SequenceNumberType,
     lat: SequenceNumberType,
+    lon: SequenceNumberType,
     date: SequenceDatetimeType,
     sst: SequenceNumberType,
     ostia: SequenceNumberType,
@@ -2418,10 +2418,10 @@ def do_sst_biased_noisy_short_check(
 
     Parameters
     ----------
-    lon : :py:obj:`~marine_qc.SequenceNumberType`
-        1-dimensional longitude array in degrees.
     lat : :py:obj:`~marine_qc.SequenceNumberType`
         1-dimensional latitude array in degrees.
+    lon : :py:obj:`~marine_qc.SequenceNumberType`
+        1-dimensional longitude array in degrees.
     date : :py:obj:`~marine_qc.SequenceDatetimeType`
         1-dimensional date array.
     sst : :py:obj:`~marine_qc.SequenceNumberType`

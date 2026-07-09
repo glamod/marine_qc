@@ -319,13 +319,13 @@ def aground_check_test_data(selector):
     ],  # fmt: off
 )
 def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, expected, warns):
-    lats, lons, dates = aground_check_test_data(selector)
+    lat, lon, date = aground_check_test_data(selector)
     if warns:
         with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
+            qc_outcomes = tqc.do_aground_check(lat, lon, date, smooth_win, min_win_period, max_win_period)
     else:
-        qc_outcomes = tqc.do_aground_check(lons, lats, dates, smooth_win, min_win_period, max_win_period)
-    for i in range(len(lons)):
+        qc_outcomes = tqc.do_aground_check(lat, lon, date, smooth_win, min_win_period, max_win_period)
+    for i in range(len(lat)):
         assert qc_outcomes[i] == expected[i]
 
 
@@ -355,13 +355,13 @@ def test_generic_aground(selector, smooth_win, min_win_period, max_win_period, e
     ],  # fmt: off
 )
 def test_new_generic_aground(selector, smooth_win, min_win_period, expected, warns):
-    lats, lons, dates = aground_check_test_data(selector)
+    lat, lon, date = aground_check_test_data(selector)
     if warns:
         with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_new_aground_check(lons, lats, dates, smooth_win, min_win_period)
+            qc_outcomes = tqc.do_new_aground_check(lat, lon, date, smooth_win, min_win_period)
     else:
-        qc_outcomes = tqc.do_new_aground_check(lons, lats, dates, smooth_win, min_win_period)
-    for i in range(len(lons)):
+        qc_outcomes = tqc.do_new_aground_check(lat, lon, date, smooth_win, min_win_period)
+    for i in range(len(lat)):
         assert qc_outcomes[i] == expected[i]
 
 
@@ -583,12 +583,12 @@ def speed_check_data(selector):
     ],  # fmt: off
 )
 def test_generic_speed_tests(selector, speed_limit, min_win_period, max_win_period, expected, warns):
-    lats, lons, dates = speed_check_data(selector)
+    lat, lon, date = speed_check_data(selector)
     if warns:
         with pytest.warns(UserWarning):
-            qc_outcomes = tqc.do_speed_check(lons, lats, dates, speed_limit, min_win_period, max_win_period)
+            qc_outcomes = tqc.do_speed_check(lat, lon, date, speed_limit, min_win_period, max_win_period)
     else:
-        qc_outcomes = tqc.do_speed_check(lons, lats, dates, speed_limit, min_win_period, max_win_period)
+        qc_outcomes = tqc.do_speed_check(lat, lon, date, speed_limit, min_win_period, max_win_period)
     for i in range(len(qc_outcomes)):
         assert qc_outcomes[i] == expected[i]
 
@@ -638,13 +638,13 @@ def test_generic_new_speed_tests(
     expected,
     warns,
 ):
-    lats, lons, dates = speed_check_data(selector)
+    lat, lon, date = speed_check_data(selector)
     if warns:
         with pytest.warns(UserWarning):
             qc_outcomes = tqc.do_new_speed_check(
-                lons,
-                lats,
-                dates,
+                lat,
+                lon,
+                date,
                 speed_limit,
                 min_win_period,
                 ship_speed_limit,
@@ -654,9 +654,9 @@ def test_generic_new_speed_tests(
             )
     else:
         qc_outcomes = tqc.do_new_speed_check(
-            lons,
-            lats,
-            dates,
+            lat,
+            lon,
+            date,
             speed_limit,
             min_win_period,
             ship_speed_limit,
@@ -1473,14 +1473,14 @@ def test_generic_tailcheck(
     expected2,
     warns,
 ):
-    lat, lon, dates, sst, ostia, bgvar, ice = tailcheck_vals(selector)
+    lat, lon, date, sst, ostia, bgvar, ice = tailcheck_vals(selector)
     # First do the start tail check
     if warns:
         with pytest.warns(UserWarning):
             qc_outcomes = tqc.do_sst_start_tail_check(
-                lon,
                 lat,
-                dates,
+                lon,
+                date,
                 sst,
                 ostia,
                 ice,
@@ -1496,9 +1496,9 @@ def test_generic_tailcheck(
             )
     else:
         qc_outcomes = tqc.do_sst_start_tail_check(
-            lon,
             lat,
-            dates,
+            lon,
+            date,
             sst,
             ostia,
             ice,
@@ -1519,9 +1519,9 @@ def test_generic_tailcheck(
     if warns:
         with pytest.warns(UserWarning):
             qc_outcomes = tqc.do_sst_end_tail_check(
-                lon,
                 lat,
-                dates,
+                lon,
+                date,
                 sst,
                 ostia,
                 ice,
@@ -1537,9 +1537,9 @@ def test_generic_tailcheck(
             )
     else:
         qc_outcomes = tqc.do_sst_end_tail_check(
-            lon,
             lat,
-            dates,
+            lon,
+            date,
             sst,
             ostia,
             ice,
@@ -2340,12 +2340,12 @@ def test_sst_biased_noisy_check_generic(
     expected_short,
     warns,
 ):
-    lat, lon, dates, sst, ostia, bgvar, ice = sst_biased_noisy_check_vals(selector)
+    lat, lon, date, sst, ostia, bgvar, ice = sst_biased_noisy_check_vals(selector)
 
     inputs = [
-        lon,
         lat,
-        dates,
+        lon,
+        date,
         sst,
         ostia,
         ice,
