@@ -42,7 +42,7 @@ from ..helpers.time_control import (
     pentad_to_month_day,
     which_pentad,
 )
-from .qc_buoy_tracking import is_monotonic
+from .track_check_utils import is_monotonic
 
 
 def get_threshold_multiplier(total_nobs: int, nob_limits: list[int], multiplier_values: list[float]) -> float:
