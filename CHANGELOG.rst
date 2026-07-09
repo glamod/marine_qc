@@ -17,11 +17,16 @@ New features and environments
 * add new function to combine results from multiple QC checks into a single flag: combine_qr_results (:issue:`242`, :pull:`245`)
 * add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
 * optionally, add coastlines in plots using visualization functions (:pull:`248`)
+* add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Both `do_mising_value_check` and `do_missing_value_clim_check` now return `0` (pass) for numerically invalid values, otherwise `1` (fail) (:issue:`205`, :pull:`206`)
 * The minimum versions of several dependencies have been set to support Python 3.11 or higher (numpy >= 1.24.0, pandas >= 3.0.0, scipy >= 1.11.0, xarray >= v2025.07.0, xclim >= 0.56) (:pull:`224`)
+* convert buoy tracking QC outcomes from ``float`` to ``int`` (:issue:`249`, :pull:`250`)
+* implement decorator ``post_format_return_type`` into buoy tracking QC functions to convert output types to input types (:issue:`249`, :pull:`250`)
+* convert all input parameter names from the plutal into the singular in buoy tracking QC function, for instance "lats" to "lat" or "lons" to "lon" (:issue:`249`, :pull:`250`)
+* sort parameter order list in buoy tracking QC functions equivalent to other QC functions, for instance ["lon", "lat", "date"] to ["lat", "lon", "date"] (:issue:`249`, :pull:`250`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -34,6 +39,10 @@ Internal changes
 * new helper function ``quality_control.qc_individual_report._do_time_check`` that is used in both "do_time_check" and "do_datetime_check" (:pull:`246`)
 * new helper function ``quality_control.qc_individual_report._do_date_check`` that is used in both "do_date_check" and "do_datetime_check" (:pull:`246`)
 * explicitly convert intermediate result in ``quality_control.helpers.time_control.dayin_year`` to a python integer to fix incompatible types assignment (:pull:`247`)
+* new helper function quality_control.qc_individual_report._do_time_check that is used in both do_time_check and do_datetime_check (:pull:`246`)
+* new helper function quality_control.qc_individual_report._do_date_check that is used in both do_date_check and do_datetime_check (:pull:`246`)
+* rename quality_control.buoy_tracking_qc into quality_control.qc_buoy_tracking (:issue:`249`, :pull:`250`)
+* move "is_monotonic" and "track_day_test" from quality_control.qc_buoy_tracking to quality_control.track_check_utils (:pull:`250`)
 
 0.3.2 (2023-04-21)
 ------------------

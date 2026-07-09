@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .buoy_tracking_qc import (
+from .qc_buoy_tracking import (
     do_aground_check,
     do_new_aground_check,
     do_new_speed_check,
