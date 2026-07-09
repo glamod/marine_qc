@@ -16,7 +16,18 @@ import numpy as np
 import pandas as pd
 
 from ..helpers.astronomical_geometry import sunangle
-from ..helpers.auxiliary import SequenceDatetimeType, SequenceNumberType, ensure_arrays, failed, inspect_arrays, isvalid, passed, untestable, untested
+from ..helpers.auxiliary import (
+    SequenceDatetimeType,
+    SequenceNumberType,
+    ensure_arrays,
+    failed,
+    inspect_arrays,
+    isvalid,
+    passed,
+    post_format_return_type,
+    untestable,
+    untested,
+)
 from ..helpers.spherical_geometry import sphere_distance
 from ..helpers.statistics import trim_mean, trim_std
 from ..helpers.time_control import convert_date_to_hours, day_in_year
@@ -1725,6 +1736,7 @@ class SSTBiasedNoisyChecker:
             self.qc_outcomes_short[:] = failed
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_speed_check(
     lon: SequenceNumberType,
@@ -1781,6 +1793,7 @@ def do_speed_check(
     return checker.get_qc_outcomes()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_new_speed_check(
     lon: SequenceNumberType,
@@ -1860,6 +1873,7 @@ def do_new_speed_check(
     return checker.get_qc_outcomes()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_aground_check(
     lon: SequenceNumberType,
@@ -1915,6 +1929,7 @@ def do_aground_check(
     return checker.get_qc_outcomes()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lon", "lat", "date"])
 def do_new_aground_check(
     lon: SequenceNumberType,
@@ -1964,6 +1979,7 @@ def do_new_aground_check(
     return checker.get_qc_outcomes()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
 def do_sst_start_tail_check(
     lon: SequenceNumberType,
@@ -2071,6 +2087,7 @@ def do_sst_start_tail_check(
     return checker.get_qc_outcomes()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
 def do_sst_end_tail_check(
     lon: SequenceNumberType,
@@ -2178,6 +2195,7 @@ def do_sst_end_tail_check(
     return checker.get_qc_outcomes()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_check(
     lon: SequenceNumberType,
@@ -2277,6 +2295,7 @@ def do_sst_biased_check(
     return checker.get_qc_outcomes_bias()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_noisy_check(
     lon: SequenceNumberType,
@@ -2376,6 +2395,7 @@ def do_sst_noisy_check(
     return checker.get_qc_outcomes_noise()
 
 
+@post_format_return_type(["lat"])
 @inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
 def do_sst_biased_noisy_short_check(
     lon: SequenceNumberType,
