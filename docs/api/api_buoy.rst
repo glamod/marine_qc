@@ -19,7 +19,7 @@ Buoy tracking classes
 Buoy tracking functions
 -----------------------
 
-.. autofunction:: marine_qc.quality_control.qc_buoy_tracking_.track_day_test
+.. autofunction:: marine_qc.quality_control.qc_buoy_tracking.track_day_test
    :noindex:
 
 .. autofunction:: marine_qc.quality_control.qc_buoy_tracking.is_monotonic
