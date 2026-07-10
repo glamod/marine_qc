@@ -28,6 +28,7 @@ Breaking changes
 * implement decorator ``post_format_return_type`` into buoy tracking QC functions to convert output types to input types (:issue:`249`, :pull:`250`)
 * convert all input parameter names from the plutal into the singular in buoy tracking QC function, for instance "lats" to "lat" or "lons" to "lon" (:issue:`249`, :pull:`250`)
 * sort parameter order list in buoy tracking QC functions equivalent to other QC functions, for instance ["lon", "lat", "date"] to ["lat", "lon", "date"] (:issue:`249`, :pull:`250`)
+* ``cartopy`` has been added to the dependencies (:pull:`235`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
