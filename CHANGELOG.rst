@@ -18,6 +18,7 @@ New features and environments
 * add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
 * optionally, add coastlines in plots using visualization functions (:pull:`248`)
 * add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
+* the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :pull:`235`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -27,6 +28,7 @@ Breaking changes
 * implement decorator ``post_format_return_type`` into buoy tracking QC functions to convert output types to input types (:issue:`249`, :pull:`250`)
 * convert all input parameter names from the plutal into the singular in buoy tracking QC function, for instance "lats" to "lat" or "lons" to "lon" (:issue:`249`, :pull:`250`)
 * sort parameter order list in buoy tracking QC functions equivalent to other QC functions, for instance ["lon", "lat", "date"] to ["lat", "lon", "date"] (:issue:`249`, :pull:`250`)
+* ``cartopy`` has been added to the dependencies (:pull:`235`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -72,7 +74,7 @@ Internal changes
   * Various dependency updates.
 
 * sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
-* correct reporsitroy url in documentation (:pull:`185`)
+* correct repository url in documentation (:pull:`185`)
 * `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
 * copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
 

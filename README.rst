@@ -139,8 +139,8 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://coveralls.io/github/glamod/marine_qc?branch=main
         :alt: Coveralls
 
-.. |docs| image:: https://readthedocs.org/projects/marine_qc/badge/?version=latest
-        :target: https://marine-qc.readthedocs.io/en/latest/
+.. |docs| image:: https://readthedocs.org/projects/marine_qc/badge/?version=stable
+        :target: https://marine-qc.readthedocs.io/en/stable/
         :alt: Documentation Status
 
 .. |fair-software| image:: https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F-green

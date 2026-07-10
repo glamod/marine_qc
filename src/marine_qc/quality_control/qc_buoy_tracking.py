@@ -89,10 +89,10 @@ class SpeedChecker:
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
-    min_win_period : float
+    min_win_period : int
             Minimum period of time in days over which position is assessed for speed estimates (see
             description).
-    max_win_period : float
+    max_win_period : int
             Maximum period of time in days over which position is assessed for speed estimates
             (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
             min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
@@ -104,8 +104,8 @@ class SpeedChecker:
         lat: SequenceNumberType,
         date: SequenceDatetimeType,
         speed_limit: float,
-        min_win_period: float,
-        max_win_period: float,
+        min_win_period: int,
+        max_win_period: int,
     ) -> None:
         """
         Create an object for performing the Speed Check.
@@ -120,10 +120,10 @@ class SpeedChecker:
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
-        min_win_period : float
+        min_win_period : int
             Minimum period of time in days over which position is assessed for speed estimates (see
             description).
-        max_win_period : float
+        max_win_period : int
             Maximum period of time in days over which position is assessed for speed estimates
             (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
             min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
@@ -307,7 +307,7 @@ class NewSpeedChecker:
             1-dimensional date array.
     speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
-    min_win_period : float
+    min_win_period : int
             Minimum period of time in days over which position is assessed for speed estimates (see description).
     ship_speed_limit : float
             Ship speed limit for the IQUAM track check.
@@ -327,7 +327,7 @@ class NewSpeedChecker:
         lat: SequenceNumberType,
         date: SequenceDatetimeType,
         speed_limit: float,
-        min_win_period: float,
+        min_win_period: int,
         ship_speed_limit: float,
         delta_d: float,
         delta_t: float,
@@ -346,7 +346,7 @@ class NewSpeedChecker:
             1-dimensional date array.
         speed_limit : float
             Maximum allowable speed for an in situ drifting buoy (metres per second).
-        min_win_period : float
+        min_win_period : int
             Minimum period of time in days over which position is assessed for speed estimates (see description).
         ship_speed_limit : float
             Ship speed limit for the IQUAM track check.
@@ -1632,8 +1632,8 @@ def do_speed_check(
     lon: SequenceNumberType,
     date: SequenceDatetimeType,
     speed_limit: float,
-    min_win_period: float,
-    max_win_period: float,
+    min_win_period: int,
+    max_win_period: int,
 ) -> np.ndarray:
     """
     Perform the Track QC speed check.
@@ -1648,10 +1648,10 @@ def do_speed_check(
         1-dimensional date array.
     speed_limit : float
         Maximum allowable speed for an in situ drifting buoy (metres per second).
-    min_win_period : float
+    min_win_period : int
         Minimum period of time in days over which position is assessed for speed estimates (see
         description).
-    max_win_period : float
+    max_win_period : int
         Maximum period of time in days over which position is assessed for speed estimates
         (this should be greater than min_win_period and allow for some erratic temporal sampling e.g.
         min_win_period + 0.2 to allow for gaps of up to 0.2 - days in sampling).
@@ -1689,7 +1689,7 @@ def do_new_speed_check(
     lon: SequenceNumberType,
     date: SequenceDatetimeType,
     speed_limit: float,
-    min_win_period: float,
+    min_win_period: int,
     ship_speed_limit: float,
     delta_d: float,
     delta_t: float,
@@ -1708,7 +1708,7 @@ def do_new_speed_check(
         1-dimensional date array.
     speed_limit : float
         Maximum allowable speed for an in situ drifting buoy (metres per second).
-    min_win_period : float
+    min_win_period : int
         Minimum period of time in days over which position is assessed for speed estimates (see description).
     ship_speed_limit : float
         Ship speed limit for the IQUAM track check.

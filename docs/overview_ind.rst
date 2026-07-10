@@ -10,7 +10,7 @@ This page gives a brief overview of each of the QC functions currently implement
 please see the API. Titles of individual sections below link to the relevant pages in the API.
 The titles of the individual sections below link directly to the corresponding API pages.
 
-The tests in work on individual marine reports, either singly or in arrays (it doesn't change the outcome).
+The tests work on individual marine reports, either singly or in arrays (it doesn't change the outcome).
 These include simple checks of whether the location, time and date of the observation are
 valid as well as more complex checks involving comparison to climatologies.
 

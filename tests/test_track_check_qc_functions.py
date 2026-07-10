@@ -196,7 +196,7 @@ def test_do_track_check_no_obs(ship_frame):
         max_absolute_speed=40.0,
         max_midpoint_discrepancy=150.0,
     )
-    assert len(trk) == 0
+    assert len(trk) == passed
 
 
 def test_do_track_check_passed(ship_frame):

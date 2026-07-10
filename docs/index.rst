@@ -26,6 +26,11 @@ modular way via a standardised interface.
    overview_buoy_tracking
    overview_dup
    theoreticals
+   notebooks/qc_individual
+   notebooks/qc_sequential
+   notebooks/qc_grouped
+   notebooks/qc_buoys
+   notebooks/duplicates
    contributing
    releasing
    dev_guide

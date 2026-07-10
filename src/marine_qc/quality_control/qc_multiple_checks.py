@@ -27,8 +27,11 @@ from .qc_grouped_reports import (  # noqa: F401
 from .qc_individual_reports import (  # noqa: F401
     do_climatology_check,
     do_date_check,
+    do_datetime_check,
     do_day_check,
     do_hard_limit_check,
+    do_landlocked_check,
+    do_maritime_check,
     do_missing_value_check,
     do_missing_value_clim_check,
     do_night_check,
@@ -298,7 +301,7 @@ def _get_preprocessed_args(arguments: Mapping[str, str], preprocessed: Mapping[s
     """
     args = {}
     for k, v in arguments.items():
-        if v == "__preprocessed__":
+        if isinstance(v, str) and v == "__preprocessed__":
             v = preprocessed[k]
         args[k] = v
     return args
