@@ -90,7 +90,6 @@ def get_sequential_data():
     base_speed = 5.0
     amp_speed = 1.0
     speed_ms = base_speed + amp_speed * np.sin(2 * np.pi * np.arange(n) / 24)
-    speed_kmh = speed_ms * 3.6
 
     base_dir = 120.0
     amp_dir = 30.0
@@ -119,8 +118,6 @@ def get_sequential_data():
             "lat": lat,
             "lon": lon,
             "sst": sst,
-            "vsi": speed_kmh,
-            "dsi": heading_deg,
         }
     )
 
