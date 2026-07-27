@@ -28,12 +28,12 @@ def _convert_function2(value):
     return value
 
 
-@inspect_arrays(["value1", "value2"])
+@inspect_arrays("value1", "value2")
 def _array_function(value1, value2):
     return value1, value2
 
 
-@inspect_arrays(["value1", "value3"])
+@inspect_arrays("value1", "value3")
 def _array_function2(value1, value2):
     return value1, value2
 
@@ -54,7 +54,7 @@ def test_convert_units(units):
     assert result == 30.0 + 273.15
 
 
-@post_format_return_type(["value"])
+@post_format_return_type("value")
 def _format_function(value):
     return pd.Series(value) + 5
 
@@ -98,7 +98,7 @@ def test_inspect_arrays_raise_dimension():
 
 
 def test_inspect_arrays_raise_length():
-    error_msg = "Input ['value1', 'value2'] must all have the same length."
+    error_msg = "Input ('value1', 'value2') must all have the same length."
     escaped_msg = re.escape(error_msg)
     with pytest.raises(ValueError, match=escaped_msg):
         _array_function([1, 2, 3, 4], [1, 2, 3])
@@ -155,7 +155,7 @@ def test_post_format_return_type_simple(value, expected, array_type):
 )
 def test_post_format_return_type_multiple(dtype, multiple, expected_len):
     @post_format_return_type(
-        params=["value"],
+        "value",
         dtype=dtype,
         multiple=multiple,
         keep_index=False,
@@ -174,7 +174,7 @@ def test_post_format_return_type_multiple(dtype, multiple, expected_len):
 
 def test_post_format_return_type_raises():
     @post_format_return_type(
-        params=["value"],
+        "value",
         dtype=[int, int],
         multiple=False,
         keep_index=False,
