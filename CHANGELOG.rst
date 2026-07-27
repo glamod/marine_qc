@@ -18,7 +18,7 @@ New features and environments
 * add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
 * optionally, add coastlines in plots using visualization functions (:pull:`248`)
 * add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
-* the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :pull:`235`)
+* the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :issue:`251`, :pull:`235`, :pull:`255`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
