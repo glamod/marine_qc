@@ -15,6 +15,7 @@ from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,
+    args_from_data,
     convert_units,
     ensure_arrays,
     failed,
@@ -102,7 +103,7 @@ class SuperObsGrid:
         self.nobs = np.zeros((360, 180, 73))  # type: np.ndarray
 
     @convert_date(["month", "day"])
-    @inspect_arrays(["lat", "lon", "value", "month", "day"])
+    @inspect_arrays("lat", "lon", "value", "month", "day")
     def add_multiple_observations(
         self,
         lat: SequenceNumberType,
@@ -483,8 +484,9 @@ class SuperObsGrid:
         return float(self.buddy_stdev[xindex, yindex, pindex])
 
 
-@post_format_return_type(["value"])
-@inspect_arrays(["lat", "lon", "date", "value", "climatology"])
+@args_from_data("lat", "lon", "date", "value")
+@post_format_return_type("value")
+@inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
 def do_mds_buddy_check(
@@ -620,8 +622,9 @@ def do_mds_buddy_check(
     return qc_outcomes
 
 
-@post_format_return_type(["value"])
-@inspect_arrays(["lat", "lon", "date", "value", "climatology"])
+@args_from_data("lat", "lon", "date", "value")
+@post_format_return_type("value")
+@inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
 def do_bayesian_buddy_check(

@@ -16,6 +16,7 @@ import pandas as pd
 from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceNumberType,
+    args_from_data,
     ensure_arrays,
     failed,
     inspect_arrays,
@@ -1625,8 +1626,9 @@ class SSTBiasedNoisyChecker:
             self.qc_outcomes_short[:] = failed
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lon", "lat", "date"])
+@args_from_data("lat", "lon", "date")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date")
 def do_speed_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1682,8 +1684,9 @@ def do_speed_check(
     return checker.get_qc_outcomes()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lon", "lat", "date"])
+@args_from_data("lat", "lon", "date")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date")
 def do_new_speed_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1762,8 +1765,9 @@ def do_new_speed_check(
     return checker.get_qc_outcomes()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lat", "lon", "date"])
+@args_from_data("lat", "lon", "date")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date")
 def do_aground_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1818,8 +1822,9 @@ def do_aground_check(
     return checker.get_qc_outcomes()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lon", "lat", "date"])
+@args_from_data("lat", "lon", "date")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date")
 def do_new_aground_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1868,8 +1873,9 @@ def do_new_aground_check(
     return checker.get_qc_outcomes()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
+@args_from_data("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
 def do_sst_start_tail_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1976,8 +1982,9 @@ def do_sst_start_tail_check(
     return checker.get_qc_outcomes()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lat", "lon", "sst", "ostia", "ice", "bgvar", "date"])
+@args_from_data("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
 def do_sst_end_tail_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -2084,8 +2091,9 @@ def do_sst_end_tail_check(
     return checker.get_qc_outcomes()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
+@args_from_data("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
 def do_sst_biased_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -2184,8 +2192,9 @@ def do_sst_biased_check(
     return checker.get_qc_outcomes_bias()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
+@args_from_data("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
 def do_sst_noisy_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -2284,8 +2293,9 @@ def do_sst_noisy_check(
     return checker.get_qc_outcomes_noise()
 
 
-@post_format_return_type(["lat"])
-@inspect_arrays(["lat", "lon", "date", "sst", "ostia", "bgvar", "ice"])
+@args_from_data("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
+@post_format_return_type("lat")
+@inspect_arrays("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
 def do_sst_biased_noisy_short_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,

@@ -842,7 +842,7 @@ def duplicate_check(
     return DupDetect(groups, settings, data_orig)
 
 
-@post_format_return_type(["station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected"], multiple=True, dtype=None, keep_index=True)
+@post_format_return_type("station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected", multiple=True, dtype=None, keep_index=True)
 def remove_duplicates(
     station_id: SequenceStrType | None = None,
     lat: SequenceNumberType | None = None,
@@ -975,7 +975,7 @@ def remove_duplicates(
     return detected.remove_duplicates(keep=keep)
 
 
-@post_format_return_type(["station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected"])
+@post_format_return_type("station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected")
 def flag_duplicates(
     station_id: SequenceStrType | None = None,
     lat: SequenceNumberType | None = None,
@@ -1103,7 +1103,7 @@ def flag_duplicates(
     return detected.flag_duplicates(keep=keep)
 
 
-@post_format_return_type(["station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected"])
+@post_format_return_type("station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected")
 def get_duplicates(
     station_id: SequenceStrType | None = None,
     lat: SequenceNumberType | None = None,

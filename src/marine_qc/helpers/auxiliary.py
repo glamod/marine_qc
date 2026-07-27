@@ -438,9 +438,9 @@ def generic_decorator(
 
 
 def post_format_return_type(
-    params: list[str], dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
+    *params: str, dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
 ) -> Callable[..., Any]:
-    """
+    r"""
     Decorator to format a function's return value to match the type of its original input(s).
 
     This decorator ensures that the output of the decorated function is converted back
@@ -451,7 +451,7 @@ def post_format_return_type(
 
     Parameters
     ----------
-    params : list of str
+    \*params : str
         List of parameter names whose original input types should be used to
         format the return value.
     dtype : type or list of type, optional, default: int
@@ -514,8 +514,8 @@ def post_format_return_type(
     return generic_decorator(post_handler=post_handler)
 
 
-def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable[..., Any]:
-    """
+def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any]:
+    r"""
     Decorator to convert and validate specified function input parameters as 1D NumPy arrays.
 
     This decorator ensures that specified input arguments are sequence-like, converts them
@@ -525,7 +525,7 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable[...
 
     Parameters
     ----------
-    params : list of str
+    \*params : str
         Names of parameters to inspect in the decorated function. Each specified parameter
         will be converted to a 1D NumPy array and validated.
     sortby : str, optional
@@ -552,7 +552,7 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable[...
 
     Examples
     --------
-    >>> @inspect_arrays(["a", "b"])
+    >>> @inspect_arrays("a", "b")
     ... def add_arrays(a, b):
     ...     return a + b
 
@@ -733,3 +733,21 @@ def convert_units(**units_by_name: str) -> Callable[..., Any]:
     DECORATOR_KWARGS[pre_handler] = {"units"}
 
     return generic_decorator(pre_handler=pre_handler)
+
+
+def args_from_data(*params: str) -> Callable[..., Any]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            if "data" not in kwargs:
+                return func(*args, **kwargs)
+            if len(args) > 0:
+                raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
+            data = kwargs["data"].copy()
+            kwargs.pop("data")
+            args = (data[param] for param in params)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator

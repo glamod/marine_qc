@@ -16,6 +16,7 @@ from ..helpers.auxiliary import (
     ValueFloatType,
     ValueIntType,
     ValueNumberType,
+    args_from_data,
     convert_units,
     ensure_arrays,
     failed,
@@ -244,8 +245,9 @@ def _do_daytime_check(
     return result
 
 
-@post_format_return_type(["value"])
-@inspect_arrays(["value"])
+@args_from_data("value")
+@post_format_return_type("value")
+@inspect_arrays("value")
 def value_check(value: ValueNumberType, valid_flag: int = passed, invalid_flag: int = failed) -> ValueIntType:
     """
     Check if a value is equal to None or numerically invalid (NaN).
@@ -281,8 +283,9 @@ def value_check(value: ValueNumberType, valid_flag: int = passed, invalid_flag: 
     return result
 
 
-@post_format_return_type(["lat", "lon"])
-@inspect_arrays(["lat", "lon"])
+@args_from_data("lat", "lon")
+@post_format_return_type("lat", "lon")
+@inspect_arrays("lat", "lon")
 @convert_units(lat="degrees", lon="degrees")
 def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntType:
     """
@@ -332,9 +335,10 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
     return result
 
 
-@post_format_return_type(["date", "year"])
+@args_from_data("year", "month", "day")
+@post_format_return_type("date", "year")
 @convert_date(["year", "month", "day"])
-@inspect_arrays(["year", "month", "day"])
+@inspect_arrays("year", "month", "day")
 def do_date_check(
     date: ValueDatetimeType = None,
     year: ValueIntType = None,
@@ -384,9 +388,10 @@ def do_date_check(
     return _do_date_check(year_arr, month_arr, day_arr, year_init, year_end)
 
 
-@post_format_return_type(["date", "hour"])
+@args_from_data("hour")
+@post_format_return_type("date", "hour")
 @convert_date(["hour"])
-@inspect_arrays(["hour"])
+@inspect_arrays("hour")
 def do_time_check(
     date: ValueDatetimeType = None,
     hour: ValueFloatType = None,
@@ -422,9 +427,10 @@ def do_time_check(
     return _do_time_check(hour_arr)
 
 
-@post_format_return_type(["date", "year"])
+@args_from_data("year", "month", "day", "hour")
+@post_format_return_type("date", "year")
 @convert_date(["year", "month", "day", "hour"])
-@inspect_arrays(["year", "month", "day", "hour"])
+@inspect_arrays("year", "month", "day", "hour")
 def do_datetime_check(
     date: ValueDatetimeType = None,
     year: ValueIntType = None,
@@ -479,9 +485,10 @@ def do_datetime_check(
     return result
 
 
-@post_format_return_type(["date", "year"])
+@args_from_data("year", "month", "day", "hour", "lat", "lon")
+@post_format_return_type("date", "year")
 @convert_date(["year", "month", "day", "hour"])
-@inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
+@inspect_arrays("year", "month", "day", "hour", "lat", "lon")
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
     date: ValueDatetimeType = None,
@@ -559,9 +566,10 @@ def do_day_check(
     return _do_daytime_check(year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr, time_since_sun_above_horizon, mode="day")
 
 
-@post_format_return_type(["date", "year"])
+@args_from_data("year", "month", "day", "hour", "lat", "lon")
+@post_format_return_type("date", "year")
 @convert_date(["year", "month", "day", "hour"])
-@inspect_arrays(["year", "month", "day", "hour", "lat", "lon"])
+@inspect_arrays("year", "month", "day", "hour", "lat", "lon")
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(
     date: ValueDatetimeType = None,
@@ -677,7 +685,6 @@ def do_missing_value_check(value: ValueNumberType) -> ValueIntType:
     return value_check(value, valid_flag=failed, invalid_flag=passed)
 
 
-@inspect_climatology("climatology")
 def do_missing_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueIntType:
     r"""
     Check if a climatological value is equal to None or numerically invalid (NaN).
@@ -773,8 +780,9 @@ def do_valid_value_clim_check(climatology: ClimArgType, **kwargs: Any) -> ValueI
     return value_check(climatology)
 
 
-@post_format_return_type(["value"])
-@inspect_arrays(["value"])
+@args_from_data("value")
+@post_format_return_type("value")
+@inspect_arrays("value")
 @convert_units(value="unknown", limits="unknown")
 def do_hard_limit_check(
     value: ValueNumberType,
@@ -824,8 +832,9 @@ def do_hard_limit_check(
     return result
 
 
-@post_format_return_type(["value"])
-@inspect_arrays(["value", "climatology"])
+@args_from_data("value")
+@post_format_return_type("value")
+@inspect_arrays("value", "climatology")
 @convert_units(value="unknown", climatology="unknown")
 @inspect_climatology("climatology", optional="standard_deviation")
 def do_climatology_check(
@@ -935,8 +944,9 @@ def do_climatology_check(
     return result
 
 
-@post_format_return_type(["dpt", "at2"])
-@inspect_arrays(["dpt", "at2"])
+@args_from_data("dpt", "at2")
+@post_format_return_type("dpt", "at2")
+@inspect_arrays("dpt", "at2")
 @convert_units(dpt="K", at2="K")
 def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> ValueIntType:
     """
@@ -982,8 +992,9 @@ def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> Valu
     return result
 
 
-@post_format_return_type(["sst"])
-@inspect_arrays(["sst"])
+@args_from_data("sst")
+@post_format_return_type("sst")
+@inspect_arrays("sst")
 @convert_units(sst="K", freezing_point="K")
 def do_sst_freeze_check(
     sst: ValueNumberType,
@@ -1066,8 +1077,9 @@ def do_sst_freeze_check(
     return result
 
 
-@post_format_return_type(["wind_speed", "wind_direction"])
-@inspect_arrays(["wind_speed", "wind_direction"])
+@args_from_data("wind_speed", "wind_direction")
+@post_format_return_type("wind_speed", "wind_direction")
+@inspect_arrays("wind_speed", "wind_direction")
 def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: ValueNumberType) -> ValueIntType:
     """
     Test to compare windspeed to winddirection to check if they are consistent.
@@ -1167,8 +1179,9 @@ def _do_mask_check(
     return result
 
 
-@post_format_return_type(["lat", "lon"])
-@inspect_arrays(["lat", "lon", "land_sea_mask"])
+@args_from_data("lat", "lon")
+@post_format_return_type("lat", "lon")
+@inspect_arrays("lat", "lon", "land_sea_mask")
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("land_sea_mask")
 def do_landlocked_check(
@@ -1214,8 +1227,9 @@ def do_landlocked_check(
     return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=land_flag)
 
 
-@post_format_return_type(["lat", "lon"])
-@inspect_arrays(["lat", "lon", "sea_land_mask"])
+@args_from_data("lat", "lon")
+@post_format_return_type("lat", "lon")
+@inspect_arrays("lat", "lon", "sea_land_mask")
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("sea_land_mask")
 def do_maritime_check(
