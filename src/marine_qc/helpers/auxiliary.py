@@ -738,9 +738,84 @@ def convert_units(**units_by_name: str) -> Callable[..., Any]:
 
 
 def args_from_data(*params: str) -> Callable[..., Any]:
+    r"""
+    Decorator that extracts positional arguments from a pandas.DataFrame.
+
+    If the decorated function is called with a ``data`` keyword argument,
+    the specified columns are extracted from the pandas.DataFrame and passed
+    to the function as positional arguments. This provides an alternative calling
+    convention where required positional arguments can be supplied via a
+    pandas.DataFrame instead.
+
+    The decorated function must be called using either positional arguments
+    or the ``data`` keyword argument, but not both.
+
+    Parameters
+    ----------
+    \*params : str
+        Name(s) of the pandas.DataFrame columns that correspond to the required
+        positional arguments of the decorated function.
+
+    Returns
+    -------
+    Callable[..., Any]
+        A decorator that wraps a function and allows its positional arguments
+        to be obtained from a pandas.DataFrame passed via the ``data``
+        keyword argument.
+
+    Raises
+    ------
+    ValueError
+        If both positional arguments and `data` are provided.
+    """
+
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        """
+        Decorate a function to support extracting positional arguments from a pandas.DataFrame.
+
+        Parameters
+        ----------
+        func : Callable[..., Any]
+            The function to be decorated.
+
+        Returns
+        -------
+        Callable[..., Any]
+            A wrapped function that accepts either the original positional
+            arguments or a ``data`` keyword argument containing the required
+            columns.
+        """
+
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            r"""
+            Call the decorated function.
+
+            If ``data`` is provided as a keyword argument, the columns
+            specified when applying the decorator are extracted from the
+            pandas.DataFrame and passed to the wrapped function as positional
+            arguments. Otherwise, the original arguments are forwarded
+            unchanged.
+
+            Parameters
+            ----------
+            \*args : Any
+                Positional arguments passed to the wrapped function.
+            \**kwargs : Any
+                Keyword arguments passed to the wrapped function. May include
+                a ``data`` keyword containing a pandas.DataFrame.
+
+            Returns
+            -------
+            Any
+                The return value of the wrapped function.
+
+            Raises
+            ------
+            ValueError
+                If both positional arguments and the ``data`` keyword
+                argument are provided.
+            """
             if "data" not in kwargs:
                 return func(*args, **kwargs)
             if len(args) > 0:
