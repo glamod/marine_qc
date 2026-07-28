@@ -337,7 +337,7 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
 
 @args_from_data("year", "month", "day")
 @post_format_return_type("date", "year")
-@convert_date(["year", "month", "day"])
+@convert_date("year", "month", "day")
 @inspect_arrays("year", "month", "day")
 def do_date_check(
     date: ValueDatetimeType = None,
@@ -390,7 +390,7 @@ def do_date_check(
 
 @args_from_data("hour")
 @post_format_return_type("date", "hour")
-@convert_date(["hour"])
+@convert_date("hour")
 @inspect_arrays("hour")
 def do_time_check(
     date: ValueDatetimeType = None,
@@ -429,7 +429,7 @@ def do_time_check(
 
 @args_from_data("year", "month", "day", "hour")
 @post_format_return_type("date", "year")
-@convert_date(["year", "month", "day", "hour"])
+@convert_date("year", "month", "day", "hour")
 @inspect_arrays("year", "month", "day", "hour")
 def do_datetime_check(
     date: ValueDatetimeType = None,
@@ -487,7 +487,7 @@ def do_datetime_check(
 
 @args_from_data("year", "month", "day", "hour", "lat", "lon")
 @post_format_return_type("date", "year")
-@convert_date(["year", "month", "day", "hour"])
+@convert_date("year", "month", "day", "hour")
 @inspect_arrays("year", "month", "day", "hour", "lat", "lon")
 @convert_units(lat="degrees", lon="degrees")
 def do_day_check(
@@ -568,7 +568,7 @@ def do_day_check(
 
 @args_from_data("year", "month", "day", "hour", "lat", "lon")
 @post_format_return_type("date", "year")
-@convert_date(["year", "month", "day", "hour"])
+@convert_date("year", "month", "day", "hour")
 @inspect_arrays("year", "month", "day", "hour", "lat", "lon")
 @convert_units(lat="degrees", lon="degrees")
 def do_night_check(

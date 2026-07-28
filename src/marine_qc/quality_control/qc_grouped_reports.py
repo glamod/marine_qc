@@ -102,7 +102,7 @@ class SuperObsGrid:
         self.buddy_stdev = np.zeros((360, 180, 73))  # type: np.ndarray
         self.nobs = np.zeros((360, 180, 73))  # type: np.ndarray
 
-    @convert_date(["month", "day"])
+    @convert_date("month", "day")
     @inspect_arrays("lat", "lon", "value", "month", "day")
     def add_multiple_observations(
         self,

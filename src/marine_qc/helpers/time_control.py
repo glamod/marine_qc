@@ -23,8 +23,8 @@ from .auxiliary import (
 )
 
 
-def convert_date(params: list[str]) -> Callable[..., Any]:
-    """
+def convert_date(*params: str) -> Callable[..., Any]:
+    r"""
     Decorator to extract date components and inject them as function parameters.
 
     This decorator intercepts the 'date' argument from the function call, splits it into
@@ -33,7 +33,7 @@ def convert_date(params: list[str]) -> Callable[..., Any]:
 
     Parameters
     ----------
-    params : list of str
+    \*params : str
         List of parameter names corresponding to date components to be extracted and
         passed to the decorated function.
 
