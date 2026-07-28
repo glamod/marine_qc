@@ -10,6 +10,7 @@ from typing import Any, TypeAlias
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+import xarray as xr
 from pandas._libs import missing
 from pandas._libs.tslibs import nattype
 from xclim.core.units import convert_units_to, units
@@ -214,6 +215,7 @@ def format_return_type(
             result_array = result_array[0]
         if dtype is not None:
             return dtype(result_array)
+
     if isinstance(input_value, pd.Series):
         if keep_index is True and isinstance(result_array, pd.Series):
             index = result_array.index
@@ -222,12 +224,18 @@ def format_return_type(
         if dtype is None:
             return pd.Series(result_array, index=index)
         return pd.Series(result_array, index=index, dtype=dtype)
+
+    if isinstance(input_value, (xr.Dataset, xr.DataArray)):
+        return xr.DataArray(result_array, coords=input_value.coords, dims=input_value.dims)
+
     if isinstance(input_value, (list, tuple)):
         if isinstance(result_array, np.ndarray):
             return type(input_value)(result_array.tolist())
         return type(input_value)(result_array)
+
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
         return result_array.to_numpy()
+
     return result_array  # np.ndarray or fallback
 
 
@@ -590,8 +598,9 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
 
             value = arguments[param]
             arr = np.atleast_1d(arguments[param])
-            if arr.ndim != 1:
-                raise ValueError(f"Input '{param}' must be one-dimensional.")
+
+            # if arr.ndim != 1:
+            #    raise ValueError(f"Input '{param}' must be one-dimensional.")
 
             arguments[param] = arr
             if value is not None:
@@ -816,13 +825,23 @@ def args_from_data(*params: str) -> Callable[..., Any]:
                 If both positional arguments and the ``data`` keyword
                 argument are provided.
             """
+
+            def isin(param, data):
+                if isinstance(data, pd.DataFrame):
+                    return param in data.columns
+                elif isinstance(data, xr.DataArray):
+                    return param in data.coords or param in data.dims
+                elif isinstance(data, xr.Dataset):
+                    return param in data.data_vars or param in data.coords or param in data.dims
+                raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset not {type(data)}.")
+
             if "data" not in kwargs:
                 return func(*args, **kwargs)
             if len(args) > 0:
                 raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
             data = kwargs["data"].copy()
             kwargs.pop("data")
-            nargs = (data[param] for param in params if param in data.columns)
+            nargs = (data[param] for param in params if isin(param, data))
             return func(*nargs, **kwargs)
 
         return wrapper

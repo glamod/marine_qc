@@ -10,6 +10,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 from .auxiliary import (
     DECORATOR_KWARGS,
@@ -67,6 +68,9 @@ def convert_date(*params: str) -> Callable[..., Any]:
 
         if date is None:
             return
+
+        if isinstance(date, xr.DataArray):
+            date = date.values
 
         if is_scalar_like(date):
             scalar = True
