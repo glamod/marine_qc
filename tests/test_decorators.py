@@ -7,6 +7,7 @@ import pytest
 from pint.errors import DimensionalityError
 
 from marine_qc.helpers.auxiliary import (
+    args_from_data,
     convert_to,
     convert_units,
     ensure_arrays,
@@ -38,14 +39,19 @@ def _array_function2(value1, value2):
     return value1, value2
 
 
-@convert_date(["year", "month", "day"])
+@convert_date("year", "month", "day")
 def _date_function(date, year=None, month=None, day=None):
     return year, month, day
 
 
-@convert_date(["year2", "month", "day"])
+@convert_date("year2", "month", "day")
 def _date_function2(date, year=None, month=None, day=None):
     return year, month, day
+
+
+@args_from_data("lat", "lon")
+def _data_function(lat, lon):
+    return lat, lon
 
 
 @pytest.mark.parametrize("units", [{"value": "degC"}, "degC"])
@@ -57,6 +63,12 @@ def test_convert_units(units):
 @post_format_return_type("value")
 def _format_function(value):
     return pd.Series(value) + 5
+
+
+@args_from_data("date")
+@convert_date("year")
+def _combi_function(date=None, year=None):
+    return year
 
 
 def test_convert_units_no_conversion():
@@ -109,6 +121,47 @@ def test_inspect_arrays_raise_parameter():
         _array_function2(1, 2)
 
 
+def test_args_from_data_pass():
+    data = pd.DataFrame(
+        {
+            "lat": [10.0, 15.0, 20.0],
+            "lon": [-10.0, 0.0, 10.0],
+            "year": [2024, 2025, 2026],
+        }
+    )
+    result = _data_function(data=data)
+
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+
+    pd.testing.assert_series_equal(result[0], data["lat"])
+    pd.testing.assert_series_equal(result[1], data["lon"])
+
+
+def test_args_from_data_valueerror():
+    data = pd.DataFrame(
+        {
+            "lat": [10.0, 15.0, 20.0],
+            "lon": [-10.0, 0.0, 10.0],
+            "year": [2024, 2025, 2026],
+        }
+    )
+
+    with pytest.raises(ValueError, match="Use either positional arguments or 'data'. Both is not possible."):
+        _data_function(data["lat"], data["lon"], data=data)
+
+
+def test_args_from_data_typeerror():
+    data = pd.DataFrame(
+        {
+            "year": [2024, 2025, 2026],
+        }
+    )
+
+    with pytest.raises(TypeError, match="missing 2 required positional arguments"):
+        _data_function(data=data)
+
+
 @pytest.mark.parametrize(
     "date, year, month, day",
     [["2019-9-27", 2019, 9, 27], ["2019-9", 2019, 9, 1], ["2019", 2019, 1, 1]],
@@ -123,6 +176,13 @@ def test_convert_date(date, year, month, day):
 def test_convert_date_raise():
     with pytest.raises(ValueError, match="Parameter 'year2' is not a valid parameter."):
         _date_function2(pd.to_datetime("2019-09-27"))
+
+
+def test_combi_decorators():
+    data = pd.DataFrame({"date": ["2025-01-01T12:00:00", "2026-01-01T12:00.00", "2027-01-01T12:00:00"]})
+    result = _combi_function(data=data)
+    print(result)
+    assert result == [2025, 2026, 2027]
 
 
 @pytest.mark.parametrize(
