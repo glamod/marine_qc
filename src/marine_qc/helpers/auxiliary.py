@@ -41,6 +41,7 @@ SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floati
 SequenceNumberType: TypeAlias = SequenceIntType | SequenceFloatType
 SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
 SequenceStrType: TypeAlias = Sequence[ScalarStrType] | npt.NDArray[np.str_] | pd.Series | np.ndarray
+SequenceAnyType: TypeAlias = Sequence[Any] | npt.NDArray[Any] | pd.Series | np.ndarray
 
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
@@ -207,6 +208,7 @@ def format_return_type(
         The result formatted to match the type of the first valid input value.
     """
     input_value = next((val for val in input_values if val is not None), None)
+
     if input_value is None or is_scalar_like(input_value):
         if np.ndim(result_array) > 0:
             result_array = result_array[0]
@@ -502,7 +504,7 @@ def post_format_return_type(
         """
         input_values = [original_call[param] for param in params if param in original_call]
 
-        if multiple:
+        if multiple and not isinstance(result, pd.DataFrame):
             if isinstance(dtype, type) or dtype is None:
                 return tuple(format_return_type(r, *input_values, dtype=dtype, keep_index=keep_index) for r in result)
             return_list = [format_return_type(val, *input_values, dtype=dtype[i], keep_index=keep_index) for i, val in enumerate(result)]
@@ -745,8 +747,8 @@ def args_from_data(*params: str) -> Callable[..., Any]:
                 raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
             data = kwargs["data"].copy()
             kwargs.pop("data")
-            args = (data[param] for param in params)
-            return func(*args, **kwargs)
+            nargs = (data[param] for param in params)
+            return func(*nargs, **kwargs)
 
         return wrapper
 
