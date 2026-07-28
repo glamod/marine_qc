@@ -1,6 +1,7 @@
 """Common Data Model (CDM) pandas duplicate check."""
 
 from __future__ import annotations
+import logging
 from typing import Any
 
 import numpy as np
@@ -10,6 +11,7 @@ from splink import DuckDBAPI, Linker
 from splink import comparison_level_library as cll
 
 from ..helpers.auxiliary import (
+    SequenceAnyType,
     SequenceDatetimeType,
     SequenceIntType,
     SequenceNumberType,
@@ -17,6 +19,9 @@ from ..helpers.auxiliary import (
     post_format_return_type,
 )
 
+
+logging.getLogger("splink").setLevel(logging.ERROR)
+logging.getLogger("splink.internals").setLevel(logging.ERROR)
 
 general_settings = {
     "link_type": "dedupe_only",
@@ -177,7 +182,7 @@ class DupDetect:
     def remove_duplicates(
         self,
         keep: str | int = "first",
-    ) -> tuple[pd.Series, ...]:
+    ) -> pd.DataFrame:
         """
         Remove duplicate entries from the dataset.
 
@@ -198,8 +203,7 @@ class DupDetect:
         if not hasattr(self, "_best_duplicates") or not hasattr(self, "_worst_duplicates"):
             self.get_duplicates(keep=keep)
 
-        result = self.data.drop(index=self._worst_duplicates)
-        return tuple(result[col] for col in result.columns)
+        return self.data.drop(index=self._worst_duplicates)
 
 
 def reindex_nulls(df: pd.DataFrame, null_label: Any) -> pd.DataFrame:
@@ -854,15 +858,18 @@ def remove_duplicates(
     detected: DupDetect | None = None,
     keep: str | int = "first",
     **kwargs: Any,
-) -> tuple[
-    SequenceStrType,
-    SequenceNumberType,
-    SequenceNumberType,
-    SequenceDatetimeType,
-    SequenceNumberType,
-    SequenceNumberType,
-    *tuple[SequenceNumberType, ...],
-]:
+) -> (
+    tuple[
+        SequenceStrType,
+        SequenceNumberType,
+        SequenceNumberType,
+        SequenceDatetimeType,
+        SequenceNumberType,
+        SequenceNumberType,
+        *tuple[SequenceAnyType, ...],
+    ]
+    | pd.DataFrame
+):
     r"""
     Remove potentially duplicated observations using `Python SPLINK Toolkit <https://moj-analytical-services.github.io/splink/index.html>`_.
 
@@ -924,9 +931,10 @@ def remove_duplicates(
 
     Returns
     -------
-    tuple of result arrays.
-        Same type as input, but with integer values
-        A tuple of all input data without the removed duplcited rows.
+    tuple of result arrays or pd.DataFrame.
+        Same type as input
+        A tuple of all input data without the removed duplicated rows
+        or a pandas.DataFrame if ``data`` is provided.
 
     Raises
     ------
@@ -972,7 +980,12 @@ def remove_duplicates(
     if detected is None:
         detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, data, **kwargs)
 
-    return detected.remove_duplicates(keep=keep)
+    result = detected.remove_duplicates(keep=keep)
+
+    if isinstance(data, pd.DataFrame):
+        return result
+
+    return tuple(result[col] for col in result.columns)
 
 
 @post_format_return_type("station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected")
@@ -1115,7 +1128,7 @@ def get_duplicates(
     detected: DupDetect | None = None,
     keep: str | int = "first",
     **kwargs: Any,
-) -> SequenceIntType:
+) -> SequenceAnyType:
     r"""
     Get potentially duplicated observations using `Python SPLINK Toolkit <https://moj-analytical-services.github.io/splink/index.html>`_.
 
@@ -1177,8 +1190,8 @@ def get_duplicates(
 
     Returns
     -------
-    :py:obj:`~marine_qc.SequenceIntType`
-        Same type as input, but with integer values
+    :py:obj:`~marine_qc.SequenceValueType`
+        Same type as input, but with indexes' type values
 
           Returns the indexes of the corresponding duplicate(s).
 

@@ -647,23 +647,14 @@ def test_fla_duplicates_raises():
 )
 def test_remove_duplicates_basic(directly, dummy_data, keep, exp_idx):
     if directly is True:
-        result = remove_duplicates(**dummy_data.to_dict(), keep=keep)
+        result = remove_duplicates(data=dummy_data, keep=keep)
     elif directly is False:
-        dd = duplicate_check(**dummy_data.to_dict())
+        dd = duplicate_check(data=dummy_data)
         result = dd.remove_duplicates(keep=keep)
 
-    assert isinstance(result, tuple)
-    assert len(result) == 7
-    for r in result:
-        assert isinstance(r, pd.Series)
+    assert isinstance(result, pd.DataFrame)
 
-    pd.testing.assert_series_equal(result[0], dummy_data["station_id"].iloc[exp_idx])
-    pd.testing.assert_series_equal(result[1], dummy_data["lat"].iloc[exp_idx])
-    pd.testing.assert_series_equal(result[2], dummy_data["lon"].iloc[exp_idx])
-    pd.testing.assert_series_equal(result[3], dummy_data["date"].iloc[exp_idx])
-    pd.testing.assert_series_equal(result[4], dummy_data["vsi"].iloc[exp_idx])
-    pd.testing.assert_series_equal(result[5], dummy_data["dsi"].iloc[exp_idx])
-    pd.testing.assert_series_equal(result[6], dummy_data["flag"].iloc[exp_idx])
+    pd.testing.assert_frame_equal(result, dummy_data.iloc[exp_idx])
 
 
 def test_remove_duplicates_detected(dummy_data):
