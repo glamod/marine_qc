@@ -822,7 +822,7 @@ def args_from_data(*params: str) -> Callable[..., Any]:
                 raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
             data = kwargs["data"].copy()
             kwargs.pop("data")
-            nargs = (data[param] for param in params)
+            nargs = (data[param] for param in params if param in data.columns)
             return func(*nargs, **kwargs)
 
         return wrapper

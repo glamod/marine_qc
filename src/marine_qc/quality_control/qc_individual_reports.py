@@ -335,7 +335,7 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
     return result
 
 
-@args_from_data("year", "month", "day")
+@args_from_data("date", "year", "month", "day")
 @post_format_return_type("date", "year")
 @convert_date("year", "month", "day")
 @inspect_arrays("year", "month", "day")
@@ -388,7 +388,7 @@ def do_date_check(
     return _do_date_check(year_arr, month_arr, day_arr, year_init, year_end)
 
 
-@args_from_data("hour")
+@args_from_data("date", "hour")
 @post_format_return_type("date", "hour")
 @convert_date("hour")
 @inspect_arrays("hour")
@@ -427,7 +427,7 @@ def do_time_check(
     return _do_time_check(hour_arr)
 
 
-@args_from_data("year", "month", "day", "hour")
+@args_from_data("date", "year", "month", "day", "hour")
 @post_format_return_type("date", "year")
 @convert_date("year", "month", "day", "hour")
 @inspect_arrays("year", "month", "day", "hour")
@@ -485,7 +485,7 @@ def do_datetime_check(
     return result
 
 
-@args_from_data("year", "month", "day", "hour", "lat", "lon")
+@args_from_data("date", "year", "month", "day", "hour", "lat", "lon")
 @post_format_return_type("date", "year")
 @convert_date("year", "month", "day", "hour")
 @inspect_arrays("year", "month", "day", "hour", "lat", "lon")
@@ -566,7 +566,7 @@ def do_day_check(
     return _do_daytime_check(year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr, time_since_sun_above_horizon, mode="day")
 
 
-@args_from_data("year", "month", "day", "hour", "lat", "lon")
+@args_from_data("date", "year", "month", "day", "hour", "lat", "lon")
 @post_format_return_type("date", "year")
 @convert_date("year", "month", "day", "hour")
 @inspect_arrays("year", "month", "day", "hour", "lat", "lon")
