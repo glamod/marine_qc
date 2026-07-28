@@ -510,8 +510,8 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
-    @post_format_return_type(["lat"], dtype=float)
-    @convert_date(["month", "day"])
+    @post_format_return_type("lat", dtype=float)
+    @convert_date("month", "day")
     def get_value_fast(
         self,
         lat: SequenceNumberType,
@@ -714,8 +714,8 @@ class Climatology:
             return day_in_year_array(month=month, day=day) - 1
         return t_index - 1
 
-    @post_format_return_type(["lat"], dtype=float)
-    @convert_date(["month", "day"])
+    @post_format_return_type("lat", dtype=float)
+    @convert_date("month", "day")
     def get_value(
         self,
         lat: SequenceNumberType,

@@ -41,6 +41,7 @@ SequenceFloatType: TypeAlias = Sequence[ScalarFloatType] | npt.NDArray[np.floati
 SequenceNumberType: TypeAlias = SequenceIntType | SequenceFloatType
 SequenceDatetimeType: TypeAlias = Sequence[ScalarDatetimeType] | npt.NDArray[np.datetime64] | pd.Series | np.ndarray
 SequenceStrType: TypeAlias = Sequence[ScalarStrType] | npt.NDArray[np.str_] | pd.Series | np.ndarray
+SequenceAnyType: TypeAlias = Sequence[Any] | npt.NDArray[Any] | pd.Series | np.ndarray
 
 ValueIntType: TypeAlias = ScalarIntType | SequenceIntType
 ValueFloatType: TypeAlias = ScalarFloatType | SequenceFloatType
@@ -207,6 +208,7 @@ def format_return_type(
         The result formatted to match the type of the first valid input value.
     """
     input_value = next((val for val in input_values if val is not None), None)
+
     if input_value is None or is_scalar_like(input_value):
         if np.ndim(result_array) > 0:
             result_array = result_array[0]
@@ -438,9 +440,9 @@ def generic_decorator(
 
 
 def post_format_return_type(
-    params: list[str], dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
+    *params: str, dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
 ) -> Callable[..., Any]:
-    """
+    r"""
     Decorator to format a function's return value to match the type of its original input(s).
 
     This decorator ensures that the output of the decorated function is converted back
@@ -451,7 +453,7 @@ def post_format_return_type(
 
     Parameters
     ----------
-    params : list of str
+    \*params : str
         List of parameter names whose original input types should be used to
         format the return value.
     dtype : type or list of type, optional, default: int
@@ -502,7 +504,7 @@ def post_format_return_type(
         """
         input_values = [original_call[param] for param in params if param in original_call]
 
-        if multiple:
+        if multiple and not isinstance(result, pd.DataFrame):
             if isinstance(dtype, type) or dtype is None:
                 return tuple(format_return_type(r, *input_values, dtype=dtype, keep_index=keep_index) for r in result)
             return_list = [format_return_type(val, *input_values, dtype=dtype[i], keep_index=keep_index) for i, val in enumerate(result)]
@@ -514,8 +516,8 @@ def post_format_return_type(
     return generic_decorator(post_handler=post_handler)
 
 
-def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable[..., Any]:
-    """
+def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any]:
+    r"""
     Decorator to convert and validate specified function input parameters as 1D NumPy arrays.
 
     This decorator ensures that specified input arguments are sequence-like, converts them
@@ -525,7 +527,7 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable[...
 
     Parameters
     ----------
-    params : list of str
+    \*params : str
         Names of parameters to inspect in the decorated function. Each specified parameter
         will be converted to a 1D NumPy array and validated.
     sortby : str, optional
@@ -552,7 +554,7 @@ def inspect_arrays(params: list[str], sortby: str | None = None) -> Callable[...
 
     Examples
     --------
-    >>> @inspect_arrays(["a", "b"])
+    >>> @inspect_arrays("a", "b")
     ... def add_arrays(a, b):
     ...     return a + b
 
@@ -733,3 +735,96 @@ def convert_units(**units_by_name: str) -> Callable[..., Any]:
     DECORATOR_KWARGS[pre_handler] = {"units"}
 
     return generic_decorator(pre_handler=pre_handler)
+
+
+def args_from_data(*params: str) -> Callable[..., Any]:
+    r"""
+    Decorator that extracts positional arguments from a pandas.DataFrame.
+
+    If the decorated function is called with a ``data`` keyword argument,
+    the specified columns are extracted from the pandas.DataFrame and passed
+    to the function as positional arguments. This provides an alternative calling
+    convention where required positional arguments can be supplied via a
+    pandas.DataFrame instead.
+
+    The decorated function must be called using either positional arguments
+    or the ``data`` keyword argument, but not both.
+
+    Parameters
+    ----------
+    \*params : str
+        Name(s) of the pandas.DataFrame columns that correspond to the required
+        positional arguments of the decorated function.
+
+    Returns
+    -------
+    Callable[..., Any]
+        A decorator that wraps a function and allows its positional arguments
+        to be obtained from a pandas.DataFrame passed via the ``data``
+        keyword argument.
+
+    Raises
+    ------
+    ValueError
+        If both positional arguments and `data` are provided.
+    """
+
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        """
+        Decorate a function to support extracting positional arguments from a pandas.DataFrame.
+
+        Parameters
+        ----------
+        func : Callable[..., Any]
+            The function to be decorated.
+
+        Returns
+        -------
+        Callable[..., Any]
+            A wrapped function that accepts either the original positional
+            arguments or a ``data`` keyword argument containing the required
+            columns.
+        """
+
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            r"""
+            Call the decorated function.
+
+            If ``data`` is provided as a keyword argument, the columns
+            specified when applying the decorator are extracted from the
+            pandas.DataFrame and passed to the wrapped function as positional
+            arguments. Otherwise, the original arguments are forwarded
+            unchanged.
+
+            Parameters
+            ----------
+            \*args : Any
+                Positional arguments passed to the wrapped function.
+            \**kwargs : Any
+                Keyword arguments passed to the wrapped function. May include
+                a ``data`` keyword containing a pandas.DataFrame.
+
+            Returns
+            -------
+            Any
+                The return value of the wrapped function.
+
+            Raises
+            ------
+            ValueError
+                If both positional arguments and the ``data`` keyword
+                argument are provided.
+            """
+            if "data" not in kwargs:
+                return func(*args, **kwargs)
+            if len(args) > 0:
+                raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
+            data = kwargs["data"].copy()
+            kwargs.pop("data")
+            nargs = (data[param] for param in params if param in data.columns)
+            return func(*nargs, **kwargs)
+
+        return wrapper
+
+    return decorator

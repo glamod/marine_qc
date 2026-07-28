@@ -23,8 +23,8 @@ from .auxiliary import (
 )
 
 
-def convert_date(params: list[str]) -> Callable[..., Any]:
-    """
+def convert_date(*params: str) -> Callable[..., Any]:
+    r"""
     Decorator to extract date components and inject them as function parameters.
 
     This decorator intercepts the 'date' argument from the function call, splits it into
@@ -33,7 +33,7 @@ def convert_date(params: list[str]) -> Callable[..., Any]:
 
     Parameters
     ----------
-    params : list of str
+    \*params : str
         List of parameter names corresponding to date components to be extracted and
         passed to the decorated function.
 
@@ -648,8 +648,8 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
     return hours_elapsed
 
 
-@post_format_return_type(["times1", "times2"], dtype=float)
-@inspect_arrays(["times1", "times2"])
+@post_format_return_type("times1", "times2", dtype=float)
+@inspect_arrays("times1", "times2")
 def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) -> np.ndarray:
     """
     Convert two arrays of datetimes to the difference in hours.

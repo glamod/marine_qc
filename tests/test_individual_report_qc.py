@@ -141,6 +141,20 @@ def test_do_position_check_untestable():
     assert do_position_check(0.0, None) == 2
 
 
+def test_do_position_check_df():
+    data = pd.DataFrame(
+        {
+            "lat": [0.0, 45.0, 91.0, -91.0, 0.0, 0.0, None, 0.0],
+            "lon": [0.0, 125.0, 0.0, 0.0, -180.1, 360.1, 0.0, None],
+        }
+    )
+    expected = pd.Series([passed, passed, failed, failed, failed, failed, untestable, untestable])
+
+    result = do_position_check(data=data)
+
+    pd.testing.assert_series_equal(result, expected)
+
+
 @pytest.mark.parametrize(
     "year, month, day, expected",
     [
@@ -197,6 +211,15 @@ def test_do_date_check_untestable():
 def test_do_date_check_year_range(year, month, day, expected):
     result = do_date_check(year=year, month=month, day=day, year_init=2023, year_end=2025)
     assert result == expected
+
+
+def test_do_date_check_df():
+    data = pd.DataFrame({"date": ["2023-01-01", "2023-01-31", "2024-02-29", "2000-02-30"]})
+    expected = pd.Series([passed, passed, passed, untestable])
+
+    result = do_date_check(data=data)
+
+    pd.testing.assert_series_equal(result, expected)
 
 
 @pytest.mark.parametrize(

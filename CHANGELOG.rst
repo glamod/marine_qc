@@ -6,7 +6,7 @@ Changelog
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
-New features and environments
+New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * new_functions: `do_valid_value_check` and `do_valid_value_clim_check` are copies of the old versions from `do_missing_value_check` and `do_missing_value_clim_check` that return `1` (fail) for numerically invalid values, otherwise `0` (pass) (:issue:`205`, :pull:`206`)
 * A new checker to detect (``marine_qc.duplicate_check``), get (``marine_qc.get_duplicates``), flag (``marine_qc.flag_duplicates``) and remove (``marine_qc.remove_duplicates``) potentially duplicated observations using ``splink`` (:issue:`202`, :issue:`210`, :pull:`207`)
@@ -19,6 +19,7 @@ New features and environments
 * optionally, add coastlines in plots using visualization functions (:pull:`248`)
 * add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
 * the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :issue:`251`, :pull:`235`, :pull:`255`)
+* quality control functions now support pandas.DataFrames as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`241`, :pull:`257`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -29,6 +30,7 @@ Breaking changes
 * convert all input parameter names from the plutal into the singular in buoy tracking QC function, for instance "lats" to "lat" or "lons" to "lon" (:issue:`249`, :pull:`250`)
 * sort parameter order list in buoy tracking QC functions equivalent to other QC functions, for instance ["lon", "lat", "date"] to ["lat", "lon", "date"] (:issue:`249`, :pull:`250`)
 * ``cartopy`` has been added to the dependencies (:pull:`235`)
+* when a pandas.DataFrame is provided as input to `remove_duplicates` using `data` keyword-argument, the function returns a pandas.DataFrame instead of a tuple of pandas.Series, making it easier to work with the result (:pull:`257`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -45,6 +47,8 @@ Internal changes
 * new helper function quality_control.qc_individual_report._do_date_check that is used in both do_date_check and do_datetime_check (:pull:`246`)
 * rename quality_control.buoy_tracking_qc into quality_control.qc_buoy_tracking (:issue:`249`, :pull:`250`)
 * move "is_monotonic" and "track_day_test" from quality_control.qc_buoy_tracking to quality_control.track_check_utils (:pull:`250`)
+* the `duplicate_check` function now suppresses warnings from `splink` (:pull:`257`)
+* decorators now use variable arguments instead of lists as inputs (:pull:`257`)
 
 0.3.2 (2023-04-21)
 ------------------
@@ -54,7 +58,7 @@ Announcements
 ^^^^^^^^^^^^^
 * `marine_qc` now fully supports Python 3.14 and drops support for Python 3.10. (:issue:`182`, :pull:`161`)
 
-New features and environments
+New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
 
