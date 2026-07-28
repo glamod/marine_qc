@@ -19,7 +19,7 @@ New features and enhancements
 * optionally, add coastlines in plots using visualization functions (:pull:`248`)
 * add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
 * the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :issue:`251`, :pull:`235`, :pull:`255`)
-* quality control functions now support pandas.DataFrames as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`257`, :pull:`274`)
+* quality control functions now support pandas.DataFrames as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`241`, :pull:`257`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
