@@ -13,6 +13,9 @@ Decorators
 .. autofunction:: marine_qc.helpers.auxiliary.post_format_return_type
    :noindex:
 
+.. autofunction:: marine_qc.helpers.auxiliary.args_from_data
+   :noindex:
+
 .. autofunction:: marine_qc.helpers.external_clim.inspect_climatology
    :noindex:
 
