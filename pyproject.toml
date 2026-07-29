@@ -20,7 +20,7 @@ maintainers = [
   {name = "John Kennedy", email = "jjk8932@googlemail.com"}
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
-requires-python = ">=3.10.0"
+requires-python = ">=3.11.0"
 keywords = ["Marine Quality Control"]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
@@ -179,7 +179,7 @@ include = [
   "docs/conf.py",
   "docs/make.bat",
   "docs/Makefile",
-  "pyproject.toml"
+  "pyproject.toml",
   "src/marine_qc/**/*.json",
   "src/marine_qc/**/*.py",
   "src/marine_qc/**/*.txt",
