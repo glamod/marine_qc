@@ -4,12 +4,12 @@ permissions:
   pull-requests: write
 
 on:
+  push:
+    branches:
+      - "*"
   pull_request:
-    paths:
-      - ".github/workflows/update-cruft.yml"
-  workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * 1" # Every Monday at 2 AM
+    branches:
+      - "*"
 
 jobs:
   update:
