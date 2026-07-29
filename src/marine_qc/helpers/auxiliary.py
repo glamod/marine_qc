@@ -228,7 +228,6 @@ def format_return_type(
         return type(input_value)(result_array)
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
         return result_array.to_numpy()
-
     return result_array  # np.ndarray or fallback
 
 
