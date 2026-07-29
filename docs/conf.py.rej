@@ -9,4 +9,3 @@ diff a/docs/conf.py b/docs/conf.py	(rejected hunks)
 +    "pull": ("https://github.com/glamod/marine_qc/pull/%s", "PR/%s"),
      "user": ("https://github.com/%s", "@%s"),
  }
-
