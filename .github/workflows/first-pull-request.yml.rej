@@ -10,7 +10,7 @@ diff a/.github/workflows/first-pull-request.yml b/.github/workflows/first-pull-r
            egress-policy: block
 @@ -24,7 +24,7 @@ jobs:
              api.github.com:443
- 
+
        - name: Verify Pull Request Opener
 -        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
 +        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -20,7 +20,7 @@ diff a/.github/workflows/first-pull-request.yml b/.github/workflows/first-pull-r
 @@ -56,5 +56,5 @@ jobs:
                It appears that this is your first Pull Request. To give credit where it's due, we ask that you add your information to the \`AUTHORS.rst\` and \`.zenodo.json\`:
                 - [ ] The relevant author information has been added to \`AUTHORS.rst\` and \`.zenodo.json\`.
- 
+
 -              Please make sure you've read our [contributing guide](https://github.com/glamod/Marine-Quality-Control/blob/main/CONTRIBUTING.rst). We look forward to reviewing your Pull Request shortly ✨`
 +              Please make sure you've read our [contributing guide](https://github.com/glamod/marine_qc/blob/main/CONTRIBUTING.rst). We look forward to reviewing your Pull Request shortly ✨`
              })

@@ -1,7 +1,7 @@
 diff a/docs/conf.py b/docs/conf.py	(rejected hunks)
 @@ -55,8 +55,8 @@ autodoc_default_options = {
  }
- 
+
  extlinks = {
 -    "issue": ("https://github.com/glamod/Marine-Quality-Control/issues/%s", "GH/%s"),
 -    "pull": ("https://github.com/glamod/Marine-Quality-Control/pull/%s", "PR/%s"),
@@ -9,4 +9,4 @@ diff a/docs/conf.py b/docs/conf.py	(rejected hunks)
 +    "pull": ("https://github.com/glamod/marine_qc/pull/%s", "PR/%s"),
      "user": ("https://github.com/%s", "@%s"),
  }
- 
+

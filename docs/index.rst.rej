@@ -2,7 +2,7 @@ diff a/docs/index.rst b/docs/index.rst	(rejected hunks)
 @@ -1,9 +1,20 @@
  Welcome to Marine Quality Control's documentation!
  ==================================================
- 
+
 +**Marine Quality Control**: This Python package provides a set of tools for quality control (QC) of marine meteorological reports. Marine meteorological reports typically comprise latitude, longitude, time, and date as well as one or more marine meteorological variables often including, but not limited to sea-surface temperature, air temperature, dew point temperature, sea level pressure, wind speed and wind direction. Quality control is the process of identifying and flagging reports and variables within reports that are likely to be in gross error. It is important to note that QC checks do not (and cannot) identify all incorrect reports and they can also identify good reports as being erroneous.
 +
 +Need help?
@@ -18,15 +18,15 @@ diff a/docs/index.rst b/docs/index.rst	(rejected hunks)
     :maxdepth: 2
 -   :caption: Contents:
 +   :caption: Table of Contents
- 
+
     readme
     installation
 @@ -22,7 +33,7 @@ Welcome to Marine Quality Control's documentation!
  .. toctree::
     :caption: GitHub Repository
- 
+
 -   glamod/Marine-Quality-Control <https://github.com/glamod/Marine-Quality-Control>
 +   glamod/Marine-Quality-Control <https://github.com/glamod/marine_qc>
- 
+
  Indices and tables
  ==================

@@ -2,7 +2,7 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
 @@ -15,77 +15,78 @@ on:
  permissions:
    contents: read
- 
+
 +concurrency:
 +  group: workflow-warning-${{ github.event.pull_request.number }}
 +  cancel-in-progress: true
@@ -25,7 +25,7 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
            egress-policy: block
            allowed-endpoints: >
              api.github.com:443
- 
+
 -      - name: Manage Warning / Note Comments
 +      - name: Create or Update Warning Comment
          env:
@@ -38,17 +38,17 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
 -          WARNING_TEXT="This Pull Request modifies GitHub workflows and is coming from a fork."
 -          NOTE_TEXT="Workflow changes in this Pull Request have been approved!"
 +          set -euo pipefail
- 
+
 -          # Fetch existing comments
 -          COMMENTS=$(gh api repos/$REPO/issues/$PR_NUMBER/comments)
 +          MARKER="<!-- workflow-changes-warning -->"
- 
+
 -          # Find warning comment ID
 -          WARNING_COMMENT_ID=$(echo "$COMMENTS" | jq -r \
 -            '.[] | select(.user.login=="github-actions[bot]") | select(.body | contains("'"$WARNING_TEXT"'")) | .id' | head -n 1)
 +          BODY=$(cat <<EOF
 +          $MARKER
- 
+
 -          # Find note comment ID
 -          NOTE_COMMENT_ID=$(echo "$COMMENTS" | jq -r \
 -            '.[] | select(.user.login=="github-actions[bot]") | select(.body | contains("'"$NOTE_TEXT"'")) | .id' | head -n 1)
@@ -58,12 +58,12 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
 +          > Review the workflow changes carefully before approving or merging.
 +          EOF
 +          )
- 
+
 -          if [ "$APPROVED" = "true" ]; then
 -            BODY="> [!NOTE]
 -          > Workflow changes in this Pull Request have been approved!"
 +          COMMENTS=$(gh api repos/$REPO/issues/$PR_NUMBER/comments)
- 
+
 -            if [ -n "$NOTE_COMMENT_ID" ] && [ "$NOTE_COMMENT_ID" != "null" ]; then
 -              # Append to existing note comment
 -              EXISTING=$(gh api repos/$REPO/issues/comments/$NOTE_COMMENT_ID --jq .body)
@@ -81,7 +81,7 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
 +          )
 +
 +          COMMENT_ID=""
- 
+
 -          $BODY"
 -            else
 -              # Create new note comment
@@ -89,7 +89,7 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
 -            fi
 +          if [ "${#IDS[@]}" -gt 0 ]; then
 +            COMMENT_ID="${IDS[0]}"
- 
+
 -            # Add reaction (hooray)
 -            if [ -n "$NOTE_COMMENT_ID" ] && [ "$NOTE_COMMENT_ID" != "null" ]; then
 +            # Remove duplicate managed comments if they exist.
@@ -104,7 +104,7 @@ diff a/.github/workflows/workflow-warning.yml b/.github/workflows/workflow-warni
 +                repos/$REPO/issues/comments/$id
 +            done
 +          fi
- 
+
 +          if [ -n "$COMMENT_ID" ]; then
 +            gh api \
 +              --method PATCH \

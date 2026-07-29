@@ -10,7 +10,7 @@ diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
 @@ -50,53 +98,6 @@ dev = [
    {include-group = "tox"}
  ]
- 
+
 -[project]
 -name = "marine_qc"
 -authors = [
@@ -42,7 +42,7 @@ diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
 -dynamic = ["description", "version"]
 -dependencies = [
 -  "click >=8.3.1"
--  
+-
 -]
 -
 -[project.optional-dependencies]
@@ -59,7 +59,7 @@ diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
 -"Source" = "https://github.com/glamod/Marine-Quality-Control"
 -
  [tool]
- 
+
  [tool.bumpversion]
 @@ -187,18 +188,19 @@ include = [
    ".zenodo.json",
