@@ -60,14 +60,33 @@ The `MarineQC` package comprises quality flags of two kids:
 Running the QC Checks
 ---------------------
 
-The QC checks can be run simply. Each one takes one or more input values, which can be a float, list, 1-d numpy array
-or Pandas DataSeries, along with zero or more parameters depending on the function.
+The QC checks can be run simply. Each one takes one or more input values, which can be a float, list, numpy array,
+a pandas DataSeries, or a xarray DataArray, along with zero or more parameters depending on the function.
 
 So, for example, one can run a hard limit check like so::
 
 
   input_values = np.array([-15.0, 0.0, 20.0, 55.0])
   result = do_hard_limit_check(input_values, [-10., 40.])
+
+The required arguments can be extracted directly from a pandas DataFrame or a xarray Dataset::
+
+  data = pd.Dataset(
+      "lat": [0.0, 45.0, 91.0, -91.0, 0.0, 0.0, None, 0.0],
+      "lon": [0.0, 125.0, 0.0, 0.0, -180.1, 360.1, 0.0, None],
+  )
+  result = do_position_check(data=data)
+
+  lat = [0.0, 45.0, 91.0, -91.0, 0.0, 0.0, None, 0.0]
+  lon = [0.0, 125.0, 0.0, 0.0, -180.1, 360.1, 0.0, None]
+  temperature = np.random.uniform(250, 300, size=(len(lat), len(lon)))
+  da = xr.DataArray(
+        temperature,
+        dims=["lat", "lon"],
+        coords={"lat": lat, "lon": lon},
+  )
+  ds = xr.Dataset(data_vars={"temp": da})
+  result = do_position_check(data=ds)
 
 Additionally, some checks use climatological averages which can be provided like the other
 inputs, or passed as a :class:`~marine_qc.Climatology` object. For example, the climatology check can be run like so::
