@@ -592,7 +592,7 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
             arr = np.atleast_1d(arguments[param])
 
             if arr.ndim != 1:
-               raise ValueError(f"Input '{param}' must be one-dimensional.")
+                raise ValueError(f"Input '{param}' must be one-dimensional.")
 
             arguments[param] = arr
             if value is not None:
