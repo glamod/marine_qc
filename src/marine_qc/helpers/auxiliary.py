@@ -226,7 +226,6 @@ def format_return_type(
         if isinstance(result_array, np.ndarray):
             return type(input_value)(result_array.tolist())
         return type(input_value)(result_array)
-
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
         return result_array.to_numpy()
 
