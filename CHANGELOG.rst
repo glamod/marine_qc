@@ -20,6 +20,7 @@ New features and enhancements
 * add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
 * the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :issue:`251`, :pull:`235`, :pull:`255`)
 * quality control functions now support pandas.DataFrames as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`241`, :pull:`257`)
+* quality control functions now support both xarray.DataArrays and xarray.Datasets as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`243`, :pull:`259`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -31,6 +32,8 @@ Breaking changes
 * sort parameter order list in buoy tracking QC functions equivalent to other QC functions, for instance ["lon", "lat", "date"] to ["lat", "lon", "date"] (:issue:`249`, :pull:`250`)
 * ``cartopy`` has been added to the dependencies (:pull:`235`)
 * when a pandas.DataFrame is provided as input to `remove_duplicates` using `data` keyword-argument, the function returns a pandas.DataFrame instead of a tuple of pandas.Series, making it easier to work with the result (:pull:`257`)
+* quality control functions do NOT raise errors when input arrays have more than 1 dimension (:pull:`259`)
+* decorator ``args_from_data`` raise TypeError if data is none of pd.DataFrame, xr.DataArray or xr.Dataset (:pull:`259`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
