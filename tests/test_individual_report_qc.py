@@ -141,7 +141,7 @@ def test_do_position_check_untestable():
     assert do_position_check(0.0, None) == 2
 
 
-def test_do_position_check_df():
+def test_do_position_check_pd():
     data = pd.DataFrame(
         {
             "lat": [0.0, 45.0, 91.0, -91.0, 0.0, 0.0, None, 0.0],
@@ -153,6 +153,33 @@ def test_do_position_check_df():
     result = do_position_check(data=data)
 
     pd.testing.assert_series_equal(result, expected)
+
+
+def test_do_position_check_xr():
+    lat = [0.0, 45.0, 91.0, -91.0, 0.0, 0.0, None, 0.0]
+    lon = [0.0, 125.0, 0.0, 0.0, -180.1, 360.1, 0.0, None]
+    date = pd.date_range(start="2026-07-17T12:00", end="2026-07-14T12:00", freq="D")
+    temperature = np.random.uniform(250, 300, size=(len(date), len(lat), len(lon)))
+    da = xr.DataArray(
+        temperature,
+        dims=["date", "lat", "lon"],
+        coords={"date": date, "lat": lat, "lon": lon},
+    )
+    ds = xr.Dataset(data_vars={"temp": da})
+
+    expected = xr.DataArray(
+        [passed, passed, failed, failed, failed, failed, untestable, untestable],
+        dims="lat",
+        coords={"lat": lat},
+    )
+
+    result = do_position_check(data=ds)
+
+    xr.testing.assert_equal(result, expected)
+
+    result = do_position_check(data=da)
+
+    xr.testing.assert_equal(result, expected)
 
 
 @pytest.mark.parametrize(

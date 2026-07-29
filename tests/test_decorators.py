@@ -4,6 +4,7 @@ import re
 import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 from pint.errors import DimensionalityError
 
 from marine_qc.helpers.auxiliary import (
@@ -104,16 +105,14 @@ def test_inspect_arrays(value1, value2):
     np.testing.assert_equal(result2, expected2)
 
 
-def test_inspect_arrays_raise_dimension():
-    with pytest.raises(ValueError, match="Input 'value1' must be one-dimensional."):
-        _array_function(np.ndarray(shape=(2, 2), dtype=float, order="F"), [1, 2, 3])
-
-
 def test_inspect_arrays_raise_length():
     error_msg = "Input ('value1', 'value2') must all have the same length."
     escaped_msg = re.escape(error_msg)
     with pytest.raises(ValueError, match=escaped_msg):
         _array_function([1, 2, 3, 4], [1, 2, 3])
+
+    with pytest.raises(ValueError, match=escaped_msg):
+        _array_function(np.ndarray(shape=(2, 2), dtype=float, order="F"), [1, 2, 3])
 
 
 def test_inspect_arrays_raise_parameter():
@@ -121,7 +120,7 @@ def test_inspect_arrays_raise_parameter():
         _array_function2(1, 2)
 
 
-def test_args_from_data_pass():
+def test_args_from_data_pd():
     data = pd.DataFrame(
         {
             "lat": [10.0, 15.0, 20.0],
@@ -136,6 +135,36 @@ def test_args_from_data_pass():
 
     pd.testing.assert_series_equal(result[0], data["lat"])
     pd.testing.assert_series_equal(result[1], data["lon"])
+
+
+def test_args_from_data_xr():
+    lat = [10.0, 15.0, 20.0]
+    lon = [-10.0, 0.0, 10.0]
+    year = [2024, 2025, 2026]
+    temp = np.random.rand(len(year), len(lat), len(lon))
+
+    da = xr.DataArray(
+        temp,
+        dims=["year", "lat", "lon"],
+        coords={"year": year, "lat": lat, "lon": lon},
+    )
+    ds = xr.Dataset(data_vars={"temp": da})
+
+    result = _data_function(data=da)
+
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+
+    xr.testing.assert_equal(result[0], da.lat)
+    xr.testing.assert_equal(result[1], da.lon)
+
+    result = _data_function(data=ds)
+
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+
+    xr.testing.assert_equal(result[0], ds.lat)
+    xr.testing.assert_equal(result[1], ds.lon)
 
 
 def test_args_from_data_valueerror():
@@ -160,6 +189,9 @@ def test_args_from_data_typeerror():
 
     with pytest.raises(TypeError, match="missing 2 required positional arguments"):
         _data_function(data=data)
+
+    with pytest.raises(TypeError, match="Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset"):
+        _data_function(data=[2024, 2025, 2026])
 
 
 @pytest.mark.parametrize(

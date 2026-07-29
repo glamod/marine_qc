@@ -552,7 +552,6 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
     ------
     ValueError
         If a specified parameter is missing from the function arguments.
-        If any specified parameter is not one-dimensional.
         If the lengths of the specified arrays do not all match.
 
     Notes
@@ -598,9 +597,6 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
 
             value = arguments[param]
             arr = np.atleast_1d(arguments[param])
-
-            # if arr.ndim != 1:
-            #    raise ValueError(f"Input '{param}' must be one-dimensional.")
 
             arguments[param] = arr
             if value is not None:
@@ -821,19 +817,42 @@ def args_from_data(*params: str) -> Callable[..., Any]:
 
             Raises
             ------
+            TypeError
+                If ``data`` is none of pandas.DataFrame, xarray.DataArray or xarray.Dataset.
             ValueError
                 If both positional arguments and the ``data`` keyword
                 argument are provided.
             """
 
-            def isin(param, data):
+            def isin(param: str, data: Any) -> bool:
+                """
+                Check whether a parameter's name is in a data object.
+
+                Parameters
+                ----------
+                param : str
+                    Name of the parameter to be checked.
+
+                data : Any
+                    Any data object to be checked.
+
+                Returns
+                -------
+                bool
+                    Boolean value whether ``data`` contains ``param``.
+
+                Raises
+                ------
+                TypeError
+                    If ``data`` is none of pandas.DataFrame, xarray.DataArray or xarray.Dataset.
+                """
                 if isinstance(data, pd.DataFrame):
                     return param in data.columns
                 elif isinstance(data, xr.DataArray):
                     return param in data.coords or param in data.dims
                 elif isinstance(data, xr.Dataset):
                     return param in data.data_vars or param in data.coords or param in data.dims
-                raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset not {type(data)}.")
+                raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not {type(data)}.")
 
             if "data" not in kwargs:
                 return func(*args, **kwargs)
