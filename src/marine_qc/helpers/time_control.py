@@ -68,9 +68,6 @@ def convert_date(*params: str) -> Callable[..., Any]:
         if date is None:
             return
 
-        if isinstance(date, xr.DataArray):
-            date = date.values
-
         if is_scalar_like(date):
             scalar = True
             extracted_dict: dict[str, float] = split_date(date)
