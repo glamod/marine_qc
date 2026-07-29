@@ -10,7 +10,6 @@ from typing import Any, TypeAlias
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-import xarray as xr
 from pandas._libs import missing
 from pandas._libs.tslibs import nattype
 from xclim.core.units import convert_units_to, units
