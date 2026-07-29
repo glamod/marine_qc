@@ -187,14 +187,14 @@ def test_validate_tuple():
 def test_validate_ndarray():
     arr = np.array([1, 2, 3])
 
-    assert not _validate_ndarray([1, 2, 3], (None, np.int64))
+    assert not _validate_ndarray([1, 2, 3], (np.int64,))
     assert _validate_ndarray(arr, ())
     assert _validate_ndarray(arr, (np.int64,))
-    assert _validate_ndarray(arr, (None, Any))
+    assert _validate_ndarray(arr, (Any, None))
     assert _validate_ndarray(arr, (None, None))
-    assert _validate_ndarray(arr, (None, np.int64))
-    assert not _validate_ndarray(arr, (None, np.float64))
-    assert not _validate_ndarray(arr, (None, object()))
+    assert _validate_ndarray(arr, (np.int64,))
+    assert not _validate_ndarray(arr, (np.float64,))
+    assert not _validate_ndarray(arr, (object(),))
 
 
 def test_safe_isinstance():
