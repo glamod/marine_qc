@@ -10,7 +10,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import xarray as xr
 
 from .auxiliary import (
     DECORATOR_KWARGS,
