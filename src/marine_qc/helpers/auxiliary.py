@@ -222,10 +222,6 @@ def format_return_type(
         if dtype is None:
             return pd.Series(result_array, index=index)
         return pd.Series(result_array, index=index, dtype=dtype)
-
-    if isinstance(input_value, (xr.Dataset, xr.DataArray)):
-        return xr.DataArray(result_array, coords=input_value.coords, dims=input_value.dims)
-
     if isinstance(input_value, (list, tuple)):
         if isinstance(result_array, np.ndarray):
             return type(input_value)(result_array.tolist())
