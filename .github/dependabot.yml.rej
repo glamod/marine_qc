@@ -1,0 +1,10 @@
+diff a/.github/dependabot.yml b/.github/dependabot.yml	(rejected hunks)
+@@ -19,7 +19,7 @@ updates:
+       default-days: 7
+ 
+   - package-ecosystem: pip
+-    directory: /CI
++    directory: /.github
+     schedule:
+       interval: "quarterly"
+     groups:

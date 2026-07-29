@@ -1,0 +1,21 @@
+diff a/docs/installation.rst b/docs/installation.rst	(rejected hunks)
+@@ -47,11 +47,11 @@ The sources for Marine Quality Control can be downloaded from the `Github repo`_
+ 
+             git clone git@github.com:glamod/Marine_Quality_Control.git
+ 
+-    * Download the `tarball <https://github.com/glamod/Marine-Quality-Control/tarball/main>`_:
++    * Download the `tarball <https://github.com/glamod/marine_qc/tarball/main>`_:
+ 
+         .. code-block:: console
+ 
+-            curl -OJL https://github.com/glamod/Marine-Quality-Control/tarball/main
++            curl -OJL https://github.com/glamod/marine_qc/tarball/main
+ 
+ #. Once you have a copy of the source, you can install it with:
+ 
+@@ -96,4 +96,4 @@ The sources for Marine Quality Control can be downloaded from the `Github repo`_
+ 
+     These commands should work most of the time, but if big changes are made to the repository, you might need to remove the environment and create it again.
+ 
+-.. _Github repo: https://github.com/glamod/Marine-Quality-Control
++.. _Github repo: https://github.com/glamod/marine_qc
