@@ -110,8 +110,8 @@ autodoc_default_options = {
 }
 
 extlinks = {
-    "issue": ("https://github.com/glamod/marine_qc/issues/%s", "#%s"),
-    "pull": ("https://github.com/glamod/marine_qc/pull/%s", "#%s"),
+    "issue": ("https://github.com/glamod/marine_qc/issues/%s", "GH/%s"),
+    "pull": ("https://github.com/glamod/marine_qc/pull/%s", "PR/%s"),
     "user": ("https://github.com/%s", "@%s"),
 }
 
