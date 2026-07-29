@@ -214,7 +214,6 @@ def format_return_type(
             result_array = result_array[0]
         if dtype is not None:
             return dtype(result_array)
-
     if isinstance(input_value, pd.Series):
         if keep_index is True and isinstance(result_array, pd.Series):
             index = result_array.index
