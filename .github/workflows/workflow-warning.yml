@@ -55,7 +55,7 @@ jobs:
           >
           > Review the workflow changes carefully before approving or merging.
           EOF
-          )          
+          )
 
           COMMENTS=$(gh api repos/$REPO/issues/$PR_NUMBER/comments)
 
@@ -68,10 +68,10 @@ jobs:
             '
           )
 
-          COMMENT_ID=""          
+          COMMENT_ID=""
 
           if [ "${#IDS[@]}" -gt 0 ]; then
-            COMMENT_ID="${IDS[0]}"          
+            COMMENT_ID="${IDS[0]}"
 
             # Remove duplicate managed comments if they exist.
             for id in "${IDS[@]:1}"; do
@@ -91,4 +91,4 @@ jobs:
               --method POST \
               repos/$REPO/issues/$PR_NUMBER/comments \
               -f body="$BODY"
-           fi            
+           fi
