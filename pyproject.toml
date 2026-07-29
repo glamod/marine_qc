@@ -5,10 +5,19 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "marine_qc"
 authors = [
-  {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"}
+  {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"},
+  {name = "John Kennedy", email = "jjk8932@googlemail.com"},
+  {name = "Tina Leiding", email = "tina.leiding@dwd.de"},
+  {name = "Kate Willett", email = "kate.willett@metoffice.gov.uk"},
+  {name = "Chris Atkinson", email = "chris.atkinson@metoffice.gov.uk"},
+  {name = "Richard Cornes", email = "richard.cornes@noc.ac.uk"},
+  {name = "Elizabeth Kent", email = "eck@noc.ac.uk"},
+  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
+  {name = "Axel Andersson", email = "axel.andersson@dwd.de"}
 ]
 maintainers = [
-  {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"}
+  {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"},
+  {name = "John Kennedy", email = "jjk8932@googlemail.com"}
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.10.0"
@@ -16,37 +25,36 @@ keywords = ["Marine Quality Control"]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 1 - Planning",
   "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Typing :: Typed"
+  "Programming Language :: Python :: 3.14"
 ]
 dynamic = ["description", "version"]
 dependencies = [
-  "click >=8.3.1"
-
+  "cartopy",
+  "cf_xarray",
+  "joblib",
+  "matplotlib",
+  "numpy>=1.24.0,<2.5.0",
+  "pandas>=3.0.0,!=3.0.4",
+  "pyproj",
+  "splink",
+  "scipy>=1.11.0",
+  "xarray>=v2025.07.0",
+  "xclim>=0.56"
 ]
 
-[project.optional-dependencies]
-extras = []
-
-[project.scripts]
-marine_qc = "marine_qc.cli:app"
-
 [project.urls]
-# "Homepage" = "https://Marine-Quality-Control.readthedocs.io/"
-# "Changelog" = "https://Marine-Quality-Control.readthedocs.io/en/stable/changelog.html"
-# "About Ouranos" = "https://ouranos.ca/en/"
-"Issue tracker" = "https://github.com/glamod/marine_qc/issues"
+"Homepage" = "https://marine-qc.readthedocs.io"
+"Changelog" = "https://marine_qc.readthedocs.io/en/stable/changelog.html"
+"Issue tracker" = "https://github.com/glamod/marine_qc"
 "Source" = "https://github.com/glamod/marine_qc"
 
 [dependency-groups]
@@ -77,7 +85,7 @@ docs = [
   "jupyter_client",
   "myst-nb >=1.2.0",
   "nbconvert >=7.16.4",
-  "sphinx >=8.0.0",
+  "sphinx >=8.2.0",
   "sphinx-autodoc-typehints",
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton >=0.5.2",
@@ -99,61 +107,6 @@ dev = [
   {include-group = "test"},
   {include-group = "tox"}
 ]
-
-[project]
-name = "marine_qc"
-authors = [
-  {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"},
-  {name = "John Kennedy", email = "jjk8932@googlemail.com"},
-  {name = "Tina Leiding", email = "tina.leiding@dwd.de"},
-  {name = "Kate Willett", email = "kate.willett@metoffice.gov.uk"},
-  {name = "Chris Atkinson", email = "chris.atkinson@metoffice.gov.uk"},
-  {name = "Richard Cornes", email = "richard.cornes@noc.ac.uk"},
-  {name = "Elizabeth Kent", email = "eck@noc.ac.uk"},
-  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
-  {name = "Axel Andersson", email = "axel.andersson@dwd.de"}
-]
-maintainers = [
-  {name = "Ludwig Lierhammer", email = "ludwig.lierhammer@dwd.de"},
-  {name = "John Kennedy", email = "jjk8932@googlemail.com"}
-]
-readme = {file = "README.rst", content-type = "text/x-rst"}
-requires-python = ">=3.11.0"
-license = "Apache-2.0"
-license-files = ["LICENSE"]
-keywords = ["marine_qc"]
-classifiers = [
-  "Development Status :: 1 - Planning",
-  "Intended Audience :: Developers",
-  "Intended Audience :: Science/Research",
-  "Natural Language :: English",
-  "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14"
-]
-dynamic = ["description", "version"]
-dependencies = [
-  "cartopy",
-  "cf_xarray",
-  "joblib",
-  "matplotlib",
-  "numpy>=1.24.0,<2.5.0",
-  "pandas>=3.0.0,!=3.0.4",
-  "pyproj",
-  "splink",
-  "scipy>=1.11.0",
-  "xarray>=v2025.07.0",
-  "xclim>=0.56"
-]
-
-[project.urls]
-"Homepage" = "https://marine-qc.readthedocs.io"
-"Source" = "https://github.com/glamod/marine_qc"
-"Changelog" = "https://marine_qc.readthedocs.io/en/stable/changelog.html"
-"Issue tracker" = "https://github.com/glamod/marine_qc"
 
 [tool]
 
@@ -214,17 +167,19 @@ include = [
   ".zenodo.json",
   "AUTHORS.rst",
   "CHANGELOG.rst",
+  "CITATION.cff",
+  "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.rst",
   "LICENSE",
   "Makefile",
   "README.rst",
-  "environemnt-docs.yml",
-  "docs/**/*.png",
-  "docs/**/*.rst",
-  "docs/**/*.txt",
-  "docs/Makefile",
+  "environment-docs.yml",
+  "docs/_static/*",
+  "docs/*.rst",
   "docs/conf.py",
   "docs/make.bat",
+  "docs/Makefile",
+  "pyproject.toml"
   "src/marine_qc/**/*.json",
   "src/marine_qc/**/*.py",
   "src/marine_qc/**/*.txt",
@@ -235,7 +190,14 @@ include = [
 exclude = [
   "*.py[co]",
   "__pycache__",
-  ".*",
+  ".editorconfig",
+  ".flake8",
+  ".github",
+  ".gitignore",
+  "pre-commit-config.yaml",
+  ".readthedocs.yml",
+  ".yamllint.yaml",
+  ".zizmor.yml",
   "docs/_*",
   "docs/modules.rst",
   "pylintrc"
