@@ -26,6 +26,14 @@ jobs:
             commit-message: "chore: reject new Cruft update"
             title: Reject new updates detected with Cruft
     steps:
+      - name: Check CRUFT_PAT
+        run: |
+          if [ -z "${{ secrets.CRUFT_PAT }}" ]; then
+            echo "CRUFT_PAT is missing"
+            exit 1
+          else
+            echo "CRUFT_PAT is available"
+          fi    
       - name: Checkout Repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
