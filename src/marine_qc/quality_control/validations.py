@@ -183,7 +183,7 @@ def _validate_ndarray(value: Any, args: tuple[Any, ...]) -> bool:
     value : Any
         The value to validate.
     args : tuple[Any, ...]
-        Expected dtype (first argument may be `Any` or unspecified).
+        Expected dtype (use only first element).
 
     Returns
     -------
@@ -196,10 +196,7 @@ def _validate_ndarray(value: Any, args: tuple[Any, ...]) -> bool:
     if not args:
         return True
 
-    if len(args) < 2:
-        return True
-
-    expected_dtype = args[1]
+    expected_dtype = args[0]
 
     inner = get_args(expected_dtype)
     if inner:
