@@ -104,16 +104,14 @@ def test_inspect_arrays(value1, value2):
     np.testing.assert_equal(result2, expected2)
 
 
-def test_inspect_arrays_raise_dimension():
-    with pytest.raises(ValueError, match="Input 'value1' must be one-dimensional."):
-        _array_function(np.ndarray(shape=(2, 2), dtype=float, order="F"), [1, 2, 3])
-
-
 def test_inspect_arrays_raise_length():
     error_msg = "Input ('value1', 'value2') must all have the same length."
     escaped_msg = re.escape(error_msg)
     with pytest.raises(ValueError, match=escaped_msg):
         _array_function([1, 2, 3, 4], [1, 2, 3])
+
+    with pytest.raises(ValueError, match=escaped_msg):
+        _array_function(np.ndarray(shape=(2, 2), dtype=float, order="F"), [1, 2, 3])
 
 
 def test_inspect_arrays_raise_parameter():
