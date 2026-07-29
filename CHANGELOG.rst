@@ -24,7 +24,7 @@ New features and enhancements
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Both `do_mising_value_check` and `do_missing_value_clim_check` now return `0` (pass) for numerically invalid values, otherwise `1` (fail) (:issue:`205`, :pull:`206`)
-* The minimum versions of several dependencies have been set to support Python 3.11 or higher (numpy >= 1.24.0, pandas >= 3.0.0, scipy >= 1.11.0, xarray >= v2025.07.0, xclim >= 0.56) (:pull:`224`)
+* The minimum versions of several dependencies have been set to support Python 3.11 or higher (numpy >= 2.5.0, pandas >= 3.0.0, scipy >= 1.11.0, xarray >= v2025.07.0, xclim >= 0.56) (:pull:`224`, :pull:`260`)
 * convert buoy tracking QC outcomes from ``float`` to ``int`` (:issue:`249`, :pull:`250`)
 * implement decorator ``post_format_return_type`` into buoy tracking QC functions to convert output types to input types (:issue:`249`, :pull:`250`)
 * convert all input parameter names from the plutal into the singular in buoy tracking QC function, for instance "lats" to "lat" or "lons" to "lon" (:issue:`249`, :pull:`250`)
