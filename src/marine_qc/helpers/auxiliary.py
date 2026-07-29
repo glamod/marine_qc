@@ -852,7 +852,7 @@ def args_from_data(*params: str) -> Callable[..., Any]:
                     return param in data.coords or param in data.dims
                 elif isinstance(data, xr.Dataset):
                     return param in data.data_vars or param in data.coords or param in data.dims
-                raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset not {type(data)}.")
+                raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not {type(data)}.")
 
             if "data" not in kwargs:
                 return func(*args, **kwargs)
