@@ -25,7 +25,7 @@ keywords = ["Marine Quality Control"]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 classifiers = [
-  "Development Status :: 1 - Planning",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
@@ -111,7 +111,7 @@ dev = [
 [tool]
 
 [tool.bumpversion]
-current_version = "0.3.3-dev.18"
+current_version = "0.4.0"
 commit = true
 commit_args = "--no-verify --signoff"
 tag = false
