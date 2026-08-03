@@ -14,14 +14,14 @@ on:
       - .cruft.json
       - .editorconfig
       - .github/**.yml
+      - .github/*.txt
+      - .github/*.in
       - .gitignore
       - .pre-commit-config.yaml
       - .yamllint.yaml
       - .zenodo.json
       - AUTHORS.rst
       - CHANGELOG.rst
-      - CI/**/*.in
-      - CI/**/*.txt
       - CITATION.cff
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.rst
