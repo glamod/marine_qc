@@ -1,14 +1,6 @@
-.. raw:: html
-
-   <div align="center">
-     <img src="https://raw.githubusercontent.com/glamod/marine_qc/main/docs/_static/images/mascot_dolphin.png"
-          width="200"
-          alt="Mascot Dolphin">
-   </div>
-
-=============================================
-Marine Quality Control: ``marine_qc`` toolbox
-=============================================
+=====================================================
+Marine Quality Control: ``marine_qc`` toolbox: |logo|
+=====================================================
 
 +----------------------------+----------------------------------------------------------------+
 | Versions                   | |pypi|                                                         |
@@ -154,6 +146,11 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 .. |license| image:: https://img.shields.io/github/license/glamod/marine_qc.svg
         :target: https://github.com/glamod/marine_qc/blob/main/LICENSE
         :alt: License
+
+.. |logo| image:: https://github.com/glamod/marine_qc/blob/main/docs/_static/images/mascot_dolphin.png
+        :target: https://github.com/glamod/marine_qc/blob/main/docs/_static/images/mascot_dolphin.png
+        :width: 200px
+        :alt: Logo
 
 .. |ossf| image:: https://api.securityscorecards.dev/projects/github.com/glamod/marine_qc/badge
         :target: https://securityscorecards.dev/viewer/?uri=github.com/glamod/marine_qc
