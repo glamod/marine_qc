@@ -2,36 +2,36 @@
 Changelog
 =========
 
-0.3.3 (unreleased)
+0.4.0 (2026-08-03)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* new_functions: `do_valid_value_check` and `do_valid_value_clim_check` are copies of the old versions from `do_missing_value_check` and `do_missing_value_clim_check` that return `1` (fail) for numerically invalid values, otherwise `0` (pass) (:issue:`205`, :pull:`206`)
+* new_functions: ``do_valid_value_check`` and ``do_valid_value_clim_check`` are copies of the old versions from ``do_missing_value_check`` and ``do_missing_value_clim_check`` that return ``1`` (fail) for numerically invalid values, otherwise ``0`` (pass) (:issue:`205`, :pull:`206`)
 * A new checker to detect (``marine_qc.duplicate_check``), get (``marine_qc.get_duplicates``), flag (``marine_qc.flag_duplicates``) and remove (``marine_qc.remove_duplicates``) potentially duplicated observations using ``splink`` (:issue:`202`, :issue:`210`, :pull:`207`)
 * flag definitions can now directly be imported via ``marine_qc.Flags`` (:pull:`207`)
 * new plotting routine that plots a graph of points showing the longitude and value of a set of observations coloured according to flagged outcomes: ``plot_variable_longitude`` (:issue:`240`, :pull:`244`)
 * add new input parameters ``xlim`` and ``ylim`` in the plotting routines (:issue:`240`, :pull:`244`)
 * add new input parameter ``marker_size`` in the plotting routines (:issue:`240`, :pull:`244`)
-* add new function to combine results from multiple QC checks into a single flag: combine_qr_results (:issue:`242`, :pull:`245`)
-* add new function that checks whether both the date and the time is valid: do_datetime_check (:pull:`246`)
+* add new function to combine results from multiple QC checks into a single flag: ``combine_qr_results`` (:issue:`242`, :pull:`245`)
+* add new function that checks whether both the date and the time is valid: ``do_datetime_check`` (:pull:`246`)
 * optionally, add coastlines in plots using visualization functions (:pull:`248`)
-* add buoy tracking QC functions to imports in quality_control.qc_multiple_check (:issue:`249`, :pull:`250`)
+* add buoy tracking QC functions to imports in ``quality_control.qc_multiple_check`` (:issue:`249`, :pull:`250`)
 * the documentation now includes example notebooks how to use ``marine_qc`` (:issue:`4`, :issue:`251`, :pull:`235`, :pull:`255`)
-* quality control functions now support pandas.DataFrames as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`241`, :pull:`257`)
-* quality control functions now support both xarray.DataArrays and xarray.Datasets as input, allowing for a more flexible way of passing data using the `data` key-word-argument (:issue:`243`, :pull:`259`)
+* quality control functions now support pandas.DataFrames as input, allowing for a more flexible way of passing data using the "data" key-word-argument (:issue:`241`, :pull:`257`)
+* quality control functions now support both xarray.DataArrays and xarray.Datasets as input, allowing for a more flexible way of passing data using the "data" key-word-argument (:issue:`243`, :pull:`259`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* Both `do_mising_value_check` and `do_missing_value_clim_check` now return `0` (pass) for numerically invalid values, otherwise `1` (fail) (:issue:`205`, :pull:`206`)
+* Both ``do_mising_value_check`` and ``do_missing_value_clim_check`` now return ``0`` (pass) for numerically invalid values, otherwise ``1`` (fail) (:issue:`205`, :pull:`206`)
 * The minimum versions of several dependencies have been set to support Python 3.11 or higher (numpy >= 1.24.0, <= 2.5.0, pandas >= 3.0.0, scipy >= 1.11.0, xarray >= v2025.07.0, xclim >= 0.56) (:pull:`224`, :pull:`261`)
 * convert buoy tracking QC outcomes from ``float`` to ``int`` (:issue:`249`, :pull:`250`)
 * implement decorator ``post_format_return_type`` into buoy tracking QC functions to convert output types to input types (:issue:`249`, :pull:`250`)
 * convert all input parameter names from the plutal into the singular in buoy tracking QC function, for instance "lats" to "lat" or "lons" to "lon" (:issue:`249`, :pull:`250`)
 * sort parameter order list in buoy tracking QC functions equivalent to other QC functions, for instance ["lon", "lat", "date"] to ["lat", "lon", "date"] (:issue:`249`, :pull:`250`)
 * ``cartopy`` has been added to the dependencies (:pull:`235`)
-* when a pandas.DataFrame is provided as input to `remove_duplicates` using `data` keyword-argument, the function returns a pandas.DataFrame instead of a tuple of pandas.Series, making it easier to work with the result (:pull:`257`)
+* when a pandas.DataFrame is provided as input to ``remove_duplicates`` using ``data`` keyword-argument, the function returns a pandas.DataFrame instead of a tuple of pandas.Series, making it easier to work with the result (:pull:`257`)
 * quality control functions do NOT raise errors when input arrays have more than 1 dimension (:pull:`259`)
 * decorator ``args_from_data`` raise TypeError if data is none of pd.DataFrame, xr.DataArray or xr.Dataset (:pull:`259`)
 
@@ -46,11 +46,11 @@ Internal changes
 * new helper function ``quality_control.qc_individual_report._do_time_check`` that is used in both "do_time_check" and "do_datetime_check" (:pull:`246`)
 * new helper function ``quality_control.qc_individual_report._do_date_check`` that is used in both "do_date_check" and "do_datetime_check" (:pull:`246`)
 * explicitly convert intermediate result in ``quality_control.helpers.time_control.dayin_year`` to a python integer to fix incompatible types assignment (:pull:`247`)
-* new helper function quality_control.qc_individual_report._do_time_check that is used in both do_time_check and do_datetime_check (:pull:`246`)
-* new helper function quality_control.qc_individual_report._do_date_check that is used in both do_date_check and do_datetime_check (:pull:`246`)
-* rename quality_control.buoy_tracking_qc into quality_control.qc_buoy_tracking (:issue:`249`, :pull:`250`)
-* move "is_monotonic" and "track_day_test" from quality_control.qc_buoy_tracking to quality_control.track_check_utils (:pull:`250`)
-* the `duplicate_check` function now suppresses warnings from `splink` (:pull:`257`)
+* new helper function ``quality_control.qc_individual_report._do_time_check`` that is used in both ``do_time_check`` and ``do_datetime_check`` (:pull:`246`)
+* new helper function ``quality_control.qc_individual_report._do_date_check`` that is used in both ``do_date_check`` and ``do_datetime_check`` (:pull:`246`)
+* rename ``quality_control.buoy_tracking_qc`` into ``quality_control.qc_buoy_tracking`` (:issue:`249`, :pull:`250`)
+* move "is_monotonic" and "track_day_test" from ``quality_control.qc_buoy_tracking`` to ``quality_control.track_check_utils`` (:pull:`250`)
+* the ``duplicate_check`` function now suppresses warnings from ``splink`` (:pull:`257`)
 * decorators now use variable arguments instead of lists as inputs (:pull:`257`)
 
 0.3.2 (2023-04-21)
@@ -59,36 +59,36 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), Trev
 
 Announcements
 ^^^^^^^^^^^^^
-* `marine_qc` now fully supports Python 3.14 and drops support for Python 3.10. (:issue:`182`, :pull:`161`)
+* ``marine_qc`` now fully supports Python 3.14 and drops support for Python 3.10. (:issue:`182`, :pull:`161`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* `do_date_check` now supports flexible input parameters `year_init` and `year_end` that define valid year range (:pull:`184`)
+* ``do_date_check`` now supports flexible input parameters ``year_init`` and ``year_end`` that define valid year range (:pull:`184`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* Development dependencies ("dev", "docs") are now installed via the new `dependency-groups` conventions (`PEP 735 <https://peps.python.org/pep-0735/>`_) (:pull:`161`)
-* `prek` is now the suggested pre-commit runner (installed by default via `pip install --group dev`) (:pull:`161`)
+* Development dependencies ("dev", "docs") are now installed via the new ``dependency-groups`` conventions (`PEP 735 <https://peps.python.org/pep-0735/>`_) (:pull:`161`)
+* ``prek`` is now the suggested pre-commit runner (installed by default via `pip install --group dev`) (:pull:`161`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Updated the project template and boilerplate code to address configuration issues and benefit from new workflows/conventions (:pull:`161`):
 
   * A new workflow has been added to automatically accept minor/patch updates to GitHub Actions and Python deps coming from Dependabot.
-  * `tox.ini`` has migrated to `tox.toml` (new standard).
-  * `pyproject.toml` and `tox.toml` now use `[dependency-groups]` to manage non-end-user dependency lists.
-  * The `Makefile` recipes are much cleaner and now manage some dependency installation calls.
+  * ``tox.ini`` has migrated to ``tox.toml`` (new standard).
+  * ``pyproject.toml`` and ``tox.toml`` now use ``[dependency-groups]`` to manage non-end-user dependency lists.
+  * The ``Makefile`` recipes are much cleaner and now manage some dependency installation calls.
   * Various dependency updates.
 
 * sphinx documentation now uses internal data types from "auxiliary.py" (:issue:`143`, :pull:`185`)
 * correct repository url in documentation (:pull:`185`)
-* `cdm_reader_mapper` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
-* copy code snippet to load files from GLAMOD test data repo from `cdm_reader_mapper` (used in testing suite only) (:issue:`183`, :pull:`188`)
+* ``cdm_reader_mapper`` has been dropped from the dependencies (:issue:`183`, :pull:`188`)
+* copy code snippet to load files from GLAMOD test data repo from ``cdm_reader_mapper`` (used in testing suite only) (:issue:`183`, :pull:`188`)
 
 Bug fixes
 ^^^^^^^^^
 * Staging and deployment worksflows are now fully working again (:issue:`160`, :pull:`161`)
-* `bump-version` workflow is now fully working again (:issue:`64`, :pull:`161`)
+* ``bump-version`` workflow is now fully working again (:issue:`64`, :pull:`161`)
 
 0.3.1 (2026-03-06)
 ------------------
@@ -101,14 +101,14 @@ New features and enhancements
 * The documentation now uses the `furo <https://github.com/pradyunsg/furo>`_ theme for Sphinx (:pull:`122`)
 * New functions ``do_landlocked_check`` and ``do_maritime_check`` to test whether a position is on land/sea using a land-sea mask (:issue:`130`, :pull:`141`)
 * decorator ``external_clim.inspect_climatology`` now supports str, path-like and ``xarray`` objects as input (:pull:`141`)
-* new validator to validate call signature types in `multiple_checks` (:issue:`15`, :pull:`128`)
+* new validator to validate call signature types in ``multiple_checks`` (:issue:`15`, :pull:`128`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * rename function ``do_multiple_row_check`` to ``multiple_individual_check`` (:pull:`95`)
 * rename module ``marine_qc.multiple_row_checks`` to ``marine_qc.multiple_checks`` (:pull:`95`)
-* `multiple_checks` now raises errors if `qc_dict` or `preproc_dict` has an invalid structure (:issue:`119`, :pull:`128`)
-* `multiple_checks` now raises errors if input directory values do not match the available QC functions or their arguments (:issue:`119`, :pull:`128`)
+* ``multiple_checks`` now raises errors if "qc_dict" or "preproc_dict" has an invalid structure (:issue:`119`, :pull:`128`)
+* ``multiple_checks`` now raises errors if input directory values do not match the available QC functions or their arguments (:issue:`119`, :pull:`128`)
 
 
 Internal changes
@@ -120,16 +120,16 @@ Internal changes
 * The numpydoc linting tool has been added to the linting checks, and the pre-commit configurations (:issue:`53`, :issue:`59`, :pull:`120`)
 * The mypy type checking has been added to the pre-commit configurations (:issue:`59`, :pull:`121`)
 * Documentation is now build without any warning messages (:issue:`96`, :pull:`122`)
-* `readthedocs.yaml`: set `fail_on_warnings` to "true" (:issue:`61`, :pull:`122`)
-* new validation method `validations` to validate call signature types for all functions (:pull:`128`)
-* `multiple_checks`: merge helper functions `_prepare_preprocessed_vars` and `_prepare_qc_functions` into `_prepare_functions` (:pull:`128`)
-* `multiple_checks`: rename helper function `_validate_and_normalize_input` to `_normalize_input` (:pull:`128`)
-* `multiple_checks`: replace concrete `dict` types with `Mapping` in function type hints (:pull:`128`)
-* new helper function `auxiliary.ensure_arrays` to ensure that all inputs are NumPy arrays and to increase test coverage (:pull:`128`)
+* ``readthedocs.yaml``: set "fail_on_warnings" to "true" (:issue:`61`, :pull:`122`)
+* new validation method ``validations`` to validate call signature types for all functions (:pull:`128`)
+* ``multiple_checks``: merge helper functions ``_prepare_preprocessed_vars`` and ``_prepare_qc_functions`` into ``_prepare_functions`` (:pull:`128`)
+* ``multiple_checks``: rename helper function ``_validate_and_normalize_input`` to ``_normalize_input`` (:pull:`128`)
+* ``multiple_checks``: replace concrete "dict" types with "Mapping" in function type hints (:pull:`128`)
+* new helper function ``auxiliary.ensure_arrays`` to ensure that all inputs are NumPy arrays and to increase test coverage (:pull:`128`)
 * new marine_qc data types: ScalarNumberType, SequenceNumberType and ValueNumberType (:pull:`128`)
-* remove `cdm_reader_mapper.DataBundle`-related tests (:issue:`139`, :pull:`146`)
+* remove ``cdm_reader_mapper.DataBundle``-related tests (:issue:`139`, :pull:`146`)
 * update testing suite to cover warnings (:issue:`148`, :pull:`149`)
-* add unit test for `external_clim` and increase test coverage (:issue:`17`, :pull:`154`)
+* add unit test for ``external_clim`` and increase test coverage (:issue:`17`, :pull:`154`)
 
 0.3.0 (2026-03-06)
 ------------------
@@ -149,7 +149,7 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`), John
 
 Announcements
 ^^^^^^^^^^^^^
-* This marine QC repository is a copy of the results of https://github.com/glamod/glamod-marine-processing/pull/117. This repository replaces `glamod_marine_proccesing.qc_suite.modules` as an independent package (:pull:`6`).
+* This marine QC repository is a copy of the results of https://github.com/glamod/glamod-marine-processing/pull/117. This repository replaces ``glamod_marine_proccesing.qc_suite.modules`` as an independent package (:pull:`6`).
 
 License and Legal
 ^^^^^^^^^^^^^^^^^
@@ -158,7 +158,7 @@ License and Legal
 
 CI changes
 ^^^^^^^^^^
-* Use `cruft` and cookicutter template `https://github.com/Ouranosinc/cookiecutter-pypackage` (:issue:`13`, :pull:`30`, :pull:`55`)
+* Use ``cruft`` and cookicutter template `https://github.com/Ouranosinc/cookiecutter-pypackage` (:issue:`13`, :pull:`30`, :pull:`55`)
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,15 +169,15 @@ New features and enhancements
 * Added ``mds_lon_to_xindex_fast`` for extracting values from climatologies (:pull:`24`)
 * Implement plotting routines for QC outcomes (:pull:`24`):
 
-  * `marine_qc.plot_qc_outcomes.latitude_variable_plot`: Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC outcomes.
-  * `marine_qc.plot_qc_outcomes.latitude_longitude_plot`: Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
+  * ``marine_qc.plot_qc_outcomes.latitude_variable_plot``: Plot a graph of points showing the latitude and value of a set of observations coloured according to the QC outcomes.
+  * ``marine_qc.plot_qc_outcomes.latitude_longitude_plot``: Plot a graph of points showing the latitude and longitude of a set of observations coloured according to the QC outcomes.
 
-* decorator `post_formt_return_type` has new parameters (:pull:`24`):
+* decorator ``post_formt_return_type`` has new parameters (:pull:`24`):
 
   * dtype: Desired data type of the result. Default is int.
-  * multiple: If True, assumes the function returns a sequence of results (e.g., a tuple), and applies `format_return_type` to each element individually.
+  * multiple: If True, assumes the function returns a sequence of results (e.g., a tuple), and applies ``format_return_type`` to each element individually.
 
-* Both `do_bayesian_buddy_check` and `do_mds_buddy_check` allow a list of row numbers to be skipped (`ignore_index`) (:pull:`24`).
+* Both ``do_bayesian_buddy_check`` and ``do_mds_buddy_check`` allow a list of row numbers to be skipped ("ignore_index") (:pull:`24`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -186,10 +186,10 @@ Internal changes
 * Split some try statements into single if statements giving warnings (:pull:`7`)
 * Fixing some typos in docstrings and comments (:pull:`7`)
 * Improved unit test coverage (:pull:`9`)
-* combine `time_control.day_in_year` and `time_control.dayinyear` to `time_control.day_in_year` (:pull:`9`)
-* new function `time_control.valid_month_day` to validate month and day information (:pull:`9`)
-* extract daytime check from `do_day_check` and `do_night_check` (:pull:`21`)
+* combine ``time_control.day_in_year`` and ``time_control.dayinyear`` to ``time_control.day_in_year`` (:pull:`9`)
+* new function ``time_control.valid_month_day`` to validate month and day information (:pull:`9`)
+* extract daytime check from ``do_day_check`` and ``do_night_check`` (:pull:`21`)
 * vectorised many of the QC checks to speed up processing on large datasets (:pull:`24`)
 * moved to using pyproj for spherical geometry calculations (:pull:`24`)
 * removed dependence on old Climatology class (:pull:`24`)
-* utility functions moved from qc_sequential_reports to track_check_utils (:pull:`24`)
+* utility functions moved from ``qc_sequential_reports`` to ``track_check_utils`` (:pull:`24`)
