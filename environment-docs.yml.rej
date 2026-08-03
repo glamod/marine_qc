@@ -1,0 +1,10 @@
+diff a/environment-docs.yml b/environment-docs.yml	(rejected hunks)
+@@ -6,7 +6,7 @@ dependencies:
+   - python >=3.12,<3.13
+   # Docs
+   - click >=8.3.1
+-  - sphinx >=8.2
++  - sphinx >=8.2.0
+   - sphinx-autobuild >=2024.4.16
+   - sphinx-click
+   - sphinx-codeautolink >=0.16.2

@@ -1,0 +1,9 @@
+diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
+@@ -216,7 +216,6 @@ exclude = [
+   ".readthedocs.yml",
+   ".yamllint.yaml",
+   ".zizmor.yml",
+-  "CI/requirements_ci.*",
+   "docs/_*",
+   "docs/apidoc/modules.rst",
+   "docs/apidoc/marine_qc*.rst"
