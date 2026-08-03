@@ -2,6 +2,14 @@
 Changelog
 =========
 
+0.4.1 (2026-08-04)
+------------------
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+
+Announcements
+^^^^^^^^^^^^^
+Make a stable release on pypi.
+
 0.4.0 (2026-08-03)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
