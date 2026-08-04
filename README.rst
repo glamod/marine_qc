@@ -81,7 +81,7 @@ If you would like to contribute code or documentation (which is greatly apprecia
 How to cite this library
 ========================
 
-If you wish to cite `marine_qc` in a research publication, we kindly ask that you refer to Zenodo: https://doi.org/10.5281/zenodo.17404319.
+If you wish to cite `marine_qc` in a research publication, we kindly ask that you refer to Zenodo: https://doi.org/10.5281/zenodo.21785810.
 
 License
 =======
@@ -184,6 +184,6 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://pypi.python.org/pypi/marine_qc
         :alt: Supported Python Versions
 
-.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.19680563.svg
-        :target: https://doi.org/10.5281/zenodo.19680563
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.21785810.svg
+        :target: https://doi.org/10.5281/zenodo.21785810
         :alt: DOI
