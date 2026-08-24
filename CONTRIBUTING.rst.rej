@@ -195,4 +195,3 @@ diff a/CONTRIBUTING.rst b/CONTRIBUTING.rst	(rejected hunks)
 +    $ make initialize-translations
 
  This will create or update the French translation files in the `docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` files in this directory to provide translations for the documentation.
-
