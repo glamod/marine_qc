@@ -20,16 +20,16 @@ diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
  dynamic = ["description", "version"]
  dependencies = [
    "click >=8.3.1"
--  
+-
  ]
- 
+
  [project.optional-dependencies]
  extras = []
- 
+
  [project.scripts]
 -marine_qc = "marine_qc.cli:app"
 +marine_qc = "marine_qc.cli:main"
- 
+
  [project.urls]
  # "Homepage" = "https://Marine-Quality-Control.readthedocs.io/"
 @@ -52,15 +50,15 @@ marine_qc = "marine_qc.cli:app"
@@ -67,15 +67,15 @@ diff a/pyproject.toml b/pyproject.toml	(rejected hunks)
    {include-group = "docs"},
    {include-group = "lint"},
 @@ -170,6 +170,7 @@ values = [
- 
+
  [tool.codespell]
  ignore-words-list = "astroid,socio-economic,thirdparty"
 +skip = "docs/_build"
- 
+
  [tool.coverage.paths]
  source = ["src/marine_qc/", "*/site-packages/marine_qc/"]
 @@ -223,7 +224,7 @@ exclude = [
- 
+
  [tool.mypy]
  files = "."
 -python_version = "3.10"

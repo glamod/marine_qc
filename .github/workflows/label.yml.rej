@@ -5,6 +5,6 @@ diff a/.github/workflows/label.yml b/.github/workflows/label.yml	(rejected hunks
  # file with configuration.  For more information, see:
 -# https://github.com/actions/labeler/blob/master/README.md
 +# https://github.com/actions/labeler/blob/main/README.md
- 
+
  name: Labeler
  on:
