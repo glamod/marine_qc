@@ -193,9 +193,9 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. If you haven't already, ensure that you have read and agreed to the `Developer Certificate of Origin (DCO) <https://developercertificate.org/>`_, and that you have signed off on your commits using:
 
-.. code-block:: bash
+   .. code-block:: console
 
-        git commit -s/--signoff
+       $ git commit -s/--signoff
 
 This will add a `Signed-off-by:` line to your commit message, which indicates that you agree to the DCO.
 
@@ -275,13 +275,13 @@ To run a subset of tests:
 
 .. code-block:: console
 
-    python -m pytest tests/test_marine_qc.py
+    $ python -m pytest tests/test_marine_qc.py
 
 You can also directly call a specific test class or test function using:
 
 .. code-block:: console
 
-    python -m pytest tests/test_marine_qc.py::TestClassName::test_function_name
+    $ python -m pytest tests/test_marine_qc.py::TestClassName::test_function_name
 
 For more information on running tests, see the `pytest documentation <https://docs.pytest.org/en/latest/usage.html>`_.
 

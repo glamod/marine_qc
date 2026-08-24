@@ -70,7 +70,7 @@ lint: install-lint ## check style
 	python -m numpydoc lint src/marine_qc/**.py
 	python -m vulture src/marine_qc tests
 	codespell src/marine_qc tests docs
-	python -m deptry src
+	python -m deptry src/marine_qc
 	python -m yamllint --config-file=.yamllint.yaml src/marine_qc
 
 test: install-test ## run tests quickly with the default Python
