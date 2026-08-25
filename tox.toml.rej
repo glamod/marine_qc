@@ -1,9 +1,0 @@
-diff a/tox.toml b/tox.toml	(rejected hunks)
-@@ -46,7 +46,6 @@ commands_post = [
- ]
-
- [gh.python]
--"3.10" = ["py3.10"]
- "3.11" = ["py3.11"]
- "3.12" = ["py3.12"]
- "3.13" = ["py3.13"]
