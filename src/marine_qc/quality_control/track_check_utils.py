@@ -243,7 +243,7 @@ def speed_continuity(
     vsi: SequenceNumberType,
     speeds: SequenceNumberType,
     vsi_previous: SequenceNumberType = None,
-    max_speed_change: float | None = 10.0,
+    max_speed_change: float = 10.0,
 ) -> np.ndarray:
     """
     Check if reported speeds are within the allowed change from calculated speeds.
@@ -262,7 +262,7 @@ def speed_continuity(
     vsi_previous : :py:obj:`~marine_qc.SequenceNumberType`, optional
         One-dimensional array of reported speed in km/h at previous time step.
         If None, get vsi_previous from vsi.
-    max_speed_change : float, optional
+    max_speed_change : float
         Largest change of speed that will not raise flag in km/h, default 10 (km/h).
 
     Returns
