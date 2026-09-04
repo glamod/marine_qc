@@ -20,6 +20,14 @@ from ..helpers.auxiliary import (
 )
 
 
+__all__ = [
+    "duplicate_check",
+    "flag_duplicates",
+    "get_duplicates",
+    "remove_duplicates",
+]
+
+
 logging.getLogger("splink").setLevel(logging.ERROR)
 logging.getLogger("splink.internals").setLevel(logging.ERROR)
 
@@ -829,6 +837,9 @@ def duplicate_check(
 
     settings = {
         **general_settings,
+        "blocking_rules_to_generate_predictions": [
+            "l.station_id = r.station_id",
+        ],
         "comparisons": comparisons,
     }
 

@@ -39,6 +39,18 @@ import numpy as np
 from .auxiliary import isvalid
 
 
+__all__ = [
+    "dpd",
+    "rh",
+    "sh",
+    "sh_from_vap",
+    "td_from_vap",
+    "vap",
+    "vap_from_sh",
+    "wb",
+]
+
+
 def vap(td: float, t: float, p: float, roundit: bool = True) -> float:
     """
     Calculate vapour pressure from dew point temperature, dry bulb temperature and pressure.
