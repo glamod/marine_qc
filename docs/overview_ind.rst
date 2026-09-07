@@ -190,20 +190,20 @@ extract the climatological values corresponding to the input reports.
 
 Currently, the following QC checks can be used:
 
-* :func:`marine_qc.do_climatology_check`,
-* :func:`marine_qc.do_date_check`,
-* :func:`marine_qc.do_day_check`,
-* :func:`marine_qc.do_hard_limit_check`,
-* :func:`marine_qc.do_missing_value_check`,
-* :func:`marine_qc.do_missing_value_clim_check`,
-* :func:`marine_qc.do_night_check`,
-* :func:`marine_qc.do_position_check`,
-* :func:`marine_qc.do_sst_freeze_check`,
-* :func:`marine_qc.do_supersaturation_check`,
-* :func:`marine_qc.do_time_check`,
-* :func:`marine_qc.do_wind_consistency_check`
-* :func:`marine_qc.do_valid_value_check`,
-* :func:`marine_qc.do_valid_value_clim_check`,
+* :func:`~marine_qc.do_climatology_check`,
+* :func:`~marine_qc.do_date_check`,
+* :func:`~marine_qc.do_day_check`,
+* :func:`~marine_qc.do_hard_limit_check`,
+* :func:`~marine_qc.do_missing_value_check`,
+* :func:`~marine_qc.do_missing_value_clim_check`,
+* :func:`~marine_qc.do_night_check`,
+* :func:`~marine_qc.do_position_check`,
+* :func:`~marine_qc.do_sst_freeze_check`,
+* :func:`~marine_qc.do_supersaturation_check`,
+* :func:`~marine_qc.do_time_check`,
+* :func:`~marine_qc.do_wind_consistency_check`
+* :func:`~marine_qc.do_valid_value_check`,
+* :func:`~marine_qc.do_valid_value_clim_check`,
 
 And the following preprocessing functions:
 
@@ -288,7 +288,7 @@ Make use of both dictionaries:
         },
     }
 
-The QC results can be combined into a single QC flag using :func:`marine_qc.combine_qc_results`.
+The QC results can be combined into a single QC flag using :func:`~marine_qc.combine_qc_results`.
 By default, QC flags are prioritized in order the [1, 0, 3, 2], ],
 which means that any row containing a QC flag of 1 will be assigned a final flag of 1,
 followed by rows with a flag of 0, then 3, and finally 2,

@@ -44,15 +44,15 @@ For a detailed description see :ref:`bayesian_buddy_check`
 :func:`~marine_qc.do_multiple_grouped_check`
 ============================================
 
-Multiple sequential report checks can be run simultaneously using the :func:`marine_qc.do_multiple_grouped_check` function.
+Multiple sequential report checks can be run simultaneously using the :func:`~marine_qc.do_multiple_grouped_check` function.
 For more information how to use the function see :ref:`running_multiple_ind`.
 
 Currently, the following QC checks can be used:
 
-    * :func:`marine_qc.do_bayesian_buddy_check`
-    * :func:`marine_qc.do_mds_buddy_check`
+    * :func:`~marine_qc.do_bayesian_buddy_check`
+    * :func:`~marine_qc.do_mds_buddy_check`
 
-The QC results can be combined into a single QC flag using :func:`marine_qc.combine_qc_results`.
+The QC results can be combined into a single QC flag using :func:`~marine_qc.combine_qc_results`.
 By default, QC flags are prioritized in order the [1, 0, 3, 2], ],
 which means that any row containing a QC flag of 1 will be assigned a final flag of 1,
 followed by rows with a flag of 0, then 3, and finally 2,

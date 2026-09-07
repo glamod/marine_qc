@@ -62,7 +62,7 @@ Tests whether reports from a drifting buoy suggest it has run aground and stoppe
 
 The new aground check is the same as the aground check but there is no upper window limit.
 
-:func:`~marine_qc.do_sst_start_tail_check` and :func:`marine_qc.do_sst_end_tail_check`
+:func:`~marine_qc.do_sst_start_tail_check` and :func:`~marine_qc.do_sst_end_tail_check`
 =======================================================================================
 
 Tests for strange behaviour (bias or noise) at the start or end of a sequence of reports from a drifting buoy.
@@ -91,8 +91,8 @@ of tail behaviours.
 The end tail check works in the same way as the start tail check, but runs through the reports in reverse
 time order.
 
-:func:`~marine_qc.do_sst_biased_check`, :func:`marine_qc.do_sst_noisy_check`, and :func:`marine_qc.do_sst_biased_noisy_short_check`
-===================================================================================================================================
+:func:`~marine_qc.do_sst_biased_check`, :func:`~marine_qc.do_sst_noisy_check`, and :func:`~marine_qc.do_sst_biased_noisy_short_check`
+=====================================================================================================================================
 
 Tests for sequences of reports from a drifting buoy that are biased or noisy with a version that works on shorter
 records.
