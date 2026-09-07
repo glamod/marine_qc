@@ -8,7 +8,7 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* introduce blicking rules fro duplicate detection to improve performance and reduce memory usage (:pull:`294`)
+* introduce blicking rules for duplicate detection to improve performance and reduce memory usage (:pull:`294`)
 
 0.4.1 (2026-08-04)
 ------------------
