@@ -20,7 +20,6 @@ class Flags:
 
 
 __all__ = [
-    "Climatology",
     "Flags",
     "open_xrdataset",
 ]

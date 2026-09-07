@@ -98,7 +98,9 @@ Internal data type aliases
 --------------------------
 
 .. autodata:: marine_qc.PandasNAType
+   :noindex:
 .. autodata:: marine_qc.PandasNaTType
+   :noindex:
 .. autodata:: marine_qc.ScalarIntType
 .. autodata:: marine_qc.ScalarFloatType
 .. autodata:: marine_qc.ScalarNumberType

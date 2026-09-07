@@ -23,6 +23,14 @@ from .auxiliary import (
 )
 
 
+_all__ = [
+    "angular_distance",
+    "course_between_points",
+    "intermediate_point",
+    "lat_lon_from_course_and_distance",
+    "sphere_distance",
+]
+
 radians_per_degree = np.pi / 180.0
 geod = Geod(a=earths_radius, b=earths_radius)
 

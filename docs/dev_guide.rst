@@ -17,7 +17,7 @@ key decorators are:
   input(s).
 * :func:`.convert_date` - Decorator to extract date components and inject them as function parameters.
 
-An example use case for four of these can be seen in the :func:`.do_climatology_check` function
+An example use case for four of these can be seen in the :func:`~marine_qc.do_climatology_check` function
 
 .. code-block:: python
 
