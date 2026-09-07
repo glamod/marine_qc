@@ -837,9 +837,6 @@ def duplicate_check(
 
     settings = {
         **general_settings,
-        "blocking_rules_to_generate_predictions": [
-            "l.station_id = r.station_id",
-        ],
         "comparisons": comparisons,
     }
 
