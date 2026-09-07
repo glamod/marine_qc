@@ -328,12 +328,7 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
     lon_valid = np.where(valid, lon_arr, np.nan)
 
     cond_failed = np.zeros(lat_arr.shape, dtype=bool)
-    cond_failed[valid] = (
-        (lat_arr[valid] < -90.0)
-        | (lat_arr[valid] > 90.0)
-        | (lon_arr[valid] < -180.0)
-        | (lon_arr[valid] > 360.0)
-    )    
+    cond_failed[valid] = (lat_arr[valid] < -90.0) | (lat_arr[valid] > 90.0) | (lon_arr[valid] < -180.0) | (lon_arr[valid] > 360.0)
 
     result[valid & cond_failed] = failed
     result[valid & ~cond_failed] = passed
