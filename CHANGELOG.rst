@@ -8,7 +8,7 @@ Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* updates ``do_position_check`` to avoid range comparisons on invalid coordinate values, preventing NumPy runtime warnings (:pull:`295`) 
+* updates ``do_position_check`` to avoid range comparisons on invalid coordinate values, preventing NumPy runtime warnings (:pull:`295`)
 
 0.4.1 (2026-08-04)
 ------------------
