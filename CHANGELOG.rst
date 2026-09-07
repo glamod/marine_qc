@@ -2,6 +2,15 @@
 Changelog
 =========
 
+0.4.2 (unpublished)
+-------------------
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* introduce __all__ to submodules (:pull:`290`)
+* explicitly export attributes in marine_qc.__init__ (:pull:`290`)
+
 0.4.1 (2026-08-04)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
