@@ -28,6 +28,9 @@ general_settings = {
     "probability_two_random_records_match": 0.01,
     "retain_matching_columns": True,
     "retain_intermediate_calculation_columns": True,
+    "blocking_rules_to_generate_predictions": [
+        "l.station_id = r.station_id",
+    ],
 }
 exact_match = ["station_id"]
 absolute_difference: dict[str, dict[str, Any]] = {
@@ -466,6 +469,7 @@ def make_comparison(
         entries = ignore_entries[column]
         if not isinstance(entries, list):
             entries = [entries]
+
         sub_levels.extend(cll.CustomLevel(f"{column}_l = '{e}' OR {column}_r = '{e}'") for e in entries)
 
     if column in ignore_nan_either:
@@ -811,7 +815,14 @@ def duplicate_check(
     comparisons = []
     for column in columns:
         if column in ignore_columns:
+            if column == "station_id" and "blocking_rules_to_generate_predictions" in general_settings:
+                del general_settings["blocking_rules_to_generate_predictions"]
             continue
+
+        if column == "station_id" and column in ignore_entries:
+            if "blocking_rules_to_generate_predictions" in general_settings:
+                new_blocking_rule = f"l.station_id IN {tuple(ignore_entries[column])}OR r.station_id IN {tuple(ignore_entries[column])}"
+                general_settings["blocking_rules_to_generate_predictions"].append(new_blocking_rule)
 
         comp = make_comparison(
             column,
