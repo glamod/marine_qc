@@ -3,7 +3,7 @@ Changelog
 =========
 
 0.4.2 (unpublished)
-------------------
+-------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
 Internal changes
