@@ -23,16 +23,15 @@ from ..helpers.auxiliary import (
 logging.getLogger("splink").setLevel(logging.ERROR)
 logging.getLogger("splink.internals").setLevel(logging.ERROR)
 
-general_settings = {
+blocking_rules: list[str] = ["l.station_id = r.station_id"]
+general_settings: dict[str, Any] = {
     "link_type": "dedupe_only",
     "probability_two_random_records_match": 0.01,
     "retain_matching_columns": True,
     "retain_intermediate_calculation_columns": True,
-    "blocking_rules_to_generate_predictions": [
-        "l.station_id = r.station_id",
-    ],
+    "blocking_rules_to_generate_predictions": blocking_rules,
 }
-exact_match = ["station_id"]
+exact_match: list[str] = ["station_id"]
 absolute_difference: dict[str, dict[str, Any]] = {
     "lat": {"difference_threshold": 0.11},
     "lon": {"difference_threshold": 0.11},
@@ -40,7 +39,7 @@ absolute_difference: dict[str, dict[str, Any]] = {
     "dsi": {"difference_threshold": 0.9},
     "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
 }
-general_comparison = {
+general_comparison: dict[str, cl.ComparisonLevel] = {
     "col_name": cll.NullLevel,
     "nan_name": cll.ElseLevel,
 }
