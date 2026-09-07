@@ -2,8 +2,8 @@
 Changelog
 =========
 
-0.4.2 (unpublished)
--------------------
+0.4.2 (2026-09-07)
+------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
 Internal changes
