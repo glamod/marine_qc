@@ -16,72 +16,72 @@ valid as well as more complex checks involving comparison to climatologies.
 
 For more information about the flagging schema see :ref:`flags`.
 
-:func:`.do_valid_value_check`
-===============================
+:func:`~marine_qc.do_valid_value_check`
+=======================================
 
 Tests that the value is present.
 
 Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 1, fail,
 otherwise it is set to 0, pass.
 
-:func:`.do_valid_value_clim_check`
-====================================
+:func:`~marine_qc.do_valid_value_clim_check`
+============================================
 
 Tests whether there is a valid climatological value at the report location.
 
 Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
 value is valid, the flag is set to 0, pass otherwise it is set to 1, fail.
 
-:func:`.do_missing_value_check`
-===============================
+:func:`~marine_qc.do_missing_value_check`
+=========================================
 
 Tests that the value is present.
 
 Checks whether a value is None or numerically invalid. If the report is numerically invalid the flag is set to 0, pass,
 otherwise it is set to 1, fail.
 
-:func:`.do_missing_value_clim_check`
-====================================
+:func:`~marine_qc.do_missing_value_clim_check`
+==============================================
 
 Tests whether there is a valid climatological value at the report location.
 
 Checks whether a value in a report was made at a location with a valid climatological average. If the climatological
 value is valid, the flag is set to 1, fail otherwise it is set to 0, pass.
 
-:func:`.do_position_check`
-==========================
+:func:`~marine_qc.do_position_check`
+====================================
 
 Tests whether the latitiude-longitude position of the report is valid.
 
 Checks whether the latitude is in the range -90 to 90 degrees and that the longitude is in the range -180 to 360
 degrees.
 
-:func:`.do_date_check`
-======================
+:func:`~marine_qc.do_date_check`
+================================
 
 Tests whether the date of the report is valid.
 
 Checks whether the date specified either as a Datetime object or by year, month, and day, is a valid date. If any
 component of the input is numerically invalid (Nan, None, or similar) then the flag is set to 2, i.e. untestable
 
-:func:`.do_time_check`
-======================
+:func:`~marine_qc.do_time_check`
+================================
 
 Tests whether the time of the report is valid.
 
 Checks that the time of the report is valid. If the input Datetime or hour is numerically invalid (Nan, None, or similar)
 then the flag is set to 2, i.e. untestable.
 
-:func:`.do_datetime_check`
-==========================
+:func:`~marine_qc.do_datetime_check`
+====================================
 
 Tests whether both the date and the time of the report are valid.
 
 Checks whether both the date and the hour specified either as a Datetime object or by year, month, day, and hour is a valid datetime.
 If any component of the input is numerically invalid (Nan, None, or similar) then the flag is set to 2, i.e. untestable.
 
-:func:`.do_day_check`
-=====================
+:func:`~marine_qc.do_day_check`
+===============================
 
 Tests whether the report was during the day.
 
@@ -89,8 +89,8 @@ Checks whether an observation was made during the day (flag set to 0, pass) or n
 definition of day is between a specified amount of time after sunrise and the same amount of time after sunset. If
 any of the inputs are numerically invalid, the flag is set to 2, untestable.
 
-:func:`.do_night_check`
-=======================
+:func:`~marine_qc.do_night_check`
+=================================
 
 Tests whether the report was during the night.
 
@@ -99,16 +99,16 @@ definition of day is between a specified amount of time after sunrise and the sa
 any of the inputs are numerically invalid, the flag is set to 2, untestable.
 
 
-:func:`.do_hard_limit_check`
-============================
+:func:`~marine_qc.do_hard_limit_check`
+======================================
 
 Tests whether the value of report is within a specified range
 
 Checks whether a value is between specified limits or not. If the value is between the specified upper and lower limits
 or equal to either one then the flag is set to 0, pass, otherwise the flag is set to 1, fail.
 
-:func:`.do_climatology_check`
-=============================
+:func:`~marine_qc.do_climatology_check`
+=======================================
 
 Tests whether the value of a report is within an acceptable range around the climatological mean.
 
@@ -126,8 +126,8 @@ can be defined using four parameters:
 
 These allow for a great deal of flexibility in the check depending what information is available.
 
-:func:`.do_supersaturation_check`
-=================================
+:func:`~marine_qc.do_supersaturation_check`
+===========================================
 
 Tests whether a report represents supersaturated conditions.
 
@@ -136,8 +136,8 @@ air temperature then the conditions are supersaturated and the flag is set to 1,
 or equal to the air temperature then the flag is set to 0, pass. If either of the inputs is numerically invalid then
 the flag is set to 2, untestable.
 
-:func:`.do_sst_freeze_check`
-============================
+:func:`~marine_qc.do_sst_freeze_check`
+======================================
 
 Tests whether the sea-surface temperature is above freezing.
 
@@ -147,8 +147,8 @@ supplied then the uncertainty is set to zero. If the sea-surface temperature is 
 uncertainty below the freezing point then the flag is set to 1, fail, otherwise it is set to 0, pass. If any of the
 inputs is numerically invalid (Nan, None or something of that kind) then the flag is set to 2, untestable.
 
-:func:`.do_wind_consistency_check`
-==================================
+:func:`~marine_qc.do_wind_consistency_check`
+============================================
 
 Tests that wind speed and direction are consistent.
 
@@ -157,8 +157,8 @@ be set to zero also. If the wind speed is greater than zero then the wind direct
 of these constraints is violated then the flag is set to 1, fail, otherwise it is set to 0. If either of the inputs
 is numerically invalid then the flag is set to 2, untestable.
 
-:func:`.do_landlocked_check`
-============================
+:func:`~marine_qc.do_landlocked_check`
+======================================
 
 Tests whether the position is on land.
 
@@ -166,8 +166,8 @@ Compares the position with a user-given land-sea mask. If the position is on a l
 If the position is on a sea point it is set to 1, failed. If either of the inputs is numerically invalid then the flag
 is set to 2, untestable.
 
-:func:`.do_maritime_check`
-==========================
+:func:`~marine_qc.do_maritime_check`
+====================================
 
 Tests whether the position is on sea.
 
@@ -179,8 +179,8 @@ Tests whether the position is on sea.
 
 .. _running_multiple_ind:
 
-:func:`.do_multiple_individual_check`
-=====================================
+:func:`~marine_qc.do_multiple_individual_check`
+===============================================
 
 Multiple individual report checks can be run simultaneously. Aside from the
 input dataframe, two additional arguments can be specified: `qc_dict` and `preproc_dict`. The `qc_dict` is a
@@ -190,20 +190,20 @@ extract the climatological values corresponding to the input reports.
 
 Currently, the following QC checks can be used:
 
-* :func:`.do_climatology_check`,
-* :func:`.do_date_check`,
-* :func:`.do_day_check`,
-* :func:`.do_hard_limit_check`,
-* :func:`.do_missing_value_check`,
-* :func:`.do_missing_value_clim_check`,
-* :func:`.do_night_check`,
-* :func:`.do_position_check`,
-* :func:`.do_sst_freeze_check`,
-* :func:`.do_supersaturation_check`,
-* :func:`.do_time_check`,
-* :func:`.do_wind_consistency_check`
-* :func:`.do_valid_value_check`,
-* :func:`.do_valid_value_clim_check`,
+* :func:`~marine_qc.do_climatology_check`,
+* :func:`~marine_qc.do_date_check`,
+* :func:`~marine_qc.do_day_check`,
+* :func:`~marine_qc.do_hard_limit_check`,
+* :func:`~marine_qc.do_missing_value_check`,
+* :func:`~marine_qc.do_missing_value_clim_check`,
+* :func:`~marine_qc.do_night_check`,
+* :func:`~marine_qc.do_position_check`,
+* :func:`~marine_qc.do_sst_freeze_check`,
+* :func:`~marine_qc.do_supersaturation_check`,
+* :func:`~marine_qc.do_time_check`,
+* :func:`~marine_qc.do_wind_consistency_check`
+* :func:`~marine_qc.do_valid_value_check`,
+* :func:`~marine_qc.do_valid_value_clim_check`,
 
 And the following preprocessing functions:
 
@@ -288,7 +288,7 @@ Make use of both dictionaries:
         },
     }
 
-The QC results can be combined into a single QC flag using :func:`.combine_qc_results`.
+The QC results can be combined into a single QC flag using :func:`~marine_qc.combine_qc_results`.
 By default, QC flags are prioritized in order the [1, 0, 3, 2], ],
 which means that any row containing a QC flag of 1 will be assigned a final flag of 1,
 followed by rows with a flag of 0, then 3, and finally 2,

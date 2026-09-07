@@ -10,6 +10,13 @@ import numpy as np
 from matplotlib import figure, lines
 
 
+__all__ = [
+    "plot_latitude_longitude",
+    "plot_latitude_variable",
+    "plot_variable_longitude",
+]
+
+
 def _get_colours_labels(qc_outcomes: np.ndarray) -> tuple[np.ndarray, list[lines.Line2D]]:
     """
     Get color lebels.
