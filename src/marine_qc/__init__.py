@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .duplicate_checker import duplicate_check, flag_duplicates, get_duplicates, remove_duplicates
-from .helpers import Climatology, Flags
+from .helpers import Flags
 from .helpers.auxiliary import (
     PandasNAType,
     PandasNaTType,
@@ -29,6 +29,7 @@ from .helpers.external_clim import (
     ClimInputType,
     ClimIntType,
     ClimNumberType,
+    Climatology,
 )
 from .quality_control import (
     combine_qc_results,

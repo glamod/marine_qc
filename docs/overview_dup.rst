@@ -36,31 +36,31 @@ By default, duplicate observations are detected according to the following crite
 
 Two observations are not considered duplicates if any of these conditions is not fullfied.
 
-For more details how to customize the duplicate checker settings see :func:`.duplicate_check`.
+For more details how to customize the duplicate checker settings see :func:`~marine_qc.duplicate_check`.
 
-:func:`.duplicate_check`
-========================
+:func:`~marine_qc.duplicate_check`
+==================================
 
 Detects possibly duplicated observations.
 
 Checks whether observations are potential duplicates. It returns a :class:`.DupDetect` instance containing
 both the original data and the duplicate comparison results.
 
-:func:`.get_duplicates`
-=======================
+:func:`~marine_qc.get_duplicates`
+=================================
 
 Get potentially duplicated observations and returns the corresponding detected duplicate matches for each observation,
 either based on a precomputed detection result or by running duplicate detection internally.
 
-:func:`.flag_duplicates`
-========================
+:func:`~marine_qc.flag_duplicates`
+==================================
 
 Flags potentially duplicated observations and returns the duplicate flags for each observation, either based
 on a precomputed detection result or by running duplicate detection internally.
 For more information about the flagging schema see :ref:`flags`.
 
-:func:`.remove_duplicates`
-==========================
+:func:`~marine_qc.remove_duplicates`
+====================================
 
 Removes potentially duplicated observations and returns the input data with duplicates excluded, either based
 on a precomputed detection result or by running duplicate detection internally.

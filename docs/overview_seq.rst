@@ -15,8 +15,8 @@ compare values at different times and locations to assess data quality.
 
 For more information about the flagging schema see :ref:`flags`.
 
-:func:`.do_track_check`
-=======================
+:func:`~marine_qc.do_track_check`
+=================================
 
 Tests that the locations of a series of reports form a plausible ship track.
 
@@ -25,8 +25,8 @@ information, if available, to determine if any of the reported locations and tim
 
 For a detailed description see :ref:`track_check`
 
-:func:`.do_few_check`
-=====================
+:func:`~marine_qc.do_few_check`
+===============================
 
 Tests whether there are more than a few reports associated with a ship. Ships making few reports are typically
 unreliable.
@@ -34,8 +34,8 @@ unreliable.
 If there are three or fewer reports then the flags for all reports are set to 1, fail. If there are four or more,
 the flags are all set to 0, pass.
 
-:func:`.do_iquam_track_check`
-=============================
+:func:`~marine_qc.do_iquam_track_check`
+=======================================
 
 Tests that the locations of a series of reports form a plausible ship track.
 
@@ -49,8 +49,8 @@ Details are in the `IQUAM paper`_.
 
 .. _IQUAM paper: https://doi.org/10.1175/JTECH-D-13-00121.1
 
-:func:`.do_spike_check`
-=======================
+:func:`~marine_qc.do_spike_check`
+=================================
 
 Tests that a sequence of values has unlikely "spikes" in it.
 
@@ -65,8 +65,8 @@ Details are in the `IQUAM paper`_.
 
 .. _IQUAM paper: https://doi.org/10.1175/JTECH-D-13-00121.1
 
-:func:`.find_saturated_runs`
-============================
+:func:`~marine_qc.find_saturated_runs`
+======================================
 
 Tests whether there are implausibly long runs of reports with super-saturated conditions.
 
@@ -76,8 +76,8 @@ contact with the thermometer bulb. If a run of saturated reports is longer than 
 cover a period longer than a specified threshold then the run of saturated values is flagged as 1 (fail) otherwise the
 reports are flagged as 0, pass.
 
-:func:`.find_multiple_rounded_values`
-=====================================
+:func:`~marine_qc.find_multiple_rounded_values`
+===============================================
 
 Tests whether there are large numbers of rounded values in a sequence of reports.
 
@@ -85,8 +85,8 @@ A sequence of reports is checked for values which are given to a whole number. I
 observations are given to a whole number and the total number of whole numbers exceeds a specified threshold then
 all the flags for all the rounded numbers are set to 1, fail. The flags for all other reports are set to 0, pass.
 
-:func:`.find_repeated_values`
-=============================
+:func:`~marine_qc.find_repeated_values`
+=======================================
 
 Tests whether there are implausibly large number of repeated values in a sequence of reports.
 
@@ -94,23 +94,23 @@ A sequence of reports is checked for values which are repeated many times. If mo
 reports have the same value and the total number of reports of that value exceeds a specified threshold then
 all the flags for all reports with that value are set to 1, fail. The flags for all other reports are set to 0, pass.
 
-:func:`.do_multiple_sequential_check`
-=====================================
+:func:`~marine_qc.do_multiple_sequential_check`
+===============================================
 
 Multiple sequential report checks can be run simultaneously.
 For more information how to use the function see :ref:`running_multiple_ind`.
 
 Currently, the following QC checks can be used:
 
-    * :func:`.do_few_check`
-    * :func:`.do_iquam_track_check`
-    * :func:`.do_spike_check`
-    * :func:`.do_track_check`
-    * :func:`.find_multiple_rounded_values`
-    * :func:`.find_repeated_values`
-    * :func:`.find_saturated_runs`
+    * :func:`~marine_qc.do_few_check`
+    * :func:`~marine_qc.do_iquam_track_check`
+    * :func:`~marine_qc.do_spike_check`
+    * :func:`~marine_qc.do_track_check`
+    * :func:`~marine_qc.find_multiple_rounded_values`
+    * :func:`~marine_qc.find_repeated_values`
+    * :func:`~marine_qc.find_saturated_runs`
 
-The QC results can be combined into a single QC flag using :func:`.combine_qc_results`.
+The QC results can be combined into a single QC flag using :func:`~marine_qc.combine_qc_results`.
 By default, QC flags are prioritized in order the [1, 0, 3, 2], ],
 which means that any row containing a QC flag of 1 will be assigned a final flag of 1,
 followed by rows with a flag of 0, then 3, and finally 2,

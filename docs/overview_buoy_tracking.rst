@@ -25,8 +25,8 @@ surface temperature observations from drifting buoys and ships on a platform-by-
 Geophys. Res. Oceans, 118, 3507-3529,  https://doi.org/10.1002/jgrc.20257
 
 
-:func:`.do_speed_check`
-=======================
+:func:`~marine_qc.do_speed_check`
+=================================
 
 Tests that speeds inferred from a sequence of reports are not implausible for a drifting buoy.
 
@@ -34,8 +34,8 @@ The speed check aims to flag reports from drifting buoys that have been picked u
 therefore likely to be out of the water). Reports are flagged if the mean velocity over a specified period
 is above a threshold (2.5 m/s) and the reports cover a period of time longer than a specified minimum.
 
-:func:`.do_new_speed_check`
-===========================
+:func:`~marine_qc.do_new_speed_check`
+=====================================
 
 Tests that speeds inferred from a sequence of reports are not implausible for a drifting buoy
 
@@ -45,8 +45,8 @@ minimum window period. To avoid problems with the discretization of time and loc
 example, latitude and longitude are often given to the nearest tenth of a degree), which can lead to large
 apparent speeds, a minimum increment can be specified.
 
-:func:`.do_aground_check`
-=========================
+:func:`~marine_qc.do_aground_check`
+===================================
 
 Tests whether reports from a drifting buoy suggest it has run aground and stopped moving.
 
@@ -55,15 +55,15 @@ deemed aground when, after a minimum specified period of time, the distance betw
 a specified 'tolerance'. Sometimes a drifting buoy will return to the sea, so a maximum period is also
 specified to avoid missing short lived groundings.
 
-:func:`.do_new_aground_check`
-=============================
+:func:`~marine_qc.do_new_aground_check`
+=======================================
 
 Tests whether reports from a drifting buoy suggest it has run aground and stopped moving.
 
 The new aground check is the same as the aground check but there is no upper window limit.
 
-:func:`.do_sst_start_tail_check` and :func:`.do_sst_end_tail_check`
-===================================================================
+:func:`~marine_qc.do_sst_start_tail_check` and :func:`marine_qc.do_sst_end_tail_check`
+=======================================================================================
 
 Tests for strange behaviour (bias or noise) at the start or end of a sequence of reports from a drifting buoy.
 
@@ -91,8 +91,8 @@ of tail behaviours.
 The end tail check works in the same way as the start tail check, but runs through the reports in reverse
 time order.
 
-:func:`.do_sst_biased_check`, :func:`.do_sst_noisy_check`, and :func:`.do_sst_biased_noisy_short_check`
-========================================================================================================
+:func:`~marine_qc.do_sst_biased_check`, :func:`marine_qc.do_sst_noisy_check`, and :func:`marine_qc.do_sst_biased_noisy_short_check`
+===================================================================================================================================
 
 Tests for sequences of reports from a drifting buoy that are biased or noisy with a version that works on shorter
 records.
