@@ -39,6 +39,23 @@ from ..helpers.spherical_geometry import (
 from ..helpers.time_control import day_in_year, time_difference
 
 
+__all__ = [
+    "backward_discrepancy",
+    "calculate_course_parameters",
+    "calculate_midpoint",
+    "calculate_speed_course_distance_time_difference",
+    "check_distance_from_estimate",
+    "direction_continuity",
+    "forward_discrepancy",
+    "increment_position",
+    "is_monotonic",
+    "modal_speed",
+    "set_speed_limits",
+    "speed_continuity",
+    "track_day_test",
+]
+
+
 def modal_speed(speeds: list[float]) -> float:
     """
     Calculate the modal speed from the input array in 3 knot bins.

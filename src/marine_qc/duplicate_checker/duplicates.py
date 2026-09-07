@@ -20,16 +20,26 @@ from ..helpers.auxiliary import (
 )
 
 
+__all__ = [
+    "duplicate_check",
+    "flag_duplicates",
+    "get_duplicates",
+    "remove_duplicates",
+]
+
+
 logging.getLogger("splink").setLevel(logging.ERROR)
 logging.getLogger("splink.internals").setLevel(logging.ERROR)
 
-general_settings = {
+blocking_rules: list[str] = ["l.station_id = r.station_id"]
+general_settings: dict[str, Any] = {
     "link_type": "dedupe_only",
     "probability_two_random_records_match": 0.01,
     "retain_matching_columns": True,
     "retain_intermediate_calculation_columns": True,
+    "blocking_rules_to_generate_predictions": blocking_rules,
 }
-exact_match = ["station_id"]
+exact_match: list[str] = ["station_id"]
 absolute_difference: dict[str, dict[str, Any]] = {
     "lat": {"difference_threshold": 0.11},
     "lon": {"difference_threshold": 0.11},
@@ -37,7 +47,7 @@ absolute_difference: dict[str, dict[str, Any]] = {
     "dsi": {"difference_threshold": 0.9},
     "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
 }
-general_comparison = {
+general_comparison: dict[str, cl.ComparisonLevel] = {
     "col_name": cll.NullLevel,
     "nan_name": cll.ElseLevel,
 }
@@ -466,6 +476,7 @@ def make_comparison(
         entries = ignore_entries[column]
         if not isinstance(entries, list):
             entries = [entries]
+
         sub_levels.extend(cll.CustomLevel(f"{column}_l = '{e}' OR {column}_r = '{e}'") for e in entries)
 
     if column in ignore_nan_either:
@@ -811,7 +822,14 @@ def duplicate_check(
     comparisons = []
     for column in columns:
         if column in ignore_columns:
+            if column == "station_id" and "blocking_rules_to_generate_predictions" in general_settings:
+                del general_settings["blocking_rules_to_generate_predictions"]
             continue
+
+        if column == "station_id" and column in ignore_entries:
+            if "blocking_rules_to_generate_predictions" in general_settings:
+                new_blocking_rule = f"l.station_id IN {tuple(ignore_entries[column])}OR r.station_id IN {tuple(ignore_entries[column])}"
+                general_settings["blocking_rules_to_generate_predictions"].append(new_blocking_rule)
 
         comp = make_comparison(
             column,

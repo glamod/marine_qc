@@ -2,6 +2,17 @@
 Changelog
 =========
 
+0.4.2 (unpublished)
+-------------------
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* introduce __all__ to submodules (:pull:`290`)
+* explicitly export attributes in marine_qc.__init__ (:pull:`290`)
+* introduce blicking rules for duplicate detection to improve performance and reduce memory usage (:pull:`294`)
+* updates ``do_position_check`` to avoid range comparisons on invalid coordinate values, preventing NumPy runtime warnings (:pull:`295`)
+
 0.4.1 (2026-08-04)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
