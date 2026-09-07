@@ -33,6 +33,18 @@ from .qc_sequential_reports import do_iquam_track_check
 from .track_check_utils import is_monotonic, track_day_test
 
 
+__all__ = [
+    "do_aground_check",
+    "do_new_aground_check",
+    "do_new_speed_check",
+    "do_speed_check",
+    "do_sst_biased_check",
+    "do_sst_biased_noisy_short_check",
+    "do_sst_end_tail_check",
+    "do_sst_noisy_check",
+    "do_sst_start_tail_check",
+]
+
 """
 The trackqc module contains a set of functions for performing the tracking QC
 first described in Atkinson et al. [2013]. The general procedures described
