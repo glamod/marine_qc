@@ -23,7 +23,7 @@ bracex==2.4 \
 bump-my-version==1.5.1 \
     --hash=sha256:5079e443ab8c9a9903f140b427ff9f6fe8dd54013a55a4cf48b89326f3a71c07 \
     --hash=sha256:df3e2989d0d7fe704718feb24a5880f089b6b6369e427a4445b89c3adebfcff1
-    # via -r .github/requirements_ci.in
+    # via -r requirements_ci.in
 cachetools==7.0.4 \
     --hash=sha256:0c8bb1b9ec8194fa4d764accfde602dfe52f70d0f311e62792d4c3f8c051b1e9 \
     --hash=sha256:7042c0e4eea87812f04744ce6ee9ed3de457875eb1f82d8a206c46d6e48b6734
@@ -152,7 +152,7 @@ deptry==0.25.1 \
     --hash=sha256:df88952a2bab7517ef23cb304b979199b28449e5d9db2e9ba9bc27a286ac852b \
     --hash=sha256:e3fa3321078e11cd1ac3f10ce3ff0547731c53f9253b87c757a8749c76fe8fa9 \
     --hash=sha256:e6f7b8fa72932e51e86799b10dcd29381b2132dc799c790dca3b28ab08dffb28
-    # via -r .github/requirements_ci.in
+    # via -r requirements_ci.in
 dill==0.3.8 \
     --hash=sha256:3ebe3c479ad625c4553aca177444d89b486b1d84982eeacded644afc0cf797ca \
     --hash=sha256:c36ca9ffb54365bdd2f8eb3eff7d2a21237f8452b57ace88b1ac615b7e815bd7
@@ -168,21 +168,21 @@ docutils==0.21.2 \
 exceptiongroup==1.3.1 \
     --hash=sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219 \
     --hash=sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598
-    # via -r .github/requirements_ci.in
+    # via -r requirements_ci.in
 filelock==3.25.2 \
-    --hash=sha256:b64ece2b38f4ca29dd3e810287aa8c48182bbecd1ae6e9ae126c9b35f1382694  \
+    --hash=sha256:b64ece2b38f4ca29dd3e810287aa8c48182bbecd1ae6e9ae126c9b35f1382694 \
     --hash=sha256:ca8afb0da15f229774c9ad1b455ed96e85a81373065fb10446672f64444ddf70
     # via
     #   python-discovery
     #   tox
     #   virtualenv
-flit==4.0.2 \
-    --hash=sha256:232bc4317279e8952eca9fb3f5e000d8395d693b39c105b99f619ce461e1da85 \
-    --hash=sha256:7b0b0038cd91a7f04e2e287d958dc5f25e68ffeed0b93e613bd50aec99a0d9ca
-    # via -r .github/requirements_ci.in
-flit-core==4.0.2 \
-    --hash=sha256:8d80717e28d982b41594ed5b14d4e89fbc5bad55473fde27994a3101db18a94e \
-    --hash=sha256:b6929defd93884b584d7c87829e0e7b5c26ed6be17b0b873979019314aa841c8
+flit==4.1.0 \
+    --hash=sha256:18b463c435db03b8cbecf139b6b0bb285b2dfd8a7e623558136abd66f4a04af4 \
+    --hash=sha256:4feee56693b32d1ad2b04e727372b6bf3f3f62d1feda78ab5a7b97091c3f0158
+    # via -r requirements_ci.in
+flit-core==4.1.0 \
+    --hash=sha256:17398cdd2c38b24047a5a9c93089ec5c0bf12ec3d1469bbf69c27ed7965299db \
+    --hash=sha256:62e12b63ead8335b37f59fabb977c7167fe476dafb5e41785dfa8c9aff843bc6
     # via flit
 h11==0.16.0 \
     --hash=sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1 \
@@ -251,7 +251,7 @@ pydantic==2.13.5 \
     --hash=sha256:346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73 \
     --hash=sha256:51a9c5f7b2f8e636f04c6cada605d9b6a3bf1348fdf945a3d8869b19bba0ee08
     # via
-    #   -r .github/requirements_ci.in
+    #   -r requirements_ci.in
     #   bump-my-version
     #   pydantic-settings
 pydantic-core==2.46.5 \
@@ -507,7 +507,7 @@ pygments==2.20.0 \
 pylint==4.0.8 \
     --hash=sha256:1c1b2128bde5ff5e966801413080b6384d42a5782718d528c906dbb6beab94ed \
     --hash=sha256:3341c08c0aabaa4adc71516de0969f3ba5c692b56c75af4dcb4d242823fbe363
-    # via -r .github/requirements_ci.in
+    # via -r requirements_ci.in
 pyproject-api==1.10.0 \
     --hash=sha256:40c6f2d82eebdc4afee61c773ed208c04c19db4c4a60d97f8d7be3ebc0bbb330 \
     --hash=sha256:8757c41a79c0f4ab71b99abed52b97ecf66bd20b04fa59da43b5840bac105a09
@@ -592,7 +592,9 @@ tomli==2.4.1 \
     --hash=sha256:fd0409a3653af6c147209d267a0e4243f0ae46b011aa978b1080359fddc9b6cf \
     --hash=sha256:ff18e6a727ee0ab0388507b89d1bc6a22b138d1e2fa56d1ad494586d61d2eae9 \
     --hash=sha256:ff2983983d34813c1aeb0fa89091e76c3a22889ee83ab27c5eeb45100560c049
-    # via deptry
+    # via
+    #   -r requirements_ci.in
+    #   deptry
 tomli-w==1.2.0 \
     --hash=sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90 \
     --hash=sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021
@@ -609,12 +611,12 @@ tox==4.61.4 \
     --hash=sha256:1ec27a26f485c408a3f128722959086099894955d1eb74ab973e233bd362e99e \
     --hash=sha256:d3fa82dc2fe847fe45b576ed0614e850a674aadec3a664f409e2bf295c473e20
     # via
-    #   -r .github/requirements_ci.in
+    #   -r requirements_ci.in
     #   tox-gh
 tox-gh==1.8.0 \
     --hash=sha256:19c151525e6ed383b2fd23f8f3a35301ee12f3438c19ac7062f81c30958626ad \
     --hash=sha256:c29a109dc4c1a51bc472b4989bd7063ac9be07bf0c16a2b0fcbe57f16757e397
-    # via -r .github/requirements_ci.in
+    # via -r requirements_ci.in
 truststore==0.10.4 \
     --hash=sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301 \
     --hash=sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301 \
@@ -636,6 +638,8 @@ typing-extensions==4.15.0 \
     #   httpx2
     #   pydantic
     #   pydantic-core
+    #   rich-click
+    #   tox
     #   tox-gh
     #   typing-inspection
 typing-inspection==0.4.2 \
