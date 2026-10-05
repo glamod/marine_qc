@@ -199,6 +199,14 @@ Before you submit a pull request, check that it meets these guidelines:
 
 This will add a `Signed-off-by:` line to your commit message, which indicates that you agree to the DCO.
 
+.. warning::
+
+    Try to keep your contributions within the scope of the issue that you are addressing.
+    While it might be tempting to fix other aspects of the library as it comes up,
+    it's better to simply to flag the problems in case others are already working on it.
+
+    Consider adding a "**# TODO:**" or "**# FIXME:**" comment if the need arises.
+
 AI Assistance Notice
 --------------------
 
