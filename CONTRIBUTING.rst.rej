@@ -1,8 +1,8 @@
 diff a/CONTRIBUTING.rst b/CONTRIBUTING.rst	(rejected hunks)
 @@ -98,6 +98,32 @@ Ready to contribute? Here's how to set up ``Marine Quality Control`` for local d
- 
+
     If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
- 
+
 +   Or, alternatively, you can check individual hooks manually with  `ruff`, `flake8`, `flake8-rst-docstrings`, `vulture`, `codespell`, `numpydoc`, `deptry`, and `yamllint`:
 +
 +   .. code-block:: console
@@ -30,5 +30,5 @@ diff a/CONTRIBUTING.rst b/CONTRIBUTING.rst	(rejected hunks)
 +
 +
  #. Create a branch for local development:
- 
+
     .. code-block:: console

@@ -11,7 +11,7 @@ diff a/README.rst b/README.rst	(rejected hunks)
 @@ -53,6 +53,10 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
              :target: https://bestpractices.coreinfrastructure.org/projects/9945
              :alt: Open Source Security Foundation Best Practices
- 
+
 +.. |mypy| image:: https://www.mypy-lang.org/static/mypy_badge.svg
 +        :target: https://mypy-lang.org/
 +        :alt: mypy
