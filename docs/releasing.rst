@@ -47,34 +47,45 @@ From a new branch (e.g. `prepare-v123`), open a Pull Request and make sure all y
     Uploads to PyPI (and releases on GitHub if using release immutability) can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to GitHub and PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version "broken") on PyPI.
 
 .. _`commit signing`: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
-.. _created: https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key
+.. _GitHub: https://github.com/
+.. _`Trusted Publisher`: https://docs.pypi.org/trusted-publishers/
 .. _added: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
+.. _created: https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key
+.. _PyPI: https://pypi.org/
+.. _TestPyPI: https://test.pypi.org/
 
 Packaging
 ---------
 
 When a new version has been minted (features have been successfully integrated test coverage and stability is adequate), maintainers should update the pip-installable package (wheel and source release) on PyPI as well as the binary on conda-forge.
 
-The simple approach
-~~~~~~~~~~~~~~~~~~~
+The manual approach (deprecated)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The simplest approach to packaging for general support (pip wheels) requires that `flit` be installed:
+.. warning::
 
-    .. code-block:: console
+    This approach is documented for reference only.
+    `Trusted Publisher`_ is the suggested method for deploying new and existing packages.
 
-        python -m pip install flit
+The manual approach to packaging for general support (pip wheels) requires that `flit`_ be installed:
+
+.. code-block:: console
+
+    $ python -m pip install flit
 
 From the command line on your Linux distribution, simply run the following from the clone's main dev branch:
 
-    .. code-block:: console
+.. code-block:: console
 
-        # To build the packages (sources and wheel)
-        make dist
+    # To build the packages (sources and wheel)
+    $ make dist
 
-        # To upload to PyPI
-        make release
+    # To upload to PyPI
+    $ make release
 
 The new version based off of the version checked out will now be available via `pip` (`pip install marine_qc`).
+
+.. _`flit`: https://flit.pypa.io/en/stable/index.html
 
 Subsequent releases
 ^^^^^^^^^^^^^^^^^^^

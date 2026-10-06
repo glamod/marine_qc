@@ -8,9 +8,9 @@ Marine Quality Control: ``marine_qc`` toolbox: |logo|
 | Documentation and Support  | |docs| |versions|                                   |
 +----------------------------+-----------------------------------------------------+
 | Open Source                | |license| |zenodo|                                  |
-|                            | |fair-software| |ossf|                              |
+|                            | |fair-software| |ossf-score|                        |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |ruff| |prek| |pre-commit-ci| |zizmor|              |
+| Coding Standards           | |ruff| |prek| |mypy| |pre-commit-ci| |zizmor|       |
 |                            | |codefactor| |security| |fossa|                     |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                        |
@@ -152,7 +152,11 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :width: 200px
         :alt: Logo
 
-.. |ossf| image:: https://api.securityscorecards.dev/projects/github.com/glamod/marine_qc/badge
+.. |mypy| image:: https://www.mypy-lang.org/static/mypy_badge.svg
+        :target: https://mypy-lang.org/
+        :alt: mypy
+
+.. |ossf-score| image:: https://api.securityscorecards.dev/projects/github.com/glamod/marine_qc/badge
         :target: https://securityscorecards.dev/viewer/?uri=github.com/glamod/marine_qc
         :alt: OpenSSF Scorecard
 
