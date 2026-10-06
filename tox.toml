@@ -37,7 +37,10 @@ passenv = ["COVERALLS_*", "GITHUB_*"]
 download = true
 dependency_groups = ["test"]
 install_command = ["python", "-m", "pip", "install", "--no-user", "{opts}", "{packages}"]
-commands_pre = [["pip", "list"], ["pip", "check"]]
+commands_pre = [
+  ["pip", "list"],
+  ["pip", "check"]
+]
 commands = [
   ["pytest", "{posargs}"]
 ]
