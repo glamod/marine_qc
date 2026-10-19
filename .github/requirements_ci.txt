@@ -630,9 +630,9 @@ tox==4.65.4 \
     # via
     #   -r requirements_ci.in
     #   tox-gh
-tox-gh==1.8.0 \
-    --hash=sha256:19c151525e6ed383b2fd23f8f3a35301ee12f3438c19ac7062f81c30958626ad \
-    --hash=sha256:c29a109dc4c1a51bc472b4989bd7063ac9be07bf0c16a2b0fcbe57f16757e397
+tox-gh==1.9.0 \
+    --hash=sha256:8fea2f93d6b5b8757580bd1e02222e8032254366ea3fa16e3a801f96c01b15f9 \
+    --hash=sha256:9bb052cd7372a9262aee8f83352eefd291698e337f8a0645ceb4b930ab78a798
     # via -r requirements_ci.in
 truststore==0.10.4 \
     --hash=sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301 \
@@ -646,9 +646,9 @@ types-setuptools==75.6.0.20241126 \
     --hash=sha256:7bf25ad4be39740e469f9268b6beddda6e088891fa5a27e985c6ce68bf62ace0 \
     --hash=sha256:aaae310a0e27033c1da8457d4d26ac673b0c8a0de7272d6d4708e263f2ea3b9b
     # via requirements-parser
-typing-extensions==4.15.0 \
-    --hash=sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466 \
-    --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548
+typing-extensions==4.16.0 \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
+    --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
     # via
     #   anyio
     #   exceptiongroup
