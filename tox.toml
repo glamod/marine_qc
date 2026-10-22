@@ -1,7 +1,9 @@
 envlist = [
   "lint",
   {product = [{prefix = "py3.", start = 11, stop = 14}]},
-  "docs"
+  "docs",
+  "doctests",
+  "lint"
 ]
 skip_missing_interpreters = true
 
@@ -14,6 +16,15 @@ commands = [
 ]
 commands_post = []
 allowlist_externals = ["make"]
+
+[env.doctests]
+description = "Run doctests with pytest under {basepython}"
+labels = ["doctests"]
+dependency_groups = ["test"]
+deps = ["pytest <9.1.0"] # FIXME: Removals in pytest>=9.1 break doctest configurations
+commands = [
+  ["make", "test-doctests"]
+]
 
 [env.extras]
 description = "Run tests with extras under {basepython}"

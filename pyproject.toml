@@ -71,12 +71,17 @@ lint = [
   "vulture >=2.16",
   "yamllint >=1.38.0"
 ]
+typing = [
+  "pylint >= 4.0.4",
+  "ty >= 0.0.35"
+]
 test = [
   # Base testing support
   "coverage[toml] >=7.13.4",
   "pytest >=9.0.2",
   "pytest-cov >=7.0.0",
-  "pytest-env >=1.1.5"
+  "pytest-env >=1.1.5",
+  "requests >= 2.30.0"
 ]
 docs = [
   # Documentation and example support
