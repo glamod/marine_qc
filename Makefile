@@ -81,7 +81,7 @@ test: install-test ## run tests quickly with the default Python
 	python -m pytest --numprocesses=auto
 
 test-doctests: install-test ## run doctests
-  python -m pytest --rootdir=src/marine_qc/testing --config-file=src/marine_qc/testing/conftest.py --numprocesses=auto --doctest-modules src/marine_qc
+	python -m pytest --rootdir=src/marine_qc/testing --config-file=src/marine_qc/testing/conftest.py --numprocesses=auto --doctest-modules src/marine_qc
 
 test-all: test test-doctests ## run all tests
 
@@ -92,7 +92,7 @@ coverage: install-test ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 autodoc: install-docs clean-docs ## create sphinx-apidoc files
-  mkdir -p docs/apidoc
+	mkdir -p docs/apidoc
 	sphinx-apidoc -o docs/apidoc --private --module-first src/marine_qc
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
