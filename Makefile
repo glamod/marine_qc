@@ -61,11 +61,11 @@ install-docs: ## install dependencies needed for building the docs
 install-test: ## install dependencies needed for standard testing
 	python -m pip install --quiet --group test
 
-install-tox: ## install base dependencies needed for running tox
-	python -m pip install --quiet --group tox
+install-typing: ## install dependencies needed for type-checking
+	python -m pip install --quiet --group typing
 
 lint: install-lint ## check style
-	python -m ruff check src/marine_qc tests
+	python -m ruff check --quiet .
 	python -m flake8 --config=.flake8 src/marine_qc tests
 	python -m numpydoc lint src/marine_qc/**.py
 	python -m vulture src/marine_qc tests
@@ -73,19 +73,26 @@ lint: install-lint ## check style
 	python -m deptry src/marine_qc
 	python -m yamllint --config-file=.yamllint.yaml src/marine_qc
 
-test: install-test ## run tests quickly with the default Python
-	python -m pytest
+typing: install-typing  ## check typing with pylint and ty
+	python -m pylint -j=0 --rcfile=.pylintrc.toml --disable=import-error --exit-zero src/marine_qc
+	python -m ty check --ignore=unresolved-import src/marine_qc
 
-test-all: install-tox ## run tests on every Python version with tox
-	python -m tox
+test: install-test ## run tests quickly with the default Python
+	python -m pytest --numprocesses=auto
+
+test-doctests: install-test ## run doctests
+  python -m pytest --rootdir=src/marine_qc/testing --config-file=src/marine_qc/testing/conftest.py --numprocesses=auto --doctest-modules src/marine_qc
+
+test-all: test test-doctests ## run all tests
 
 coverage: install-test ## check code coverage quickly with the default Python
-	python -m coverage run --source src/marine_qc -m pytest
+	python -m coverage run --source marine_qc -m pytest src/marine_qc
 	python -m coverage report -m
 	python -m coverage html
 	$(BROWSER) htmlcov/index.html
 
 autodoc: install-docs clean-docs ## create sphinx-apidoc files
+  mkdir -p docs/apidoc
 	sphinx-apidoc -o docs/apidoc --private --module-first src/marine_qc
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
@@ -114,5 +121,5 @@ install: clean ## install the package to the active Python's site-packages
 
 development: clean ## install the package to the active Python's site-packages
 	python -m pip install --group dev
-	python -m pip install --no-user --editable .[extras]
+	python -m pip install --no-user --editable ".[complete]"
 	prek install
