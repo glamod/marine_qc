@@ -109,18 +109,6 @@ jobs:
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles('pyproject.toml') }}
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}
 
-      - name: Install marine QC toolbox
-        run: |
-          uv sync --group dev
-
-      - name: Version info
-        run: |
-          uv pip list
-
-      - name: Import marine QC toolbox
-        run: |
-          uv run python -c "import marine_qc"
-
       - name: Run tests with tox
         if: ${{  matrix.tox-env == '' || matrix.tox-env == null }}
         run: |
