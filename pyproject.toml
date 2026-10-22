@@ -81,7 +81,7 @@ test = [
   "pytest >=9.0.2",
   "pytest-cov >=7.0.0",
   "pytest-env >=1.1.5",
-  "request"
+  "requests >= 2.30.0"
 ]
 docs = [
   # Documentation and example support
