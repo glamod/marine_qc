@@ -2,6 +2,14 @@
 Changelog
 =========
 
+0.4.3 (unreleased)
+------------------
+Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The minimum versions of splink is set to 5.0.0 (:issue:`316`, :pull:`347`)
+
 0.4.2 (2026-09-07)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
