@@ -8,48 +8,6 @@ import numpy as np
 import pandas as pd
 
 from ..helpers.auxiliary import failed, passed, untested
-from ..helpers.external_clim import get_climatological_value  # noqa: F401
-from .qc_buoy_tracking import (  # noqa: F401
-    do_aground_check,
-    do_new_aground_check,
-    do_new_speed_check,
-    do_speed_check,
-    do_sst_biased_check,
-    do_sst_biased_noisy_short_check,
-    do_sst_end_tail_check,
-    do_sst_noisy_check,
-    do_sst_start_tail_check,
-)
-from .qc_grouped_reports import (  # noqa: F401
-    do_bayesian_buddy_check,
-    do_mds_buddy_check,
-)
-from .qc_individual_reports import (  # noqa: F401
-    do_climatology_check,
-    do_date_check,
-    do_datetime_check,
-    do_day_check,
-    do_hard_limit_check,
-    do_landlocked_check,
-    do_maritime_check,
-    do_missing_value_check,
-    do_missing_value_clim_check,
-    do_night_check,
-    do_position_check,
-    do_sst_freeze_check,
-    do_supersaturation_check,
-    do_time_check,
-    do_wind_consistency_check,
-)
-from .qc_sequential_reports import (  # noqa: F401
-    do_few_check,
-    do_iquam_track_check,
-    do_spike_check,
-    do_track_check,
-    find_multiple_rounded_values,
-    find_repeated_values,
-    find_saturated_runs,
-)
 from .validations import (
     is_func_param,
     is_in_data,
@@ -523,7 +481,7 @@ def _do_multiple_check(
         Flags depend on the QC functions used.
     """
     data, is_series = _normalize_input(data, return_method)
-    qc_inputs, mask, results = _prepare_all_inputs(data, qc_dict, preproc_dict)
+    qc_inputs, _, results = _prepare_all_inputs(data, qc_dict, preproc_dict)
     groups = _group_iterator(data, groupby)
     results = _run_qc_engine(data, qc_inputs, groups, return_method)
     return results.iloc[0] if is_series else results

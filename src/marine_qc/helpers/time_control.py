@@ -93,9 +93,10 @@ def convert_date(*params: str) -> Callable[..., Any]:
         if isinstance(date, xr.DataArray):
             date = date.values
 
+        extracted_dict: dict[str, float]
         if is_scalar_like(date):
             scalar = True
-            extracted_dict: dict[str, float] = split_date(date)
+            extracted_dict = split_date(date)
         else:
             scalar = False
             extracted_list: list[dict[str, float]] = [split_date(d) for d in date]
@@ -697,7 +698,7 @@ def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) 
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    times1_arr, times2_arr = ensure_arrays(times1=times1, times2=times2)
+    times1_arr, times2_arr = ensure_arrays(times1=times1, times2=times2)  # pylint: disable=unbalanced-tuple-unpacking
 
     times1_arr = pd.to_datetime(times1_arr, errors="coerce").values
     times2_arr = pd.to_datetime(times2_arr, errors="coerce").values

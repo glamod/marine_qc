@@ -6,7 +6,7 @@ from .auxiliary import best, duplicate, failed, passed, unique, untestable, unte
 from .external_clim import Climatology, open_xrdataset
 
 
-class Flags:
+class Flags:  # pylint: disable=too-few-public-methods
     """Constants used to annotate quality control (QC) and duplicate-check results."""
 
     passed = passed

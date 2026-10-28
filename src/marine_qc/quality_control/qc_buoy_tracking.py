@@ -64,7 +64,7 @@ drifting buoys and ships on a platform-by-platform basis (doi:10.1002/jgrc.20257
 """
 
 
-class SpeedChecker:
+class SpeedChecker:  # pylint: disable=too-many-instance-attributes
     """
     Class used to carry out :py:func:`.do_speed_check`.
 
@@ -271,7 +271,7 @@ class SpeedChecker:
             time_to_end = self.hrs[-1] - self.hrs[i]
 
 
-class NewSpeedChecker:
+class NewSpeedChecker:  # pylint: disable=too-many-instance-attributes
     """
     Class used to carry out :py:func:`.do_new_speed_check`.
 
@@ -518,7 +518,7 @@ class NewSpeedChecker:
             time_to_end = self.hrs[-1] - self.hrs[i]
 
 
-class AgroundChecker:
+class AgroundChecker:  # pylint: disable=too-many-instance-attributes
     """
     Class used to carry out :py:func:`.do_aground_check`.
 
@@ -768,7 +768,7 @@ class AgroundChecker:
             self.qc_outcomes[int(i_aground) :] = failed
 
 
-class SSTTailChecker:
+class SSTTailChecker:  # pylint: disable=too-many-instance-attributes
     """
     Class used to carry out :py:func:`.do_sst_start_tail_check` and :py:func:`.do_sst_end_tail_check`.
 
@@ -834,7 +834,7 @@ class SSTTailChecker:
             Background error variance beyond which the SST background is deemed unreliable (degC squared).
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-positional-arguments
         self,
         lat: SequenceNumberType,
         lon: SequenceNumberType,
@@ -1232,7 +1232,7 @@ class SSTTailChecker:
                 break
 
 
-class SSTBiasedNoisyChecker:
+class SSTBiasedNoisyChecker:  # pylint: disable=too-many-instance-attributes
     """
     Class used to perform the :py:func:`.do_sst_biased_check`, :py:func:`.do_sst_noisy_check`, and :py:func:`.do_sst_biased_noisy_short_check`.
 
@@ -1689,7 +1689,7 @@ def do_speed_check(
     * min_win_period = 0.8
     * max_win_perido = 1.8
     """
-    lon_arr, lat_arr, date_arr = ensure_arrays(lon=lon, lat=lat, date=date)
+    lon_arr, lat_arr, date_arr = ensure_arrays(lon=lon, lat=lat, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     checker = SpeedChecker(lon_arr, lat_arr, date_arr, speed_limit, min_win_period, max_win_period)
     checker.do_speed_check()
@@ -1760,7 +1760,7 @@ def do_new_speed_check(
     * delta_t = 0.01
     * n_neighbours = 5
     """
-    lon_arr, lat_arr, date_arr = ensure_arrays(lon=lon, lat=lat, date=date)
+    lon_arr, lat_arr, date_arr = ensure_arrays(lon=lon, lat=lat, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     checker = NewSpeedChecker(
         lon_arr,
@@ -1827,7 +1827,7 @@ def do_aground_check(
     * min_win_period = 8
     * max_win_period = 10
     """
-    lat_arr, lon_arr, date_arr = ensure_arrays(lat=lat, lon=lon, date=date)
+    lat_arr, lon_arr, date_arr = ensure_arrays(lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     checker = AgroundChecker(lon_arr, lat_arr, date_arr, smooth_win, min_win_period, max_win_period)
     checker.do_aground_check()
@@ -1878,7 +1878,7 @@ def do_new_aground_check(
     * smooth_win = 41
     * min_win_period = 8
     """
-    lat_arr, lon_arr, date_arr = ensure_arrays(lat=lat, lon=lon, date=date)
+    lat_arr, lon_arr, date_arr = ensure_arrays(lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     checker = AgroundChecker(lon_arr, lat_arr, date_arr, smooth_win, min_win_period, None)
     checker.do_aground_check()
@@ -1969,7 +1969,7 @@ def do_sst_start_tail_check(
     * drif_intra = 1.00
     * background_err_lim = 0.3
     """
-    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
         lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
@@ -2078,7 +2078,7 @@ def do_sst_end_tail_check(
     * drif_intra = 1.00
     * background_err_lim = 0.3
     """
-    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
         lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
@@ -2180,7 +2180,7 @@ def do_sst_biased_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
-    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
         lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
@@ -2281,7 +2281,7 @@ def do_sst_noisy_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
-    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
         lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 
@@ -2382,7 +2382,7 @@ def do_sst_biased_noisy_short_check(
     * n_bad = 2
     * background_err_lim = 0.3
     """
-    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(
+    lat_arr, lon_arr, sst_arr, ostia_arr, ice_arr, bgvar_arr, date_arr = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
         lat=lat, lon=lon, sst=sst, ostia=ostia, ice=ice, bgvar=bgvar, date=date
     )
 

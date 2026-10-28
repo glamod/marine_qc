@@ -88,6 +88,10 @@ class DupDetect:
         self.groups = groups
         self.settings = settings
         self.data = data.copy()
+        self.keep = 0
+        self._best_duplicates: list[Any] = []
+        self._worst_duplicates: list[Any] = []
+        self.duplicates: list[Any] = []
 
     def get_duplicates(
         self,
@@ -121,7 +125,7 @@ class DupDetect:
         elif keep == "last":
             keep = -1
 
-        self.keep = keep
+        self.keep = keep  # type: ignore[assignment]
 
         if overwrite is True:
             dups = {}
@@ -442,7 +446,7 @@ def make_comparison(
     cll_args: dict[str, Any] = {"col_name": column}
 
     if compare_level_libraries == {}:
-        compare_level_libraries = dict()
+        compare_level_libraries = {}
 
     clevel = (
         getattr(cll, compare_level_libraries.get(column, ""), None)

@@ -1,7 +1,6 @@
 """Module containing base QC which call multiple QC functions and could be applied on a DataBundle."""
 
 from __future__ import annotations
-import collections.abc as abc
 import inspect
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from types import UnionType
@@ -20,34 +19,6 @@ import numpy.typing as npt
 import pandas as pd
 
 from ..helpers.auxiliary import DECORATOR_HANDLERS, DECORATOR_KWARGS
-from ..helpers.external_clim import get_climatological_value  # noqa: F401
-from .qc_grouped_reports import (  # noqa: F401
-    do_bayesian_buddy_check,
-    do_mds_buddy_check,
-)
-from .qc_individual_reports import (  # noqa: F401
-    do_climatology_check,
-    do_date_check,
-    do_day_check,
-    do_hard_limit_check,
-    do_missing_value_check,
-    do_missing_value_clim_check,
-    do_night_check,
-    do_position_check,
-    do_sst_freeze_check,
-    do_supersaturation_check,
-    do_time_check,
-    do_wind_consistency_check,
-)
-from .qc_sequential_reports import (  # noqa: F401
-    do_few_check,
-    do_iquam_track_check,
-    do_spike_check,
-    do_track_check,
-    find_multiple_rounded_values,
-    find_repeated_values,
-    find_saturated_runs,
-)
 
 
 __all__ = [
@@ -149,7 +120,7 @@ def _validate_sequence(value: Any, args: tuple[Any, ...]) -> bool:
     bool
         True if all elements match the expected type, False otherwise.
     """
-    if not isinstance(value, abc.Sequence) or isinstance(value, (str, bytes)):
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
         return False
     if not args:
         return True
@@ -173,7 +144,7 @@ def _validate_tuple(value: Any, args: tuple[Any, ...]) -> bool:
     bool
         True if the tuple matches the expected types and length, False otherwise.
     """
-    if not isinstance(value, abc.Sequence) or isinstance(value, (str, bytes)):
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
         return False
     if not args:
         return True
@@ -278,7 +249,7 @@ def validate_type(value: Any, expected: Any) -> bool:
     if origin in (Union, UnionType):
         return any(validate_type(value, t) for t in args)
 
-    if origin is abc.Callable:
+    if origin is Callable:
         return callable(value)
 
     if origin is tuple:
@@ -291,11 +262,11 @@ def validate_type(value: Any, expected: Any) -> bool:
         return isinstance(value, expected)
 
     if isinstance(origin, type):
-        if issubclass(origin, abc.Mapping):
+        if issubclass(origin, Mapping):
             return _validate_mapping(value, origin, args)
         if issubclass(origin, (list, set, frozenset)):
             return _validate_iterable(value, origin, args)
-        if issubclass(origin, abc.Sequence):
+        if issubclass(origin, Sequence):
             return _validate_sequence(value, args)
 
     if origin is None:

@@ -9,7 +9,6 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
-import cf_xarray  # noqa: F401
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -708,9 +707,9 @@ class Climatology:
 
         if ntime == 1:
             return t_index
-        elif ntime == 73:
+        if ntime == 73:
             return which_pentad_array(month, day) - 1
-        elif ntime == 365:
+        if ntime == 365:
             return day_in_year_array(month=month, day=day) - 1
         return t_index - 1
 

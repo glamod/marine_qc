@@ -119,7 +119,7 @@ def do_spike_check(
     * delta_t: float = 2.0
     * n_neighbours: int = 5
     """
-    value, lat, lon, date = ensure_arrays(value=value, lat=lat, lon=lon, date=date)
+    value, lat, lon, date = ensure_arrays(value=value, lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     value = cast(np.ndarray, value)
     lat = cast(np.ndarray, lat)
@@ -253,7 +253,7 @@ def do_track_check(
     * max_absolute_speed =  40.0
     * max_midpoint_discrepancy = 150.0
     """
-    vsi, dsi, lat, lon, date = ensure_arrays(vsi=vsi, dsi=dsi, lat=lat, lon=lon, date=date)
+    vsi, dsi, lat, lon, date = ensure_arrays(vsi=vsi, dsi=dsi, lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(lat)
 
@@ -377,7 +377,7 @@ def do_few_check(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    (value,) = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(value)
 
@@ -457,7 +457,7 @@ def find_saturated_runs(
     * min_time_threshold =  48.0
     * shortest_run = 4
     """
-    at, dpt, lat, lon, date = ensure_arrays(at=at, dpt=dpt, lat=lat, lon=lon, date=date)
+    at, dpt, lat, lon, date = ensure_arrays(at=at, dpt=dpt, lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     saturated = at == dpt
 
@@ -530,7 +530,7 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    (value,) = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(value)
 
@@ -599,7 +599,7 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    (value,) = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(value)
 
@@ -692,7 +692,7 @@ def do_iquam_track_check(
     * delta_t = 0.01
     * n_neighbours = 5
     """
-    lat, lon, date = ensure_arrays(lat=lat, lon=lon, date=date)
+    lat, lon, date = ensure_arrays(lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(lat)
 

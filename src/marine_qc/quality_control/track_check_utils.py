@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 
 from ..helpers import spherical_geometry as sg
-from ..helpers import spherical_geometry as sph
 from ..helpers import time_control
 from ..helpers.astronomical_geometry import sunangle
 from ..helpers.auxiliary import (
@@ -181,7 +180,7 @@ def increment_position(
     timediff = np.array(timediff, dtype=float)
 
     distance = avs * timediff / 2.0
-    lat, lon = sph.lat_lon_from_course_and_distance(alat1, alon1, ads, distance)
+    lat, lon = sg.lat_lon_from_course_and_distance(alat1, alon1, ads, distance)
     lat = lat - alat1
     lon = lon - alon1
 
@@ -558,7 +557,7 @@ def forward_discrepancy(
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)
+    lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)  # pylint: disable=unbalanced-tuple-unpacking
 
     timediff = time_difference(np.roll(date, 1), date)
     lat1, lon1 = increment_position(np.roll(lat, 1), np.roll(lon, 1), np.roll(vsi, 1), dsi, timediff)
@@ -630,7 +629,7 @@ def backward_discrepancy(
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)
+    lat, lon, date, vsi, dsi = ensure_arrays(lat=lat, lon=lon, date=date, vsi=vsi, dsi=dsi)  # pylint: disable=unbalanced-tuple-unpacking
 
     timediff = time_difference(np.roll(date, 1), date)
     lat2, lon2 = increment_position(

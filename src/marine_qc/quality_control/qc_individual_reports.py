@@ -296,7 +296,7 @@ def value_check(value: ValueNumberType, valid_flag: int = passed, invalid_flag: 
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    (value_arr,) = ensure_arrays(value=value)
+    (value_arr,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     valid_mask = isvalid(value_arr)
     result = np.where(valid_mask, valid_flag, invalid_flag)
@@ -339,7 +339,7 @@ def do_position_check(lat: ValueNumberType, lon: ValueNumberType) -> ValueIntTyp
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    lat_arr, lon_arr = ensure_arrays(lat=lat, lon=lon)
+    lat_arr, lon_arr = ensure_arrays(lat=lat, lon=lon)  # pylint: disable=unbalanced-tuple-unpacking
 
     result = np.full(lat_arr.shape, untestable, dtype=int)
 
@@ -402,7 +402,7 @@ def do_date_check(
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    year_arr, month_arr, day_arr = ensure_arrays(year=year, month=month, day=day)
+    year_arr, month_arr, day_arr = ensure_arrays(year=year, month=month, day=day)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_date_check(year_arr, month_arr, day_arr, year_init, year_end)
 
@@ -441,7 +441,7 @@ def do_time_check(
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    (hour_arr,) = ensure_arrays(hour=hour)
+    (hour_arr,) = ensure_arrays(hour=hour)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_time_check(hour_arr)
 
@@ -496,7 +496,7 @@ def do_datetime_check(
         - Returns 1 (or array/sequence/Series of 1s) if date is not valid or hour is not a valid hour,
         - Returns 0 (or array/sequence/Series of 0s) otherwise.
     """
-    year_arr, month_arr, day_arr, hour_arr = ensure_arrays(year=year, month=month, day=day, hour=hour)
+    year_arr, month_arr, day_arr, hour_arr = ensure_arrays(year=year, month=month, day=day, hour=hour)  # pylint: disable=unbalanced-tuple-unpacking
 
     result = _do_date_check(year_arr, month_arr, day_arr, year_init, year_end)
     valid = result == passed
@@ -580,7 +580,7 @@ def do_day_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
-    year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr = ensure_arrays(year=year, month=month, day=day, hour=hour, lat=lat, lon=lon)
+    year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr = ensure_arrays(year=year, month=month, day=day, hour=hour, lat=lat, lon=lon)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_daytime_check(year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr, time_since_sun_above_horizon, mode="day")
 
@@ -664,7 +664,7 @@ def do_night_check(
     definition of "day" for marine air temperature QC. Solar heating biases were considered to be negligible mmore
     than one hour after sunset and up to one hour after sunrise.
     """
-    year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr = ensure_arrays(year=year, month=month, day=day, hour=hour, lat=lat, lon=lon)
+    year_arr, month_arr, day_arr, hour_arr, lat_arr, lon_arr = ensure_arrays(year=year, month=month, day=day, hour=hour, lat=lat, lon=lon)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_daytime_check(
         year_arr,
@@ -833,7 +833,7 @@ def do_hard_limit_check(
     TypeError
         If decorator `inspect_arrays` does not return np.ndarrays.
     """
-    (value_arr,) = ensure_arrays(value=value)
+    (value_arr,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     result = np.full(value_arr.shape, untestable, dtype=int)
 
@@ -917,7 +917,7 @@ def do_climatology_check(
     If either `climatology` or `standard_deviation` is a :py:class:`~marine_qc.Climatology` object, pass `lon` and `lat`
     and `date`, or `month` and `day`, as keyword arguments to extract the relevant climatological value(s).
     """
-    value_arr, climatology_arr = ensure_arrays(value=value, climatology=climatology)
+    value_arr, climatology_arr = ensure_arrays(value=value, climatology=climatology)  # pylint: disable=unbalanced-tuple-unpacking
 
     if climatology_arr.ndim == 0:
         climatology_arr = np.full_like(value_arr, climatology_arr)
@@ -996,7 +996,7 @@ def do_supersaturation_check(dpt: ValueNumberType, at2: ValueNumberType) -> Valu
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    dpt_arr, at2_arr = ensure_arrays(dpt=dpt, at2=at2)
+    dpt_arr, at2_arr = ensure_arrays(dpt=dpt, at2=at2)  # pylint: disable=unbalanced-tuple-unpacking
 
     result = np.full(dpt_arr.shape, untestable, dtype=int)
 
@@ -1072,7 +1072,7 @@ def do_sst_freeze_check(
         * ``freezing_point``: -1.80
         * ``n_sigma``: 2.0
     """
-    (sst_arr,) = ensure_arrays(sst=sst)
+    (sst_arr,) = ensure_arrays(sst=sst)  # pylint: disable=unbalanced-tuple-unpacking
 
     result = np.full(sst_arr.shape, untestable, dtype=int)
 
@@ -1129,7 +1129,7 @@ def do_wind_consistency_check(wind_speed: ValueNumberType, wind_direction: Value
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    wind_speed_arr, wind_direction_arr = ensure_arrays(wind_speed=wind_speed, wind_direction=wind_direction)
+    wind_speed_arr, wind_direction_arr = ensure_arrays(wind_speed=wind_speed, wind_direction=wind_direction)  # pylint: disable=unbalanced-tuple-unpacking
 
     result = np.full(wind_speed_arr.shape, untestable, dtype=int)
 
@@ -1241,7 +1241,7 @@ def do_landlocked_check(
     ValueError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=land_sea_mask)
+    lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=land_sea_mask)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=land_flag)
 
@@ -1289,7 +1289,7 @@ def do_maritime_check(
     ValueError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=sea_land_mask)
+    lat_arr, lon_arr, mask_arr = ensure_arrays(lat=lat, lon=lon, land_sea_mask=sea_land_mask)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_mask_check(lat=lat_arr, lon=lon_arr, mask=mask_arr, flag=sea_flag)
 
