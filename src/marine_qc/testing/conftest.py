@@ -7,14 +7,12 @@
 # python -m pytest --rootdir=tests/ --doctest src/xclim
 
 from __future__ import annotations
-
 import importlib.util as _util
 import os
 from pathlib import Path
 
 import pytest
 from xarray import DataArray, date_range
-
 from xclim.testing.helpers import (
     add_doctest_filepaths,
     add_example_file_paths,
@@ -29,6 +27,7 @@ from xclim.testing.utils import (
 )
 from xclim.testing.utils import nimbus as _nimbus
 from xclim.testing.utils import open_dataset as _open_dataset
+
 
 PYTEST_INSTALLED = bool(_util.find_spec("pytest"))
 

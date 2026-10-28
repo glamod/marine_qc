@@ -4,7 +4,6 @@ Testing and Tutorial Utilities' Module
 """
 
 from __future__ import annotations
-
 import importlib.metadata as ilm
 import importlib.resources as ilr
 import importlib.util as ilu
@@ -27,15 +26,15 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlretrieve
 
+import xclim
 from filelock import FileLock
 from packaging.requirements import Requirement
 from packaging.version import Version
 from pip._vendor import pkg_resources
 from xarray import Dataset
 from xarray import open_dataset as _open_dataset
-
-import xclim
 from xclim import __version__ as __xclim_version__
+
 
 HAS_PYTEST_SOCKET = bool(ilu.find_spec("pytest_socket"))
 if HAS_PYTEST_SOCKET:
@@ -236,7 +235,7 @@ def publish_release_notes(
     if not changes_file.exists():
         raise FileNotFoundError("Changelog file not found in xclim folder tree.")
 
-    with open(changes_file, encoding="utf-8") as hf:
+    with Path(changes_file).open(encoding="utf-8") as hf:
         changes = hf.read()
 
     if style == "rst":
@@ -392,7 +391,7 @@ def testing_setup_warnings():
     if re.match(r"^v\d+\.\d+\.\d+", TESTDATA_BRANCH):
         # Find the date of last modification of xclim source files to generate a calendar version
         install_date = dt.strptime(
-            time.ctime(os.path.getmtime(xclim.__file__)),
+            time.ctime(Path(xclim.__file__).stat().st_mtime),
             "%a %b %d %H:%M:%S %Y",
         )
         install_calendar_version = f"{install_date.year}.{install_date.month}.{install_date.day}"
@@ -433,9 +432,7 @@ def load_registry(branch: str = TESTDATA_BRANCH, repo: str = TESTDATA_REPO_URL) 
     if repo != default_testdata_repo_url:
         external_repo_name = urlparse(repo).path.split("/")[-2]
         external_branch_name = branch.split("/")[-1]
-        registry_file = Path(
-            str(ilr.files("xclim").joinpath(f"testing/registry.{external_repo_name}.{external_branch_name}.txt"))
-        )
+        registry_file = Path(str(ilr.files("xclim").joinpath(f"testing/registry.{external_repo_name}.{external_branch_name}.txt")))
         urlretrieve(remote_registry, registry_file)  # noqa: S310
 
     elif branch != default_testdata_version:
@@ -668,10 +665,7 @@ def gather_testing_data(
         If the testing data is not found.
     """
     if _cache_dir is None:
-        raise ValueError(
-            "The cache directory must be set. "
-            "Please set the `cache_dir` parameter or the `XCLIM_DATA_DIR` environment variable."
-        )
+        raise ValueError("The cache directory must be set. Please set the `cache_dir` parameter or the `XCLIM_DATA_DIR` environment variable.")
     cache_dir = Path(_cache_dir)
 
     if worker_id == "master":

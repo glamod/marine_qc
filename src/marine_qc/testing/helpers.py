@@ -1,7 +1,6 @@
 """Module for loading testing data."""
 
 from __future__ import annotations
-
 import logging
 import warnings
 from pathlib import Path
@@ -10,15 +9,15 @@ from typing import Any
 import numpy as np
 import pooch
 import xarray as xr
-from dask.callbacks import Callback
-
 import xclim
+from dask.callbacks import Callback
 from xclim.compute.converters import (
     longwave_upwelling_radiation_from_net_downwelling,
     shortwave_upwelling_radiation_from_net_downwelling,
 )
 from xclim.core import VARIABLES, Freq
 from xclim.core.calendar import percentile_doy
+
 
 logger = logging.getLogger("xclim")
 
@@ -94,9 +93,7 @@ def add_ensemble_dataset_objects() -> dict[str, list[str]]:
             "EnsembleStats/BCCAQv2+ANUSPLIN300_CCSM4_historical+rcp45_r1i1p1_1950-2100_tg_mean_YS.nc",
             "EnsembleStats/BCCAQv2+ANUSPLIN300_CCSM4_historical+rcp45_r2i1p1_1950-2100_tg_mean_YS.nc",
         ],
-        "nc_files_extra": [
-            "EnsembleStats/BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp45_r1i1p1_1970-2050_tg_mean_YS.nc"
-        ],
+        "nc_files_extra": ["EnsembleStats/BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp45_r1i1p1_1970-2050_tg_mean_YS.nc"],
     }
     namespace["nc_files"] = namespace["nc_files_simple"] + namespace["nc_files_extra"]
     return namespace
@@ -120,9 +117,7 @@ def add_example_file_paths() -> dict[str, str | xr.DataArray | xr.Dataset | list
         "path_to_tas_file": "ERA5/daily_surface_cancities_1990-1993.nc",
         "path_to_tasmax_file": "NRCANdaily/nrcan_canada_daily_tasmax_1990.nc",
         "path_to_tasmin_file": "NRCANdaily/nrcan_canada_daily_tasmin_1990.nc",
-        "path_to_example_py": (
-            Path(__file__).parent.parent.parent.parent / "docs" / "notebooks" / "example.py"
-        ).as_posix(),
+        "path_to_example_py": (Path(__file__).parent.parent.parent.parent / "docs" / "notebooks" / "example.py").as_posix(),
     }
 
     # For core.utils.load_module example
