@@ -607,10 +607,10 @@ def do_mds_buddy_check(
         if i in ignore_indexes or not valid_mask[i]:
             continue
 
-        lat_i: float = lat_arr[i]
-        lon_i: float = lon_arr[i]
-        mon_i: pd.Timestamp = pd.Timestamp(date_arr[i]).month
-        day_i: pd.Timestamp = pd.Timestamp(date_arr[i]).day
+        lat_i = lat_arr[i]
+        lon_i = lon_arr[i]
+        mon_i = int(pd.Timestamp(date_arr[i]).month)
+        day_i = int(pd.Timestamp(date_arr[i]).day)
 
         # if the SST anomaly differs from the neighbour average by more than the calculated range then reject
         anom_i = anoms_arr[i]
@@ -766,8 +766,8 @@ def do_bayesian_buddy_check(  # pylint: disable=too-many-positional-arguments
 
         lat_i = lat_arr[i]
         lon_i = lon_arr[i]
-        mon_i = pd.Timestamp(date_arr[i]).month
-        day_i = pd.Timestamp(date_arr[i]).day
+        mon_i = int(pd.Timestamp(date_arr[i]).month)
+        day_i = int(pd.Timestamp(date_arr[i]).day)
 
         # Calculate the probability of gross error given the set-up
         buddy_stdev = grid.get_buddy_stdev(lat_i, lon_i, mon_i, day_i)

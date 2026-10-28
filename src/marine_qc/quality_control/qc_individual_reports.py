@@ -1076,16 +1076,16 @@ def do_sst_freeze_check(
 
     result = np.full(sst_arr.shape, untestable, dtype=int)
 
-    if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
-        return result
-
-    valid_sst = isvalid(sst_arr)
-
     if freeze_check_n_sigma == "default":
         freeze_check_n_sigma = 0.0
 
     if sst_uncertainty == "default":
         sst_uncertainty = 0.0
+
+    if not isvalid(sst_uncertainty) or not isvalid(freezing_point) or not isvalid(freeze_check_n_sigma):
+        return result
+
+    valid_sst = isvalid(sst_arr)
 
     cond_failed = np.full(sst_arr.shape, True, dtype=bool)
     cond_failed[valid_sst] = sst_arr[valid_sst] < (freezing_point - freeze_check_n_sigma * sst_uncertainty)

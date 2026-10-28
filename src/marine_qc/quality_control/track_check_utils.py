@@ -192,7 +192,7 @@ def increment_position(
 def direction_continuity(
     dsi: SequenceNumberType,
     directions: SequenceNumberType,
-    dsi_previous: SequenceNumberType = None,
+    dsi_previous: SequenceNumberType | None = None,
     max_direction_change: float = 60.0,
 ) -> np.ndarray:
     """
@@ -258,7 +258,7 @@ def direction_continuity(
 def speed_continuity(
     vsi: SequenceNumberType,
     speeds: SequenceNumberType,
-    vsi_previous: SequenceNumberType = None,
+    vsi_previous: SequenceNumberType | None = None,
     max_speed_change: float = 10.0,
 ) -> np.ndarray:
     """
@@ -310,7 +310,7 @@ def speed_continuity(
     selection2 = abs(vsi_previous - speeds) > max_speed_change
     result[np.logical_and(selection1, selection2)] = 10.0
 
-    result[~valid] = np.nan
+    result[np.logical_not(valid)] = np.nan
 
     return result
 
@@ -322,7 +322,7 @@ def check_distance_from_estimate(
     time_differences: SequenceNumberType,
     fwd_diff_from_estimated: SequenceNumberType,
     rev_diff_from_estimated: SequenceNumberType,
-    vsi_previous: SequenceNumberType = None,
+    vsi_previous: SequenceNumberType | None = None,
 ) -> np.ndarray:
     """
     Check that distances from estimated positions are less than calculated distance.
@@ -423,12 +423,12 @@ def calculate_course_parameters(
         A tuple of four floats representing the speed, distance, course and time difference.
     """
     distance = sg.sphere_distance(lat_later, lon_later, lat_earlier, lon_earlier)
-    date_earlier = pd.Timestamp(date_earlier)
-    date_later = pd.Timestamp(date_later)
+    ts_earlier = pd.Timestamp(date_earlier)
+    ts_later = pd.Timestamp(date_later)
 
     timediff = time_control.time_difference(
-        date_earlier,
-        date_later,
+        ts_earlier,
+        ts_later,
     )
     if timediff != 0 and isvalid(timediff):
         speed = distance / abs(timediff)

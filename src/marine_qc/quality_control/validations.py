@@ -369,7 +369,7 @@ def validate_args(
         while True:
             handlers.extend(DECORATOR_HANDLERS.get(current, []))
             if hasattr(current, "__wrapped__"):
-                current = current.__wrapped__
+                current = current.__wrapped__  # ty: ignore[invalid-assignment]
             else:
                 break
         return handlers
@@ -390,9 +390,10 @@ def validate_args(
     positional_params = [p for p in params if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)]
 
     has_args = any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in params)
+    func_name = getattr(func, "__name__", repr(func))
 
     if len(args) > len(positional_params) and not has_args:
-        raise TypeError(f"Too many positional arguments for function '{func.__name__}'.")
+        raise TypeError(f"Too many positional arguments for function '{func_name}'.")
 
     bound_args = [positional_params[i].name for i in range(min(len(args), len(positional_params)))]
 
@@ -401,10 +402,10 @@ def validate_args(
     type_hints = get_type_hints(func)
 
     for i, arg in enumerate(args):
-        validate_arg(bound_args[i], arg, func.__name__, sig.parameters, type_hints, reserved_keys, has_args)
+        validate_arg(bound_args[i], arg, func_name, sig.parameters, type_hints, reserved_keys, has_args)
 
     for key, value in kwargs.items():
-        validate_arg(key, value, func.__name__, sig.parameters, type_hints, reserved_keys, has_kwargs)
+        validate_arg(key, value, func_name, sig.parameters, type_hints, reserved_keys, has_kwargs)
 
     for param in params:
         if (
@@ -418,7 +419,7 @@ def validate_args(
             and param.name not in kwargs
             and param.name not in bound_args
         ):
-            raise TypeError(f"Required parameter '{param.name}' is missing for function '{func.__name__}'.")
+            raise TypeError(f"Required parameter '{param.name}' is missing for function '{func_name}'.")
 
 
 def validate_dict(input_dict: Mapping[str, Mapping[str, Any]]) -> None:

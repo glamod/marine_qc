@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import logging
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -47,7 +48,7 @@ absolute_difference: dict[str, dict[str, Any]] = {
     "dsi": {"difference_threshold": 0.9},
     "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
 }
-general_comparison: dict[str, cl.ComparisonLevel] = {
+general_comparison: dict[str, Callable[..., Any]] = {
     "col_name": cll.NullLevel,
     "nan_name": cll.ElseLevel,
 }
@@ -91,7 +92,7 @@ class DupDetect:
         self.keep = 0
         self._best_duplicates: list[Any] = []
         self._worst_duplicates: list[Any] = []
-        self.duplicates: list[Any] = []
+        self.duplicates: pd.Series = pd.Series()
 
     def get_duplicates(
         self,
@@ -416,7 +417,7 @@ def make_comparison(
     ignore_entries: dict[str, Any],
     ignore_nan_both: list[str],
     ignore_nan_either: list[str],
-) -> cl.CustomComparison:
+) -> cl.CustomComparison | None:
     """
     Build a ``cl.CustomComparison`` for *column*.
 
@@ -802,6 +803,8 @@ def duplicate_check(
     ... )
     """
     if data is None:
+        if station_id is None or lat is None or lon is None or date is None or vsi is None or dsi is None:
+            raise ValueError("Parameters 'station_id', 'lat', 'lon', 'date', 'vsi' and 'dsi' must be provided if 'data' is None.")
         data = build_dataframe(station_id, lat, lon, date, vsi, dsi, kwargs)
 
     data_orig = data.copy()

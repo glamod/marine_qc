@@ -145,7 +145,7 @@ class SpeedChecker:  # pylint: disable=too-many-instance-attributes
         self.lat = np.asarray(lat, dtype=float)
         self.nreps = len(lon)
 
-        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        date_list: list[datetime] = pd.to_datetime(date).tolist()  # ty: ignore[no-matching-overload]
         self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.speed_limit = speed_limit
@@ -378,7 +378,7 @@ class NewSpeedChecker:  # pylint: disable=too-many-instance-attributes
         self.nreps = len(lon)
         self.date = np.asarray(date, dtype=datetime)
 
-        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        date_list: list[datetime] = pd.to_datetime(date).tolist()  # ty: ignore[no-matching-overload]
         self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.speed_limit = speed_limit
@@ -602,7 +602,7 @@ class AgroundChecker:  # pylint: disable=too-many-instance-attributes
         self.lat = np.asarray(lat, dtype=float)
         self.nreps = len(lon)
 
-        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        date_list: list[datetime] = pd.to_datetime(date).tolist()  # ty: ignore[no-matching-overload]
         self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.smooth_win = smooth_win
@@ -902,7 +902,7 @@ class SSTTailChecker:  # pylint: disable=too-many-instance-attributes
         self.bgvar = np.asarray(bgvar, dtype=float)
         self.date = np.asarray(date, dtype=datetime)
 
-        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        date_list: list[datetime] = pd.to_datetime(date).tolist()  # ty: ignore[no-matching-overload]
         self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.reps_ind: np.ndarray = np.array([], dtype=float)
@@ -1359,7 +1359,7 @@ class SSTBiasedNoisyChecker:  # pylint: disable=too-many-instance-attributes
 
         self.nreps = len(lat)
 
-        date_list: list[datetime] = pd.to_datetime(date).tolist()
+        date_list: list[datetime] = pd.to_datetime(date).tolist()  # ty: ignore[no-matching-overload]
         self.hrs = np.asarray(convert_date_to_hours(date_list), dtype=float)
 
         self.n_eval = n_eval

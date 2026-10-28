@@ -274,7 +274,7 @@ def open_xrdataset(
     chunks: int | dict[str, Any] | Literal["auto", "default"] | None = "default",
     coords: Literal["all", "minimal", "different"] | None = "minimal",
     compat: Literal["identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"] = "override",
-    combine: Literal["by_coords", "nested"] | None = "by_coords",
+    combine: Literal["by_coords", "nested"] = "by_coords",
     **kwargs: Any,
 ) -> xr.Dataset:
     r"""
@@ -310,7 +310,7 @@ def open_xrdataset(
     compat : {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"},
       default: "override"
       See the documentation for :py:func:`xarray.open_mfdataset`.
-    combine : {"by_coords", "nested"}, optional, default: "by_coords"
+    combine : {"by_coords", "nested"}, default: "by_coords"
       See the documentation for :py:func:`xarray.open_mfdataset`.
     \**kwargs : dict
       Additional keyword arguments passed to :py:func:`xarray.open_mfdataset`.
