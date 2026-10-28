@@ -296,7 +296,7 @@ def convert_to(value: ValueNumberType, source_units: str, target_units: str) -> 
 
     registry = units(source_units)
     if target_units == "unknown":
-        target_units = str(registry.to_base_units())
+        target_units = str(registry.to_base_units().units)
 
     if isinstance(value, np.ndarray):
         return np.array([_convert_to(v) for v in value])

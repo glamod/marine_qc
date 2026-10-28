@@ -6,9 +6,51 @@ from typing import Any, Literal, cast
 
 import numpy as np
 import pandas as pd
-from pd.core.groupby.generic import DataFrameGroupBy
+from pandas.core.groupby.generic import DataFrameGroupBy
 
 from ..helpers.auxiliary import failed, passed, untested
+from ..helpers.external_clim import get_climatological_value  # noqa: F401 pylint: disable=unused-import
+from .qc_buoy_tracking import (  # noqa: F401 pylint: disable=unused-import
+    do_aground_check,
+    do_new_aground_check,
+    do_new_speed_check,
+    do_speed_check,
+    do_sst_biased_check,
+    do_sst_biased_noisy_short_check,
+    do_sst_end_tail_check,
+    do_sst_noisy_check,
+    do_sst_start_tail_check,
+)
+from .qc_grouped_reports import (  # noqa: F401 pylint: disable=unused-import
+    do_bayesian_buddy_check,
+    do_mds_buddy_check,
+)
+from .qc_individual_reports import (  # noqa: F401 pylint: disable=unused-import
+    do_climatology_check,
+    do_date_check,
+    do_datetime_check,
+    do_day_check,
+    do_hard_limit_check,
+    do_landlocked_check,
+    do_maritime_check,
+    do_missing_value_check,
+    do_missing_value_clim_check,
+    do_night_check,
+    do_position_check,
+    do_sst_freeze_check,
+    do_supersaturation_check,
+    do_time_check,
+    do_wind_consistency_check,
+)
+from .qc_sequential_reports import (  # noqa: F401 pylint: disable=unused-import
+    do_few_check,
+    do_iquam_track_check,
+    do_spike_check,
+    do_track_check,
+    find_multiple_rounded_values,
+    find_repeated_values,
+    find_saturated_runs,
+)
 from .validations import (
     is_func_param,
     is_in_data,
@@ -135,7 +177,7 @@ def _run_qc_engine(
 
 def _normalize_groupby(
     data: pd.DataFrame | pd.Series,
-    groupby: str | DataFrameGroupBy | None,
+    groupby: str | Iterable[str] | DataFrameGroupBy | None,
 ) -> list[tuple[Any, pd.DataFrame]]:
     """
     Return iterable of (name, group_df) pairs, trimming invalid rows.

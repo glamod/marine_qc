@@ -90,9 +90,6 @@ class DupDetect:
         self.settings = settings
         self.data = data.copy()
         self.keep = 0
-        self._best_duplicates: list[Any] = []
-        self._worst_duplicates: list[Any] = []
-        self.duplicates: pd.Series = pd.Series()
 
     def get_duplicates(
         self,
@@ -146,8 +143,8 @@ class DupDetect:
 
                 best_duplicates.append(best)
 
-            self._best_duplicates = best_duplicates
-            self._worst_duplicates = worst_duplicates
+            self._best_duplicates = best_duplicates  # pylint: disable=attribute-defined-outside-init
+            self._worst_duplicates = worst_duplicates  # pylint: disable=attribute-defined-outside-init
 
             duplicates = []
             for idx in self.data.index:
@@ -158,7 +155,7 @@ class DupDetect:
 
             duplicates = pd.Series(duplicates, index=self.data.index, dtype=object, name="duplicates")
 
-            self.duplicates = duplicates
+            self.duplicates = duplicates  # pylint: disable=attribute-defined-outside-init
         return self.duplicates
 
     def flag_duplicates(
