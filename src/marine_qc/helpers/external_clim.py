@@ -9,6 +9,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
+import cf_xarray  # noqa: F401
 import numpy as np
 import pandas as pd
 import xarray as xr
