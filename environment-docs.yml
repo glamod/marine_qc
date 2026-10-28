@@ -11,7 +11,7 @@ dependencies:
     - cf_xarray
     - matplotlib
     - pyproj
-    - splink
+    - splink>=5.0.0
     - cartopy
 
     #development

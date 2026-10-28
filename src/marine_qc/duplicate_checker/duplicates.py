@@ -850,7 +850,9 @@ def duplicate_check(
         "comparisons": comparisons,
     }
 
-    linker = Linker(data, settings, db_api=DuckDBAPI())
+    dp_api = DuckDBAPI()
+    data_registered = dp_api.register(data)
+    linker = Linker(data_registered, settings)
     predictions = linker.inference.predict()
     results = predictions.as_pandas_dataframe()
 
