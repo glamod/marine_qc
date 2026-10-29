@@ -10,6 +10,11 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * The minimum versions of splink is set to 5.0.0 (:issue:`316`, :pull:`347`)
 
+Internal changes
+^^^^^^^^^^^^^^^^
+* All stages in GitHub Action testing-suite.yml are built using tox (:pull:`342`)
+* The Makefile now defines typing-relevant checks (``make typing``; dependent on make ``install-typing``) that are enforced in GitHub Workflows. (:pull:`342`).
+
 0.4.2 (2026-09-07)
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)

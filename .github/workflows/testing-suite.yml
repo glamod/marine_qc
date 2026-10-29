@@ -46,12 +46,15 @@ jobs:
           path: |
             .tox
           key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-lint
+      - name: Run typing checks
+        run: |
+          make typing
       - name: Run linting suite
         run: |
           python -m tox -e lint
 
   test-pypi:
-    name: Test with Python${{ matrix.python-version }}
+    name: Test with Python${{ matrix.python-version }} (${{ matrix.tox-env  }})
     runs-on: ${{ matrix.os }}
     environment: testing
     strategy:
@@ -101,29 +104,21 @@ jobs:
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles('pyproject.toml') }}
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}
 
-      - name: Install marine QC toolbox
+      - name: Run tests with tox
+        if: ${{  matrix.tox-env == '' || matrix.tox-env == null }}
         run: |
-          uv sync --group dev
-
-      - name: Version info
+          uv run python -m tox
+        env:
+          TOX_GH_MAJOR_MINOR: ${{ matrix.python-version  }}
+      - name: Run specialized tests with tox
+        if: ${{ matrix.tox-env != '' && matrix.tox-env != null }}
         run: |
-          uv pip list
-
-      - name: Import marine QC toolbox
-        run: |
-          uv run python -c "import marine_qc"
-
-      - name: Run tests
-        timeout-minutes: 10
-        run: uv run pytest tests
-          --cov=marine_qc
-          --cov-report=lcov
-          --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
+          uv run python -m tox -e ${{ matrix.tox-env }}
 
       - name: Report Coverage
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
-          flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}-pypi
+          flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.tox-env }}
           parallel: true
 
   finish:

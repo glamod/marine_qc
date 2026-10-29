@@ -103,10 +103,10 @@ class SuperObsGrid:
 
     def __init__(self) -> None:
         """Initialise empty grid."""
-        self.grid = np.zeros((360, 180, 73))  # type: np.ndarray
-        self.buddy_mean = np.zeros((360, 180, 73))  # type: np.ndarray
-        self.buddy_stdev = np.zeros((360, 180, 73))  # type: np.ndarray
-        self.nobs = np.zeros((360, 180, 73))  # type: np.ndarray
+        self.grid = np.zeros((360, 180, 73))
+        self.buddy_mean = np.zeros((360, 180, 73))
+        self.buddy_stdev = np.zeros((360, 180, 73))
+        self.nobs = np.zeros((360, 180, 73))
 
     @convert_date("month", "day")
     @inspect_arrays("lat", "lon", "value", "month", "day")
@@ -148,7 +148,7 @@ class SuperObsGrid:
         -----
         The observations should be anomalies.
         """
-        lat_arr, lon_arr, value_arr, month_arr, day_arr = ensure_arrays(lat=lat, lon=lon, value=value, month=month, day=day)
+        lat_arr, lon_arr, value_arr, month_arr, day_arr = ensure_arrays(lat=lat, lon=lon, value=value, month=month, day=day)  # pylint: disable=unbalanced-tuple-unpacking
 
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
@@ -585,7 +585,7 @@ def do_mds_buddy_check(
         if len(thresholds) != len(multipliers[i]):
             raise ValueError("Number of obs thresholds and multipliers have different shapes")
 
-    lat_arr, lon_arr, date_arr, value_arr, climatology_arr = ensure_arrays(lat=lat, lon=lon, date=date, value=value, climatology=climatology)
+    lat_arr, lon_arr, date_arr, value_arr, climatology_arr = ensure_arrays(lat=lat, lon=lon, date=date, value=value, climatology=climatology)  # pylint: disable=unbalanced-tuple-unpacking
 
     anoms_arr = value_arr - climatology_arr
 
@@ -607,10 +607,10 @@ def do_mds_buddy_check(
         if i in ignore_indexes or not valid_mask[i]:
             continue
 
-        lat_i: float = lat_arr[i]
-        lon_i: float = lon_arr[i]
-        mon_i: pd.Timestamp = pd.Timestamp(date_arr[i]).month
-        day_i: pd.Timestamp = pd.Timestamp(date_arr[i]).day
+        lat_i = lat_arr[i]
+        lon_i = lon_arr[i]
+        mon_i = int(pd.Timestamp(date_arr[i]).month)
+        day_i = int(pd.Timestamp(date_arr[i]).day)
 
         # if the SST anomaly differs from the neighbour average by more than the calculated range then reject
         anom_i = anoms_arr[i]
@@ -633,7 +633,7 @@ def do_mds_buddy_check(
 @inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
 @inspect_climatology("climatology")
-def do_bayesian_buddy_check(
+def do_bayesian_buddy_check(  # pylint: disable=too-many-positional-arguments
     lat: SequenceNumberType,
     lon: SequenceNumberType,
     date: SequenceDatetimeType,
@@ -726,7 +726,7 @@ def do_bayesian_buddy_check(
     * maximum_anomaly = 8.0
     * fail_probability = 0.3
     """
-    lat_arr, lon_arr, date_arr, value_arr, climatology_arr = ensure_arrays(lat=lat, lon=lon, date=date, value=value, climatology=climatology)
+    lat_arr, lon_arr, date_arr, value_arr, climatology_arr = ensure_arrays(lat=lat, lon=lon, date=date, value=value, climatology=climatology)  # pylint: disable=unbalanced-tuple-unpacking
 
     numobs = len(lat_arr)
     p0 = prior_probability_of_gross_error
@@ -766,8 +766,8 @@ def do_bayesian_buddy_check(
 
         lat_i = lat_arr[i]
         lon_i = lon_arr[i]
-        mon_i = pd.Timestamp(date_arr[i]).month
-        day_i = pd.Timestamp(date_arr[i]).day
+        mon_i = int(pd.Timestamp(date_arr[i]).month)
+        day_i = int(pd.Timestamp(date_arr[i]).day)
 
         # Calculate the probability of gross error given the set-up
         buddy_stdev = grid.get_buddy_stdev(lat_i, lon_i, mon_i, day_i)

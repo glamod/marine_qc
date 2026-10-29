@@ -104,7 +104,9 @@ def angular_distance(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
+        lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
+    )
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -154,7 +156,7 @@ def sphere_distance(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
@@ -206,7 +208,7 @@ def intermediate_point(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
@@ -255,7 +257,7 @@ def course_between_points(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
     fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
@@ -300,7 +302,7 @@ def lat_lon_from_course_and_distance(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)
+    lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)  # pylint: disable=unbalanced-tuple-unpacking
 
     lat_rad: np.ndarray = np.asarray(convert_to(lat1, "deg", "rad"), dtype=float)
     lon_rad: np.ndarray = np.asarray(convert_to(lon1, "deg", "rad"), dtype=float)

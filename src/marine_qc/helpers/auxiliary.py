@@ -239,13 +239,13 @@ def format_return_type(
     return result_array  # np.ndarray or fallback
 
 
-def convert_to(value: SequenceNumberType, source_units: str, target_units: str) -> SequenceNumberType:
+def convert_to(value: ValueNumberType, source_units: str, target_units: str) -> SequenceNumberType:
     """
     Convert a float or sequence from source units to target units.
 
     Parameters
     ----------
-    value : :py:obj:`~marine_qc.SequenceNumberType`
+    value : :py:obj:`~marine_qc.ValueNumberType`
         A single float value, None, or a sequence (e.g., list, tuple, array-like)
         containing floats and/or None values. `None` values are passed through unchanged.
     source_units : str
@@ -296,7 +296,7 @@ def convert_to(value: SequenceNumberType, source_units: str, target_units: str) 
 
     registry = units(source_units)
     if target_units == "unknown":
-        target_units = registry.to_base_units()
+        target_units = str(registry.to_base_units().units)
 
     if isinstance(value, np.ndarray):
         return np.array([_convert_to(v) for v in value])
@@ -428,14 +428,15 @@ def generic_decorator(
             bound_args.apply_defaults()
             original_call = bound_args.arguments.copy()
 
+            func_name = getattr(func, "__name__", repr(func))
             for handler in reversed(all_pre_handlers):
-                DECORATOR_NAMES[handler] = func.__name__
+                DECORATOR_NAMES[handler] = func_name
                 handler(bound_args.arguments, **meta_kwargs)
 
             result = func(*bound_args.args, **bound_args.kwargs)
 
             for handler in reversed(all_post_handlers):
-                DECORATOR_NAMES[handler] = func.__name__
+                DECORATOR_NAMES[handler] = func_name
                 result = handler(result, bound_args.arguments, **original_call)
 
             return result
@@ -848,9 +849,9 @@ def args_from_data(*params: str) -> Callable[..., Any]:
                 """
                 if isinstance(data, pd.DataFrame):
                     return param in data.columns
-                elif isinstance(data, xr.DataArray):
+                if isinstance(data, xr.DataArray):
                     return param in data.coords or param in data.dims
-                elif isinstance(data, xr.Dataset):
+                if isinstance(data, xr.Dataset):
                     return param in data.data_vars or param in data.coords or param in data.dims
                 raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not {type(data)}.")
 

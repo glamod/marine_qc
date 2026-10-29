@@ -6,10 +6,11 @@ from typing import Any, Literal, cast
 
 import numpy as np
 import pandas as pd
+from pandas.core.groupby.generic import DataFrameGroupBy
 
 from ..helpers.auxiliary import failed, passed, untested
-from ..helpers.external_clim import get_climatological_value  # noqa: F401
-from .qc_buoy_tracking import (  # noqa: F401
+from ..helpers.external_clim import get_climatological_value  # noqa: F401 pylint: disable=unused-import
+from .qc_buoy_tracking import (  # noqa: F401 pylint: disable=unused-import
     do_aground_check,
     do_new_aground_check,
     do_new_speed_check,
@@ -20,11 +21,11 @@ from .qc_buoy_tracking import (  # noqa: F401
     do_sst_noisy_check,
     do_sst_start_tail_check,
 )
-from .qc_grouped_reports import (  # noqa: F401
+from .qc_grouped_reports import (  # noqa: F401 pylint: disable=unused-import
     do_bayesian_buddy_check,
     do_mds_buddy_check,
 )
-from .qc_individual_reports import (  # noqa: F401
+from .qc_individual_reports import (  # noqa: F401 pylint: disable=unused-import
     do_climatology_check,
     do_date_check,
     do_datetime_check,
@@ -41,7 +42,7 @@ from .qc_individual_reports import (  # noqa: F401
     do_time_check,
     do_wind_consistency_check,
 )
-from .qc_sequential_reports import (  # noqa: F401
+from .qc_sequential_reports import (  # noqa: F401 pylint: disable=unused-import
     do_few_check,
     do_iquam_track_check,
     do_spike_check,
@@ -142,7 +143,7 @@ def _run_qc_engine(
         corresponding to QC names.
     """
     mask = pd.Series(True, index=data.index)
-    results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
+    results = pd.DataFrame(untested, index=data.index, columns=list(qc_inputs.keys()))
 
     for _, gdf in groups:
         group_mask = mask.loc[gdf.index].copy()
@@ -176,7 +177,7 @@ def _run_qc_engine(
 
 def _normalize_groupby(
     data: pd.DataFrame | pd.Series,
-    groupby: str | pd.core.groupby.generic.DataFrameGroupBy | None,
+    groupby: str | Iterable[str] | DataFrameGroupBy | None,
 ) -> list[tuple[Any, pd.DataFrame]]:
     """
     Return iterable of (name, group_df) pairs, trimming invalid rows.
@@ -194,10 +195,13 @@ def _normalize_groupby(
         A list of tuples containing the group name (or None) and the corresponding DataFrame slice.
     """
     if groupby is None:
+        if isinstance(data, pd.Series):
+            data = data.to_frame()
         return [(None, data)]
 
-    if not isinstance(groupby, pd.core.groupby.generic.DataFrameGroupBy):
-        return list(data.groupby(groupby, group_keys=False, sort=False))
+    if not isinstance(groupby, DataFrameGroupBy):
+        groups = list(data.groupby(groupby, group_keys=False, sort=False))
+        return [(key, group.to_frame() if isinstance(group, pd.Series) else group) for key, group in groups]
 
     valid = data.index
     groups = []
@@ -212,7 +216,7 @@ def _normalize_groupby(
 
 def _group_iterator(
     data: pd.DataFrame | pd.Series,
-    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None,
+    groupby: str | Iterable[str] | DataFrameGroupBy | None,
 ) -> Iterator[tuple[Any | None, pd.DataFrame | pd.Series]]:
     """
     Yield groups of a DataFrame as (group_name, group_df) pairs.
@@ -280,7 +284,8 @@ def _get_requests_from_params(
         return requests
     for param, cname in params.items():
         if not is_func_param(func, param):
-            raise ValueError(f"Parameter '{param}' is not a valid parameter of function '{func.__name__}'")
+            func_name = getattr(func, "__name__", repr(func))
+            raise ValueError(f"Parameter '{param}' is not a valid parameter of function '{func_name}'")
         if not is_in_data(cname, data):
             raise NameError(f"Variable '{cname}' is not available in input data: {data}.")
         requests[param] = data[cname]
@@ -434,7 +439,7 @@ def _prepare_all_inputs(
     qc_inputs = _prepare_functions(qc_dict, data, preprocessed=preprocessed)
 
     mask = pd.Series(True, index=data.index)
-    results = pd.DataFrame(untested, index=data.index, columns=qc_inputs.keys())
+    results = pd.DataFrame(untested, index=data.index, columns=list(qc_inputs.keys()))
 
     return qc_inputs, mask, results
 
@@ -472,7 +477,7 @@ def _normalize_input(
 
 def _do_multiple_check(
     data: pd.DataFrame | pd.Series,
-    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None = None,
+    groupby: str | Iterable[str] | DataFrameGroupBy | None = None,
     qc_dict: Mapping[str, Any] | None = None,
     preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",
@@ -523,7 +528,7 @@ def _do_multiple_check(
         Flags depend on the QC functions used.
     """
     data, is_series = _normalize_input(data, return_method)
-    qc_inputs, mask, results = _prepare_all_inputs(data, qc_dict, preproc_dict)
+    qc_inputs, _, results = _prepare_all_inputs(data, qc_dict, preproc_dict)
     groups = _group_iterator(data, groupby)
     results = _run_qc_engine(data, qc_inputs, groups, return_method)
     return results.iloc[0] if is_series else results
@@ -684,7 +689,7 @@ def do_multiple_individual_check(
 
 def do_multiple_sequential_check(
     data: pd.DataFrame | pd.Series,
-    groupby: str | Iterable[str] | pd.core.groupby.generic.DataFrameGroupBy | None = None,
+    groupby: str | Iterable[str] | DataFrameGroupBy | None = None,
     qc_dict: Mapping[str, Any] | None = None,
     preproc_dict: Mapping[str, Any] | None = None,
     return_method: Literal["all", "passed", "failed"] = "all",

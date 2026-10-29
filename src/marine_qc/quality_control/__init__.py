@@ -1,5 +1,7 @@
 """Marine Quality Control package (QC)."""
 
+# pylint: disable=duplicate-code
+
 from __future__ import annotations
 
 from .qc_buoy_tracking import (

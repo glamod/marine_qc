@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import logging
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -47,7 +48,7 @@ absolute_difference: dict[str, dict[str, Any]] = {
     "dsi": {"difference_threshold": 0.9},
     "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
 }
-general_comparison: dict[str, cl.ComparisonLevel] = {
+general_comparison: dict[str, Callable[..., Any]] = {
     "col_name": cll.NullLevel,
     "nan_name": cll.ElseLevel,
 }
@@ -88,6 +89,7 @@ class DupDetect:
         self.groups = groups
         self.settings = settings
         self.data = data.copy()
+        self.keep = 0
 
     def get_duplicates(
         self,
@@ -121,7 +123,7 @@ class DupDetect:
         elif keep == "last":
             keep = -1
 
-        self.keep = keep
+        self.keep = keep  # type: ignore[assignment]
 
         if overwrite is True:
             dups = {}
@@ -141,8 +143,8 @@ class DupDetect:
 
                 best_duplicates.append(best)
 
-            self._best_duplicates = best_duplicates
-            self._worst_duplicates = worst_duplicates
+            self._best_duplicates = best_duplicates  # pylint: disable=attribute-defined-outside-init
+            self._worst_duplicates = worst_duplicates  # pylint: disable=attribute-defined-outside-init
 
             duplicates = []
             for idx in self.data.index:
@@ -153,7 +155,7 @@ class DupDetect:
 
             duplicates = pd.Series(duplicates, index=self.data.index, dtype=object, name="duplicates")
 
-            self.duplicates = duplicates
+            self.duplicates = duplicates  # pylint: disable=attribute-defined-outside-init
         return self.duplicates
 
     def flag_duplicates(
@@ -412,7 +414,7 @@ def make_comparison(
     ignore_entries: dict[str, Any],
     ignore_nan_both: list[str],
     ignore_nan_either: list[str],
-) -> cl.CustomComparison:
+) -> cl.CustomComparison | None:
     """
     Build a ``cl.CustomComparison`` for *column*.
 
@@ -442,7 +444,7 @@ def make_comparison(
     cll_args: dict[str, Any] = {"col_name": column}
 
     if compare_level_libraries == {}:
-        compare_level_libraries = dict()
+        compare_level_libraries = {}
 
     clevel = (
         getattr(cll, compare_level_libraries.get(column, ""), None)
@@ -798,6 +800,8 @@ def duplicate_check(
     ... )
     """
     if data is None:
+        if station_id is None or lat is None or lon is None or date is None or vsi is None or dsi is None:
+            raise ValueError("Parameters 'station_id', 'lat', 'lon', 'date', 'vsi' and 'dsi' must be provided if 'data' is None.")
         data = build_dataframe(station_id, lat, lon, date, vsi, dsi, kwargs)
 
     data_orig = data.copy()
