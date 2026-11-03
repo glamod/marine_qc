@@ -20,9 +20,9 @@ bracex==2.4 \
     --hash=sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb \
     --hash=sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418
     # via wcmatch
-bump-my-version==1.6.3 \
-    --hash=sha256:48d4a302e49a507f3b71e0532a317121f58815ed446ad36b52fb2589c134f548 \
-    --hash=sha256:a886d5b8a86b439bb1119eecc3625a940c545e8e7b093ae5fd52a754c904c165
+bump-my-version==1.6.7 \
+    --hash=sha256:44e9f4fb733ff5d77f832249b7974d49a2f7acf3b566960265b5928788ab2f75 \
+    --hash=sha256:ca21d720a4d951eb26354c9b62776a5481468c2319bd253c3494faf489f49c34
     # via -r requirements_ci.in
 cachetools==7.0.4 \
     --hash=sha256:0c8bb1b9ec8194fa4d764accfde602dfe52f70d0f311e62792d4c3f8c051b1e9 \
@@ -169,9 +169,9 @@ exceptiongroup==1.3.1 \
     --hash=sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219 \
     --hash=sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598
     # via -r requirements_ci.in
-filelock==3.25.2 \
-    --hash=sha256:b64ece2b38f4ca29dd3e810287aa8c48182bbecd1ae6e9ae126c9b35f1382694 \
-    --hash=sha256:ca8afb0da15f229774c9ad1b455ed96e85a81373065fb10446672f64444ddf70
+filelock==4.2.1 \
+    --hash=sha256:7be2662e9e826b9bba28afc0f843a123280d799a2ea44bb5d35ccec67905ae44 \
+    --hash=sha256:c4c937ccac2a813cee448e662a56366cfb374c0f8702e75f295c412cc1c5d5a3
     # via
     #   python-discovery
     #   tox
@@ -659,15 +659,15 @@ tomlkit==0.13.0 \
     # via
     #   bump-my-version
     #   pylint
-tox==4.67.1 \
-    --hash=sha256:23d614cb703e1f7bd39e00c046d4c261b63fb9986e185134c6be2f93531d9726 \
-    --hash=sha256:a68602f64421b199016127364ee47347b958391d19c2b2e53fe95673a8fe98e9
+tox==4.67.2 \
+    --hash=sha256:429c249603ef9c99fec3871ac2d9e05d00cc7c02c110c099a2fe942bcb90fb8a \
+    --hash=sha256:be272aa5b9503fc084c82da242df124835e23cb86fc337f8e33804f011fc3ca5
     # via
     #   -r requirements_ci.in
     #   tox-gh
-tox-gh==1.9.0 \
-    --hash=sha256:8fea2f93d6b5b8757580bd1e02222e8032254366ea3fa16e3a801f96c01b15f9 \
-    --hash=sha256:9bb052cd7372a9262aee8f83352eefd291698e337f8a0645ceb4b930ab78a798
+tox-gh==1.9.1 \
+    --hash=sha256:3b1a473dc0ea45ed9ab4d180b3d7f9c748c3efec3e375a0575b2980429975d63 \
+    --hash=sha256:f40f9be08c9fab28cae3ea9c9f4a0ae13d3e8ab31d52050f66abd69f72f4a83f
     # via -r requirements_ci.in
 truststore==0.10.4 \
     --hash=sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301 \
