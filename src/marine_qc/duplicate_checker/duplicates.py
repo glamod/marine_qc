@@ -701,30 +701,25 @@ def duplicate_check(
 
     In this example, we focus on only two input variables:
 
-    .. code-block:: python
-
-        df = pd.DataFrame(
-            {
-                "station_id": ["A", "A", "B", "A", None],
-                "lon": [29.7, -29.7, 29.7, np.nan, 29.7],
-            }
-        )
-        print(df)
-
-    .. code-block:: text
-
-          station_id   lon
-        0          A  29.7
-        1          A -29.7
-        2          B  29.7
-        3          A   NaN
-        4       None  29.7
+    >>> df = pd.DataFrame(
+    ...     {
+    ...         "station_id": ["A", "A", "B", "A", None],
+    ...         "lon": [29.7, -29.7, 29.7, np.nan, 29.7],
+    ...     }
+    ... )
+    >>> print(df)
+      station_id   lon
+    0          A  29.7
+    1          A -29.7
+    2          B  29.7
+    3          A   NaN
+    4        NaN  29.7
 
     This produces the following duplicate pairs:
 
-    .. code-block:: python
-
-        detected = duplicate_check(data=df, ignore_nan_either=True)
+    >>> detected = duplicate_check(data=df, ignore_nan_either=True)
+    >>> detected.__dict__
+    [(0, 3), (0, 4), (1, 3), (2, 4), (3, 4)]
 
     * (0,3): (["A", 29.7  ], ["A" , np.nan])
     * (0,4): (["A", 29.7  ], [None, 29.7])
@@ -741,10 +736,8 @@ def duplicate_check(
 
     Since (3,4) is also considered a duplicate pair, all entries are connected, resulting in:
 
-    .. code-block:: python
-
-        print(detected.groups)
-        >>> [[0, 3, 4, 1, 2]]
+    >>> print(detected.groups)
+    [[0, 3, 4, 1, 2]]
 
     Examples
     --------

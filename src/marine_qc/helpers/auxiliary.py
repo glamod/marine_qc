@@ -572,7 +572,7 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
     >>> add_arrays([1, 2], [3, 4, 5])
     Traceback (most recent call last):
         ...
-    ValueError: Input ['a', 'b'] must all have the same length.
+    ValueError: Input ('a', 'b') must all have the same length.
     """
 
     def pre_handler(arguments: dict[str, Any], **meta_kwargs: Any) -> None:

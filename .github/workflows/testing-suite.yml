@@ -60,7 +60,11 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.11", "3.12", "3.13", "3.14" ] # "3.10" disabled due to project's Python requirement
+        python-version: [ "3.11", "3.12", "3.13", "3.14" ]
+        include:
+          # Linux doctests
+          - python-version: '3.12'
+            tox-env: 'doctest'
     env:
       # UV_ENV_FILE: pyproject.toml ; disabled since UV_ENV_FILE requires a .env and in addition it is not needed so far
       PYTHON_VERSION: ${{ matrix.python-version }}
