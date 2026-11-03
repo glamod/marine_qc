@@ -61,6 +61,9 @@ install-docs: ## install dependencies needed for building the docs
 install-test: ## install dependencies needed for standard testing
 	python -m pip install --quiet --group test
 
+install-test-notebooks: ## install dependencies needed for notebook testing
+	python -m pip install --quiet --group test-notebooks
+
 install-typing: ## install dependencies needed for type-checking
 	python -m pip install --quiet --group typing
 
@@ -83,7 +86,10 @@ test: install-test ## run tests quickly with the default Python
 test-doctests: install-test ## run doctests
 	python -m pytest --numprocesses=auto --doctest-modules src/marine_qc
 
-test-all: test test-doctests ## run all tests
+test-notebooks: install-test-notebooks
+	python -m pytest --no-cov --nbval --numprocesses=auto --dist=loadscope docs/notebooks
+
+test-all: test test-doctests test-notebooks## run all tests
 
 coverage: install-test ## check code coverage quickly with the default Python
 	python -m coverage run --source marine_qc -m pytest src/marine_qc

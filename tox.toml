@@ -3,7 +3,8 @@ envlist = [
   {product = [{prefix = "py3.", start = 11, stop = 14}]},
   "docs",
   "doctests",
-  "lint"
+  "lint",
+  "notebooks"
 ]
 skip_missing_interpreters = true
 
@@ -40,6 +41,16 @@ commands = [
 ]
 commands_post = []
 allowlist_externals = ["make"]
+
+[env.notebooks]
+labels = ["notebooks"]
+description = "Run notebooks with pytest under {basepython}"
+allowlist_externals = ["make"]
+dependency_groups = ["test-notebooks"]
+commands = [
+  ["make", "test-notebooks"]
+]
+commands_post = []
 
 [env_run_base]
 description = "Run tests with pytest under {basepython}"
