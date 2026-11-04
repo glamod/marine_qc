@@ -17,7 +17,6 @@ commands = [
   ["make", "build-docs"]
 ]
 commands_post = []
-allowlist_externals = ["make"]
 
 [env.doctests]
 description = "Run doctests with pytest under {basepython}"
