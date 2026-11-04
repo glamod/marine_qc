@@ -87,6 +87,7 @@ jobs:
             objects.githubusercontent.com:443
             pypi.org:443
             release-assets.githubusercontent.com:443
+            naturalearth.s3.amazonaws.com:443
 
 
       - name: Checkout Repository
