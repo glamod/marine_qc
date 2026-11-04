@@ -81,11 +81,11 @@ test = [
   "pytest >=9.0.2",
   "pytest-cov >=7.0.0",
   "pytest-env >=1.1.5",
+  "pytest-xdist[psutil] >=3.2",
   "requests >= 2.30.0"
 ]
 test-notebooks = [
   "nbval >=0.11.0",
-  "pytest-xdist[psutil] >=3.2",
   {include-group = "test"}
 ]
 docs = [
