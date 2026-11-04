@@ -61,7 +61,7 @@ jobs:
       matrix:
         os: [ 'ubuntu-latest' ]
         python-version: [ "3.11", "3.12", "3.13", "3.14" ]
-        markers: ["-m not slow"]
+        markers: [ "-m not slow" ]
         include:
           # Linux doctests
           - python-version: "3.12"
