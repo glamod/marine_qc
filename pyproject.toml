@@ -75,10 +75,6 @@ typing = [
   "pylint >= 4.0.4",
   "ty >= 0.0.35"
 ]
-notebooks = [
-  # Notebook support
-  "nbval >=0.11.0"
-]
 test = [
   # Base testing support
   "coverage[toml] >=7.13.4",
@@ -88,7 +84,8 @@ test = [
   "requests >= 2.30.0"
 ]
 test-notebooks = [
-  {include-group = "notebooks"},
+  "nbval" >=0.11.0",
+  "pytest-xdist[psutil] >=3.2",
   {include-group = "test"}
 ]
 docs = [
@@ -119,7 +116,7 @@ dev = [
   {include-group = "docs"},
   {include-group = "lint"},
   {include-group = "test"},
-  {include-group = "notebooks"},
+  {include-group = "test-notebooks"},
   {include-group = "tox"}
 ]
 
