@@ -77,7 +77,7 @@ jobs:
         uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           disable-sudo: false
-          egress-policy: audit
+          egress-policy: block
           allowed-endpoints: >
             *.githubusercontent.com:443
             api.github.com:443
@@ -124,6 +124,7 @@ jobs:
           uv run python -m tox -e ${{ matrix.tox-env }}
 
       - name: Report Coverage
+        if: ${{ matrix.tox-env != 'notebooks' }}
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.tox-env }}
