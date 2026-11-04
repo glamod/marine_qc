@@ -64,11 +64,13 @@ jobs:
         markers: [ "-m not slow" ]
         include:
           # Linux doctests
-          - python-version: "3.12"
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
             tox-env: 'doctests'
             markers: '' # No markers for doctests
           # Linux notebooks
-          - python-version: "3.12"
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
             tox-env: 'notebooks'
             markers: '' # No markers for notebooks
     env:
