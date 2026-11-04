@@ -84,7 +84,7 @@ test = [
   "requests >= 2.30.0"
 ]
 test-notebooks = [
-  "nbval" >=0.11.0",
+  "nbval >=0.11.0",
   "pytest-xdist[psutil] >=3.2",
   {include-group = "test"}
 ]
