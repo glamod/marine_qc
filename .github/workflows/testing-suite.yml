@@ -61,13 +61,16 @@ jobs:
       matrix:
         os: [ 'ubuntu-latest' ]
         python-version: [ "3.11", "3.12", "3.13", "3.14" ]
+        markers: ["-m not slow"]
         include:
           # Linux doctests
           - python-version: "3.12"
-            tox-env: 'doctest'
+            tox-env: 'doctests'
+            markers: '' # No markers for doctests
           # Linux notebooks
           - python-version: "3.12"
             tox-env: 'notebooks'
+            markers: '' # No markers for notebooks
     env:
       # UV_ENV_FILE: pyproject.toml ; disabled since UV_ENV_FILE requires a .env and in addition it is not needed so far
       PYTHON_VERSION: ${{ matrix.python-version }}
@@ -115,13 +118,13 @@ jobs:
       - name: Run tests with tox
         if: ${{  matrix.tox-env == '' || matrix.tox-env == null }}
         run: |
-          uv run python -m tox
+          uv run python -m tox -- ${{ matrix.markers }}
         env:
           TOX_GH_MAJOR_MINOR: ${{ matrix.python-version  }}
       - name: Run specialized tests with tox
         if: ${{ matrix.tox-env != '' && matrix.tox-env != null }}
         run: |
-          uv run python -m tox -e ${{ matrix.tox-env }}
+          uv run python -m tox -e ${{ matrix.tox-env }} -- ${{ matrix.markers }}
 
       - name: Report Coverage
         if: ${{ matrix.tox-env != 'notebooks' }}
