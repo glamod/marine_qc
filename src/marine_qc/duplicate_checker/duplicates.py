@@ -1022,7 +1022,7 @@ def remove_duplicates(
     >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
     >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
     >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
-    >>> dsi = [90, 90, 90, 90, 90]    
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1192,14 +1192,14 @@ def flag_duplicates(
     ... )
     >>> flags
     [1, 1, 3, 3, 0]
-    
+
     Use a precomputed duplicate detection result which always returns a pandas Series:
     >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
     >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
     >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
     >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
     >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
-    >>> dsi = [90, 90, 90, 90, 90]    
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1346,7 +1346,7 @@ def get_duplicates(
     >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
     >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
     >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
-    >>> dsi = [90, 90, 90, 90, 90]    
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1374,9 +1374,3 @@ def get_duplicates(
         detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, data, **kwargs)
 
     return detected.get_duplicates(keep=keep)
-
-
-#duplicate_check.__module__ = "marine_qc.duplicates"
-#flag_duplicates.__module__ = "marine_qc.duplicates"
-#get_duplicates.__module__ = "marine_qc.duplicates"
-#remove_duplicates.__module__ = "marine_qc.duplicates"

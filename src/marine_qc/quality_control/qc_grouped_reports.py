@@ -797,7 +797,3 @@ def do_bayesian_buddy_check(  # pylint: disable=too-many-positional-arguments
     del grid
 
     return qc_outcomes
-
-
-do_mds_buddy_check.__module__ = "marine_qc.qc_grouped_reports"
-do_bayesian_buddy_check.__module__ = "marine_qc.qc_grouped_reports"

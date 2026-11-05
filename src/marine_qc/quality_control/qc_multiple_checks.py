@@ -855,9 +855,3 @@ def combine_qc_results(data: pd.DataFrame | pd.Series, prioritization: list[int]
         conditions = [(data == value).any(axis=1) for value in prioritization]
         result = np.select(conditions, prioritization, default=2)
     return pd.Series(result, index=data.index, name="QC_FLAG")
-
-
-combine_qc_results.__module__ = "marine_qc.combine_qc_results"
-do_multiple_grouped_check.__module__ = "marine_qc.multiple_checks"
-do_multiple_individual_check.__module__ = "marine_qc.multiple_checks"
-do_multiple_sequential_check.__module__ = "marine_qc.multiple_checks"

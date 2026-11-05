@@ -345,8 +345,3 @@ def plot_latitude_longitude(
         filename=filename,
         add_coastlines=add_coastlines,
     )
-
-
-plot_latitude_longitude.__module__ = "marine_qc.visualization"
-plot_latitude_variable.__module__ = "marine_qc.visualization"
-plot_variable_longitude.__module__ = "marine_qc.visualization"
