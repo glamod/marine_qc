@@ -89,7 +89,7 @@ test-doctests: install-test ## run doctests
 test-notebooks: install-test-notebooks
 	python -m pytest --no-cov --nbval --numprocesses=auto --dist=loadscope docs/notebooks
 
-test-all: test test-doctests test-notebooks## run all tests
+test-all: test test-doctests test-notebooks ## run all tests
 
 coverage: install-test ## check code coverage quickly with the default Python
 	python -m coverage run --source marine_qc -m pytest src/marine_qc
