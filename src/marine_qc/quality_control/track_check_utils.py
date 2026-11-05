@@ -694,7 +694,7 @@ def calculate_midpoint(
     timediff = np.array(timediff, dtype=float)
 
     number_of_obs = len(lat)
-    midpoint_discrepancies = np.asarray([np.nan] * number_of_obs)  # type: np.ndarray
+    midpoint_discrepancies: np.ndarray = np.asarray([np.nan] * number_of_obs)
 
     t0 = timediff
     t1 = np.roll(timediff, -1)

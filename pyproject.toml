@@ -227,19 +227,7 @@ warn_unused_configs = true
 plugins = ["numpy.typing.mypy_plugin"]
 
 [[tool.mypy.overrides]]
-module = [
-  "boltons.*",
-  "cftime.*",
-  "jsonpickle.*",
-  "numba.*",
-  "pytest_socket.*",
-  "SBCK.*",
-  "scipy.*",
-  "sklearn.*",
-  "statsmodels.*",
-  "yamale.*",
-  "yaml.*"
-]
+module = ["scipy.*"]
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
 ignore_missing_imports = true

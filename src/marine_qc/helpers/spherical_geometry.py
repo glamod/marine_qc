@@ -110,7 +110,7 @@ def angular_distance(
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
-    result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
+    result = np.full(lat1.shape, np.nan, dtype=float)
 
     result[valid] = _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / earths_radius
     return result
@@ -160,7 +160,7 @@ def sphere_distance(
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
-    result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
+    result = np.full(lat1.shape, np.nan, dtype=float)
 
     result[valid] = _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / 1000.0
     return result
@@ -214,8 +214,8 @@ def intermediate_point(
     valid &= f <= 1.0
     valid &= f >= 0.0
 
-    lon_f = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
-    lat_f = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
+    lon_f = np.full(lat1.shape, np.nan, dtype=float)
+    lat_f = np.full(lat1.shape, np.nan, dtype=float)
 
     fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
     distance_at_f = dist * f

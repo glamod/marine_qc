@@ -683,11 +683,11 @@ class AgroundChecker:  # pylint: disable=too-many-instance-attributes
         half_win = int((self.smooth_win - 1) / 2)
         # create smoothed lon/lat timeseries  # length of series after smoothing
         nrep_smooth = self.nreps - self.smooth_win + 1
-        lon_smooth = np.empty(nrep_smooth)  # type: np.ndarray
+        lon_smooth = np.empty(nrep_smooth)
         lon_smooth[:] = np.nan
-        lat_smooth = np.empty(nrep_smooth)  # type: np.ndarray
+        lat_smooth = np.empty(nrep_smooth)
         lat_smooth[:] = np.nan
-        hrs_smooth = np.empty(nrep_smooth)  # type: np.ndarray
+        hrs_smooth = np.empty(nrep_smooth)
         hrs_smooth[:] = np.nan
 
         for i in range(0, nrep_smooth):

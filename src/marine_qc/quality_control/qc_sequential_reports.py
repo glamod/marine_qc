@@ -125,7 +125,7 @@ def do_spike_check(
 
     number_of_obs = len(value)
 
-    spike_qc = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    spike_qc = np.asarray([passed] * number_of_obs)
 
     for t1 in range(number_of_obs):
         violations_for_this_report = []
@@ -531,7 +531,7 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
     if number_of_obs == 0:
         return [passed] * number_of_obs
 
-    rounded = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    rounded = np.asarray([passed] * number_of_obs)
 
     valid_indices = isvalid(value)
     allcount = np.count_nonzero(valid_indices)
@@ -600,7 +600,7 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
     if number_of_obs == 0:
         return [passed] * number_of_obs
 
-    rep = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    rep = np.asarray([passed] * number_of_obs)
 
     valid_indices = isvalid(value)
 
@@ -696,7 +696,7 @@ def do_iquam_track_check(
     speed_violations = []
     count_speed_violations = []
 
-    iquam_track = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    iquam_track = np.asarray([passed] * number_of_obs)
 
     for t1 in range(0, number_of_obs):
         violations_for_this_report = []
