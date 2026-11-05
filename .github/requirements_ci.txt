@@ -176,13 +176,13 @@ filelock==4.2.1 \
     #   python-discovery
     #   tox
     #   virtualenv
-flit==4.1.0 \
-    --hash=sha256:18b463c435db03b8cbecf139b6b0bb285b2dfd8a7e623558136abd66f4a04af4 \
-    --hash=sha256:4feee56693b32d1ad2b04e727372b6bf3f3f62d1feda78ab5a7b97091c3f0158
+flit==4.2.0 \
+    --hash=sha256:0f38bac68bc99cb60ab3a1abef04a06fa083d420ca485125832569ebf611c928 \
+    --hash=sha256:4ab00f544721a241b15e634648f1bfac7268a0ec637f106ce3150939c2e2f4d9
     # via -r requirements_ci.in
-flit-core==4.1.0 \
-    --hash=sha256:17398cdd2c38b24047a5a9c93089ec5c0bf12ec3d1469bbf69c27ed7965299db \
-    --hash=sha256:62e12b63ead8335b37f59fabb977c7167fe476dafb5e41785dfa8c9aff843bc6
+flit-core==4.2.0 \
+    --hash=sha256:2bee22dc8ba89c2e35b4e1ad575e596aac945c85672dd8f3cad21b629036e044 \
+    --hash=sha256:84e4e4d8fdd45ba2613800a3ebc6834de26d47ec9746efc3719f94181137b460
     # via flit
 h11==0.16.0 \
     --hash=sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1 \
@@ -659,9 +659,9 @@ tomlkit==0.13.0 \
     # via
     #   bump-my-version
     #   pylint
-tox==4.67.2 \
-    --hash=sha256:429c249603ef9c99fec3871ac2d9e05d00cc7c02c110c099a2fe942bcb90fb8a \
-    --hash=sha256:be272aa5b9503fc084c82da242df124835e23cb86fc337f8e33804f011fc3ca5
+tox==4.67.4 \
+    --hash=sha256:6f97945d3ca1c204337aeecd858b178b30fc5cf9d0b0c15aacea12d1c5eb0946 \
+    --hash=sha256:e1be08d3dbeb44c7a87ec6b4f0be840b0a0db375013c3c801e5bb428c5607361
     # via
     #   -r requirements_ci.in
     #   tox-gh
