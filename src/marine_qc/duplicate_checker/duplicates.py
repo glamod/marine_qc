@@ -1017,6 +1017,7 @@ def remove_duplicates(
     [90, 90, 90]
 
     Use a precomputed duplicate detection result which always returns a pandas Series:
+
     >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
     >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
     >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
@@ -1194,6 +1195,7 @@ def flag_duplicates(
     [1, 1, 3, 3, 0]
 
     Use a precomputed duplicate detection result which always returns a pandas Series:
+
     >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
     >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
     >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
@@ -1341,6 +1343,7 @@ def get_duplicates(
     [2, 3, 0, 1, nan]
 
     Use a precomputed duplicate detection result which always returns a pandas Series:
+
     >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
     >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
     >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
