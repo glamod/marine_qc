@@ -48,7 +48,7 @@ jobs:
           key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-lint
       - name: Run typing checks
         run: |
-          make typing
+          python -m tox -e typing
       - name: Run linting suite
         run: |
           python -m tox -e lint
@@ -129,7 +129,7 @@ jobs:
           uv run python -m tox -e ${{ matrix.tox-env }} -- ${{ matrix.markers }}
 
       - name: Report Coverage
-        if: ${{ matrix.tox-env != 'notebooks' }}
+        if: ${{ matrix.tox-env != 'notebooks' && matrix.tox-env != 'doctests' }}
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.tox-env }}

@@ -1016,7 +1016,7 @@ def remove_duplicates(
     >>> results[5]
     [90, 90, 90]
 
-    Use a precomputed duplicate detection result which always returns a pandas Series:
+    Use a precomputed duplicate detection result which always returns a tuple of pandas Series:
 
     >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
     >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]

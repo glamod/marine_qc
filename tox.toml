@@ -53,6 +53,17 @@ commands = [
 ]
 commands_post = []
 
+[env.typing]
+description = "Run static type and code analysis checks under {basepython}"
+labels = ["typing"]
+skip_install = true
+allowlist_externals = ["make"]
+dependency_groups = ["lint"]
+commands = [
+  ["make", "typing"]
+]
+commands_post = []
+
 [env_run_base]
 description = "Run tests with pytest under {basepython}"
 setenv = {PYTEST_ADDOPTS = "--color=yes --cov=marine_qc --cov-report=lcov", PYTHONPATH = "{toxinidir}"}
