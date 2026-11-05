@@ -712,7 +712,7 @@ def duplicate_check(
     ...         "lat": [32.6, 32.6, -32.6, 32.6, None],
     ...     }
     ... )
-    >>> print(df)
+    >>> df
       station_id   lon   lat
     0          A  29.7  32.6
     1          A -29.7  32.6
@@ -989,6 +989,12 @@ def remove_duplicates(
     --------
     Remove duplicates directly from raw observations:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> results = remove_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -997,8 +1003,26 @@ def remove_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
+    >>> results[0]
+    ['S1', 'S1', 'UNKNOWN']
+    >>> results[1]
+    [51.0, 51.0, 51.0]
+    >>> results[2]
+    [0.1, 0.3, 0.1]
+    >>> results[3]
+    [Timestamp('2023-01-01 00:00:00'), Timestamp('2023-01-01 03:00:00'), Timestamp('2023-01-01 00:00:00')]
+    >>> results[4]
+    [10.0, 8.0, 10.0]
+    >>> results[5]
+    [90, 90, 90]
 
-    Use a precomputed duplicate detection result:
+    Use a precomputed duplicate detection result which always returns a pandas Series:
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]    
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1008,6 +1032,36 @@ def remove_duplicates(
     ...     dsi=dsi,
     ... )
     >>> results = remove_duplicates(detected=detected)
+    >>> results[0]
+    0         S1
+    1         S1
+    4    UNKNOWN
+    Name: station_id, dtype: str
+    >>> results[1]
+    0    51.0
+    1    51.0
+    4    51.0
+    Name: lat, dtype: float64
+    >>> results[2]
+    0    0.1
+    1    0.3
+    4    0.1
+    Name: lon, dtype: float64
+    >>> results[3]
+    0   2023-01-01 00:00:00
+    1   2023-01-01 03:00:00
+    4   2023-01-01 00:00:00
+    Name: date, dtype: datetime64[us]
+    >>> results[4]
+    0    10.0
+    1     8.0
+    4    10.0
+    Name: vsi, dtype: float64
+    >>> results[5]
+    0    90
+    1    90
+    4    90
+    Name: dsi, dtype: int64
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi, data)):
         raise ValueError(
@@ -1122,6 +1176,12 @@ def flag_duplicates(
     --------
     Flag duplicates directly from raw observations:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> flags = flag_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1130,8 +1190,16 @@ def flag_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
-
-    Use a precomputed duplicate detection result:
+    >>> flags
+    [1, 1, 3, 3, 0]
+    
+    Use a precomputed duplicate detection result which always returns a pandas Series:
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]    
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1140,7 +1208,14 @@ def flag_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
-    ... flags = flag_duplicates(detected=detected)
+    >>> flags = flag_duplicates(detected=detected)
+    >>> flags
+    0    1
+    1    1
+    2    3
+    3    3
+    4    0
+    Name: duplicate_flags, dtype: int64
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi, data)):
         raise ValueError(
@@ -1248,6 +1323,12 @@ def get_duplicates(
     --------
     Get duplicates directly from raw observations:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> duplicates = get_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1256,8 +1337,16 @@ def get_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
+    >>> duplicates
+    [2, 3, 0, 1, nan]
 
-    Use a precomputed duplicate detection result:
+    Use a precomputed duplicate detection result which always returns a pandas Series:
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]    
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1266,7 +1355,14 @@ def get_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
-    ... duplicates = get_duplicates(detected=detected)
+    >>> duplicates = get_duplicates(detected=detected)
+    >>> duplicates
+    0      2
+    1      3
+    2      0
+    3      1
+    4    NaN
+    Name: duplicates, dtype: object
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi, data)):
         raise ValueError(
@@ -1280,7 +1376,7 @@ def get_duplicates(
     return detected.get_duplicates(keep=keep)
 
 
-duplicate_check.__module__ = "marine_qc.duplicates"
-flag_duplicates.__module__ = "marine_qc.duplicates"
-get_duplicates.__module__ = "marine_qc.duplicates"
-remove_duplicates.__module__ = "marine_qc.duplicates"
+#duplicate_check.__module__ = "marine_qc.duplicates"
+#flag_duplicates.__module__ = "marine_qc.duplicates"
+#get_duplicates.__module__ = "marine_qc.duplicates"
+#remove_duplicates.__module__ = "marine_qc.duplicates"
