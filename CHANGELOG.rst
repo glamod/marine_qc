@@ -19,6 +19,7 @@ New features and enhancements
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The minimum versions of splink is set to 5.0.0 (:issue:`316`, :pull:`347`)
+* marine_qc now adds astropy to its dependencies (:pull:`357`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -29,6 +30,8 @@ Internal changes
   * pairs (Corresponding pairs to pairs)
 
 * internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
+* new internal function ``time_control.get_utc_time`` to calculate UTC time (:pull:`357`)
+* internal module ``astronimical_geometry`` now uses astropy (:pull:`357`)
 
 0.4.2 (2026-09-07)
 ------------------

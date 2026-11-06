@@ -18,7 +18,7 @@ import pandas as pd
 
 from ..helpers import spherical_geometry as sg
 from ..helpers import time_control
-from ..helpers.astronomical_geometry import sunangle
+from ..helpers.astronomical_geometry import elevation_of_sun
 from ..helpers.auxiliary import (
     SequenceDatetimeType,
     SequenceFloatType,
@@ -734,7 +734,7 @@ def track_day_test(
 
     This is the "day" test used by tracking QC to decide whether an SST measurement is night or day.
     This is important because daytime diurnal heating can affect comparison with an SST background.
-    It uses the function sunangle to calculate the elevation of the sun. A default solar_zenith angle
+    It uses the function `elevation_of_sun` to calculate the elevation of the sun. A default solar_zenith angle
     of 92.5 degrees (elevation of -2.5 degrees) delimits night from day.
 
     Parameters
@@ -799,7 +799,7 @@ def track_day_test(
     if lon == 0:
         lon2 = 0.0001
 
-    _, elevation, _, _, _, _ = sunangle(year2, day2, hour2, minute2, 0, 0, 0, lat2, lon2)
+    elevation = elevation_of_sun(year2, day2, hour2, minute2, 0, 0, 0, lat2, lon2)
 
     if elevation > elevdlim:
         daytime = True

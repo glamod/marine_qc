@@ -9,7 +9,7 @@ from typing import Any, Literal
 
 import numpy as np
 
-from ..helpers.astronomical_geometry import sunangle
+from ..helpers.astronomical_geometry import elevation_of_sun
 from ..helpers.auxiliary import (
     ScalarNumberType,
     ValueDatetimeType,
@@ -53,7 +53,7 @@ __all__ = [
 
 
 vectorized_day_in_year = np.vectorize(day_in_year)
-vectorized_sunangle = np.vectorize(sunangle, otypes=[float, float, float, float, float, float])
+vectorized_elevation_of_sun = np.vectorize(elevation_of_sun, otypes=[float])
 
 
 def _do_time_check(hour: np.ndarray) -> np.ndarray:
@@ -249,7 +249,7 @@ def _do_daytime_check(
         year_valid[fix_indices] -= 1
         doy[fix_indices] = vectorized_day_in_year(year_valid[fix_indices], 12, 31)
 
-    _azimuths, elevations, _rtas, _hras, _sids, _decs = vectorized_sunangle(
+    elevation = vectorized_elevation_of_sun(
         year_valid,
         doy.astype(int),
         hour_whole.astype(int),
@@ -261,7 +261,7 @@ def _do_daytime_check(
         lon_fixed,
     )
 
-    result[valid_indices] = np.where(elevations > 0, _passed, _failed)
+    result[valid_indices] = np.where(elevation > 0, _passed, _failed)
 
     return result
 
@@ -524,7 +524,7 @@ def do_day_check(
 
     This "day" test is used to classify Marine Air Temperature (MAT) measurements as either
     Night MAT (NMAT) or Day MAT, accounting for solar heating biases and a potential lag between sun rise and the
-    onset of significant warming. The function calculates the sun's elevation using the `sunangle` function, offset by the
+    onset of significant warming. The function calculates the sun's elevation using the `elevation_of_sun` function, offset by the
     specified `time_since_sun_above_horizon`.
 
     Parameters
@@ -605,7 +605,7 @@ def do_night_check(
 
     This "night" test is used to classify Marine Air Temperature (MAT) measurements as either
     Night MAT (NMAT) or Day MAT, accounting for solar heating biases and a potential lag between sun rise and the
-    onset of significant warming. The function calculates the sun's elevation using the `sunangle` function, offset by the
+    onset of significant warming. The function calculates the sun's elevation using the `elevation_of_sun` function, offset by the
     specified `time_since_sun_above_horizon`.
 
     Parameters

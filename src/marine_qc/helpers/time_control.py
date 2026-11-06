@@ -5,7 +5,7 @@ import calendar
 import math
 import warnings
 from collections.abc import Callable, Sequence
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -672,6 +672,46 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
         duration_in_seconds = (date - start).total_seconds()
         hours_elapsed.append(duration_in_seconds / 3600.0)
     return hours_elapsed
+
+
+def get_utc_time(
+    year: int,
+    day: int,
+    hour: int,
+    minute: int,
+    second: int,
+    zone: int,
+    dasvtm: int,
+) -> datetime:
+    """
+    Calculate UTC time.
+
+    Parameters
+    ----------
+    year : int
+        Year.
+    day : int
+        Day number of year starting with 1 for Jan 1st and running up to 365/6.
+    hour : int
+        Hour.
+    minute : int
+        Minute.
+    second : int
+        Second.
+    zone : int
+        The local international time zone, counted westward from Greenwich.
+    dasvtm : int
+        1 if daylight saving time is in effect, otherwise 0.
+
+    Returns
+    -------
+    datetime
+        UTC time.
+    """
+    local_time = datetime(year, 1, 1) + timedelta(days=day - 1, hours=hour, minutes=minute, seconds=second)
+    utc_offset_hours = -zone + dasvtm
+    utc_time = (local_time - timedelta(hours=utc_offset_hours)).replace(tzinfo=UTC)
+    return utc_time
 
 
 @post_format_return_type("times1", "times2", dtype=float)
