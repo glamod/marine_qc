@@ -38,6 +38,7 @@ classifiers = [
 ]
 dynamic = ["description", "version"]
 dependencies = [
+  "astropy",
   "cartopy",
   "cf_xarray",
   "joblib",
