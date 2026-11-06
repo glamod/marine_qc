@@ -7,15 +7,11 @@ import pytest
 from marine_qc.helpers.time_control import (
     convert_date_to_hours,
     day_in_year,
-    day_in_year_array,
-    jul_day,
-    leap_year_correction,
     pentad_to_month_day,
     split_date,
     time_difference,
     valid_month_day,
     which_pentad,
-    which_pentad_array,
 )
 
 
@@ -95,7 +91,7 @@ def test_valid_month_day_all():
 def test_pentad_to_month():
     for p in range(1, 74):
         m, d = pentad_to_month_day(p)
-        assert p == which_pentad(m, d)
+        assert p == which_pentad(2001, m, d)
 
 
 @pytest.mark.parametrize("pentad", [-1, 0, 74])
@@ -112,19 +108,22 @@ def test_pentad_to_month_day_raises(pentad):
         (12, 26, 72),
         (1, 1, 1),
         (12, 31, 73),
-        (2, 29, 12),
         (3, 1, 12),
     ],
 )
 def test_which_pentad(month, day, expected):
-    assert which_pentad(month, day) == expected
+    assert which_pentad(year=2001, month=month, day=day) == expected
+
+
+def test_which_pentad_leap():
+    assert which_pentad(year=2000, month=2, day=29) == 12
 
 
 def test_which_pentad_raises_value_error():
     with pytest.raises(ValueError):
-        which_pentad(13, 1)
+        which_pentad(month=13, day=1)
     with pytest.raises(ValueError):
-        which_pentad(1, 41)
+        which_pentad(month=1, day=41)
 
 
 @pytest.mark.parametrize(
@@ -141,14 +140,14 @@ def test_day_in_year_raises(year, month, day, expected_error):
 
 
 def test_day_in_year_leap_year():
-    assert day_in_year(month=2, day=29) == day_in_year(month=3, day=1)
+    assert day_in_year(year=2000, month=2, day=29) == day_in_year(year=2001, month=3, day=1)
 
     # Just test all days
     month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     count = 1
     for month in range(1, 13):
         for day in range(1, month_lengths[month - 1] + 1):
-            assert day_in_year(month=month, day=day) == count
+            assert day_in_year(year=2001, month=month, day=day) == count
             count += 1
 
 
@@ -218,7 +217,7 @@ def test_dayinyear_array_all():
     days = np.array(days)
     day_number = np.array(day_number)
 
-    result = day_in_year_array(months, days)
+    result = day_in_year(year=2001, month=months, day=days)
 
     assert np.all(result == day_number)
 
@@ -244,15 +243,12 @@ def test_which_pentad_array_all():
     days = np.array(days)
     pentad_number = ((np.array(day_number) - 1) / 5).astype(int) + 1
 
-    result = which_pentad_array(months, days)
+    result = which_pentad(year=2001, month=months, day=days)
+
+    print(result)
+    print(pentad_number)
 
     assert np.all(result == pentad_number)
-
-
-def test_leap_year_correction():
-    assert leap_year_correction(24, 1, 0) == 0
-    assert leap_year_correction(24, 1, 4) == 1461
-    assert leap_year_correction(24, 1, -3) == -1096
 
 
 @pytest.mark.parametrize(
@@ -264,24 +260,6 @@ def test_leap_year_correction():
 )
 def test_convert_date_to_hour(dates, expected):
     assert convert_date_to_hours(dates) == expected
-
-
-@pytest.mark.parametrize(
-    "year, month, day, expected",
-    [
-        (1850, 12, 3, 2397095),
-        (2004, 1, 1, 2453006),
-        (2004, 1, 2, 2453007),
-        (-4713, 11, 25, 1),
-    ],
-)
-def test_jul_day(year, month, day, expected):
-    assert jul_day(year, month, day) == expected
-
-
-def test_jul_day_raises():
-    with pytest.raises(ValueError):
-        jul_day(2005, 7, 32)
 
 
 @pytest.mark.parametrize(

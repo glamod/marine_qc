@@ -215,7 +215,7 @@ class SuperObsGrid:
         """
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
-        pindex = which_pentad(month, day) - 1
+        pindex = which_pentad(year=2001, month=month, day=day) - 1
 
         if not (0 <= xindex < 360):
             raise ValueError(f"Invalid xindex: {xindex}. Must be between 0 and 360.")
@@ -461,7 +461,7 @@ class SuperObsGrid:
         """
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
-        pindex = which_pentad(month, day) - 1
+        pindex = which_pentad(year=2001, month=month, day=day) - 1
         return float(self.buddy_mean[xindex, yindex, pindex])
 
     def get_buddy_stdev(self, lat: float, lon: float, month: int, day: int) -> float:
@@ -486,7 +486,7 @@ class SuperObsGrid:
         """
         xindex = mds_lon_to_xindex(lon, res=1.0)
         yindex = mds_lat_to_yindex(lat, res=1.0)
-        pindex = which_pentad(month, day) - 1
+        pindex = which_pentad(year=2001, month=month, day=day) - 1
         return float(self.buddy_stdev[xindex, yindex, pindex])
 
 
