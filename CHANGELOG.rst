@@ -32,6 +32,7 @@ Internal changes
 * internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
 * new internal function ``time_control.get_utc_time`` to calculate UTC time (:pull:`357`)
 * internal module ``astronimical_geometry`` now uses astropy (:pull:`357`)
+* remove internal functions ``helpers.statistics.winsorised_mean`` and ``helpers.statistics.missing_mean`` (:pull:`360`)
 
 0.4.2 (2026-09-07)
 ------------------
