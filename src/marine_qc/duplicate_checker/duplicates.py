@@ -54,7 +54,7 @@ general_comparison: dict[str, Callable[..., Any]] = {
 }
 
 
-class DupDetect:
+class DupDetect:  # pylint: disable=too-many-instance-attributes
     """
     Class to detect, flag, and remove duplicate entries in a DataFrame using a comparison matrix from splink.
 

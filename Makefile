@@ -78,7 +78,7 @@ lint: install-lint ## check style
 
 typing: install-typing  ## check typing with pylint and ty
 	python -m pylint -j=0 --rcfile=.pylintrc.toml --disable=import-error --exit-zero src/marine_qc
-	python -m ty check --ignore=unresolved-import src/marine_qc
+	python -m ty check --ignore=import-not-found src/marine_qc
 
 test: install-test ## run tests quickly with the default Python
 	python -m pytest --numprocesses=auto
