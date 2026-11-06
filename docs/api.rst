@@ -48,7 +48,6 @@ For developers
    api/api_dec
    api/api_astro
    api/api_ext
-   api/api_hum
    api/api_loc
    api/api_sph
    api/api_stat
