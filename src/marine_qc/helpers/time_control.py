@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 import calendar
-import math
 import warnings
 from collections.abc import Callable, Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -15,6 +14,7 @@ import xarray as xr
 from .auxiliary import (
     DECORATOR_KWARGS,
     SequenceDatetimeType,
+    SequenceIntType,
     ensure_arrays,
     generic_decorator,
     inspect_arrays,
@@ -27,21 +27,13 @@ from .auxiliary import (
 __all__ = [
     "convert_date",
     "convert_date_to_hours",
-    "convert_time_in_hours",
     "day_in_year",
-    "day_in_year_array",
     "get_month_lengths",
-    "jul_day",
-    "leap_year",
-    "leap_year_correction",
     "pentad_to_month_day",
-    "relative_year_number",
     "split_date",
     "time_difference",
-    "time_in_whole_days",
     "valid_month_day",
     "which_pentad",
-    "which_pentad_array",
 ]
 
 
@@ -173,157 +165,8 @@ def pentad_to_month_day(p: int) -> tuple[int, int]:
     """
     if not (0 < p < 74):
         raise ValueError(f"Invalid p: {p}. Must be between 1 and 73")
-    m = [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2,
-        2,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        8,
-        8,
-        8,
-        8,
-        8,
-        8,
-        9,
-        9,
-        9,
-        9,
-        9,
-        9,
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        12,
-        12,
-        12,
-        12,
-        12,
-        12,
-    ]
-    d = [
-        1,
-        6,
-        11,
-        16,
-        21,
-        26,
-        31,
-        5,
-        10,
-        15,
-        20,
-        25,
-        2,
-        7,
-        12,
-        17,
-        22,
-        27,
-        1,
-        6,
-        11,
-        16,
-        21,
-        26,
-        1,
-        6,
-        11,
-        16,
-        21,
-        26,
-        31,
-        5,
-        10,
-        15,
-        20,
-        25,
-        30,
-        5,
-        10,
-        15,
-        20,
-        25,
-        30,
-        4,
-        9,
-        14,
-        19,
-        24,
-        29,
-        3,
-        8,
-        13,
-        18,
-        23,
-        28,
-        3,
-        8,
-        13,
-        18,
-        23,
-        28,
-        2,
-        7,
-        12,
-        17,
-        22,
-        27,
-        2,
-        7,
-        12,
-        17,
-        22,
-        27,
-    ]
-    return m[p - 1], d[p - 1]
+    start = date(2001, 1, 1) + timedelta(days=int((p - 1) * 5))
+    return start.month, start.day
 
 
 def valid_month_day(year: int | None = None, month: int = 1, day: int = 1) -> bool:
@@ -350,284 +193,93 @@ def valid_month_day(year: int | None = None, month: int = 1, day: int = 1) -> bo
     -----
     Assumes that February 29th is a valid date.
     """
-    if year is None:
-        year = 2004
-
-    if month < 1 or month > 12:
+    try:
+        date(2004 if year is None else year, month, day)
+    except ValueError:
         return False
-    month_lengths = get_month_lengths(year)
-    if day < 1 or day > month_lengths[month - 1]:
-        return False
-
     return True
 
 
-def which_pentad_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
+@post_format_return_type("month", dtype=int)
+def day_in_year(year: SequenceIntType = None, month: SequenceIntType = 1, day: SequenceIntType = 1) -> SequenceIntType:
     """
-    Take month and day arrays as inputs and return array of pentads in range 1-73.
+    Get the day in year from 1 to 365 or 366 (leap).
 
     Parameters
     ----------
-    month : numpy.ndarray
-        Month containing the day for which we want to calculate the pentad.
-    day : numpy.ndarray
-        Day for the day for which we want to calculate the pentad.
+    year : :py:obj:`~marine_qc.SequenceDatetimeType`, optional, default: None
+        Year to be tested.
+        If None, set year to default leap year (2004).
+    month : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
+        Month to be tested.
+    day : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
+        Day to be tested.
 
     Returns
     -------
-    numpy.ndarray
-        Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
+    :py:obj:`~marine_qc.SequenceDatetimeType`
+        Day in year. If year is not specified then the year is treated as a leap year.
     """
-    pentad = ((day_in_year_array(month=month, day=day) - 1) / 5).astype(int)
-    return pentad + 1
+
+    def _day_in_year(year: int, month: int, day: int) -> int:
+        """
+        Get the day in year from 1 to 365 or 366 (leap).
+
+        Parameters
+        ----------
+        year : int
+          Year to be tested.
+        month : int
+            Month to be tested.
+        day : int
+            Day to be tested.
+
+        Returns
+        -------
+        int
+            Day in year.
+        """
+        _date = date(int(year), int(month), int(day))
+        return _date.timetuple().tm_yday
+
+    _day_in_year_vectorized = np.vectorize(_day_in_year, otypes=[int])
+
+    month_arr = np.atleast_1d(month)
+    day_arr = np.atleast_1d(day)
+    if year is None:
+        year_arr = np.full(month_arr.shape, np.nan)
+    else:
+        year_arr = np.atleast_1d(year)
+
+    if len(year_arr) == 1 and len(month_arr) > 1:
+        year_arr = np.full(month_arr.shape, year_arr)
+
+    year_valid = isvalid(year_arr)
+    year_arr[~year_valid] = 2004
+
+    return _day_in_year_vectorized(year_arr, month_arr, day_arr)
 
 
-def day_in_year_array(month: np.ndarray, day: np.ndarray) -> np.ndarray:
-    """
-    Get the day in year from 1 to 365. Leap years are dealt with by allowing Feb 29 and Mar 1 to be the same day.
-
-    Parameters
-    ----------
-    month : 1D numpy.ndarray
-        Array of months.
-    day : 1D numpy.ndarray
-        Array of days.
-
-    Returns
-    -------
-    numpy.ndarray
-        Array of day number from 1-365.
-    """
-    cumulative_month_lengths = np.array([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334])
-    day_number: np.ndarray = cumulative_month_lengths[month - 1] + day
-    return day_number
-
-
-def which_pentad(month: int, day: int) -> int:
+def which_pentad(year: SequenceIntType = None, month: SequenceIntType = 1, day: SequenceIntType = 1):
     """
     Take month and day as inputs and return pentad in range 1-73.
 
     Parameters
     ----------
-    month : int
-        Month containing the day for which we want to calculate the pentad.
-    day : int
-        Day for the day for which we want to calculate the pentad.
-
-    Returns
-    -------
-    int
-        Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
-
-    Raises
-    ------
-    ValueError
-        If month not in range 1-12 or day not in range 1-31.
-
-    Notes
-    -----
-    The calculation is rather simple. It just loops through the year and adds up days till it reaches
-    the day we are interested in. February 29th is treated as though it were March 1st in a regular year.
-    """
-    if not valid_month_day(month=month, day=day):
-        raise ValueError(f"Invalid month {month} - day {day} combination.")
-
-    pentad = int((day_in_year(month=month, day=day) - 1) / 5)
-    pentad = pentad + 1
-
-    assert 1 <= pentad <= 73  # noqa: S101
-
-    return pentad
-
-
-def day_in_year(year: int | None = None, month: int = 1, day: int = 1) -> int:
-    """
-    Get the day in year from 1 to 365 or 366.
-
-    Parameters
-    ----------
-    year : int, optional, default: None
+    year : :py:obj:`~marine_qc.SequenceDatetimeType`, optional, default: None
         Year to be tested.
-        If none, set year to default leap year.
-    month : int, default: 1
+        If None, set year to default leap year (2004).
+    month : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
         Month to be tested.
-    day : int, default: 1
+    day : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
         Day to be tested.
 
     Returns
     -------
-    int
-        Day in year. If year is not specified then the year is treated as a non-leap year and
-        29 February returns the same value as 1 March.
+    :py:obj:`~marine_qc.SequenceDatetimeType`
+        Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
     """
-    year_not_specified = False
-    if year is None:
-        year = 2004
-        year_not_specified = True
-
-    if not valid_month_day(year=year, month=month, day=day):
-        raise ValueError(f"Invalid year {year} - month {month} - day {day} combination.")
-
-    if year_not_specified:
-        year = 2003
-
-    month_lengths = get_month_lengths(year)
-
-    if month == 1:
-        day_index = day
-    elif year_not_specified and month == 2 and day == 29:
-        day_index = day_in_year(month=3, day=1)
-    else:
-        day_index = int(np.sum(month_lengths[0 : month - 1])) + day
-
-    assert (not year_not_specified and (1 <= day_index <= 366)) or (  # noqa: S101
-        year_not_specified and (1 <= day_index <= 365)
-    )
-
-    return day_index
-
-
-def relative_year_number(year: int, reference: int = 1979) -> int:
-    """
-    Get number of year relative to reference year (1979 by default).
-
-    Parameters
-    ----------
-    year : int
-        Year.
-    reference : int, default: 1979
-        Reference year.
-
-    Returns
-    -------
-    int
-        Number of year relative to reference year.
-    """
-    return year - (reference + 1)
-
-
-def convert_time_in_hours(hour: int, minute: int, sec: int, zone: int | float, daylight_savings_time: float) -> float:
-    """
-    Convert integer hour, minute, and second to time in decimal hours.
-
-    Parameters
-    ----------
-    hour : int
-        Hour.
-    minute : int
-        Minute.
-    sec : int
-        Second.
-    zone : int or float
-        Correction for timezone.
-    daylight_savings_time : float
-        Set to 1 if daylight savings time is in effect else set to 0.
-
-    Returns
-    -------
-    float
-        Time converted to decimal hour in day.
-    """
-    return hour + (minute + sec / 60.0) / 60.0 + zone - daylight_savings_time
-
-
-def leap_year(years_since_1980: int) -> int:
-    """
-    Check if input year is a Leap year.
-
-    Parameters
-    ----------
-    years_since_1980 : int
-        Number of years since 1980.
-
-    Returns
-    -------
-    int
-        1 if it is a leap year, 0 otherwise.
-    """
-    return int(math.floor(years_since_1980 / 4.0))
-
-
-def time_in_whole_days(time_in_hours: int | float, day: int, years_since_1980: int, leap: int) -> float:
-    """
-    Calculate from time in hours to time in whole days.
-
-    Parameters
-    ----------
-    time_in_hours : int
-        Time in hours.
-    day : int
-        Day number.
-    years_since_1980 : int
-        Number of years since 1980.
-    leap : int
-        Set to 1 for a leap year, else set to 0.
-
-    Returns
-    -------
-    float
-        Time in whole days.
-    """
-    return years_since_1980 * 365 + leap + day - 1.0 + time_in_hours / 24.0
-
-
-def leap_year_correction(time_in_hours: float, day: int, years_since_1980: int) -> float:
-    """
-    Make leap year correction.
-
-    Parameters
-    ----------
-    time_in_hours : float
-        Time in hours.
-    day : int
-        Day number.
-    years_since_1980 : int
-        Years since 1980.
-
-    Returns
-    -------
-    float
-        Leap year corrected time.
-    """
-    leap: int = leap_year(years_since_1980)
-    time: float = time_in_whole_days(time_in_hours, day, years_since_1980, leap)
-    if years_since_1980 == leap * 4:
-        time = time - 1.0
-    if years_since_1980 < 0 and years_since_1980 != leap * 4:
-        time = time - 1.0
-    return time
-
-
-def jul_day(year: int, month: int, day: int) -> int:
-    """
-    Routine to calculate julian day. This is the weird Astronomical thing which counts from 1 Jan 4713 BC.
-
-    Parameters
-    ----------
-    year : int
-        Year.
-    month : int
-        Month.
-    day : int
-        Day.
-
-    Returns
-    -------
-    int
-        Julian day.
-
-    Notes
-    -----
-    This is one of those routines that looks baffling but works. No one is sure exactly how. It gets
-    written once and then remains untouched for centuries, mysteriously working.
-    """
-    if not valid_month_day(month=month, day=day):
-        raise ValueError(f"Invalid month {month} - day {day} combination.")
-
-    a = (14 - month) // 12
-    y = year + 4800 - a
-    m = month + 12 * a - 3
-    return day + ((153 * m + 2) // 5) + 365 * y + y // 4 - y // 100 + y // 400 - 32045
+    return (day_in_year(year, month, day) - 1) // 5 + 1
 
 
 def get_month_lengths(year: int) -> list[int]:
@@ -644,12 +296,7 @@ def get_month_lengths(year: int) -> list[int]:
     list of int
         List of month lengths.
     """
-    if calendar.isleap(year):
-        month_lengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    else:
-        month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-    return month_lengths
+    return [calendar.monthrange(year, month)[1] for month in range(1, 13)]
 
 
 def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
@@ -666,12 +313,11 @@ def convert_date_to_hours(dates: Sequence[datetime]) -> Sequence[float]:
     array-like of float, shape (n,)
         1- dimensional array containing hours since the first element in the array.
     """
-    hours_elapsed: list[float] = []
+    if not dates:
+        return []
+
     start = dates[0]
-    for date in dates:
-        duration_in_seconds = (date - start).total_seconds()
-        hours_elapsed.append(duration_in_seconds / 3600.0)
-    return hours_elapsed
+    return [(dt - start).total_seconds() / 3600 for dt in dates]
 
 
 def get_utc_time(
@@ -743,7 +389,7 @@ def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) 
     times1_arr = pd.to_datetime(times1_arr, errors="coerce").values
     times2_arr = pd.to_datetime(times2_arr, errors="coerce").values
 
-    valid: np.ndarray = np.atleast_1d(isvalid(times1_arr)) & np.atleast_1d(isvalid(times2_arr))
+    valid: np.ndarray = isvalid(times1_arr) & isvalid(times2_arr)
 
     result: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
     result[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta64(1, "h")

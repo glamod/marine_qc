@@ -33,10 +33,8 @@ from .auxiliary import (
 from .time_control import (
     convert_date,
     day_in_year,
-    day_in_year_array,
     get_month_lengths,
     which_pentad,
-    which_pentad_array,
 )
 
 
@@ -709,9 +707,9 @@ class Climatology:
         if ntime == 1:
             return t_index
         if ntime == 73:
-            return which_pentad_array(month, day) - 1
+            return which_pentad(year=2001, month=month, day=day) - 1
         if ntime == 365:
-            return day_in_year_array(month=month, day=day) - 1
+            return day_in_year(year=2001, month=month, day=day) - 1
         return t_index - 1
 
     @post_format_return_type("lat", dtype=float)
@@ -817,8 +815,8 @@ class Climatology:
         if self.ntime == 1:
             return 0
         if self.ntime == 73:
-            return which_pentad(month, day) - 1
-        return day_in_year(month=month, day=day) - 1
+            return which_pentad(year=2001, month=month, day=day) - 1
+        return day_in_year(year=2001, month=month, day=day) - 1
 
 
 @inspect_climatology("climatology")
