@@ -275,7 +275,7 @@ def open_xrdataset(
     chunks: int | dict[str, Any] | Literal["auto", "default"] | None = "default",
     coords: Literal["all", "minimal", "different"] | None = "minimal",
     compat: Literal["identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"] = "override",
-    combine: Literal["by_coords", "nested"] | None = "by_coords",
+    combine: Literal["by_coords", "nested"] = "by_coords",
     **kwargs: Any,
 ) -> xr.Dataset:
     r"""
@@ -311,7 +311,7 @@ def open_xrdataset(
     compat : {"identical", "equals", "broadcast_equals", "no_conflicts", "override", "minimal"},
       default: "override"
       See the documentation for :py:func:`xarray.open_mfdataset`.
-    combine : {"by_coords", "nested"}, optional, default: "by_coords"
+    combine : {"by_coords", "nested"}, default: "by_coords"
       See the documentation for :py:func:`xarray.open_mfdataset`.
     \**kwargs : dict
       Additional keyword arguments passed to :py:func:`xarray.open_mfdataset`.
@@ -547,11 +547,11 @@ class Climatology:
         works with non-regular grids.
         """
         lat = np.array(lat, dtype=float)
-        lat_arr = np.atleast_1d(lat)  # type: np.ndarray
+        lat_arr = np.atleast_1d(lat)
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
         lon = np.array(lon, dtype=float)
-        lon_arr = np.atleast_1d(lon)  # type: np.ndarray
+        lon_arr = np.atleast_1d(lon)
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
         if month is None and day is None:
@@ -562,14 +562,14 @@ class Climatology:
             day = self.data[self.time_axis].dt.day.values
 
         month = np.array(month, dtype=object)
-        month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.atleast_1d(month)
         month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         if len(month_arr) == 1 and len(month_arr) != len(lat_arr):
             month_arr = np.repeat(month_arr, len(lat_arr))
 
         day = np.array(day, dtype=object)
-        day_arr = np.atleast_1d(day)  # type: np.ndarray
+        day_arr = np.atleast_1d(day)
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
         if len(day_arr) == 1 and len(day_arr) != len(lat_arr):
@@ -586,7 +586,7 @@ class Climatology:
         valid &= (lon_arr >= -180) & (lon_arr <= 180)
         valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
-        result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
+        result = np.full(lat_arr.shape, np.nan, dtype=float)
 
         lat_axis = self.data.coords[self.lat_axis].data
         lon_axis = self.data.coords[self.lon_axis].data
@@ -708,9 +708,9 @@ class Climatology:
 
         if ntime == 1:
             return t_index
-        elif ntime == 73:
+        if ntime == 73:
             return which_pentad_array(month, day) - 1
-        elif ntime == 365:
+        if ntime == 365:
             return day_in_year_array(month=month, day=day) - 1
         return t_index - 1
 
@@ -750,20 +750,20 @@ class Climatology:
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
         lat = np.array(lat, dtype=float)
-        lat_arr = np.atleast_1d(lat)  # type: np.ndarray
+        lat_arr = np.atleast_1d(lat)
         lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
 
         lon = np.array(lon, dtype=float)
-        lon_arr = np.atleast_1d(lon)  # type: np.ndarray
+        lon_arr = np.atleast_1d(lon)
         lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
 
         month = np.array(month, dtype=object)
-        month_arr = np.atleast_1d(month)  # type: np.ndarray
+        month_arr = np.atleast_1d(month)
         month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
 
         day = np.array(day, dtype=object)
-        day_arr = np.atleast_1d(day)  # type: np.ndarray
+        day_arr = np.atleast_1d(day)
         day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
@@ -776,7 +776,7 @@ class Climatology:
         valid &= (lon_arr >= -180) & (lon_arr <= 180)
         valid &= (lat_arr >= -90) & (lat_arr <= 90)
 
-        result = np.full(lat_arr.shape, np.nan, dtype=float)  # type: np.ndarray
+        result = np.full(lat_arr.shape, np.nan, dtype=float)
 
         valid_idx = np.where(valid)[0]
         if len(valid_idx) == 0:

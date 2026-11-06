@@ -4,6 +4,8 @@ Plot QC outcomes.
 Some plotting routines for QC outcomes
 """
 
+from typing import Any
+
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -131,7 +133,7 @@ def _make_plot(
     mask_failed = flags == 1
     mask_other = (flags != 0) & (flags != 1)
 
-    subplots_kwargs = {
+    subplots_kwargs: dict[str, Any] = {
         "figsize": (16, 9),
         "sharex": True,
         "sharey": True,
@@ -343,8 +345,3 @@ def plot_latitude_longitude(
         filename=filename,
         add_coastlines=add_coastlines,
     )
-
-
-plot_latitude_longitude.__module__ = "marine_qc.visualization"
-plot_latitude_variable.__module__ = "marine_qc.visualization"
-plot_variable_longitude.__module__ = "marine_qc.visualization"

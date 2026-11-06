@@ -355,9 +355,10 @@ def test_group_matches_one_pair():
 
     order_map = {"A": 0, "B": 1}
 
-    result = group_matches(df.copy(), order_map)
+    groups, pairs = group_matches(df.copy(), order_map)
 
-    assert result == [["A", "B"]]
+    assert groups == [["A", "B"]]
+    assert pairs == [("A", "B"), ("A", "B")]
 
 
 def test_group_matches_two_pairs():
@@ -370,9 +371,10 @@ def test_group_matches_two_pairs():
 
     order_map = {"A": 0, "B": 1, "C": 2, "D": 3}
 
-    result = group_matches(df, order_map)
+    groups, pairs = group_matches(df, order_map)
 
-    assert result == [["A", "B"], ["C", "D"]]
+    assert groups == [["A", "B"], ["C", "D"]]
+    assert pairs == [("A", "B"), ("C", "D")]
 
 
 def test_group_matches_chain_direct():
@@ -385,9 +387,10 @@ def test_group_matches_chain_direct():
 
     order_map = {"A": 0, "B": 1, "C": 2}
 
-    result = group_matches(df, order_map)
+    groups, pairs = group_matches(df, order_map)
 
-    assert result == [["A", "B", "C"]]
+    assert groups == [["A", "B", "C"]]
+    assert pairs == [("A", "B"), ("B", "C")]
 
 
 def test_group_matches_chain_indirect():
@@ -400,15 +403,17 @@ def test_group_matches_chain_indirect():
 
     order_map = {"A": 0, "B": 1, "C": 2}
 
-    result = group_matches(df, order_map)
+    groups, pairs = group_matches(df, order_map)
 
-    assert result == [["A", "B", "C"]]
+    assert groups == [["A", "B", "C"]]
+    assert pairs == [("A", "B"), ("B", "C")]
 
 
 def test_group_matches_empty():
     df = pd.DataFrame(columns=["unique_id_l", "unique_id_r"])
-    result = group_matches(df, {})
-    assert result == []
+    groups, pairs = group_matches(df, {})
+    assert groups == []
+    assert pairs == []
 
 
 def test_group_matches_groupby_sorting():
@@ -421,9 +426,10 @@ def test_group_matches_groupby_sorting():
 
     order_map = {"A": 0, "B": 1, "C": 2}
 
-    result = group_matches(df.copy(), order_map)
+    groups, pairs = group_matches(df.copy(), order_map)
 
-    assert result[0][0] == "A"
+    assert groups == [["A", "B", "C"]]
+    assert pairs == [("A", "B"), ("A", "C")]
 
 
 def test_duplicate_check_basic():

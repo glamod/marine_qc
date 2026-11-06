@@ -5,7 +5,6 @@ Module containing QC functions for track checking which could be applied on a Da
 """
 
 from __future__ import annotations
-from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -119,19 +118,14 @@ def do_spike_check(
     * delta_t: float = 2.0
     * n_neighbours: int = 5
     """
-    value, lat, lon, date = ensure_arrays(value=value, lat=lat, lon=lon, date=date)
-
-    value = cast(np.ndarray, value)
-    lat = cast(np.ndarray, lat)
-    lon = cast(np.ndarray, lon)
-    date = cast(np.ndarray, date)
+    value, lat, lon, date = ensure_arrays(value=value, lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     gradient_violations = []
     count_gradient_violations = []
 
     number_of_obs = len(value)
 
-    spike_qc = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    spike_qc = np.asarray([passed] * number_of_obs)
 
     for t1 in range(number_of_obs):
         violations_for_this_report = []
@@ -253,7 +247,7 @@ def do_track_check(
     * max_absolute_speed =  40.0
     * max_midpoint_discrepancy = 150.0
     """
-    vsi, dsi, lat, lon, date = ensure_arrays(vsi=vsi, dsi=dsi, lat=lat, lon=lon, date=date)
+    vsi, dsi, lat, lon, date = ensure_arrays(vsi=vsi, dsi=dsi, lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(lat)
 
@@ -377,7 +371,7 @@ def do_few_check(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    (value,) = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(value)
 
@@ -457,7 +451,7 @@ def find_saturated_runs(
     * min_time_threshold =  48.0
     * shortest_run = 4
     """
-    at, dpt, lat, lon, date = ensure_arrays(at=at, dpt=dpt, lat=lat, lon=lon, date=date)
+    at, dpt, lat, lon, date = ensure_arrays(at=at, dpt=dpt, lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     saturated = at == dpt
 
@@ -530,14 +524,14 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    (value,) = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(value)
 
     if number_of_obs == 0:
         return [passed] * number_of_obs
 
-    rounded = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    rounded = np.asarray([passed] * number_of_obs)
 
     valid_indices = isvalid(value)
     allcount = np.count_nonzero(valid_indices)
@@ -599,14 +593,14 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
     if not (0.0 <= threshold <= 1.0):
         raise ValueError(f"Invalid threshold: {threshold}. Must be between 0.0 and 1.0.")
 
-    (value,) = ensure_arrays(value=value)
+    (value,) = ensure_arrays(value=value)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(value)
 
     if number_of_obs == 0:
         return [passed] * number_of_obs
 
-    rep = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    rep = np.asarray([passed] * number_of_obs)
 
     valid_indices = isvalid(value)
 
@@ -692,7 +686,7 @@ def do_iquam_track_check(
     * delta_t = 0.01
     * n_neighbours = 5
     """
-    lat, lon, date = ensure_arrays(lat=lat, lon=lon, date=date)
+    lat, lon, date = ensure_arrays(lat=lat, lon=lon, date=date)  # pylint: disable=unbalanced-tuple-unpacking
 
     number_of_obs = len(lat)
 
@@ -702,7 +696,7 @@ def do_iquam_track_check(
     speed_violations = []
     count_speed_violations = []
 
-    iquam_track = np.asarray([passed] * number_of_obs)  # type: np.ndarray
+    iquam_track = np.asarray([passed] * number_of_obs)
 
     for t1 in range(0, number_of_obs):
         violations_for_this_report = []
@@ -742,12 +736,3 @@ def do_iquam_track_check(
         count_speed_violations[most_fails] = 0.0
 
     return iquam_track
-
-
-do_few_check.__module__ = "marine_qc.qc_sequential_reports"
-do_iquam_track_check.__module__ = "marine_qc.qc_sequential_reports"
-do_spike_check.__module__ = "marine_qc.qc_sequential_reports"
-do_track_check.__module__ = "marine_qc.qc_sequential_reports"
-find_multiple_rounded_values.__module__ = "marine_qc.qc_sequential_reports"
-find_repeated_values.__module__ = "marine_qc.qc_sequential_reports"
-find_saturated_runs.__module__ = "marine_qc.qc_sequential_reports"

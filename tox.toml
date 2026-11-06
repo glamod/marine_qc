@@ -1,19 +1,32 @@
 envlist = [
   "lint",
   {product = [{prefix = "py3.", start = 11, stop = 14}]},
-  "docs"
+  "docs",
+  "doctests",
+  "lint",
+  "notebooks"
 ]
 skip_missing_interpreters = true
 
 [env.docs]
 description = "Build the documentation with makefile under {basepython}"
 labels = ["docs"]
+allowlist_externals = ["make"]
 dependency_groups = ["docs"]
 commands = [
   ["make", "build-docs"]
 ]
 commands_post = []
+
+[env.doctests]
+description = "Run doctests with pytest under {basepython}"
+labels = ["doctests"]
 allowlist_externals = ["make"]
+dependency_groups = ["test"]
+deps = ["pytest <9.1.0"] # FIXME: Removals in pytest>=9.1 break doctest configurations
+commands = [
+  ["make", "test-doctests"]
+]
 
 [env.extras]
 description = "Run tests with extras under {basepython}"
@@ -23,12 +36,33 @@ extras = ["extras"]
 description = "Run code quality compliance tests under {basepython}"
 labels = ["lint"]
 skip_install = true
+allowlist_externals = ["make"]
 dependency_groups = ["lint"]
 commands = [
   ["make", "lint"]
 ]
 commands_post = []
+
+[env.notebooks]
+labels = ["notebooks"]
+description = "Run notebooks with pytest under {basepython}"
 allowlist_externals = ["make"]
+dependency_groups = ["test-notebooks"]
+commands = [
+  ["make", "test-notebooks"]
+]
+commands_post = []
+
+[env.typing]
+description = "Run static type and code analysis checks under {basepython}"
+labels = ["typing"]
+skip_install = true
+allowlist_externals = ["make"]
+dependency_groups = ["lint"]
+commands = [
+  ["make", "typing"]
+]
+commands_post = []
 
 [env_run_base]
 description = "Run tests with pytest under {basepython}"

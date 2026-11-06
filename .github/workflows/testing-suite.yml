@@ -46,18 +46,33 @@ jobs:
           path: |
             .tox
           key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-lint
+      - name: Run typing checks
+        run: |
+          python -m tox -e typing
       - name: Run linting suite
         run: |
           python -m tox -e lint
 
   test-pypi:
-    name: Test with Python${{ matrix.python-version }}
+    name: Test with Python${{ matrix.python-version }} (${{ matrix.tox-env  }})
     runs-on: ${{ matrix.os }}
     environment: testing
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.11", "3.12", "3.13", "3.14" ] # "3.10" disabled due to project's Python requirement
+        python-version: [ "3.11", "3.12", "3.13", "3.14" ]
+        markers: [ "-m not slow" ]
+        include:
+          # Linux doctests
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
+            tox-env: 'doctests'
+            markers: '' # No markers for doctests
+          # Linux notebooks
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
+            tox-env: 'notebooks'
+            markers: '' # No markers for notebooks
     env:
       # UV_ENV_FILE: pyproject.toml ; disabled since UV_ENV_FILE requires a .env and in addition it is not needed so far
       PYTHON_VERSION: ${{ matrix.python-version }}
@@ -77,6 +92,7 @@ jobs:
             objects.githubusercontent.com:443
             pypi.org:443
             release-assets.githubusercontent.com:443
+            naturalearth.s3.amazonaws.com:443
 
 
       - name: Checkout Repository
@@ -101,29 +117,22 @@ jobs:
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}-${{ hashFiles('pyproject.toml') }}
             uv-${{ runner.os }}-${{runner.arch}}-py${{matrix.python-version}}
 
-      - name: Install marine QC toolbox
+      - name: Run tests with tox
+        if: ${{  matrix.tox-env == '' || matrix.tox-env == null }}
         run: |
-          uv sync --group dev
-
-      - name: Version info
+          uv run python -m tox -- ${{ matrix.markers }}
+        env:
+          TOX_GH_MAJOR_MINOR: ${{ matrix.python-version  }}
+      - name: Run specialized tests with tox
+        if: ${{ matrix.tox-env != '' && matrix.tox-env != null }}
         run: |
-          uv pip list
-
-      - name: Import marine QC toolbox
-        run: |
-          uv run python -c "import marine_qc"
-
-      - name: Run tests
-        timeout-minutes: 10
-        run: uv run pytest tests
-          --cov=marine_qc
-          --cov-report=lcov
-          --junitxml=test-results/${{ runner.os }}-${{ matrix.python-version }}.xml
+          uv run python -m tox -e ${{ matrix.tox-env }} -- ${{ matrix.markers }}
 
       - name: Report Coverage
+        if: ${{ matrix.tox-env != 'notebooks' && matrix.tox-env != 'doctests' }}
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
-          flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}-pypi
+          flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.tox-env }}
           parallel: true
 
   finish:

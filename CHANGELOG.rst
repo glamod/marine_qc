@@ -6,9 +6,29 @@ Changelog
 ------------------
 Contributors to this version: Ludwig Lierhammer (:user:`ludwiglierhammer`)
 
+Announcements
+^^^^^^^^^^^^^
+marine_qc functions and objects have been fully overhaules for ty typing compliance (:pull:`342`)
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* The Makefile now defines typing-relevant checks  based on pylint an ty (``make typing``; dependent on make ``install-typing``) that are enforced in GitHub Workflows. (:pull:`342`).
+* The Makefile now defines doctests validation checks based on "pytest --doctest-modules"(``make test-doctests``; dependent on make ``install-test``) that are enforced in GitHub Workflows. (:pull:`342`).
+* The Makefile now defines Jupyter notebooks validation checks based on "pytest --nbval" (``make test-notebook``; dependent on make ``install-notebooks``) that are enforced in GitHub Workflows. (:pull:`342`).
+
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The minimum versions of splink is set to 5.0.0 (:issue:`316`, :pull:`347`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* All stages in GitHub Action testing-suite.yml are built using tox (:pull:`342`)
+* internal function ``duplicate_checker.duplicates.group_matches`` now returns a tuple (:pull:`342`):
+
+  * groups (A list of groups, where each group is a list of identifiers that are transitively connected through the matches
+  * pairs (Corresponding pairs to pairs)
+
+* internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
 
 0.4.2 (2026-09-07)
 ------------------

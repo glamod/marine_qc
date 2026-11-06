@@ -104,11 +104,13 @@ def angular_distance(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(  # pylint: disable=unbalanced-tuple-unpacking
+        lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
+    )
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
-    result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
+    result = np.full(lat1.shape, np.nan, dtype=float)
 
     result[valid] = _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / earths_radius
     return result
@@ -154,11 +156,11 @@ def sphere_distance(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
 
-    result = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
+    result = np.full(lat1.shape, np.nan, dtype=float)
 
     result[valid] = _geod_inv(lon1[valid], lat1[valid], lon2[valid], lat2[valid])[2] / 1000.0
     return result
@@ -206,14 +208,14 @@ def intermediate_point(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
     valid = isvalid(lon1) & isvalid(lat1) & isvalid(lon2) & isvalid(lat2)
     valid &= f <= 1.0
     valid &= f >= 0.0
 
-    lon_f = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
-    lat_f = np.full(lat1.shape, np.nan, dtype=float)  # np.ndarray
+    lon_f = np.full(lat1.shape, np.nan, dtype=float)
+    lat_f = np.full(lat1.shape, np.nan, dtype=float)
 
     fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
     distance_at_f = dist * f
@@ -255,7 +257,7 @@ def course_between_points(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
     fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
@@ -300,7 +302,7 @@ def lat_lon_from_course_and_distance(
     TypeError
         If `inspect_arrays` does not return numpy ndarrays.
     """
-    lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)
+    lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)  # pylint: disable=unbalanced-tuple-unpacking
 
     lat_rad: np.ndarray = np.asarray(convert_to(lat1, "deg", "rad"), dtype=float)
     lon_rad: np.ndarray = np.asarray(convert_to(lon1, "deg", "rad"), dtype=float)

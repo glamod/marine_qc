@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import logging
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -47,7 +48,7 @@ absolute_difference: dict[str, dict[str, Any]] = {
     "dsi": {"difference_threshold": 0.9},
     "date": {"threshold": 60, "input_is_string": False, "metric": "second"},
 }
-general_comparison: dict[str, cl.ComparisonLevel] = {
+general_comparison: dict[str, Callable[..., Any]] = {
     "col_name": cll.NullLevel,
     "nan_name": cll.ElseLevel,
 }
@@ -59,6 +60,8 @@ class DupDetect:
 
     Parameters
     ----------
+    pairs : list of tuple of Any and Any
+        Index pairs of potentially duplicated observations.
     groups : list of list of Any
         Groups of index pairs of potentially duplicated observations.
     settings : dict
@@ -69,6 +72,7 @@ class DupDetect:
 
     def __init__(
         self,
+        pairs: list[tuple[Any, Any]],
         groups: list[list[Any]],
         settings: dict[str, Any],
         data: pd.DataFrame,
@@ -78,6 +82,8 @@ class DupDetect:
 
         Parameters
         ----------
+        pairs : list of tuple of Any and Any
+            Index pairs of potentially duplicated observations.
         groups : list of list of Any
             Groups of index pairs of potentially duplicated observations.
         settings : dict
@@ -85,9 +91,11 @@ class DupDetect:
         data : pandas.DataFrame
             Original dataset.
         """
+        self.pairs = pairs
         self.groups = groups
         self.settings = settings
         self.data = data.copy()
+        self.keep = 0
 
     def get_duplicates(
         self,
@@ -121,7 +129,7 @@ class DupDetect:
         elif keep == "last":
             keep = -1
 
-        self.keep = keep
+        self.keep = keep  # type: ignore[assignment]
 
         if overwrite is True:
             dups = {}
@@ -141,8 +149,8 @@ class DupDetect:
 
                 best_duplicates.append(best)
 
-            self._best_duplicates = best_duplicates
-            self._worst_duplicates = worst_duplicates
+            self._best_duplicates = best_duplicates  # pylint: disable=attribute-defined-outside-init
+            self._worst_duplicates = worst_duplicates  # pylint: disable=attribute-defined-outside-init
 
             duplicates = []
             for idx in self.data.index:
@@ -153,7 +161,7 @@ class DupDetect:
 
             duplicates = pd.Series(duplicates, index=self.data.index, dtype=object, name="duplicates")
 
-            self.duplicates = duplicates
+            self.duplicates = duplicates  # pylint: disable=attribute-defined-outside-init
         return self.duplicates
 
     def flag_duplicates(
@@ -412,7 +420,7 @@ def make_comparison(
     ignore_entries: dict[str, Any],
     ignore_nan_both: list[str],
     ignore_nan_either: list[str],
-) -> cl.CustomComparison:
+) -> cl.CustomComparison | None:
     """
     Build a ``cl.CustomComparison`` for *column*.
 
@@ -440,9 +448,6 @@ def make_comparison(
     """
     clevel = None
     cll_args: dict[str, Any] = {"col_name": column}
-
-    if compare_level_libraries == {}:
-        compare_level_libraries = dict()
 
     clevel = (
         getattr(cll, compare_level_libraries.get(column, ""), None)
@@ -495,7 +500,7 @@ def make_comparison(
     return cl.CustomComparison(output_column_name=column, comparison_levels=comparison_levels)
 
 
-def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list[Any]]:
+def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> tuple[list[list[Any]], list[tuple[Any, Any]]]:
     """
     Re-order and group matched entity pairs according to a supplied ordering.
 
@@ -516,12 +521,14 @@ def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list
 
     Returns
     -------
-    list[list[Any]]
+    groups: list[list[Any]]
         A list of groups, where each group is a list of identifiers that are
-        transitively connected through the matches.  For example, if the input
-        contains pairs ``(A, B)`` and ``(B, C)``, the result will contain a
-        single group ``[A, B, C]``.  Unconnected pairs appear as separate
+        transitively connected through the matches. For example, if the input
+        contains pairs `(A, B)` and `(B, C)`, the result will contain a
+        single group `[A, B, C]`. Unconnected pairs appear as separate
         two-element groups.
+    pairs: list[tuple[Any, Any]]
+        Corresponding pairs to `groups`.
     """
     matches = matches.copy()
     swap = matches["unique_id_l"].map(order_map) > matches["unique_id_r"].map(order_map)
@@ -547,7 +554,7 @@ def group_matches(matches: pd.DataFrame, order_map: dict[Any, Any]) -> list[list
 
         if not placed:
             groups.append([a, b])
-    return groups
+    return groups, pairs
 
 
 def duplicate_check(
@@ -559,7 +566,7 @@ def duplicate_check(
     dsi: SequenceNumberType | None = None,
     data: pd.DataFrame | None = None,
     ignore_columns: str | list[str] | None = None,
-    ignore_entries: dict[str, Any] | None = None,
+    ignore_entries: dict[str, list[Any]] | None = None,
     ignore_nan_both: str | list[str] | bool = True,
     ignore_nan_either: str | list[str] | bool | None = None,
     offsets: dict[str, Any] | None = None,
@@ -616,16 +623,15 @@ def duplicate_check(
     ignore_entries : dict, optional
         Ignore specific values for selected columns during comparison.
 
-        This is useful when placeholder or invalid values should not prevent
-        duplicate matches.
+        This is useful when placeholder or invalid values should not prevent duplicate matches.
 
-        Keys correspond to column names and values correspond to entries
-        to ignore.
+        Keys correspond to column names and values correspond to entries to ignore.
+        Values have to be lists.
 
         Ignore missing station IDs::
 
             ignore_entries = {
-                "station_id": "UNKNOWN",
+                "station_id": ["UNKNOWN"],
             }
 
         Ignore multiple values::
@@ -699,30 +705,26 @@ def duplicate_check(
 
     In this example, we focus on only two input variables:
 
-    .. code-block:: python
-
-        df = pd.DataFrame(
-            {
-                "station_id": ["A", "A", "B", "A", None],
-                "lon": [29.7, -29.7, 29.7, np.nan, 29.7],
-            }
-        )
-        print(df)
-
-    .. code-block:: text
-
-          station_id   lon
-        0          A  29.7
-        1          A -29.7
-        2          B  29.7
-        3          A   NaN
-        4       None  29.7
+    >>> df = pd.DataFrame(
+    ...     {
+    ...         "station_id": ["A", "A", "A", "A", "A"],
+    ...         "lon": [29.7, -29.7, 29.7, np.nan, 29.7],
+    ...         "lat": [32.6, 32.6, -32.6, 32.6, None],
+    ...     }
+    ... )
+    >>> df
+      station_id   lon   lat
+    0          A  29.7  32.6
+    1          A -29.7  32.6
+    2          A  29.7 -32.6
+    3          A   NaN  32.6
+    4          A  29.7   NaN
 
     This produces the following duplicate pairs:
 
-    .. code-block:: python
-
-        detected = duplicate_check(data=df, ignore_nan_either=True)
+    >>> detected = duplicate_check(data=df, ignore_nan_either=True)
+    >>> detected.pairs
+    [(0, 3), (0, 4), (1, 3), (2, 4), (3, 4)]
 
     * (0,3): (["A", 29.7  ], ["A" , np.nan])
     * (0,4): (["A", 29.7  ], [None, 29.7])
@@ -739,15 +741,19 @@ def duplicate_check(
 
     Since (3,4) is also considered a duplicate pair, all entries are connected, resulting in:
 
-    .. code-block:: python
-
-        print(detected.groups)
-        >>> [[0, 3, 4, 1, 2]]
+    >>> detected.groups
+    [[0, 3, 4, 1, 2]]
 
     Examples
     --------
     Basic usage:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> dup = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -756,9 +762,12 @@ def duplicate_check(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
+    >>> dup.pairs
+    [(0, 2), (1, 3)]
 
     Using additional observations:
 
+    >>> temperature = [25.3, 25.3, 25.3, 26.3, 25.3]
     >>> dup = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -767,8 +776,14 @@ def duplicate_check(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ...     temperature=temperature,
-    ...     salinity=salinity,
+    ...     compare_level_libraries={"temperature": "AbsoluteDifferenceLevel"},
+    ...     offsets={"temperature": 0.5},
     ... )
+    >>> dup.pairs
+    [(0, 2)]
+
+    For more information about the Compare Level Libraries see the SPLINK documentation:
+    https://moj-analytical-services.github.io/splink/api_docs/comparison_level_library.html
 
     Ignoring placeholder station IDs:
 
@@ -779,8 +794,10 @@ def duplicate_check(
     ...     date=date,
     ...     vsi=vsi,
     ...     dsi=dsi,
-    ...     ignore_entries={"station_id": "UNKNOWN"},
+    ...     ignore_entries={"station_id": ["UNKNOWN"]},
     ... )
+    >>> dup.pairs
+    [(0, 2), (0, 4), (1, 3), (2, 4)]
 
     Increasing spatial tolerances:
 
@@ -791,13 +808,14 @@ def duplicate_check(
     ...     date=date,
     ...     vsi=vsi,
     ...     dsi=dsi,
-    ...     offsets={
-    ...         "lat": 1.0,
-    ...         "lon": 1.0,
-    ...     },
+    ...     offsets={"lat": 0.1},
     ... )
+    >>> dup.pairs
+    []
     """
     if data is None:
+        if station_id is None or lat is None or lon is None or date is None or vsi is None or dsi is None:
+            raise ValueError("Parameters 'station_id', 'lat', 'lon', 'date', 'vsi' and 'dsi' must be provided if 'data' is None.")
         data = build_dataframe(station_id, lat, lon, date, vsi, dsi, kwargs)
 
     data_orig = data.copy()
@@ -861,9 +879,9 @@ def duplicate_check(
 
     order_map = {uid: i for i, uid in enumerate(data.index)}
 
-    groups = group_matches(matches, order_map)
+    groups, pairs = group_matches(matches, order_map)
 
-    return DupDetect(groups, settings, data_orig)
+    return DupDetect(pairs, groups, settings, data_orig)
 
 
 @post_format_return_type("station_id", "lat", "lon", "date", "vsi", "dsi", "data", "detected", multiple=True, dtype=None, keep_index=True)
@@ -971,6 +989,12 @@ def remove_duplicates(
     --------
     Remove duplicates directly from raw observations:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> results = remove_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -979,8 +1003,27 @@ def remove_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
+    >>> results[0]
+    ['S1', 'S1', 'UNKNOWN']
+    >>> results[1]
+    [51.0, 51.0, 51.0]
+    >>> results[2]
+    [0.1, 0.3, 0.1]
+    >>> results[3]
+    [Timestamp('2023-01-01 00:00:00'), Timestamp('2023-01-01 03:00:00'), Timestamp('2023-01-01 00:00:00')]
+    >>> results[4]
+    [10.0, 8.0, 10.0]
+    >>> results[5]
+    [90, 90, 90]
 
-    Use a precomputed duplicate detection result:
+    Use a precomputed duplicate detection result which always returns a tuple of pandas Series:
+
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -989,7 +1032,37 @@ def remove_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
-    ... results = remove_duplicates(detected=detected)
+    >>> results = remove_duplicates(detected=detected)
+    >>> results[0]
+    0         S1
+    1         S1
+    4    UNKNOWN
+    Name: station_id, dtype: str
+    >>> results[1]
+    0    51.0
+    1    51.0
+    4    51.0
+    Name: lat, dtype: float64
+    >>> results[2]
+    0    0.1
+    1    0.3
+    4    0.1
+    Name: lon, dtype: float64
+    >>> results[3]
+    0   2023-01-01 00:00:00
+    1   2023-01-01 03:00:00
+    4   2023-01-01 00:00:00
+    Name: date, dtype: datetime64[us]
+    >>> results[4]
+    0    10.0
+    1     8.0
+    4    10.0
+    Name: vsi, dtype: float64
+    >>> results[5]
+    0    90
+    1    90
+    4    90
+    Name: dsi, dtype: int64
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi, data)):
         raise ValueError(
@@ -1104,6 +1177,12 @@ def flag_duplicates(
     --------
     Flag duplicates directly from raw observations:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> flags = flag_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1112,8 +1191,17 @@ def flag_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
+    >>> flags
+    [1, 1, 3, 3, 0]
 
-    Use a precomputed duplicate detection result:
+    Use a precomputed duplicate detection result which always returns a pandas Series:
+
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1122,7 +1210,14 @@ def flag_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
-    ... flags = flag_duplicates(detected=detected)
+    >>> flags = flag_duplicates(detected=detected)
+    >>> flags
+    0    1
+    1    1
+    2    3
+    3    3
+    4    0
+    Name: duplicate_flags, dtype: int64
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi, data)):
         raise ValueError(
@@ -1230,6 +1325,12 @@ def get_duplicates(
     --------
     Get duplicates directly from raw observations:
 
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> duplicates = get_duplicates(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1238,8 +1339,17 @@ def get_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
+    >>> duplicates
+    [2, 3, 0, 1, nan]
 
-    Use a precomputed duplicate detection result:
+    Use a precomputed duplicate detection result which always returns a pandas Series:
+
+    >>> station_id = ["S1", "S1", "S1", "S1", "UNKNOWN"]
+    >>> lat = [51.0, 51.0, 51.1, 51.1, 51.0]
+    >>> lon = [0.1, 0.3, 0.2, 0.3, 0.1]
+    >>> date = pd.to_datetime(["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 00:00"])
+    >>> vsi = [10.0, 8.0, 10.0, 8.0, 10.0]
+    >>> dsi = [90, 90, 90, 90, 90]
     >>> detected = duplicate_check(
     ...     station_id=station_id,
     ...     lat=lat,
@@ -1248,7 +1358,14 @@ def get_duplicates(
     ...     vsi=vsi,
     ...     dsi=dsi,
     ... )
-    ... duplicates = get_duplicates(detected=detected)
+    >>> duplicates = get_duplicates(detected=detected)
+    >>> duplicates
+    0      2
+    1      3
+    2      0
+    3      1
+    4    NaN
+    Name: duplicates, dtype: object
     """
     if all(x is None for x in (detected, station_id, lat, lon, date, vsi, dsi, data)):
         raise ValueError(
@@ -1260,9 +1377,3 @@ def get_duplicates(
         detected = duplicate_check(station_id, lat, lon, date, vsi, dsi, data, **kwargs)
 
     return detected.get_duplicates(keep=keep)
-
-
-duplicate_check.__module__ = "marine_qc.duplicates"
-flag_duplicates.__module__ = "marine_qc.duplicates"
-get_duplicates.__module__ = "marine_qc.duplicates"
-remove_duplicates.__module__ = "marine_qc.duplicates"
