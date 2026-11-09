@@ -32,6 +32,7 @@ Internal changes
 * internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
 * new internal function ``time_control.get_utc_time`` to calculate UTC time (:pull:`357`)
 * internal module ``astronimical_geometry`` now uses astropy (:pull:`357`)
+* remove internal module ``helpers.calculate_humidity`` (:pull:`359`)
 
 0.4.2 (2026-09-07)
 ------------------
