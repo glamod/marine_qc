@@ -5,7 +5,7 @@ import calendar
 import warnings
 from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
-from typing import Any
+from typing import Any, overload
 
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ import xarray as xr
 from .auxiliary import (
     DECORATOR_KWARGS,
     SequenceDatetimeType,
-    SequenceIntType,
+    SequenceFloatType,
     ensure_arrays,
     generic_decorator,
     inspect_arrays,
@@ -200,24 +200,28 @@ def valid_month_day(year: int | None = None, month: int = 1, day: int = 1) -> bo
     return True
 
 
+@overload
+def day_in_year(year: int | np.ndarray | None, month: int, day: int | np.ndarray) -> int: ...  # numpydoc ignore=GL08
+@overload
+def day_in_year(year: int | np.ndarray | None, month: np.ndarray, day: int | np.ndarray) -> np.ndarray: ...  # numpydoc ignore=GL08
 @post_format_return_type("month", dtype=int)
-def day_in_year(year: SequenceIntType = None, month: SequenceIntType = 1, day: SequenceIntType = 1) -> SequenceIntType:
+def day_in_year(year: int | np.ndarray | None = None, month: int | np.ndarray = 1, day: int | np.ndarray = 1) -> int | np.ndarray:
     """
     Get the day in year from 1 to 365 or 366 (leap).
 
     Parameters
     ----------
-    year : :py:obj:`~marine_qc.SequenceDatetimeType`, optional, default: None
+    year : :py:obj:`~marine_qc.ValueIntType`, optional, default: None
         Year to be tested.
         If None, set year to default leap year (2004).
-    month : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
+    month : :py:obj:`~marine_qc.ValueIntType`, default: 1
         Month to be tested.
-    day : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
+    day : :py:obj:`~marine_qc.ValueIntType`, default: 1
         Day to be tested.
 
     Returns
     -------
-    :py:obj:`~marine_qc.SequenceDatetimeType`
+    :py:obj:`~marine_qc.ValueIntType`
         Day in year. If year is not specified then the year is treated as a leap year.
     """
 
@@ -244,8 +248,8 @@ def day_in_year(year: SequenceIntType = None, month: SequenceIntType = 1, day: S
 
     _day_in_year_vectorized = np.vectorize(_day_in_year, otypes=[int])
 
-    month_arr = np.atleast_1d(month)
-    day_arr = np.atleast_1d(day)
+    month_arr: np.ndarray = np.atleast_1d(month)
+    day_arr: np.ndarray = np.atleast_1d(day)
     if year is None:
         year_arr = np.full(month_arr.shape, np.nan)
     else:
@@ -254,29 +258,33 @@ def day_in_year(year: SequenceIntType = None, month: SequenceIntType = 1, day: S
     if len(year_arr) == 1 and len(month_arr) > 1:
         year_arr = np.full(month_arr.shape, year_arr)
 
-    year_valid = isvalid(year_arr)
-    year_arr[~year_valid] = 2004
+    year_invalid = np.logical_not(isvalid(year_arr))
+    year_arr[year_invalid] = 2004
 
-    return _day_in_year_vectorized(year_arr, month_arr, day_arr)
+    return _day_in_year_vectorized(year_arr, month_arr, day_arr)  # type: ignore[no-any-return]
 
 
-def which_pentad(year: SequenceIntType = None, month: SequenceIntType = 1, day: SequenceIntType = 1):
+@overload
+def which_pentad(year: int | np.ndarray | None, month: int, day: int | np.ndarray) -> int: ...  # numpydoc ignore=GL08
+@overload
+def which_pentad(year: int | np.ndarray | None, month: np.ndarray, day: int | np.ndarray) -> np.ndarray: ...  # numpydoc ignore=GL08
+def which_pentad(year: int | np.ndarray | None = None, month: int | np.ndarray = 1, day: int | np.ndarray = 1) -> int | np.ndarray:
     """
     Take month and day as inputs and return pentad in range 1-73.
 
     Parameters
     ----------
-    year : :py:obj:`~marine_qc.SequenceDatetimeType`, optional, default: None
+    year : :py:obj:`~marine_qc.ValueIntType`, optional, default: None
         Year to be tested.
         If None, set year to default leap year (2004).
-    month : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
+    month : :py:obj:`~marine_qc.ValueIntType`, default: 1
         Month to be tested.
-    day : :py:obj:`~marine_qc.SequenceDatetimeType`, default: 1
+    day : :py:obj:`~marine_qc.ValueIntType`, default: 1
         Day to be tested.
 
     Returns
     -------
-    :py:obj:`~marine_qc.SequenceDatetimeType`
+    :py:obj:`~marine_qc.ValueIntType`
         Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
     """
     return (day_in_year(year, month, day) - 1) // 5 + 1
@@ -362,7 +370,7 @@ def get_utc_time(
 
 @post_format_return_type("times1", "times2", dtype=float)
 @inspect_arrays("times1", "times2")
-def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) -> np.ndarray:
+def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) -> SequenceFloatType:
     """
     Convert two arrays of datetimes to the difference in hours.
 
@@ -375,7 +383,7 @@ def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) 
 
     Returns
     -------
-    array-like of float, shape (n,)
+    :py:obj:`~marine_qc.SequenceFloatType`
         1-dimensional array containing the time difference in hours
         computed as ``times2 - times1``.
 
@@ -389,7 +397,7 @@ def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) 
     times1_arr = pd.to_datetime(times1_arr, errors="coerce").values
     times2_arr = pd.to_datetime(times2_arr, errors="coerce").values
 
-    valid: np.ndarray = isvalid(times1_arr) & isvalid(times2_arr)
+    valid = isvalid(times1_arr) & isvalid(times2_arr)
 
     result: np.ndarray = np.full(times1_arr.shape, np.nan, dtype=float)
     result[valid] = (times2_arr[valid] - times1_arr[valid]) / np.timedelta64(1, "h")
