@@ -175,7 +175,7 @@ def valid_month_day(year: int | None = None, month: int = 1, day: int = 1) -> bo
 
     Parameters
     ----------
-    year : int, optional, default: None
+    year : int, optional
         Year to be tested.
         If none, set year to default leap year.
     month : int, default: 1
@@ -211,17 +211,17 @@ def day_in_year(year: int | np.ndarray | None = None, month: int | np.ndarray = 
 
     Parameters
     ----------
-    year : :py:obj:`~marine_qc.ValueIntType`, optional, default: None
+    year : int or np.ndarray, optional
         Year to be tested.
         If None, set year to default leap year (2004).
-    month : :py:obj:`~marine_qc.ValueIntType`, default: 1
+    month : int or np.ndarray, default: 1
         Month to be tested.
-    day : :py:obj:`~marine_qc.ValueIntType`, default: 1
+    day : int or np.ndarray, default: 1
         Day to be tested.
 
     Returns
     -------
-    :py:obj:`~marine_qc.ValueIntType`
+    int or np.ndarray
         Day in year. If year is not specified then the year is treated as a leap year.
     """
 
@@ -274,17 +274,17 @@ def which_pentad(year: int | np.ndarray | None = None, month: int | np.ndarray =
 
     Parameters
     ----------
-    year : :py:obj:`~marine_qc.ValueIntType`, optional, default: None
+    year : int or np.ndarray, optional
         Year to be tested.
         If None, set year to default leap year (2004).
-    month : :py:obj:`~marine_qc.ValueIntType`, default: 1
+    month : int or np.ndarray, default: 1
         Month to be tested.
-    day : :py:obj:`~marine_qc.ValueIntType`, default: 1
+    day : int or np.ndarray, default: 1
         Day to be tested.
 
     Returns
     -------
-    :py:obj:`~marine_qc.ValueIntType`
+    int or np.ndarray
         Pentad (5-day period) containing input day, from 1 (1 Jan-5 Jan) to 73 (27-31 Dec).
     """
     return (day_in_year(year, month, day) - 1) // 5 + 1
