@@ -673,9 +673,9 @@ tox==4.67.7 \
     # via
     #   -r requirements_ci.in
     #   tox-gh
-tox-gh==1.9.1 \
-    --hash=sha256:3b1a473dc0ea45ed9ab4d180b3d7f9c748c3efec3e375a0575b2980429975d63 \
-    --hash=sha256:f40f9be08c9fab28cae3ea9c9f4a0ae13d3e8ab31d52050f66abd69f72f4a83f
+tox-gh==1.9.2 \
+    --hash=sha256:3006f4f7c1bd36ee1579b9d8f842daec036d14a418f74baffc56043fab086798 \
+    --hash=sha256:a1fb61fd7d1f6413bc0259e65d8d5c51609f81b3eee8a4a780158b81fe9f6751
     # via -r requirements_ci.in
 truststore==0.10.4 \
     --hash=sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301 \
