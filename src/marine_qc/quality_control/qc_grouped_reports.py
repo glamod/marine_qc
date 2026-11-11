@@ -33,9 +33,7 @@ from ..helpers.external_clim import (
 )
 from ..helpers.location_control import (
     mds_lat_to_yindex,
-    mds_lat_to_yindex_fast,
     mds_lon_to_xindex,
-    mds_lon_to_xindex_fast,
 )
 from ..helpers.statistics import p_gross
 from ..helpers.time_control import (
@@ -165,8 +163,8 @@ class SuperObsGrid:
         if not np.any(valid):
             return
 
-        y_index: np.ndarray = mds_lat_to_yindex_fast(lat_arr[valid], res=1)
-        x_index: np.ndarray = mds_lon_to_xindex_fast(lon_arr[valid], res=1)
+        y_index: np.ndarray = mds_lat_to_yindex(lat_arr[valid], res=1)
+        x_index: np.ndarray = mds_lon_to_xindex(lon_arr[valid], res=1)
         t_index: np.ndarray = Climatology.get_t_index(month_arr[valid], day_arr[valid], 73)
 
         unique_index: np.ndarray = t_index * 1000000 + y_index * 1000 + x_index
