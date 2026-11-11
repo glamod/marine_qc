@@ -56,9 +56,6 @@ DECORATOR_NAMES: dict[Callable[..., Any], str] = {}
 DECORATOR_KWARGS: dict[Callable[..., Any], set[str]] = {}
 IS_POST_HANDLER: dict[Callable[..., Any], bool] = {}
 
-# --- CONSTANTS ---
-earths_radius = 6371008.8  # m
-
 
 def is_scalar_like(x: Any) -> bool:
     """

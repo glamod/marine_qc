@@ -13,11 +13,8 @@ from pyproj import Geod
 from .auxiliary import (
     SequenceFloatType,
     SequenceNumberType,
-    convert_to,
-    earths_radius,
     ensure_arrays,
     inspect_arrays,
-    is_scalar_like,
     isvalid,
     post_format_return_type,
 )
@@ -31,7 +28,7 @@ _all__ = [
     "sphere_distance",
 ]
 
-radians_per_degree = np.pi / 180.0
+earths_radius = 6371008.8  # IUGG mean Earth radius (m)
 geod = Geod(a=earths_radius, b=earths_radius)
 
 
@@ -66,6 +63,41 @@ def _geod_inv(
     """
     fwd_az, back_az, dist = geod.inv(lon1, lat1, lon2, lat2)
     return fwd_az, back_az, dist
+
+
+def _geod_fwd(
+    lon1: SequenceNumberType,
+    lat1: SequenceNumberType,
+    fwd_az: SequenceNumberType,
+    dist: SequenceNumberType,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute destination longitude, latitude, and back azimuth using an ellipsoidal model.
+
+    Parameters
+    ----------
+    lon1 : :py:obj:`~marine_qc.SequenceNumberType`
+        Longitude of the starting point in degrees.
+    lat1 : :py:obj:`~marine_qc.SequenceNumberType`
+        Latitude of the starting point in degrees.
+    fwd_az : :py:obj:`~marine_qc.SequenceNumberType`
+        Forward azimuth (true course) in degrees.
+    dist : :py:obj:`~marine_qc.SequenceNumberType`
+        Distance travelled in meters.
+
+    Returns
+    -------
+    tuple of (numpy.ndarray, numpy.ndarray, numpy.ndarray)
+        A tuple containing:
+        - Destination longitude(s) in degrees.
+        - Destination latitude(s) in degrees.
+        - Back azimuth(s) in degrees.
+
+        The outputs have the same shape as the broadcasted inputs.
+    """
+    lon2, lat2, back_az = geod.fwd(lon1, lat1, fwd_az, dist)
+
+    return lon2, lat2, back_az
 
 
 @post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
@@ -128,7 +160,7 @@ def sphere_distance(
     Calculate the great circle angular distance between two points on a sphere.
 
     Input latitudes and longitudes should be in degrees.
-    Output distance is returned in radians.
+    Output distance is returned in kilometers.
 
     The great circle distance is the shortest distance between any two points on the Earths surface.
     The calculation is done by first calculating the angular distance between the points and then
@@ -217,10 +249,10 @@ def intermediate_point(
     lon_f = np.full(lat1.shape, np.nan, dtype=float)
     lat_f = np.full(lat1.shape, np.nan, dtype=float)
 
-    fwd_az, _, dist = geod.inv(lon1, lat1, lon2, lat2)
+    fwd_az, _, dist = _geod_inv(lon1, lat1, lon2, lat2)
     distance_at_f = dist * f
 
-    lon_f[valid], lat_f[valid], _ = geod.fwd(lon1[valid], lat1[valid], fwd_az[valid], distance_at_f[valid])
+    lon_f[valid], lat_f[valid], _ = _geod_fwd(lon1[valid], lat1[valid], fwd_az[valid], distance_at_f[valid])
     return lat_f, lon_f
 
 
@@ -259,7 +291,7 @@ def course_between_points(
     """
     lat1, lon1, lat2, lon2 = ensure_arrays(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)  # pylint: disable=unbalanced-tuple-unpacking
 
-    fwd_azimuth, _, _ = geod.inv(lon1, lat1, lon2, lat2)
+    fwd_azimuth, _, _ = _geod_inv(lon1, lat1, lon2, lat2)
     return fwd_azimuth
 
 
@@ -304,23 +336,5 @@ def lat_lon_from_course_and_distance(
     """
     lat1, lon1 = ensure_arrays(lat1=lat1, lon1=lon1)  # pylint: disable=unbalanced-tuple-unpacking
 
-    lat_rad: np.ndarray = np.asarray(convert_to(lat1, "deg", "rad"), dtype=float)
-    lon_rad: np.ndarray = np.asarray(convert_to(lon1, "deg", "rad"), dtype=float)
-
-    tc_converted = convert_to(tc, "deg", "rad")
-    if tc_converted is None:
-        tc_converted = [np.nan]
-    elif is_scalar_like(tc_converted):
-        tc_converted = [tc_converted]
-    tc_rad: np.ndarray = np.array(tc_converted, dtype=float)
-
-    d_rad = d / earths_radius * 1000
-
-    lat_trig = np.arcsin(np.sin(lat_rad) * np.cos(d_rad) + np.cos(lat_rad) * np.sin(d_rad) * np.cos(tc_rad))
-    dlon = np.arctan2(np.sin(tc_rad) * np.sin(d_rad) * np.cos(lat_rad), np.cos(d_rad) - np.sin(lat_rad) * np.sin(lat_trig))
-    lon_trig = np.mod(lon_rad + dlon + np.pi, 2.0 * np.pi) - np.pi
-
-    lat_deg: np.ndarray = np.array(convert_to(lat_trig, "rad", "deg"), dtype=float)
-    lon_deg: np.ndarray = np.array(convert_to(lon_trig, "rad", "deg"), dtype=float)
-
-    return lat_deg, lon_deg
+    lon2, lat2, _ = _geod_fwd(lon1, lat1, tc, d * 1000)
+    return lat2, lon2
