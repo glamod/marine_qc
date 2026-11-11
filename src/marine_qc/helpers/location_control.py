@@ -7,6 +7,7 @@ import numpy as np
 
 from .auxiliary import is_scalar_like
 
+
 __all__ = [
     "mds_lat_to_yindex",
     "mds_lon_to_xindex",
