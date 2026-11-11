@@ -32,7 +32,7 @@ Internal changes
 * internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
 * new internal function ``time_control.get_utc_time`` to calculate UTC time (:pull:`357`)
 * internal module ``astronimical_geometry`` now uses astropy (:pull:`357`)
-* remove internal functions (:pull:`360`, :pull:`363`)
+* remove internal functions (:pull:`360`, :pull:`363`, :pull:`369`)
 
   * ``helpers.statistics.winsorised_mean``
   * ``helpers.statistics.missing_mean``
@@ -44,8 +44,19 @@ Internal changes
   * ``helpers.time_control.relative_year_number``
   * ``helpers.time_control.time_in_whole_days``
   * ``helpers.time_control.which_pentad_array``
+  * ``helpers.location_control.fill_missing_vals``
+  * ``helpers.location_control.filler``
+  * ``helpers.location_control.get_four_surrounding_points``
+  * ``helpers.location_control.lat_to_yindex``
+  * ``helpers.location_control.lon_to_xindex``
+  * ``helpers.location_control.mds_lat_to_yindex_fast``
+  * ``helpers.location_control.mds_lon_to_yindex_fast``
+  * ``helpers.location_control.xindex_to_lon``
+  * ``helpers.location_control.yindex_to_lat``
 
 * make internal function ``helpers.time_control.which_pentad`` and ``helpers.time_control.day_in_year`` work with both float and np.ndarray inputs (:pull:`363`)
+* make internal function ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.location_control.mds_lon_to_yindex`` work with both float and np.ndarray inputs (:pull:`369`)
+* replace ``helpers.location_control.mds_lat_to_yindex_fast`` with ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.location_control.mds_lon_to_yindex_fast`` with ``helpers.location_control.mds_lon_to_yindex`` in all internal functions (:pull:`369`)
 
 0.4.2 (2026-09-07)
 ------------------
