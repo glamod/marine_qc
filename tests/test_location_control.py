@@ -5,35 +5,11 @@ import numpy as np
 import pytest
 
 from marine_qc.helpers.location_control import (
-    lat_to_yindex,
-    lon_to_xindex,
     mds_lat_to_yindex,
     mds_lat_to_yindex_fast,
     mds_lon_to_xindex,
     mds_lon_to_xindex_fast,
-    xindex_to_lon,
-    yindex_to_lat,
 )
-
-
-@pytest.mark.parametrize(
-    "yindex, resolution, expected",
-    [
-        (0, 1, 89.5),
-        (179, 1, -89.5),
-        (35, 5, -87.5),
-        (0, 5, 87.5),
-    ],
-)
-def test_0_is_89point5(yindex, resolution, expected):
-    assert yindex_to_lat(yindex, res=resolution) == expected
-
-
-def test_yindex_to_lat_raises():
-    with pytest.raises(ValueError):
-        yindex_to_lat(-1, 1)
-    with pytest.raises(ValueError):
-        yindex_to_lat(180, 1)
 
 
 @pytest.mark.parametrize(
@@ -136,96 +112,3 @@ def test_lons_fast():
     result = mds_lon_to_xindex_fast(lons, res=1)
     expected = np.array([0, 0, 1, 359, 359, 358, 178, 179, 181])
     assert np.all(result == expected)
-
-
-@pytest.mark.parametrize(
-    "lon, res, expected",
-    [
-        (-180, 1, 0),
-        (180, 1, 0),
-        (-180.5, 1, 359),
-        (-181.5, 1, 358),
-        (-74.0, 1, 106),
-        (-179.5, 1, 0),
-        (180.5, 1, 0),
-        (359.5, 1, 179),
-        (179.5, 5, 71),
-        (179.9, 0.25, 1439),
-        (-179.9 + 0.25, 0.25, 1),
-        (720.0, 1, 180),
-        (720.0, 5, 36),
-        (-360.0, 1, 180),
-        (-360.0, 5, 36),
-    ],
-)
-def test_lon_to_xindex(lon, res, expected):
-    assert lon_to_xindex(lon, res=res) == expected
-
-
-def test_lons_ge_180():
-    """Test to make sure wrapping works"""
-    res = 1
-    assert 180 == lon_to_xindex(360.0, res=res)
-    assert 5 == lon_to_xindex(185.1, res=res)
-    for i in range(0, 520):
-        assert math.fmod(i, 360) == lon_to_xindex(-179.5 + float(i), res=res)
-    # And at different resolutions
-    for i in range(0, 520):
-        assert math.fmod(int(i / 5), 72) == lon_to_xindex(-179.5 + float(i), res=5.0)
-
-
-@pytest.mark.parametrize(
-    "lat, res, expected",
-    [
-        (99.2, 5, 0),
-        (-99.2, 5, 35),
-        (99.2, 1, 0),
-        (37.0, 1, 53),
-        (35.0, 5, 11),
-        (-199.3, 1, 179),
-        (87.52, 0.25, 9),
-        (-2.5, 5, 18),
-        (89.9, 0.25, 0),
-        (89.9, 0.5, 0),
-        (89.9, 1.0, 0),
-        (89.9, 2.0, 0),
-        (89.9, 5.0, 0),
-        (-89.9, 0.25, 719),
-        (-89.9, 0.5, 359),
-        (-89.9, 1.0, 179),
-        (-89.9, 2.0, 89),
-        (-89.9, 5.0, 35),
-    ],
-)
-def test_lat_to_yindex(lat, res, expected):
-    assert lat_to_yindex(lat, res=res) == expected
-
-
-def test_borderline():
-    for i in range(0, 180):
-        assert i == lat_to_yindex(90 - i, res=1)
-
-
-def test_gridcentres():
-    for i in range(0, 180):
-        assert i == lat_to_yindex(90 - i - 0.5, res=1)
-
-
-@pytest.mark.parametrize(
-    "xindex, res, lon",
-    [
-        (0, 1, -179.5),
-        (359, 1, 179.5),
-        (179, 1, -0.5),
-        (180, 1, 0.5),
-    ],
-)
-def test_xindex_to_lon(xindex, res, lon):
-    assert xindex_to_lon(xindex, res) == lon
-
-
-def test_xindex_to_lon_raises():
-    with pytest.raises(ValueError):
-        xindex_to_lon(-1, 1)
-    with pytest.raises(ValueError):
-        xindex_to_lon(360, 1)
