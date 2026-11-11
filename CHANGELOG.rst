@@ -57,6 +57,7 @@ Internal changes
 * make internal function ``helpers.time_control.which_pentad`` and ``helpers.time_control.day_in_year`` work with both float and np.ndarray inputs (:pull:`363`)
 * make internal function ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.location_control.mds_lon_to_yindex`` work with both float and np.ndarray inputs (:pull:`369`)
 * replace ``helpers.location_control.mds_lat_to_yindex_fast`` with ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.location_control.mds_lon_to_yindex_fast`` with ``helpers.location_control.mds_lon_to_yindex`` in all internal functions (:pull:`369`)
+* use pyproj within all function in module ``helpers.spherical_geometry`` (:pull:`370`)
 
 0.4.2 (2026-09-07)
 ------------------
