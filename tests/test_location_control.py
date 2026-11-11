@@ -5,8 +5,6 @@ import numpy as np
 import pytest
 
 from marine_qc.helpers.location_control import (
-    fill_missing_vals,
-    get_four_surrounding_points,
     lat_to_yindex,
     lon_to_xindex,
     mds_lat_to_yindex,
@@ -231,50 +229,3 @@ def test_xindex_to_lon_raises():
         xindex_to_lon(-1, 1)
     with pytest.raises(ValueError):
         xindex_to_lon(360, 1)
-
-
-@pytest.mark.parametrize(
-    "q11, q12, q21, q22, expected",
-    [
-        (None, None, None, None, (None, None, None, None)),
-        (1.0, 2.0, 3.0, None, (1.0, 2.0, 3.0, 2.5)),
-        (None, 2.0, 3.0, None, (2.5, 2.0, 3.0, 2.5)),
-        (None, None, 3.0, None, (3.0, 3.0, 3.0, 3.0)),
-    ],
-)
-def test_fill_missing_values(q11, q12, q21, q22, expected):
-    assert fill_missing_vals(q11, q12, q21, q22) == expected
-
-
-@pytest.mark.parametrize(
-    "lat, lon, max90, expected",
-    [
-        (0.4, 322.2 - 360, True, (-38.5, -37.5, -0.5, 0.5)),
-        (89.9, 0.1, True, (-0.5, 0.5, 89.5, 89.5)),
-        (89.9, 0.1, False, (-0.5, 0.5, 89.5, 90.5)),
-        (0.1, 0.1, True, (-0.5, 0.5, -0.5, 0.5)),
-        (0.1, 0.1, None, (-0.5, 0.5, -0.5, 0.5)),
-        (0.0, 0.0, True, (-0.5, 0.5, -0.5, 0.5)),
-        (0.0, 0.0, None, (-0.5, 0.5, -0.5, 0.5)),
-        (0.0, 179.9, True, (179.5, 180.5, -0.5, 0.5)),
-        (0.0, 179.9, None, (179.5, 180.5, -0.5, 0.5)),
-        (0.0, -179.9, True, (-180.5, -179.5, -0.5, 0.5)),
-        (0.0, -179.9, None, (-180.5, -179.5, -0.5, 0.5)),
-        (-89.9, 0.1, True, (-0.5, 0.5, -89.5, -89.5)),
-        (-89.9, 0.1, False, (-0.5, 0.5, -90.5, -89.5)),
-        (-89.9, 0.1, None, (-0.5, 0.5, -90.5, -89.5)),
-    ],
-)
-def test_get_four_surrounding_points(lat, lon, max90, expected):
-    assert get_four_surrounding_points(lat, lon, res=1.0, max90=max90) == expected
-
-
-def test_get_four_surrounding_points_raises():
-    with pytest.raises(ValueError):
-        get_four_surrounding_points(-95.0, 0.0, 1)
-    with pytest.raises(ValueError):
-        get_four_surrounding_points(0.0, -200.0, 1)
-    with pytest.raises(ValueError):
-        get_four_surrounding_points(95.0, 0.0, 1)
-    with pytest.raises(ValueError):
-        get_four_surrounding_points(0.0, 200.0, 1)

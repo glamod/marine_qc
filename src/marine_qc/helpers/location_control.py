@@ -9,9 +9,7 @@ from .statistics import missing_mean
 
 
 __all__ = [
-    "fill_missing_vals",
     "filler",
-    "get_four_surrounding_points",
     "lat_to_yindex",
     "lon_to_xindex",
     "mds_lat_to_yindex",
@@ -325,99 +323,3 @@ def filler(
     if not isvalid(value_to_fill):
         value_to_fill = opposite
     return value_to_fill
-
-
-def fill_missing_vals(
-    q11: float | None,
-    q12: float | None,
-    q21: float | None,
-    q22: float | None,
-) -> tuple[float | None, float | None, float | None, float | None]:
-    """
-    Fill missing values.
-
-    For a group of four neighbouring grid boxes which form a square, with values q11, q12, q21, q22,
-    fill gaps using means of neighbours.
-
-    Parameters
-    ----------
-    q11 : float
-        Value of first gridbox.
-    q12 : float
-        Value of second gridbox.
-    q21 : float
-        Value of third gridbox.
-    q22 : float
-        Value of fourth gridbox.
-
-    Returns
-    -------
-    tuple of float
-        A tuple of four floats representing neighbour means.
-    """
-    outq11 = q11
-    outq12 = q12
-    outq21 = q21
-    outq22 = q22
-
-    outq11 = filler(outq11, q12, q21, q22)
-    outq22 = filler(outq22, q12, q21, q11)
-    outq12 = filler(outq12, q11, q22, q21)
-    outq21 = filler(outq21, q11, q22, q12)
-
-    return outq11, outq12, outq21, outq22
-
-
-def get_four_surrounding_points(lat: float, lon: float, res: int, max90: bool = True) -> tuple[float, float, float, float]:
-    """
-    Get the four surrounding points of a specified latitude and longitude point.
-
-    Parameters
-    ----------
-    lat : float
-        Latitude of point.
-    lon : float
-        Longitude of point.
-    res : int
-        Resolution of the grid in degrees.
-    max90 : bool, default: True
-        If True then cap latitude at 90.0, otherwise don't cap latitude.
-
-    Returns
-    -------
-    tuple of floats
-        A tuple of floats representing the longitudes of the leftmost and rightmost pairs of points,
-        and the latitudes of the topmost and bottommost pairs of points.
-    """
-    if not (-90.0 <= lat <= 90.0):
-        raise ValueError(f"Invalid latitude: {lat}. Must be between -90 and 90.")
-    if not (-180.0 <= lon <= 180.0):
-        raise ValueError(f"Invalid longitude: {lon}. Must be between -180 and 180.")
-
-    x2_index = lon_to_xindex(lon + 0.5, res=res)
-    x2 = xindex_to_lon(x2_index, res=res)
-    if x2 < lon:
-        x2 += 360.0
-
-    x1_index = lon_to_xindex(lon - 0.5, res=res)
-    x1 = xindex_to_lon(x1_index, res=res)
-    if x1 > lon:
-        x1 -= 360.0
-
-    if lat + 0.5 <= 90:
-        y2_index = lat_to_yindex(lat + 0.5, res=res)
-        y2 = yindex_to_lat(y2_index, res=res)
-    else:
-        y2 = 89.5
-        if not max90:
-            y2 = 90.5
-
-    if lat - 0.5 >= -90:
-        y1_index = lat_to_yindex(lat - 0.5, res=res)
-        y1 = yindex_to_lat(y1_index, res=res)
-    else:
-        y1 = -89.5
-        if not max90:
-            y1 = -90.5
-
-    return x1, x2, y1, y2
