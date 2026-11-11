@@ -32,7 +32,20 @@ Internal changes
 * internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
 * new internal function ``time_control.get_utc_time`` to calculate UTC time (:pull:`357`)
 * internal module ``astronimical_geometry`` now uses astropy (:pull:`357`)
-* remove internal functions ``helpers.statistics.winsorised_mean`` and ``helpers.statistics.missing_mean`` (:pull:`360`)
+* remove internal functions (:pull:`360`, :pull:`363`)
+
+  * ``helpers.statistics.winsorised_mean``
+  * ``helpers.statistics.missing_mean``
+  * ``helpers.time_control.convert_time_in_hours``
+  * ``helpers.time_control.day_in_year_array``
+  * ``helpers.time_control.jul_day``
+  * ``helpers.time_control.leap_year``
+  * ``helpers.time_control.leap_year_correction``
+  * ``helpers.time_control.relative_year_number``
+  * ``helpers.time_control.time_in_whole_days``
+  * ``helpers.time_control.which_pentad_array``
+
+* make internal function ``helpers.time_control.which_pentad`` and ``helpers.time_control.day_in_year`` work with both float and np.ndarray inputs (:pull:`363`)
 
 0.4.2 (2026-09-07)
 ------------------
