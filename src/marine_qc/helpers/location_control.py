@@ -5,7 +5,6 @@ from __future__ import annotations
 import numpy as np
 
 from .auxiliary import isvalid
-from .statistics import missing_mean
 
 
 __all__ = [
@@ -321,7 +320,7 @@ def filler(
         Filled invalid input values.
     """
     if not isvalid(value_to_fill):
-        value_to_fill = missing_mean([neighbour1, neighbour2])
+        value_to_fill = np.nanmean([np.nan if n is None else n for n in [neighbour1, neighbour2]])
     if not isvalid(value_to_fill):
         value_to_fill = opposite
     return value_to_fill
