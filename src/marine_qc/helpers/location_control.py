@@ -9,7 +9,6 @@ from .statistics import missing_mean
 
 
 __all__ = [
-    "filler",
     "lat_to_yindex",
     "lon_to_xindex",
     "mds_lat_to_yindex",
@@ -285,41 +284,3 @@ def lon_to_xindex(lon: float, res: float) -> int:
     while xindex >= 360 / res:
         xindex -= int(360 / res)
     return int(xindex)
-
-
-def filler(
-    value_to_fill: float | None,
-    neighbour1: float | None,
-    neighbour2: float | None,
-    opposite: float | None,
-) -> float | None:
-    """
-    Fill invalid values.
-
-    If the value_to_fill is invalid it is replaced with the mean of the neighbours and if it is still invalid then
-    it is replaced with the value from the opposite member.
-
-    Parameters
-    ----------
-    value_to_fill : float
-        The value to fill.
-
-    neighbour1 : float
-        The first neighbour.
-
-    neighbour2 : float
-        The second neighbour.
-
-    opposite : float
-        The opposite member.
-
-    Returns
-    -------
-    float
-        Filled invalid input values.
-    """
-    if not isvalid(value_to_fill):
-        value_to_fill = missing_mean([neighbour1, neighbour2])
-    if not isvalid(value_to_fill):
-        value_to_fill = opposite
-    return value_to_fill
