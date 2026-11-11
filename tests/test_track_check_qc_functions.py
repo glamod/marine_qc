@@ -1111,7 +1111,11 @@ def test_lat_lon_from_course_and_distance_array():
 
     expected_lat = np.array([0.0, 90.0, 90.0, 0.0, 0.0])
     expected_lon = np.array([0.0, 0.0, 90.0, 0.0, -180.0])
+
     result_lat, result_lon = lat_lon_from_course_and_distance(lat, lon, tc, d)
 
     assert np.allclose(result_lat, expected_lat)
-    assert np.allclose(result_lon, expected_lon)
+
+    # Ignore poles this there are no longitude defined
+    non_polar = ~np.isclose(np.abs(expected_lat), 90.0)
+    assert np.allclose(result_lon[non_polar], expected_lon[non_polar])
