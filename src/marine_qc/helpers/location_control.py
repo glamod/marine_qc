@@ -44,14 +44,13 @@ def mds_lat_to_yindex(lat: float | np.ndarray, res: float) -> int | np.ndarray:
     In previous versions, ``res`` had the default value 1.0.
     """
     lat_arr = np.atleast_1d(lat)
-    lat_local = lat_arr
-    lat_local[lat_local == -90] = lat_local[lat_local == -90] + 0.001
-    lat_local[lat_local == 90] = lat_local[lat_local == 90] - 0.001
+    lat_arr[lat_arr == -90] = lat_arr[lat_arr == -90] + 0.001
+    lat_arr[lat_arr == 90] = lat_arr[lat_arr == 90] - 0.001
 
-    index = np.zeros_like(lat_local.astype(int))
+    index = np.zeros_like(lat_arr.astype(int))
 
-    index[lat_arr > 0] = (90 / res - 1 - (lat_local[lat_arr > 0] / res).astype(int)).astype(int)
-    index[lat_arr <= 0] = (90 / res - (lat_local[lat_arr <= 0] / res).astype(int)).astype(int)
+    index[lat_arr > 0] = (90 / res - 1 - (lat_arr[lat_arr > 0] / res).astype(int)).astype(int)
+    index[lat_arr <= 0] = (90 / res - (lat_arr[lat_arr <= 0] / res).astype(int)).astype(int)
 
     if is_scalar_like(lat):
         return int(index[0])
@@ -88,14 +87,13 @@ def mds_lon_to_xindex(lon: float | np.ndarray, res: float) -> int | np.ndarray:
     In previous versions, ``res`` had the default value 1.0.
     """
     lon_arr = np.atleast_1d(lon)
-    long_local = lon_arr
-    long_local[long_local == -180] = long_local[long_local == -180] + 0.001
-    long_local[long_local == 180] = long_local[long_local == 180] - 0.001
+    lon_arr[lon_arr == -180] = lon_arr[lon_arr == -180] + 0.001
+    lon_arr[lon_arr == 180] = lon_arr[lon_arr == 180] - 0.001
 
-    index = np.zeros_like(long_local.astype(int))
+    index = np.zeros_like(lon_arr.astype(int))
 
-    index[lon_arr > 0.0] = ((long_local[lon_arr > 0.0] / res).astype(int) + 180 / res).astype(int)
-    index[lon_arr <= 0.0] = ((long_local[lon_arr <= 0.0] / res).astype(int) + 180 / res - 1).astype(int)
+    index[lon_arr > 0.0] = ((lon_arr[lon_arr > 0.0] / res).astype(int) + 180 / res).astype(int)
+    index[lon_arr <= 0.0] = ((lon_arr[lon_arr <= 0.0] / res).astype(int) + 180 / res - 1).astype(int)
 
     if is_scalar_like(lon):
         return int(index[0])
