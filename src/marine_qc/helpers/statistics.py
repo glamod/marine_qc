@@ -9,13 +9,11 @@ import numpy as np
 
 
 __all__ = [
-    "missing_mean",
     "p_data_given_good",
     "p_data_given_gross",
     "p_gross",
     "trim_mean",
     "trim_std",
-    "winsorised_mean",
 ]
 
 
@@ -167,80 +165,6 @@ def p_gross(p0: float, q: float, r_hi: float, r_lo: float, x: float, mu: float, 
         raise ValueError(f"Invalid pgross: {pgross}. Must between 0 and 1.")
 
     return pgross
-
-
-def winsorised_mean(inarr: list[float | int]) -> float:
-    """
-    Compute the 25% winsorised mean of the input array.
-
-    The winsorised mean is a resistant way of calculating an average.
-
-    Parameters
-    ----------
-    inarr : list of float
-        Input array to be averaged.
-
-    Returns
-    -------
-    float
-        The winsorised mean of the input array with a 25% trimming.
-
-    Raises
-    ------
-    ValueError
-        if length of `inarr` is equal to 0.
-
-    Notes
-    -----
-    The winsorised mean is that which you get if you set the first quarter of
-    the sorted input array to the 1st quartile value and the last quarter
-    to the 3rd quartile and then take the mean. This is quite a heavy trimming of
-    the distribution. It makes it very resistant - about half the obs can be egregiously
-    bad without affecting the mean strongly - but it will be less accurate if
-    there are lots of observations, or the quality of the obs is higher.
-    """
-    length = len(inarr)
-    if length == 0:
-        raise ValueError("Input array must have at least one element.")
-
-    inarr_sorted = sorted(inarr)
-
-    trim = length // 4
-
-    if trim == 0:
-        return float(sum(inarr_sorted) / length)
-
-    middle_sum = sum(inarr_sorted[trim : length - trim])
-    lower_sum = inarr_sorted[trim] * trim
-    upper_sum = inarr_sorted[length - trim - 1] * trim
-
-    total = lower_sum + middle_sum + upper_sum
-    return total / length
-
-
-def missing_mean(inarr: list[float | None]) -> float | None:
-    """
-    Return mean of input array.
-
-    Parameters
-    ----------
-    inarr : list of float
-        List of values for which mean is required. Missing values represented by None in list.
-
-    Returns
-    -------
-    float or None
-         Mean of non-missing values or None.
-    """
-    result = 0.0
-    num = 0.0
-    for val in inarr:
-        if val is not None:
-            result += val
-            num += 1.0
-    if num == 0.0:
-        return None
-    return result / num
 
 
 def _trim_stat(inarr: np.ndarray | Sequence[int | float], trim: int, stat: str) -> float:
