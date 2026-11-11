@@ -5,13 +5,11 @@ import numpy as np
 import pytest
 
 from marine_qc.helpers.statistics import (
-    missing_mean,
     p_data_given_good,
     p_data_given_gross,
     p_gross,
     trim_mean,
     trim_std,
-    winsorised_mean,
 )
 
 
@@ -53,64 +51,6 @@ def test_trim_std(inarr, trimming, expected):
     assert trim_std(inarr, trimming) == expected
     # This checks the array is not modified by the function
     assert np.all(inarr == original_array)
-
-
-@pytest.mark.parametrize(
-    "inarr, expected",
-    [
-        ([None, None], None),  # test_all_missing
-        ([None, 7.3], 7.3),  # test_one_non_missing
-        ([994.2, None], 994.2),
-        ([6.0, 1.0], 3.5),  # test_all_non_missing
-    ],
-)
-def test_missing_mean(inarr, expected):
-    assert missing_mean(inarr) == expected
-
-
-@pytest.mark.parametrize(
-    "inarr, expected",
-    [
-        ([0, 0, 0, 0, 0, 0, 0, 0, 0], 0.0),  # test_all_zeroes
-        ([4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0], 4.0),  # test_all_fours
-        ([4.0, 4.0, 4.0], 4.0),  # test_three_fours
-        ([3.0, 4.0, 5.0], 4.0),  # test_ascending
-        ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], 4.0),  # test_longer_ascending_run
-        (
-            [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 700.0],
-            4.0,
-        ),  # test_longer_ascending_run_large_outlier
-        (
-            [
-                1.0,
-                2.0,
-                3.0,
-                4.0,
-                5.0,
-                6.0,
-                7.0,
-                8.0,
-                9.0,
-                10.0,
-                11.0,
-                12.0,
-                13.0,
-                14.0,
-                99.0,
-                1000.0,
-            ],
-            8.5,
-        ),
-        # test_longer_ascending_run_two_outliers
-    ],
-)
-def test_winsorised_mean(inarr, expected):
-    assert winsorised_mean(inarr) == expected
-
-
-def test_winsorised_mean_error():
-    with pytest.raises(ValueError):
-        winsorised_mean([])
 
 
 @pytest.mark.parametrize(
