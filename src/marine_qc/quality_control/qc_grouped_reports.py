@@ -325,7 +325,7 @@ class SuperObsGrid:
             m, d = pentad_to_month_day(pindex + 1)
 
             # Originally get_value_mds_style - note: might be a mismatch
-            stdev = pentad_stdev.get_value(lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d)
+            stdev = pentad_stdev.get_value_fast(lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d)
 
             if stdev is None or stdev < 0.0 or np.isnan(stdev):
                 stdev = 1.0
@@ -401,9 +401,9 @@ class SuperObsGrid:
 
             m, d = pentad_to_month_day(pindex + 1)
 
-            stdev1_ex = stdev1.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
-            stdev2_ex = stdev2.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
-            stdev3_ex = stdev3.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev1_ex = stdev1.get_value_fast(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev2_ex = stdev2.get_value_fast(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev3_ex = stdev3.get_value_fast(89.5 - yindex, -179.5 + xindex, month=m, day=d)
 
             if stdev1_ex is None or stdev1_ex < 0.0 or np.isnan(stdev1_ex):
                 stdev1_ex = 1.0
