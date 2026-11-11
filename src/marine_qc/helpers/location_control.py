@@ -51,8 +51,8 @@ def mds_lat_to_yindex(lat: float | np.ndarray, res: float) -> int | np.ndarray:
 
     index = np.zeros_like(lat_local.astype(int))
 
-    index[lat_arr > 0] = (90 / res - 1 - (lat_local[lat_arr > 0] / res)).astype(int)
-    index[lat_arr <= 0] = (90 / res - (lat_local[lat_arr <= 0] / res)).astype(int)
+    index[lat_arr > 0] = (90 / res - 1 - (lat_local[lat_arr > 0] / res).astype(int)).astype(int)
+    index[lat_arr <= 0] = (90 / res - (lat_local[lat_arr <= 0] / res).astype(int)).astype(int)
 
     if is_scalar_like(lat):
         return int(index[0])
@@ -95,8 +95,8 @@ def mds_lon_to_xindex(lon: float | np.ndarray, res: float) -> int | np.ndarray:
 
     index = np.zeros_like(long_local.astype(int))
 
-    index[lon_arr > 0.0] = ((long_local[lon_arr > 0.0] / res) + 180 / res).astype(int)
-    index[lon_arr <= 0.0] = ((long_local[lon_arr <= 0.0] / res) + 180 / res - 1).astype(int)
+    index[lon_arr > 0.0] = ((long_local[lon_arr > 0.0] / res).astype(int) + 180 / res).astype(int)
+    index[lon_arr <= 0.0] = ((long_local[lon_arr <= 0.0] / res).astype(int) + 180 / res - 1).astype(int)
 
     if is_scalar_like(lon):
         return int(index[0])
