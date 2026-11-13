@@ -173,7 +173,7 @@ def test_select_point(
     assert value == expected
 
 
-def test_empty_dataarray_structure():
+def test_empty_dataarray():
     da = _empty_dataarray()
 
     assert da.shape == (0, 0, 0)
@@ -330,13 +330,70 @@ def test_climatology_empty():
     assert climatology.ntime == 0
 
 
-def test_get_tindex_single_time(external_sst_day):
-    assert external_sst_day.get_tindex(7, 4) == 0
+def test_get_t_index_day_scalar(external_sst_day):
+    assert external_sst_day.get_t_index(7, 4) == 0
 
 
-def test_get_tindex_daily(external_sst_year):
-    assert external_sst_year.get_tindex(1, 1) == 0
-    assert external_sst_year.get_tindex(12, 31) == 364
+def test_get_t_index_year_scalar(external_sst_year):
+    assert external_sst_year.get_t_index(1, 1) == 0
+    assert external_sst_year.get_t_index(12, 31) == 364
+
+
+def test_get_t_index_year_list(external_sst_year):
+    result = external_sst_year.get_t_index([1, 2, 3], [1, 11, 22])
+    assert len(result) == 3
+    assert result[0] == 0
+    assert result[1] == 41
+    assert result[2] == 80
+
+
+def test_get_t_index_year_array(external_sst_year):
+    result = external_sst_year.get_t_index(np.array([1, 2, 3]), np.array([1, 11, 22]))
+    assert np.all(result == [0, 41, 80])
+
+
+def test_get_x_index_day_scalar(external_sst_day):
+    assert external_sst_day.get_x_index(10.0) == 190
+
+
+def test_get_x_index_year_scalar(external_sst_year):
+    assert external_sst_year.get_x_index(10.0) == 190
+    assert external_sst_year.get_x_index(6.14) == 186
+
+
+def test_get_x_index_year_list(external_sst_year):
+    result = external_sst_year.get_x_index([10.0, 6.14, -73.59])
+    assert len(result) == 3
+    assert result[0] == 190
+    assert result[1] == 186
+    assert result[2] == 106
+
+
+def test_get_x_index_year_array(external_sst_year):
+    result = external_sst_year.get_x_index(np.array([10.0, 6.14, -73.59]))
+    assert np.all(result == [190, 186, 106])
+
+
+def test_get_y_index_day_scalar(external_sst_day):
+    assert external_sst_day.get_y_index(53.55) == 36
+
+
+def test_get_y_index_year_scalar(external_sst_year):
+    assert external_sst_year.get_y_index(53.55) == 36
+    assert external_sst_year.get_y_index(46.20) == 43
+
+
+def test_get_y_index_year_list(external_sst_year):
+    result = external_sst_year.get_y_index([53.55, 46.20, 45.51])
+    assert len(result) == 3
+    assert result[0] == 36
+    assert result[1] == 43
+    assert result[2] == 44
+
+
+def test_get_y_index_year_array(external_sst_year):
+    result = external_sst_year.get_y_index(np.array([53.55, 46.20, 45.51]))
+    assert np.all(result == [36, 43, 44])
 
 
 @pytest.mark.parametrize(
@@ -356,8 +413,8 @@ def test_get_tindex_daily(external_sst_year):
         (-68.4, -52.3, 11, None, np.nan),
     ],
 )
-@pytest.mark.parametrize("fast", [False, True])
-def test_get_value_with_external_at(external_at, lat, lon, month, day, expected, fast):
+@pytest.mark.parametrize("regular", [False, True])
+def test_get_value_scalar(external_at, lat, lon, month, day, expected, regular):
     kwargs = {
         "lat": lat,
         "lon": lon,
@@ -365,31 +422,50 @@ def test_get_value_with_external_at(external_at, lat, lon, month, day, expected,
         "day": day,
     }
 
-    if fast is True:
-        result = external_at.get_value_fast(**kwargs)
-    else:
-        result = external_at.get_value(**kwargs)
+    result = external_at.get_value(**kwargs, regular=regular)
 
     assert np.allclose(result, expected, equal_nan=True)
 
 
-def test_get_value_fast_raise(external_at):
+def test_get_value_list(external_at):
+    result = external_at.get_value(
+        lat=[53.5, 42.5, 57.5, -68.4, -190.0, 42.5, 57.5, -68.4, None, 42.5, 57.5, -68.4],
+        lon=[10.0, 1.4, 9.4, -52.3, 10.0, 95.0, 9.4, -52.3, 10.0, None, 9.4, -52.3],
+        month=[7, 2, 6, 11, 7, 2, 13, 11, 7, 2, None, 11],
+        day=[4, 16, 1, 21, 4, 16, 1, 42, 4, 16, 1, None],
+    )
+    expected = [17.317652, 3.7523544, 13.330604, -4.2039094, np.nan, -6.6292677, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+    assert np.allclose(result, expected, equal_nan=True)
+
+
+def test_get_value_array(external_at):
+    result = external_at.get_value(
+        lat=np.array([53.5, 42.5, 57.5, -68.4, -190.0, 42.5, 57.5, -68.4, None, 42.5, 57.5, -68.4]),
+        lon=np.array([10.0, 1.4, 9.4, -52.3, 10.0, 95.0, 9.4, -52.3, 10.0, None, 9.4, -52.3]),
+        month=np.array([7, 2, 6, 11, 7, 2, 13, 11, 7, 2, None, 11]),
+        day=np.array([4, 16, 1, 21, 4, 16, 1, 42, 4, 16, 1, None]),
+    )
+    expected = [17.317652, 3.7523544, 13.330604, -4.2039094, np.nan, -6.6292677, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+    assert np.allclose(result, expected, equal_nan=True)
+
+
+def test_get_value_raise(external_at):
     with pytest.raises(ValueError, match="No date information given"):
-        external_at.get_value_fast(lat=50.0, lon=10.0)
+        external_at.get_value(lat=50.0, lon=10.0)
 
 
-def test_get_value_fast_day(external_sst_day):
-    result = external_sst_day.get_value_fast(lat=50.0, lon=-20.0)
+def test_get_value_no_time(external_sst_day):
+    result = external_sst_day.get_value(lat=50.0, lon=-20.0)
     assert result == 285.1153564453125
 
 
-def test_get_value_fast_repeat(external_at):
+def test_get_value_repeat_time(external_at):
     lat = [50.0, 51.0, 52.0]
     lon = [10.0, 11.0, 12.0]
     month = 7
     day = 1
 
-    result = external_at.get_value_fast(
+    result = external_at.get_value(
         lat=lat,
         lon=lon,
         month=month,
@@ -398,9 +474,13 @@ def test_get_value_fast_repeat(external_at):
 
     assert len(result) == 3
 
+    assert result[0] == 18.194162368774414
+    assert result[1] == 17.43874740600586
+    assert result[2] == 18.03187370300293
 
-def test_get_value_fast_empty_axes(external_at_no_lat):
-    result = external_at_no_lat.get_value_fast(
+
+def test_get_value_empty_axes(external_at_no_lat):
+    result = external_at_no_lat.get_value(
         lat=50.0,
         lon=10.0,
         month=7,
@@ -501,95 +581,6 @@ def test_inspect_climatology_path_raise():
         match="is not a valid file on disk",
     ):
         _inspect_climatology(Path("invalid_path"), lat=53.5, lon=10.0, month=7, day=4, time_axis="pentad_time")
-
-
-@pytest.mark.parametrize(
-    "lats, lat0, delta, expected",
-    [
-        ([-89.9, 89.9], -90, 1, [0, 179]),
-        ([-89.9, 89.9], -89.5, 1, [0, 179]),
-        ([-89.9, 89.9], 90, -1, [179, 0]),
-        ([-89.9, 89.9], 89.5, -1, [179, 0]),
-        ([-89.9, 89.9], 90, -5, [35, 0]),
-        ([-89.9, 89.9], 87.5, -5, [35, 0]),
-        ([-89.9, 89.9], -90, 5, [0, 35]),
-        ([-89.9, 89.9], -87.5, 5, [0, 35]),
-    ],
-)
-def test_get_y_index_pass(lats, lat0, delta, expected):
-    n_lat_axis = int(180 / abs(delta))
-    lat_axis = np.arange(n_lat_axis) * delta + lat0
-    lats = np.array(lats)
-    expected = np.array(expected)
-
-    result = Climatology.get_y_index(lats, lat_axis)
-
-    assert np.all(expected == result)
-
-
-def test_get_y_index_raise():
-    lats = np.array([-10.0, 10.0])
-    lat_axis = np.arange(180) + (-88)
-
-    with pytest.raises(RuntimeError, match="I can't work this grid out grid box boundaries"):
-        Climatology.get_y_index(lats, lat_axis)
-
-
-@pytest.mark.parametrize(
-    "lats, lat0, delta, expected",
-    [
-        ([-179.9, 179.9], -180, 1, [0, 359]),
-        ([-179.9, 179.9], -179.5, 1, [0, 359]),
-        ([-179.9, 179.9], 180, -1, [359, 0]),
-        ([-179.9, 179.9], 179.5, -1, [359, 0]),
-        ([-179.9, 179.9], 180, -5, [71, 0]),
-        ([-179.9, 179.9], 177.5, -5, [71, 0]),
-        ([-179.9, 179.9], -180, 5, [0, 71]),
-        ([-179.9, 179.9], -177.5, 5, [0, 71]),
-        ([-180, 180], -180, 1, [0, 359]),
-        ([-180, 180], -179.5, 1, [0, 359]),
-        ([-180, 180], 180, -1, [359, 0]),
-        ([-180, 180], 179.5, -1, [359, 0]),
-        ([-180, 180], 180, -5, [71, 0]),
-        ([-180, 180], 177.5, -5, [71, 0]),
-        ([-180, 180], -180, 5, [0, 71]),
-        ([-180, 180], -177.5, 5, [0, 71]),
-    ],
-)
-def test_get_x_index_pass(lats, lat0, delta, expected):
-    n_lat_axis = int(360 / abs(delta))
-    lat_axis = np.arange(n_lat_axis) * delta + lat0
-    lats = np.array(lats)
-    expected = np.array(expected)
-
-    result = Climatology.get_x_index(lats, lat_axis)
-
-    assert np.all(expected == result)
-
-
-def test_get_x_index_raise():
-    lons = np.array([-10.0, 10.0])
-    lon_axis = np.arange(360) + (-178)
-
-    with pytest.raises(RuntimeError, match="I can't work this grid out grid box boundaries"):
-        Climatology.get_x_index(lons, lon_axis)
-
-
-def test_get_t_index():
-    month = np.array([1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12])
-    day = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 31])
-
-    result = Climatology.get_t_index(month, day, 365)
-    assert np.all(result == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364]))
-
-    result = Climatology.get_t_index(month, day, 73)
-    assert np.all(result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72]))
-
-    result = Climatology.get_t_index(month, day, 1)
-    assert np.all(result == np.zeros(len(result)))
-
-    result = Climatology.get_t_index(month, day, 10)
-    assert np.all(result == -1)
 
 
 @pytest.mark.parametrize(

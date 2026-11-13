@@ -9,6 +9,8 @@ from .auxiliary import is_scalar_like
 
 
 __all__ = [
+    "get_x_index",
+    "get_y_index",
     "mds_lat_to_yindex",
     "mds_lon_to_xindex",
 ]
@@ -100,3 +102,75 @@ def mds_lon_to_xindex(lon: float | np.ndarray, res: float) -> int | np.ndarray:
         return int(index[0])
 
     return index
+
+
+def get_y_index(lat: float | np.ndarray, lat_axis: np.ndarray) -> np.ndarray:
+    """
+    Convert an array of latitudes to an array of indices for the grid.
+
+    Parameters
+    ----------
+    lat : float or numpy.ndarray
+        Latitude(s) to select.
+    lat_axis : numpy.ndarray
+        Array containing the latitude axis.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of indices.
+    """
+    lat_arr = np.atleast_1d(lat)
+    lat_axis_0 = lat_axis[0]
+    lat_axis_delta = lat_axis[1] - lat_axis[0]
+
+    # Need to know if grid cells are defined by centres or by lower edges...
+    if lat_axis_0 not in [-90.0, 90.0]:
+        if lat_axis_0 == -90 + lat_axis_delta / 2.0:
+            lat_axis_0 = -90.0
+        elif lat_axis_0 == 90 + lat_axis_delta / 2.0:
+            lat_axis_0 = 90.0
+        else:
+            raise RuntimeError("I can't work this grid out, grid box boundaries are not at +-90 or +-(90-delta/2)")
+
+    y_index: np.ndarray = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
+
+    y_index[y_index >= len(lat_axis)] = len(lat_axis) - 1
+
+    return y_index
+
+
+def get_x_index(lon: float | np.ndarray, lon_axis: np.ndarray) -> np.ndarray:
+    """
+    Convert an array of longitudes to an array of indices for the grid.
+
+    Parameters
+    ----------
+    lon : float np.ndarray
+        Longitude(s) to select.
+    lon_axis : np.ndarray
+        Array containing the longitude axis.
+
+    Returns
+    -------
+    np.ndarray
+        Array of indices.
+    """
+    lon_arr = np.atleast_1d(lon)
+    lon_axis_0 = lon_axis[0]
+    lon_axis_delta = lon_axis[1] - lon_axis[0]
+
+    # Need to know if grid cells are defined by centres or by lower edges...
+    if lon_axis_0 not in [-180.0, 180.0]:
+        if lon_axis_0 == -180 + lon_axis_delta / 2.0:
+            lon_axis_0 = -180.0
+        elif lon_axis_0 == 180 + lon_axis_delta / 2.0:
+            lon_axis_0 = 180.0
+        else:
+            raise RuntimeError("I can't work this grid out, grid box boundaries are not at +-180 or +-(180-delta/2)")
+
+    x_index: np.ndarray = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
+
+    x_index[x_index >= len(lon_axis)] = len(lon_axis) - 1
+
+    return x_index

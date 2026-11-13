@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 
 from marine_qc.helpers.location_control import (
+    get_x_index,
+    get_y_index,
     mds_lat_to_yindex,
     mds_lon_to_xindex,
 )
@@ -46,7 +48,7 @@ from marine_qc.helpers.location_control import (
         ),
     ],
 )
-def test_lats_with_res(lat, res, expected):
+def test_mds_lat_to_yindex(lat, res, expected):
     result = mds_lat_to_yindex(lat, res=res)
     if isinstance(lat, np.ndarray):
         assert np.all(result == expected)
@@ -85,9 +87,81 @@ def test_lats_with_res(lat, res, expected):
         ),
     ],
 )
-def test_lons_with_res(lon, res, expected):
+def test_mds_lon_to_xindex(lon, res, expected):
     result = mds_lon_to_xindex(lon, res=res)
     if isinstance(lon, np.ndarray):
         assert np.all(result == expected)
     else:
         assert result == expected
+
+
+@pytest.mark.parametrize(
+    "lats, lat0, delta, expected",
+    [
+        ([-179.9, 179.9], -180, 1, [0, 359]),
+        ([-179.9, 179.9], -179.5, 1, [0, 359]),
+        ([-179.9, 179.9], 180, -1, [359, 0]),
+        ([-179.9, 179.9], 179.5, -1, [359, 0]),
+        ([-179.9, 179.9], 180, -5, [71, 0]),
+        ([-179.9, 179.9], 177.5, -5, [71, 0]),
+        ([-179.9, 179.9], -180, 5, [0, 71]),
+        ([-179.9, 179.9], -177.5, 5, [0, 71]),
+        ([-180, 180], -180, 1, [0, 359]),
+        ([-180, 180], -179.5, 1, [0, 359]),
+        ([-180, 180], 180, -1, [359, 0]),
+        ([-180, 180], 179.5, -1, [359, 0]),
+        ([-180, 180], 180, -5, [71, 0]),
+        ([-180, 180], 177.5, -5, [71, 0]),
+        ([-180, 180], -180, 5, [0, 71]),
+        ([-180, 180], -177.5, 5, [0, 71]),
+    ],
+)
+def test_get_x_index_pass(lats, lat0, delta, expected):
+    n_lat_axis = int(360 / abs(delta))
+    lat_axis = np.arange(n_lat_axis) * delta + lat0
+    lats = np.array(lats)
+    expected = np.array(expected)
+
+    result = get_x_index(lats, lat_axis)
+
+    assert np.all(expected == result)
+
+
+def test_get_x_index_raise():
+    lons = np.array([-10.0, 10.0])
+    lon_axis = np.arange(360) + (-178)
+
+    with pytest.raises(RuntimeError, match="I can't work this grid out, grid box boundaries"):
+        get_x_index(lons, lon_axis)
+
+
+@pytest.mark.parametrize(
+    "lats, lat0, delta, expected",
+    [
+        ([-89.9, 89.9], -90, 1, [0, 179]),
+        ([-89.9, 89.9], -89.5, 1, [0, 179]),
+        ([-89.9, 89.9], 90, -1, [179, 0]),
+        ([-89.9, 89.9], 89.5, -1, [179, 0]),
+        ([-89.9, 89.9], 90, -5, [35, 0]),
+        ([-89.9, 89.9], 87.5, -5, [35, 0]),
+        ([-89.9, 89.9], -90, 5, [0, 35]),
+        ([-89.9, 89.9], -87.5, 5, [0, 35]),
+    ],
+)
+def test_get_y_index_pass(lats, lat0, delta, expected):
+    n_lat_axis = int(180 / abs(delta))
+    lat_axis = np.arange(n_lat_axis) * delta + lat0
+    lats = np.array(lats)
+    expected = np.array(expected)
+
+    result = get_y_index(lats, lat_axis)
+
+    assert np.all(expected == result)
+
+
+def test_get_y_index_raise():
+    lats = np.array([-10.0, 10.0])
+    lat_axis = np.arange(180) + (-88)
+
+    with pytest.raises(RuntimeError, match="I can't work this grid out, grid box boundaries"):
+        get_y_index(lats, lat_axis)

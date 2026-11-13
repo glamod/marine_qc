@@ -11,10 +11,8 @@ from typing import Any, Literal, TypeAlias
 
 import cf_xarray  # noqa: F401 pylint: disable=unused-import
 import numpy as np
-import pandas as pd
 import xarray as xr
 from joblib import Parallel, delayed
-from numpy import ndarray
 from xclim.core.units import convert_units_to
 
 from .auxiliary import (
@@ -30,11 +28,11 @@ from .auxiliary import (
     isvalid,
     post_format_return_type,
 )
+from .location_control import get_x_index, get_y_index
 from .time_control import (
     convert_date,
-    day_in_year,
     get_month_lengths,
-    which_pentad,
+    get_t_index,
 )
 
 
@@ -127,7 +125,7 @@ def inspect_climatology(
         - a :py:class:`~marine_qc.Climatology` instance
 
         If a :py:class:`~marine_qc.Climatology` object (or an object convertible to one) is detected,
-        it will be resolved to a concrete value using its `.get_value_fast(**kwargs)` method.
+        it will be resolved to a concrete value using its `.get_value(**kwargs)` method.
 
     optional : str or sequence of str, optional
         Argument names that should be treated as optional. If they are explicitly passed when the
@@ -149,7 +147,7 @@ def inspect_climatology(
     Warns
     -----
     UserWarning
-        Issued if required keyword arguments for :py:func:`~marine_qc.Climatology.get_value_fast()`
+        Issued if required keyword arguments for :py:func:`~marine_qc.Climatology.get_value()`
         are missing. This warning does not stop execution; missing values
         are replaced with numpy.nan.
 
@@ -161,8 +159,8 @@ def inspect_climatology(
     - String or path-like inputs must point to an existing file and are
       opened via :py:func:`~marine_qc.Climatology.open_netcdf_file`.
     - If a :py:class:`~marine_qc.Climatology` object is processed, it is resolved using
-      `.get_value_fast(**kwargs)`.
-    - If required keyword arguments for `.get_value_fast()` are missing,
+      `.get_value(**kwargs)`.
+    - If required keyword arguments for `.get_value()` are missing,
       a warning is issued.
     - If resolution fails due to `TypeError` or `ValueError`,
       the value is replaced with numpy.nan.
@@ -181,7 +179,7 @@ def inspect_climatology(
         arguments : dict
             Function arguments as a dictionary.
         \**meta_kwargs : dict
-            Additional keyword arguments to pass to :py:func:`~marine_qc.Climatology.get_value_fast()`,
+            Additional keyword arguments to pass to :py:func:`~marine_qc.Climatology.get_value()`,
             :py:class:`~marine_qc.Climatology` and/or :py:func:`~marine_qc.Climatology.open_netcdf_file()`.
 
         Returns
@@ -223,7 +221,7 @@ def inspect_climatology(
                 climatology = Climatology.open_netcdf_file(climatology, **clim_kwargs)
 
             if isinstance(climatology, Climatology):
-                get_value_sig = inspect.signature(climatology.get_value_fast)
+                get_value_sig = inspect.signature(climatology.get_value)
                 required_keys = {
                     name
                     for name, param in get_value_sig.parameters.items()
@@ -239,7 +237,7 @@ def inspect_climatology(
                     )
 
                 try:
-                    climatology = climatology.get_value_fast(**meta_kwargs)
+                    climatology = climatology.get_value(**meta_kwargs)
                 except (TypeError, ValueError):
                     climatology = np.nan
 
@@ -508,209 +506,55 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
-    @post_format_return_type("lat", dtype=float)
-    @convert_date("month", "day")
-    def get_value_fast(
-        self,
-        lat: SequenceNumberType,
-        lon: SequenceNumberType,
-        date: SequenceDatetimeType | None = None,
-        month: SequenceIntType | None = None,
-        day: SequenceIntType | None = None,
-    ) -> np.ndarray | pd.Series:
-        """
-        Get the value from a climatology at the give position and time.
-
-        Parameters
-        ----------
-        lat : :py:obj:`~marine_qc.SequenceNumberType`, optional
-            Latitude of location to extract value from in degrees.
-        lon : :py:obj:`~marine_qc.SequenceNumberType`, optional
-            Longitude of location to extract value from in degrees.
-        date : :py:obj:`~marine_qc.SequenceDatetimeType`, optional
-            Date for which the value is required.
-        month : :py:obj:`~marine_qc.SequenceIntType`, optional
-            Month for which the value is required.
-        day : :py:obj:`~marine_qc.SequenceIntType`, optional
-            Day for which the value is required.
-
-        Returns
-        -------
-        numpy.ndarray or pandas.Series
-            Climatology value at specified location and time.
-
-        Notes
-        -----
-        Assumes that the grid is a regular latitude longitude grid. The alternative method `get_value`
-        works with non-regular grids.
-        """
-        lat = np.array(lat, dtype=float)
-        lat_arr = np.atleast_1d(lat)
-        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
-
-        lon = np.array(lon, dtype=float)
-        lon_arr = np.atleast_1d(lon)
-        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
-
-        if month is None and day is None:
-            if self.ntime > 1:
-                raise ValueError("No date information given: {self.ntime} needed")
-
-            month = self.data[self.time_axis].dt.month.values
-            day = self.data[self.time_axis].dt.day.values
-
-        month = np.array(month, dtype=object)
-        month_arr = np.atleast_1d(month)
-        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
-        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
-        if len(month_arr) == 1 and len(month_arr) != len(lat_arr):
-            month_arr = np.repeat(month_arr, len(lat_arr))
-
-        day = np.array(day, dtype=object)
-        day_arr = np.atleast_1d(day)
-        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
-        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
-        if len(day_arr) == 1 and len(day_arr) != len(lat_arr):
-            day_arr = np.repeat(day_arr, len(lat_arr))
-
-        valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
-        valid &= (month_arr >= 1) & (month_arr <= 12)
-
-        ml = np.array(get_month_lengths(2004))
-        month_lengths = np.zeros_like(month_arr)
-        month_lengths[valid] = ml[month_arr[valid] - 1]
-
-        valid &= (day_arr >= 1) & (day_arr <= month_lengths)
-        valid &= (lon_arr >= -180) & (lon_arr <= 180)
-        valid &= (lat_arr >= -90) & (lat_arr <= 90)
-
-        result = np.full(lat_arr.shape, np.nan, dtype=float)
-
-        lat_axis = self.data.coords[self.lat_axis].data
-        lon_axis = self.data.coords[self.lon_axis].data
-        if lat_axis.size == 0 or lon_axis.size == 0:
-            return result
-
-        lat_indices = Climatology.get_y_index(lat_arr[valid], lat_axis)
-        lon_indices = Climatology.get_x_index(lon_arr[valid], lon_axis)
-        time_indices = Climatology.get_t_index(month_arr[valid], day_arr[valid], self.ntime)
-
-        lat_indices = np.array(lat_indices, dtype=int)
-        lon_indices = np.array(lon_indices, dtype=int)
-        time_indices = np.array(time_indices, dtype=int)
-
-        lat_mask = np.isin(lat_indices, np.arange(len(self.data[self.lat_axis])))
-        lon_mask = np.isin(lon_indices, np.arange(len(self.data[self.lon_axis])))
-        time_mask = np.isin(time_indices, np.arange(len(self.data[self.time_axis])))
-
-        coord_mask = lat_mask & lon_mask & time_mask
-        valid_indices = np.where(valid)[0]
-        valid[valid_indices] &= coord_mask
-
-        result[valid] = self.data.values[time_indices[coord_mask], lat_indices[coord_mask], lon_indices[coord_mask]]
-
-        return result
-
-    @staticmethod
-    def get_y_index(lat_arr: np.ndarray, lat_axis: np.ndarray) -> np.ndarray:
-        """
-        Convert an array of latitudes to an array of indices for the grid.
-
-        Parameters
-        ----------
-        lat_arr :  numpy.ndarray
-            Array of latitudes.
-        lat_axis : numpy.ndarray
-            Array containing the latitude axis.
-
-        Returns
-        -------
-        numpy.ndarray
-            Array of indices.
-        """
-        lat_axis_0 = lat_axis[0]
-        lat_axis_delta = lat_axis[1] - lat_axis[0]
-
-        # Need to know if grid cells are defined by centres or by lower edges...
-        if lat_axis_0 not in [-90.0, 90.0]:
-            if lat_axis_0 == -90 + lat_axis_delta / 2.0:
-                lat_axis_0 = -90.0
-            elif lat_axis_0 == 90 + lat_axis_delta / 2.0:
-                lat_axis_0 = 90.0
-            else:
-                raise RuntimeError("I can't work this grid out grid box boundaries are not at +-90 or +-(90-delta/2)")
-
-        y_index: np.ndarray = ((lat_arr - lat_axis_0) / lat_axis_delta).astype(int)
-
-        y_index[y_index >= len(lat_axis)] = len(lat_axis) - 1
-
-        return y_index
-
-    @staticmethod
-    def get_x_index(lon_arr: np.ndarray, lon_axis: np.ndarray) -> np.ndarray:
-        """
-        Convert an array of longitudes to an array of indices for the grid.
-
-        Parameters
-        ----------
-        lon_arr : numpy.ndarray
-            Array of longitudes.
-        lon_axis : numpy.ndarray
-            Array containing the longitude axis.
-
-        Returns
-        -------
-        numpy.ndarray
-            Array of indices.
-        """
-        lon_axis_0 = lon_axis[0]
-        lon_axis_delta = lon_axis[1] - lon_axis[0]
-
-        # Need to know if grid cells are defined by centres or by lower edges...
-        if lon_axis_0 not in [-180.0, 180.0]:
-            if lon_axis_0 == -180 + lon_axis_delta / 2.0:
-                lon_axis_0 = -180.0
-            elif lon_axis_0 == 180 + lon_axis_delta / 2.0:
-                lon_axis_0 = 180.0
-            else:
-                raise RuntimeError("I can't work this grid out grid box boundaries are not at +-180 or +-(180-delta/2)")
-
-        x_index: np.ndarray = ((lon_arr - lon_axis_0) / lon_axis_delta).astype(int)
-
-        x_index[x_index >= len(lon_axis)] = len(lon_axis) - 1
-
-        return x_index
-
-    @staticmethod
-    def get_t_index(month: np.ndarray, day: np.ndarray, ntime: int) -> np.ndarray:
+    def get_t_index(self, month: int | np.ndarray, day: int | np.ndarray) -> np.ndarray:
         """
         Convert arrays of months and days to an array of indices for the grid.
 
         Parameters
         ----------
-        month : numpy.ndarray
-            Array of months.
-        day : numpy.ndarray
-            Array of days.
-        ntime : int
-            Number of time points in the grid, valid values are 1, 73 (pentad resolution) and
-            365 (daily resolution).
+        month : int or np.ndarray
+            Month(s) to select.
+        day : int or np.ndarray
+            Day(s) to select.
+
+        Returns
+        -------
+        np.ndarray
+            Array of indices.
+        """
+        return get_t_index(month, day, self.ntime)
+
+    def get_x_index(self, lon: float | np.ndarray) -> np.ndarray:
+        """
+        Convert an array of longitudes to an array of indices for the grid.
+
+        Parameters
+        ----------
+        lon : float np.ndarray
+            Longitude(s) to select.
+
+        Returns
+        -------
+        np.ndarray
+            Array of indices.
+        """
+        return get_x_index(lon, self.data.coords[self.lon_axis].data)
+
+    def get_y_index(self, lat: float | np.ndarray) -> np.ndarray:
+        """
+        Convert an array of latitudes to an array of indices for the grid.
+
+        Parameters
+        ----------
+        lat : float or numpy.ndarray
+            Latitude(s) to select.
 
         Returns
         -------
         numpy.ndarray
             Array of indices.
         """
-        n_points = len(month)
-        t_index = np.zeros(n_points)
-
-        if ntime == 1:
-            return t_index
-        if ntime == 73:
-            return which_pentad(year=2001, month=month, day=day) - 1
-        if ntime == 365:
-            return day_in_year(year=2001, month=month, day=day) - 1
-        return t_index - 1
+        return get_y_index(lat, self.data.coords[self.lat_axis].data)
 
     @post_format_return_type("lat", dtype=float)
     @convert_date("month", "day")
@@ -721,7 +565,8 @@ class Climatology:
         date: SequenceDatetimeType | None = None,
         month: SequenceIntType | None = None,
         day: SequenceIntType | None = None,
-    ) -> ndarray | pd.Series:
+        regular: bool = True,
+    ) -> SequenceNumberType:
         """
         Get the value from a climatology at the give position and time.
 
@@ -737,52 +582,174 @@ class Climatology:
             Month for which the value is required.
         day : :py:obj:`~marine_qc.SequenceIntType`, optional
             Day for which the value is required.
+        regular : bool, default: True
+            Set True for regular spatail grids and False for irregulat spatial grids.
 
         Returns
         -------
-        ndarray or pandas.Series
+        :py:obj:`~marine_qc.SequenceNumberType`
+            Climatology value at specified location and time.
+
+        Raises
+        ------
+        TypeError
+            If decorator `inspect_arrays` does not return numpy ndarrays.
+        ValueError
+            If `month` is None, `day` is None and `time_axis` is greater than 1.
+        """
+        if month is None and day is None:
+            if self.ntime > 1:
+                raise ValueError("No date information given: {self.ntime} needed")
+
+            month = self.data[self.time_axis].dt.month.values
+            day = self.data[self.time_axis].dt.day.values
+
+        lat = np.array(lat, dtype=float)
+        lat_arr = np.atleast_1d(lat)
+        lon = np.array(lon, dtype=float)
+        lon_arr = np.atleast_1d(lon)
+        month = np.array(month, dtype=float)
+        month_arr = np.atleast_1d(month)
+        day = np.array(day, dtype=float)
+        day_arr = np.atleast_1d(day).astype(float)
+
+        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
+        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
+
+        if len(month_arr) == 1 and len(lat_arr) > 1:
+            month_arr = np.repeat(month_arr, len(lat_arr))
+
+        if len(day_arr) == 1 and len(lat_arr) > 1:
+            day_arr = np.repeat(day_arr, len(lat_arr))
+
+        ml = get_month_lengths(2004)
+        month_lengths = np.array([ml[m - 1] if 1 <= m <= 12 else 0 for m in month_arr])
+
+        valid = (
+            isvalid(lat_arr)
+            & isvalid(lon_arr)
+            & isvalid(month_arr)
+            & isvalid(day_arr)
+            & (month_arr >= 1)
+            & (month_arr <= 12)
+            & (day_arr >= 1)
+            & (day_arr <= month_lengths)
+            & (lon_arr >= -180)
+            & (lon_arr <= 180)
+            & (lat_arr >= -90)
+            & (lat_arr <= 90)
+        )
+
+        result = np.full(lat_arr.shape, np.nan, dtype=float)
+
+        if not np.any(valid):
+            return result
+
+        valid_idx = np.where(valid)[0]
+        if len(valid_idx) == 0:
+            return result
+
+        func = self._get_value_regular if regular else self._get_value_irregular
+
+        result[valid] = func(lat_arr[valid], lon_arr[valid], month_arr[valid], day_arr[valid])
+
+        return result
+
+    def _get_value_regular(
+        self,
+        lat: np.ndarray,
+        lon: np.ndarray,
+        month: np.ndarray,
+        day: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Get the value from a climatology at the give position and time.
+
+        Parameters
+        ----------
+        lat : np.ndarray
+            Latitude of location to extract value from in degrees.
+        lon : np.ndarray
+            Longitude of location to extract value from in degrees.
+        month : np.ndarray
+            Month for which the value is required.
+        day : np.ndarray
+            Day for which the value is required.
+
+        Returns
+        -------
+        np.ndarray
+            Climatology value at specified location and time.
+
+        Notes
+        -----
+        Assumes that the grid is a regular latitude longitude grid. The alternative method `_get_value`
+        works with non-regular grids.
+        """
+        result = np.full(len(lat), np.nan)
+
+        lat_axis = self.data.coords[self.lat_axis].data
+        lon_axis = self.data.coords[self.lon_axis].data
+
+        if lat_axis.size == 0 or lon_axis.size == 0:
+            return result
+
+        lat_indices = get_y_index(lat, lat_axis)
+        lon_indices = get_x_index(lon, lon_axis)
+        time_indices = get_t_index(month, day, self.ntime)
+
+        lat_indices = np.atleast_1d(lat_indices).astype(int)
+        lon_indices = np.atleast_1d(lon_indices).astype(int)
+        time_indices = np.atleast_1d(time_indices).astype(int)
+
+        valid = (
+            (lat_indices >= 0)
+            & (lat_indices < len(lat_axis))
+            & (lon_indices >= 0)
+            & (lon_indices < len(lon_axis))
+            & (time_indices >= 0)
+            & (time_indices < self.ntime)
+        )
+
+        result[valid] = self.data.values[time_indices[valid], lat_indices[valid], lon_indices[valid]]
+        return result
+
+    def _get_value_irregular(
+        self,
+        lat: np.ndarray,
+        lon: np.ndarray,
+        month: np.ndarray,
+        day: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Get the value from a climatology at the give position and time.
+
+        Parameters
+        ----------
+        lat :  np.ndarray
+            Latitude of location to extract value from in degrees.
+        lon :  np.ndarray
+            Longitude of location to extract value from in degrees.
+        month :  np.ndarray
+            Month for which the value is required.
+        day :  np.ndarray
+            Day for which the value is required.
+
+        Returns
+        -------
+        np.ndarray or pandas.Series
             Climatology value at specified location and time.
 
         Notes
         -----
         Use only exact matches for selecting time and nearest valid index value for selecting location.
         """
-        lat = np.array(lat, dtype=float)
-        lat_arr = np.atleast_1d(lat)
-        lat_arr = np.where(lat_arr is None, np.nan, lat_arr).astype(float)
-
-        lon = np.array(lon, dtype=float)
-        lon_arr = np.atleast_1d(lon)
-        lon_arr = np.where(lon_arr is None, np.nan, lon_arr).astype(float)
-
-        month = np.array(month, dtype=object)
-        month_arr = np.atleast_1d(month)
-        month_arr = np.where(month_arr is None, np.nan, month_arr).astype(float)
-        month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
-
-        day = np.array(day, dtype=object)
-        day_arr = np.atleast_1d(day)
-        day_arr = np.where(day_arr is None, np.nan, day_arr).astype(float)
-        day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
-
-        ml = get_month_lengths(2004)
-        month_lengths = np.array([ml[m - 1] if 1 <= m <= 12 else 0 for m in month_arr])
-
-        valid = isvalid(lat) & isvalid(lon) & isvalid(month) & isvalid(day)
-        valid &= (month_arr >= 1) & (month_arr <= 12)
-        valid &= (day_arr >= 1) & (day_arr <= month_lengths)
-        valid &= (lon_arr >= -180) & (lon_arr <= 180)
-        valid &= (lat_arr >= -90) & (lat_arr <= 90)
-
-        result = np.full(lat_arr.shape, np.nan, dtype=float)
-
-        valid_idx = np.where(valid)[0]
-        if len(valid_idx) == 0:
-            return result
+        result = np.full(len(lat), np.nan)
 
         grouped = defaultdict(list)
-        for i in valid_idx:
-            tindex = self.get_tindex(month_arr[i], day_arr[i])
+        tindexes = get_t_index(month, day, self.ntime)
+
+        for i, tindex in enumerate(tindexes):
             grouped[tindex].append(i)
 
         data = self.data.load()
@@ -790,33 +757,11 @@ class Climatology:
         for tindex, indices in grouped.items():
             da_slice = data.isel({self.time_axis: tindex})
 
-            results = Parallel(n_jobs=-1)(delayed(_select_point)(i, da_slice, lat_arr, lon_arr, self.lat_axis, self.lon_axis) for i in indices)
+            results = Parallel(n_jobs=-1)(delayed(_select_point)(i, da_slice, lat, lon, self.lat_axis, self.lon_axis) for i in indices)
             for idx, value in results:
                 result[idx] = value
 
         return result
-
-    def get_tindex(self, month: int, day: int) -> int:
-        """
-        Get the time index of the input month and day.
-
-        Parameters
-        ----------
-        month : int
-            Month for which the time index is required.
-        day : int
-            Day for which the time index is required.
-
-        Returns
-        -------
-        int
-            Time index for specified month and day.
-        """
-        if self.ntime == 1:
-            return 0
-        if self.ntime == 73:
-            return which_pentad(year=2001, month=month, day=day) - 1
-        return day_in_year(year=2001, month=month, day=day) - 1
 
 
 @inspect_climatology("climatology")
@@ -833,7 +778,7 @@ def get_climatological_value(climatology: Climatology, **kwargs: Any) -> np.ndar
 
     Returns
     -------
-    ndarray
+    np.ndarray
             Climatology value at specified location and time.
     """
     return np.asarray(climatology, dtype=float)
