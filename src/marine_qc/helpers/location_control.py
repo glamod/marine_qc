@@ -1,102 +1,132 @@
 """Some generally helpful location control functions for base QC."""
 
 from __future__ import annotations
-from typing import overload
 
 import numpy as np
 
-from .auxiliary import is_scalar_like
-
 
 __all__ = [
-    "mds_lat_to_yindex",
-    "mds_lon_to_xindex",
+    "get_xindex",
+    "get_yindex",
 ]
 
 
-@overload
-def mds_lat_to_yindex(lat: float, res: float) -> int: ...  # numpydoc ignore=GL08
-@overload
-def mds_lat_to_yindex(lat: np.ndarray, res: float) -> np.ndarray: ...  # numpydoc ignore=GL08
-def mds_lat_to_yindex(lat: float | np.ndarray, res: float) -> int | np.ndarray:
+def _get_coordinate_index(  # numpydoc ignore=PR01,RT01
+    coord: float | np.ndarray,
+    axis: np.ndarray | None,
+    res: float | None,
+    lower_bound: float,
+    upper_bound: float,
+    offset: int,
+) -> np.ndarray:
+    """Calculate indices for a regular global coordinate grid."""
+    if axis is None and res is None:
+        raise ValueError("One of axis and res must be provided.")
+    if axis is not None and res is not None:
+        raise ValueError("Only one of axis and res must be provided.")
+
+    coord_arr = np.atleast_1d(coord).astype(float)
+
+    if res is not None:
+        coord_arr[coord_arr == lower_bound] += 0.001
+        coord_arr[coord_arr == upper_bound] -= 0.001
+
+        index = (upper_bound - lower_bound) / (2 * res) + offset * (coord_arr / res).astype(int) - (coord_arr <= 0 if offset == 1 else coord_arr > 0)
+
+    elif axis is not None:
+        axis_0 = axis[0]
+        delta = axis[1] - axis[0]
+
+        # Determine whether grid cells are defined by centres or boundaries
+        if axis_0 not in [lower_bound, upper_bound]:
+            if axis_0 == lower_bound + delta / 2:
+                axis_0 = lower_bound
+            elif axis_0 == upper_bound + delta / 2:
+                axis_0 = upper_bound
+            else:
+                raise RuntimeError(
+                    f"I can't work this grid out, grid box boundaries are not at {lower_bound} or {upper_bound} or their half-cell offsets."
+                )
+
+        index = (coord_arr - axis_0) / delta
+        index[index >= len(axis)] = len(axis) - 1
+
+    return index.astype(int)
+
+
+def get_xindex(lon: float | np.ndarray, lon_axis: np.ndarray | None = None, res: float | None = None) -> np.ndarray:
     """
-    For a given latitude return the y-index as it was in MDS2/3 in a 1x1 global grid.
+    Convert longitude(s) to x-indices of a global longitude grid.
 
     Parameters
     ----------
-    lat : numpy.ndarray
-        Latitude(s) of observation in degrees.
-    res : float
-        Resolution of grid in degrees.
+    lon : float or np.ndarray
+        Longitude(s) in degrees to select.
+    lon_axis : np.ndarray, optional
+        Longitude coordinate axis of the grid. If provided, indices are
+        calculated based on this axis. The axis must describe a regular
+        global grid with boundaries at -180 and 180.
+    res : float, optional
+        Grid resolution in degrees. If provided, indices are calculated
+        using the MDS2/3 indexing convention for a regular global grid
+        extending from -180 to 180.
 
     Returns
     -------
-    int or numpy.ndarray
-        Grid box index(es).
+    np.ndarray
+        Grid index or indices corresponding to the input longitude(s).
 
-    Notes
-    -----
-    In the northern hemisphere, borderline latitudes which fall on grid boundaries are pushed north, except
-    90 which goes south. In the southern hemisphere, they are pushed south, except -90 which goes north.
-    At 0 degrees they are pushed south.
-
-    Expects that latitudes run from 90N to 90S
-
-    In previous versions, ``res`` had the default value 1.0.
+    Raises
+    ------
+    ValueError
+        If none or both of `lon_axis` and `res` are provided.
+    RuntimeError
+        If the grid boundaries cannot be determined from `lon_axis`.
     """
-    lat_arr = np.atleast_1d(lat)
-    lat_arr[lat_arr == -90] = lat_arr[lat_arr == -90] + 0.001
-    lat_arr[lat_arr == 90] = lat_arr[lat_arr == 90] - 0.001
-
-    index = np.zeros_like(lat_arr.astype(int))
-
-    index[lat_arr > 0] = (90 / res - 1 - (lat_arr[lat_arr > 0] / res).astype(int)).astype(int)
-    index[lat_arr <= 0] = (90 / res - (lat_arr[lat_arr <= 0] / res).astype(int)).astype(int)
-
-    if is_scalar_like(lat):
-        return int(index[0])
-
-    return index
+    return _get_coordinate_index(
+        lon,
+        lon_axis,
+        res,
+        lower_bound=-180.0,
+        upper_bound=180.0,
+        offset=1,
+    )
 
 
-@overload
-def mds_lon_to_xindex(lon: float, res: float) -> int: ...  # numpydoc ignore=GL08
-@overload
-def mds_lon_to_xindex(lon: np.ndarray, res: float) -> np.ndarray: ...  # numpydoc ignore=GL08
-def mds_lon_to_xindex(lon: float | np.ndarray, res: float) -> int | np.ndarray:
+def get_yindex(lat: float | np.ndarray, lat_axis: np.ndarray | None = None, res: float | None = None) -> np.ndarray:
     """
-    For a given longitude return the x-index as it was in MDS2/3 in a 1x1 global grid.
+    Convert latitude(s) to y-indices of a global latitude grid.
 
     Parameters
     ----------
-    lon : numpy.ndarray
-        Longitude(s) of observation in degrees.
-    res : float
-        Resolution of grid in degrees.
+    lat : float or np.ndarray
+        Latitude(s) in degrees to select.
+    lat_axis : np.ndarray, optional
+        Latitude coordinate axis of the grid. If provided, indices are
+        calculated based on this axis. The axis must describe a regular
+        global grid with boundaries at -90 and 90.
+    res : float, optional
+        Grid resolution in degrees. If provided, indices are calculated
+        using the MDS2/3 indexing convention for a regular global grid
+        extending from -90 to 90.
 
     Returns
     -------
-    int or numpy.ndarray
-        Grid box index(es).
+    np.ndarray
+        Grid index or indices corresponding to the input latitude(s).
 
-    Notes
-    -----
-    In the western hemisphere, borderline longitudes which fall on grid boundaries are pushed west, except
-    -180 which goes east. In the eastern hemisphere, they are pushed east, except 180 which goes west.
-    At 0 degrees they are pushed west.
-
-    In previous versions, ``res`` had the default value 1.0.
+    Raises
+    ------
+    ValueError
+        If none or both of `lat_axis` and `res` are provided.
+    RuntimeError
+        If the grid boundaries cannot be determined from `lat_axis`.
     """
-    lon_arr = np.atleast_1d(lon)
-    lon_arr[lon_arr == -180] = lon_arr[lon_arr == -180] + 0.001
-    lon_arr[lon_arr == 180] = lon_arr[lon_arr == 180] - 0.001
-
-    index = np.zeros_like(lon_arr.astype(int))
-
-    index[lon_arr > 0.0] = ((lon_arr[lon_arr > 0.0] / res).astype(int) + 180 / res).astype(int)
-    index[lon_arr <= 0.0] = ((lon_arr[lon_arr <= 0.0] / res).astype(int) + 180 / res - 1).astype(int)
-
-    if is_scalar_like(lon):
-        return int(index[0])
-
-    return index
+    return _get_coordinate_index(
+        lat,
+        lat_axis,
+        res,
+        lower_bound=-90.0,
+        upper_bound=90.0,
+        offset=-1,
+    )
