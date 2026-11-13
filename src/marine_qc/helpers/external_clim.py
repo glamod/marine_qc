@@ -28,8 +28,6 @@ from .auxiliary import (
     isvalid,
     post_format_return_type,
 )
-
-# from .location_control import get_x_index, get_y_index
 from .location_control import get_xindex, get_yindex
 from .time_control import (
     convert_date,
@@ -436,24 +434,16 @@ class Climatology:
         self.data = data
         self.convert_units_to(target_units, source_units=source_units)
 
-        if time_axis is None:
-            self.time_axis = data.cf.coordinates["time"][0]
-        else:
-            self.time_axis = time_axis
-        if lat_axis is None:
-            self.lat_axis = data.cf.coordinates["latitude"][0]
-        else:
-            self.lat_axis = lat_axis
-        if lon_axis is None:
-            self.lon_axis = data.cf.coordinates["longitude"][0]
-        else:
-            self.lon_axis = lon_axis
+        self.time_axis = time_axis or data.cf.coordinates["time"][0]
+        self.lat_axis = lat_axis or data.cf.coordinates["latitude"][0]
+        self.lon_axis = lon_axis or data.cf.coordinates["longitude"][0]
 
-        if valid_ntime is None:
-            valid_ntime = [0, 1, 73, 365]
-        elif not isinstance(valid_ntime, (tuple, list)):
+        valid_ntime = valid_ntime or [0, 1, 73, 365]
+        if not isinstance(valid_ntime, (tuple, list)):
             valid_ntime = [valid_ntime]
+        self.valid_ntime = valid_ntime
         self.ntime = len(data[self.time_axis])
+
         if self.ntime not in valid_ntime:
             raise ValueError(f"Weird shaped field {self.ntime}. Use one of {valid_ntime}.")
 
@@ -540,8 +530,7 @@ class Climatology:
         np.ndarray
             Array of indices.
         """
-        xindex: int | np.ndarray = get_xindex(lon, self.data.coords[self.lon_axis].data)
-        return xindex
+        return get_xindex(lon, self.data.coords[self.lon_axis].data)
 
     def get_yindex(self, lat: float | np.ndarray) -> int | np.ndarray:
         """
@@ -557,8 +546,7 @@ class Climatology:
         numpy.ndarray
             Array of indices.
         """
-        yindex: int | np.ndarray = get_yindex(lat, self.data.coords[self.lat_axis].data)
-        return yindex
+        return get_yindex(lat, self.data.coords[self.lat_axis].data)
 
     @post_format_return_type("lat", dtype=float)
     @convert_date("month", "day")
@@ -587,7 +575,7 @@ class Climatology:
         day : :py:obj:`~marine_qc.SequenceIntType`, optional
             Day for which the value is required.
         regular : bool, default: True
-            Set True for regular spatail grids and False for irregulat spatial grids.
+            Set True for regular spatial grids and False for irregular spatial grids.
 
         Returns
         -------
@@ -615,7 +603,7 @@ class Climatology:
         month = np.array(month, dtype=float)
         month_arr = np.atleast_1d(month)
         day = np.array(day, dtype=float)
-        day_arr = np.atleast_1d(day).astype(float)
+        day_arr = np.atleast_1d(day)
 
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
@@ -659,37 +647,14 @@ class Climatology:
 
         return result
 
-    def _get_value_regular(
+    def _get_value_regular(  # numpydoc ignore=PR01,RT01
         self,
         lat: np.ndarray,
         lon: np.ndarray,
         month: np.ndarray,
         day: np.ndarray,
     ) -> np.ndarray:
-        """
-        Get the value from a climatology at the give position and time.
-
-        Parameters
-        ----------
-        lat : np.ndarray
-            Latitude of location to extract value from in degrees.
-        lon : np.ndarray
-            Longitude of location to extract value from in degrees.
-        month : np.ndarray
-            Month for which the value is required.
-        day : np.ndarray
-            Day for which the value is required.
-
-        Returns
-        -------
-        np.ndarray
-            Climatology value at specified location and time.
-
-        Notes
-        -----
-        Assumes that the grid is a regular latitude longitude grid. The alternative method `_get_value`
-        works with non-regular grids.
-        """
+        """Extract values at the specified geographic positions and times, assuming a regular grid."""
         result = np.full(len(lat), np.nan)
 
         lat_axis = self.data.coords[self.lat_axis].data
@@ -698,9 +663,9 @@ class Climatology:
         if lat_axis.size == 0 or lon_axis.size == 0:
             return result
 
-        lat_indices = get_yindex(lat, lat_axis)
-        lon_indices = get_xindex(lon, lon_axis)
-        time_indices = get_tindex(month, day, self.ntime)
+        lat_indices = self.get_yindex(lat)
+        lon_indices = self.get_xindex(lon)
+        time_indices = self.get_tindex(month, day)
 
         lat_indices = np.atleast_1d(lat_indices).astype(int)
         lon_indices = np.atleast_1d(lon_indices).astype(int)
@@ -715,45 +680,21 @@ class Climatology:
             & (time_indices < self.ntime)
         )
 
-        print(valid)
-        print(time_indices)
         result[valid] = self.data.values[time_indices[valid], lat_indices[valid], lon_indices[valid]]
         return result
 
-    def _get_value_irregular(
+    def _get_value_irregular(  # numpydoc ignore=PR01,RT01
         self,
         lat: np.ndarray,
         lon: np.ndarray,
         month: np.ndarray,
         day: np.ndarray,
     ) -> np.ndarray:
-        """
-        Get the value from a climatology at the give position and time.
-
-        Parameters
-        ----------
-        lat :  np.ndarray
-            Latitude of location to extract value from in degrees.
-        lon :  np.ndarray
-            Longitude of location to extract value from in degrees.
-        month :  np.ndarray
-            Month for which the value is required.
-        day :  np.ndarray
-            Day for which the value is required.
-
-        Returns
-        -------
-        np.ndarray or pandas.Series
-            Climatology value at specified location and time.
-
-        Notes
-        -----
-        Use only exact matches for selecting time and nearest valid index value for selecting location.
-        """
+        """Extract values at the specified geographic positions and times for regular and irregular grids (slow!)."""
         result = np.full(len(lat), np.nan)
 
         grouped = defaultdict(list)
-        tindexes = get_tindex(month, day, self.ntime)
+        tindexes = self.get_tindex(month, day)
 
         tindexes = np.atleast_1d(tindexes)
 

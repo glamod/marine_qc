@@ -30,6 +30,7 @@ __all__ = [
     "day_in_year",
     "get_month_lengths",
     "get_tindex",
+    "get_utc_time",
     "pentad_to_month_day",
     "split_date",
     "time_difference",
