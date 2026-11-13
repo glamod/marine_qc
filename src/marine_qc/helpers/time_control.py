@@ -29,6 +29,7 @@ __all__ = [
     "convert_date_to_hours",
     "day_in_year",
     "get_month_lengths",
+    "get_tindex",
     "pentad_to_month_day",
     "split_date",
     "time_difference",
@@ -290,7 +291,7 @@ def which_pentad(year: int | np.ndarray | None = None, month: int | np.ndarray =
     return (day_in_year(year, month, day) - 1) // 5 + 1
 
 
-def get_t_index(month: int | np.ndarray, day: int | np.ndarray, ntime: int) -> np.ndarray:
+def get_tindex(month: int | np.ndarray, day: int | np.ndarray, ntime: int) -> np.ndarray:
     """
     Convert arrays of months and days to an array of indices for the grid.
 
@@ -313,15 +314,15 @@ def get_t_index(month: int | np.ndarray, day: int | np.ndarray, ntime: int) -> n
     day_arr = np.atleast_1d(day)
 
     n_points = len(month_arr)
-    t_index = np.zeros(n_points)
+    tindex = np.zeros(n_points)
 
     if ntime == 1:
-        return t_index
+        return tindex
     if ntime == 73:
         return which_pentad(year=2001, month=month_arr, day=day_arr) - 1
     if ntime == 365:
         return day_in_year(year=2001, month=month_arr, day=day_arr) - 1
-    return t_index - 1
+    return tindex - 1
 
 
 def get_month_lengths(year: int) -> list[int]:

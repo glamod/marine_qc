@@ -28,11 +28,13 @@ from .auxiliary import (
     isvalid,
     post_format_return_type,
 )
-from .location_control import get_x_index, get_y_index
+
+# from .location_control import get_x_index, get_y_index
+from .location_control import get_xindex, get_yindex
 from .time_control import (
     convert_date,
     get_month_lengths,
-    get_t_index,
+    get_tindex,
 )
 
 
@@ -506,7 +508,7 @@ class Climatology:
             self.data.attrs["units"] = source_units
         self.data = convert_units_to(self.data, target_units)
 
-    def get_t_index(self, month: int | np.ndarray, day: int | np.ndarray) -> np.ndarray:
+    def get_tindex(self, month: int | np.ndarray, day: int | np.ndarray) -> int | np.ndarray:
         """
         Convert arrays of months and days to an array of indices for the grid.
 
@@ -522,9 +524,9 @@ class Climatology:
         np.ndarray
             Array of indices.
         """
-        return get_t_index(month, day, self.ntime)
+        return get_tindex(month, day, self.ntime)
 
-    def get_x_index(self, lon: float | np.ndarray) -> np.ndarray:
+    def get_xindex(self, lon: float | np.ndarray) -> int | np.ndarray:
         """
         Convert an array of longitudes to an array of indices for the grid.
 
@@ -538,9 +540,10 @@ class Climatology:
         np.ndarray
             Array of indices.
         """
-        return get_x_index(lon, self.data.coords[self.lon_axis].data)
+        xindex: int | np.ndarray = get_xindex(lon, self.data.coords[self.lon_axis].data)
+        return xindex
 
-    def get_y_index(self, lat: float | np.ndarray) -> np.ndarray:
+    def get_yindex(self, lat: float | np.ndarray) -> int | np.ndarray:
         """
         Convert an array of latitudes to an array of indices for the grid.
 
@@ -554,7 +557,8 @@ class Climatology:
         numpy.ndarray
             Array of indices.
         """
-        return get_y_index(lat, self.data.coords[self.lat_axis].data)
+        yindex: int | np.ndarray = get_yindex(lat, self.data.coords[self.lat_axis].data)
+        return yindex
 
     @post_format_return_type("lat", dtype=float)
     @convert_date("month", "day")
@@ -694,9 +698,9 @@ class Climatology:
         if lat_axis.size == 0 or lon_axis.size == 0:
             return result
 
-        lat_indices = get_y_index(lat, lat_axis)
-        lon_indices = get_x_index(lon, lon_axis)
-        time_indices = get_t_index(month, day, self.ntime)
+        lat_indices = get_yindex(lat, lat_axis)
+        lon_indices = get_xindex(lon, lon_axis)
+        time_indices = get_tindex(month, day, self.ntime)
 
         lat_indices = np.atleast_1d(lat_indices).astype(int)
         lon_indices = np.atleast_1d(lon_indices).astype(int)
@@ -711,6 +715,8 @@ class Climatology:
             & (time_indices < self.ntime)
         )
 
+        print(valid)
+        print(time_indices)
         result[valid] = self.data.values[time_indices[valid], lat_indices[valid], lon_indices[valid]]
         return result
 
@@ -747,7 +753,9 @@ class Climatology:
         result = np.full(len(lat), np.nan)
 
         grouped = defaultdict(list)
-        tindexes = get_t_index(month, day, self.ntime)
+        tindexes = get_tindex(month, day, self.ntime)
+
+        tindexes = np.atleast_1d(tindexes)
 
         for i, tindex in enumerate(tindexes):
             grouped[tindex].append(i)

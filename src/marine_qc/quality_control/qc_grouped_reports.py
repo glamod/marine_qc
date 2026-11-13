@@ -32,13 +32,13 @@ from ..helpers.external_clim import (
     inspect_climatology,
 )
 from ..helpers.location_control import (
-    mds_lat_to_yindex,
-    mds_lon_to_xindex,
+    get_xindex,
+    get_yindex,
 )
 from ..helpers.statistics import p_gross
 from ..helpers.time_control import (
     convert_date,
-    get_t_index,
+    get_tindex,
     pentad_to_month_day,
     which_pentad,
 )
@@ -164,19 +164,19 @@ class SuperObsGrid:
         if not np.any(valid):
             return
 
-        y_index = mds_lat_to_yindex(lat_arr[valid], res=1)
-        x_index = mds_lon_to_xindex(lon_arr[valid], res=1)
-        t_index = get_t_index(month_arr[valid], day_arr[valid], 73)
+        yindex = get_yindex(lat_arr[valid], res=1.0)
+        xindex = get_xindex(lon_arr[valid], res=1.0)
+        tindex = get_tindex(month_arr[valid], day_arr[valid], 73)
 
-        unique_index = t_index * 1000000 + y_index * 1000 + x_index
+        unique_index = tindex * 1000000 + yindex * 1000 + xindex
 
         df: pd.DataFrame = pd.DataFrame(
             {
                 "uid": unique_index,
                 "value": value_arr[valid],
-                "x": x_index,
-                "y": y_index,
-                "t": t_index,
+                "x": xindex,
+                "y": yindex,
+                "t": tindex,
             }
         )
 
@@ -212,8 +212,8 @@ class SuperObsGrid:
         None
             The function performs its operations in-place and does not return anything.
         """
-        xindex = mds_lon_to_xindex(lon, res=1.0)
-        yindex = mds_lat_to_yindex(lat, res=1.0)
+        xindex = get_xindex(lon, res=1.0)
+        yindex = get_yindex(lat, res=1.0)
         pindex = which_pentad(year=2001, month=month, day=day) - 1
 
         if not (0 <= xindex < 360):
@@ -458,8 +458,8 @@ class SuperObsGrid:
         float
             Buddy mean at the specified location.
         """
-        xindex = mds_lon_to_xindex(lon, res=1.0)
-        yindex = mds_lat_to_yindex(lat, res=1.0)
+        xindex = get_xindex(lon, res=1.0)
+        yindex = get_yindex(lat, res=1.0)
         pindex = which_pentad(year=2001, month=month, day=day) - 1
         return float(self.buddy_mean[xindex, yindex, pindex])
 
@@ -483,8 +483,8 @@ class SuperObsGrid:
         float
             Buddy standard deviation at the specified location.
         """
-        xindex = mds_lon_to_xindex(lon, res=1.0)
-        yindex = mds_lat_to_yindex(lat, res=1.0)
+        xindex = get_xindex(lon, res=1.0)
+        yindex = get_yindex(lat, res=1.0)
         pindex = which_pentad(year=2001, month=month, day=day) - 1
         return float(self.buddy_stdev[xindex, yindex, pindex])
 

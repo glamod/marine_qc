@@ -7,7 +7,7 @@ import pytest
 from marine_qc.helpers.time_control import (
     convert_date_to_hours,
     day_in_year,
-    get_t_index,
+    get_tindex,
     pentad_to_month_day,
     split_date,
     time_difference,
@@ -281,18 +281,18 @@ def test_time_difference(time1, time2, expected):
         assert result == expected
 
 
-def test_get_t_index():
+def test_get_tindex():
     month = np.array([1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12])
     day = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 31])
 
-    result = get_t_index(month, day, 365)
+    result = get_tindex(month, day, 365)
     assert np.all(result == np.array([0, 1, 33, 62, 94, 125, 157, 188, 220, 252, 283, 315, 346, 364]))
 
-    result = get_t_index(month, day, 73)
+    result = get_tindex(month, day, 73)
     assert np.all(result == np.array([0, 0, 6, 12, 18, 25, 31, 37, 44, 50, 56, 63, 69, 72]))
 
-    result = get_t_index(month, day, 1)
-    assert np.all(result == np.zeros(len(result)))
+    result = get_tindex(month, day, 1)
+    assert np.all(result == 0)
 
-    result = get_t_index(month, day, 10)
+    result = get_tindex(month, day, 10)
     assert np.all(result == -1)

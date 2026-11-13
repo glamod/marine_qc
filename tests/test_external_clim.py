@@ -330,69 +330,69 @@ def test_climatology_empty():
     assert climatology.ntime == 0
 
 
-def test_get_t_index_day_scalar(external_sst_day):
-    assert external_sst_day.get_t_index(7, 4) == 0
+def test_get_tindex_day_scalar(external_sst_day):
+    assert external_sst_day.get_tindex(7, 4) == 0
 
 
-def test_get_t_index_year_scalar(external_sst_year):
-    assert external_sst_year.get_t_index(1, 1) == 0
-    assert external_sst_year.get_t_index(12, 31) == 364
+def test_get_tindex_year_scalar(external_sst_year):
+    assert external_sst_year.get_tindex(1, 1) == 0
+    assert external_sst_year.get_tindex(12, 31) == 364
 
 
-def test_get_t_index_year_list(external_sst_year):
-    result = external_sst_year.get_t_index([1, 2, 3], [1, 11, 22])
+def test_get_tindex_year_list(external_sst_year):
+    result = external_sst_year.get_tindex([1, 2, 3], [1, 11, 22])
     assert len(result) == 3
     assert result[0] == 0
     assert result[1] == 41
     assert result[2] == 80
 
 
-def test_get_t_index_year_array(external_sst_year):
-    result = external_sst_year.get_t_index(np.array([1, 2, 3]), np.array([1, 11, 22]))
+def test_get_tindex_year_array(external_sst_year):
+    result = external_sst_year.get_tindex(np.array([1, 2, 3]), np.array([1, 11, 22]))
     assert np.all(result == [0, 41, 80])
 
 
-def test_get_x_index_day_scalar(external_sst_day):
-    assert external_sst_day.get_x_index(10.0) == 190
+def test_get_xindex_day_scalar(external_sst_day):
+    assert external_sst_day.get_xindex(10.0) == 190
 
 
-def test_get_x_index_year_scalar(external_sst_year):
-    assert external_sst_year.get_x_index(10.0) == 190
-    assert external_sst_year.get_x_index(6.14) == 186
+def test_get_xindex_year_scalar(external_sst_year):
+    assert external_sst_year.get_xindex(10.0) == 190
+    assert external_sst_year.get_xindex(6.14) == 186
 
 
-def test_get_x_index_year_list(external_sst_year):
-    result = external_sst_year.get_x_index([10.0, 6.14, -73.59])
+def test_get_xindex_year_list(external_sst_year):
+    result = external_sst_year.get_xindex([10.0, 6.14, -73.59])
     assert len(result) == 3
     assert result[0] == 190
     assert result[1] == 186
     assert result[2] == 106
 
 
-def test_get_x_index_year_array(external_sst_year):
-    result = external_sst_year.get_x_index(np.array([10.0, 6.14, -73.59]))
+def test_get_xindex_year_array(external_sst_year):
+    result = external_sst_year.get_xindex(np.array([10.0, 6.14, -73.59]))
     assert np.all(result == [190, 186, 106])
 
 
-def test_get_y_index_day_scalar(external_sst_day):
-    assert external_sst_day.get_y_index(53.55) == 36
+def test_get_yindex_day_scalar(external_sst_day):
+    assert external_sst_day.get_yindex(53.55) == 36
 
 
-def test_get_y_index_year_scalar(external_sst_year):
-    assert external_sst_year.get_y_index(53.55) == 36
-    assert external_sst_year.get_y_index(46.20) == 43
+def test_get_yindex_year_scalar(external_sst_year):
+    assert external_sst_year.get_yindex(53.55) == 36
+    assert external_sst_year.get_yindex(46.20) == 43
 
 
-def test_get_y_index_year_list(external_sst_year):
-    result = external_sst_year.get_y_index([53.55, 46.20, 45.51])
+def test_get_yindex_year_list(external_sst_year):
+    result = external_sst_year.get_yindex([53.55, 46.20, 45.51])
     assert len(result) == 3
     assert result[0] == 36
     assert result[1] == 43
     assert result[2] == 44
 
 
-def test_get_y_index_year_array(external_sst_year):
-    result = external_sst_year.get_y_index(np.array([53.55, 46.20, 45.51]))
+def test_get_yindex_year_array(external_sst_year):
+    result = external_sst_year.get_yindex(np.array([53.55, 46.20, 45.51]))
     assert np.all(result == [36, 43, 44])
 
 
