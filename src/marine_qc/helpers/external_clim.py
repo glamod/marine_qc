@@ -518,7 +518,7 @@ class Climatology:
 
     def get_xindex(self, lon: float | np.ndarray) -> int | np.ndarray:
         """
-        Convert an array of longitudes to an array of indices for the grid.
+        Convert longitudes(s) to grid index(es).
 
         Parameters
         ----------
