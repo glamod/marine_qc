@@ -63,7 +63,7 @@ def _get_coordinate_index(  # numpydoc ignore=PR01,RT01
         index = (coord_arr - axis_0) / delta
         index[index >= len(axis)] = len(axis) - 1
 
-    return index  # .astype(int)
+    return index
 
 
 def get_xindex(lon: float | np.ndarray, lon_axis: np.ndarray | None = None, res: float | None = None) -> int | np.ndarray:
