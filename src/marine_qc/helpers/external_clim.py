@@ -534,7 +534,7 @@ class Climatology:
 
     def get_yindex(self, lat: float | np.ndarray) -> int | np.ndarray:
         """
-        Convert an array of latitudes to an array of indices for the grid.
+        Convert latitude(s) to grid index(es).
 
         Parameters
         ----------
