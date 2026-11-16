@@ -106,8 +106,8 @@ class SuperObsGrid:
         self.buddy_stdev = np.zeros((360, 180, 73))
         self.nobs = np.zeros((360, 180, 73))
 
-    @convert_date("month", "day")
     @inspect_arrays("lat", "lon", "value", "month", "day")
+    @convert_date("month", "day")
     def add_multiple_observations(
         self,
         lat: SequenceNumberType,
@@ -490,8 +490,8 @@ class SuperObsGrid:
 
 @args_from_data("lat", "lon", "date", "value")
 @post_format_return_type("value")
-@inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "date", "value", "climatology")
 @inspect_climatology("climatology")
 def do_mds_buddy_check(
     lat: SequenceNumberType,
@@ -628,8 +628,8 @@ def do_mds_buddy_check(
 
 @args_from_data("lat", "lon", "date", "value")
 @post_format_return_type("value")
-@inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "date", "value", "climatology")
 @inspect_climatology("climatology")
 def do_bayesian_buddy_check(  # pylint: disable=too-many-positional-arguments
     lat: SequenceNumberType,

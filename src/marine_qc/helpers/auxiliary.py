@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime
 import inspect
 from collections.abc import Callable, Sequence
+from contextvars import ContextVar
 from functools import wraps
 from typing import Any, TypeAlias
 
@@ -55,6 +56,10 @@ DECORATOR_HANDLERS: dict[Callable[..., Any], list[Callable[..., Any]]] = {}
 DECORATOR_NAMES: dict[Callable[..., Any], str] = {}
 DECORATOR_KWARGS: dict[Callable[..., Any], set[str]] = {}
 IS_POST_HANDLER: dict[Callable[..., Any], bool] = {}
+ACTIVE_FUNCTIONS: ContextVar[frozenset[int]] = ContextVar(
+    "ACTIVE_FUNCTIONS",
+    default=frozenset(),
+)
 
 
 def is_scalar_like(x: Any) -> bool:
@@ -339,10 +344,13 @@ def generic_decorator(
       the handler, and removed before calling the original function.
     - The original function is called with the possibly modified bound arguments after handler processing.
     """
-    if pre_handler:
+    if pre_handler is not None:
         IS_POST_HANDLER[pre_handler] = False
-    if post_handler:
+
+    if post_handler is not None:
         IS_POST_HANDLER[post_handler] = True
+
+    handlers = tuple(handler for handler in (pre_handler, post_handler) if handler is not None)
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """
@@ -360,11 +368,41 @@ def generic_decorator(
             The `wrapper` function that executes pre-handlers, calls the original function
             and then executes post-handlers.
         """
-        handlers: list[Callable[..., Any]] = []
-        if pre_handler:
-            handlers.append(pre_handler)
-        if post_handler:
-            handlers.append(post_handler)
+        all_pre_handlers: list[Callable[..., Any]] = []
+        all_post_handlers: list[Callable[..., Any]] = []
+        reserved_keys: set[str] = set()
+
+        current_func: Any = func
+        visited: set[int] = set()
+
+        while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
+            visited.add(id(current_func))
+
+            for handler in DECORATOR_HANDLERS.get(current_func, ()):
+                if handler in DECORATOR_KWARGS:
+                    reserved_keys.update(DECORATOR_KWARGS[handler])
+
+                if IS_POST_HANDLER.get(handler, False):
+                    all_post_handlers.append(handler)
+                else:
+                    all_pre_handlers.append(handler)
+
+            current_func = current_func.__wrapped__
+
+        for handler in handlers:
+            if handler in DECORATOR_KWARGS:
+                reserved_keys.update(DECORATOR_KWARGS[handler])
+
+            if IS_POST_HANDLER.get(handler, False):
+                all_post_handlers.append(handler)
+            else:
+                all_pre_handlers.append(handler)
+
+        root_id = id(current_func)
+
+        sig = inspect.signature(func)
+        func_name = getattr(func, "__name__", repr(func))
+        reserved_keys = frozenset(reserved_keys)
 
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -399,44 +437,39 @@ def generic_decorator(
             - Pre-handlers receive the arguments dictionary (`bound_args.arguments`) and reserved kwargs.
             - Post-handlers receive the function result, the current arguments, and the original arguments.
             """
-            reserved_keys: set[str] = set()
-            all_pre_handlers: list[Callable[..., Any]] = []
-            all_post_handlers: list[Callable[..., Any]] = []
+            active = ACTIVE_FUNCTIONS.get()
 
-            current_func: Any = wrapper
-            visited: set[int] = set()
+            if root_id in active:
+                return func(*args, **kwargs)
 
-            while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
-                visited.add(id(current_func))
-                for handler in DECORATOR_HANDLERS.get(current_func, []):
-                    if handler in DECORATOR_KWARGS:
-                        reserved_keys.update(DECORATOR_KWARGS[handler])
-                    if IS_POST_HANDLER.get(handler, False):
-                        all_post_handlers.append(handler)
-                    else:
-                        all_pre_handlers.append(handler)
+            token = ACTIVE_FUNCTIONS.set(active | {root_id})
 
-                current_func = current_func.__wrapped__
+            try:
+                meta_kwargs = {k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] for k in reserved_keys if k in kwargs}
 
-            sig = inspect.signature(func)
-            meta_kwargs = {k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] for k in reserved_keys if k in kwargs}
+                bound_args = sig.bind(*args, **kwargs)
+                bound_args.apply_defaults()
 
-            bound_args = sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            original_call = bound_args.arguments.copy()
+                original_args = bound_args.arguments.copy()
 
-            func_name = getattr(func, "__name__", repr(func))
-            for handler in reversed(all_pre_handlers):
-                DECORATOR_NAMES[handler] = func_name
-                handler(bound_args.arguments, **meta_kwargs)
+                for handler in all_pre_handlers:
+                    DECORATOR_NAMES[handler] = func_name
+                    handler(bound_args.arguments, **meta_kwargs)
 
-            result = func(*bound_args.args, **bound_args.kwargs)
+                result = func(*bound_args.args, **bound_args.kwargs)
 
-            for handler in reversed(all_post_handlers):
-                DECORATOR_NAMES[handler] = func_name
-                result = handler(result, bound_args.arguments, **original_call)
+                for handler in all_post_handlers:
+                    DECORATOR_NAMES[handler] = func_name
+                    result = handler(
+                        result,
+                        bound_args.arguments,
+                        **original_args,
+                    )
 
-            return result
+                return result
+
+            finally:
+                ACTIVE_FUNCTIONS.reset(token)
 
         DECORATOR_HANDLERS[wrapper] = handlers
 
@@ -635,7 +668,7 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
         inverse_indices = np.argsort(sort_indices)
         if len(result) == 0:
             return result
-        return result[inverse_indices]
+        return np.asarray(result)[inverse_indices]
 
     return generic_decorator(pre_handler=pre_handler, post_handler=post_handler)
 

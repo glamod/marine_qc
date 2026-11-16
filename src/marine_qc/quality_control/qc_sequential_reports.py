@@ -52,8 +52,8 @@ __all__ = [
 
 @args_from_data("value", "lat", "lon", "date")
 @post_format_return_type("value")
-@inspect_arrays("value", "lat", "lon", "date", sortby="date")
 @convert_units(lat="degrees", lon="degrees")
+@inspect_arrays("value", "lat", "lon", "date", sortby="date")
 def do_spike_check(
     value: SequenceNumberType,
     lat: SequenceNumberType,
@@ -174,8 +174,8 @@ def do_spike_check(
 
 @args_from_data("vsi", "dsi", "lat", "lon", "date")
 @post_format_return_type("vsi")
-@inspect_arrays("vsi", "dsi", "lat", "lon", "date", sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+@inspect_arrays("vsi", "dsi", "lat", "lon", "date", sortby="date")
 def do_track_check(
     vsi: SequenceNumberType,
     dsi: SequenceNumberType,
@@ -388,8 +388,8 @@ def do_few_check(
 
 @args_from_data("at", "dpt", "lat", "lon", "date")
 @post_format_return_type("at")
-@inspect_arrays("at", "dpt", "lat", "lon", "date", sortby="date")
 @convert_units(at="K", dpt="K", lat="degrees", lon="degrees")
+@inspect_arrays("at", "dpt", "lat", "lon", "date", sortby="date")
 def find_saturated_runs(
     at: SequenceNumberType,
     dpt: SequenceNumberType,
@@ -620,8 +620,8 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
 
 @args_from_data("lat", "lon", "date")
 @post_format_return_type("lat")
-@inspect_arrays("lat", "lon", "date", sortby="date")
 @convert_units(lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "date", sortby="date")
 def do_iquam_track_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,

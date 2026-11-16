@@ -442,8 +442,8 @@ def calculate_course_parameters(
 
 
 @post_format_return_type("lat", dtype=float, multiple=True)
-@inspect_arrays("lat", "lon", "date")
 @convert_units(lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "date")
 def calculate_speed_course_distance_time_difference(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -504,8 +504,8 @@ def calculate_speed_course_distance_time_difference(
 
 
 @post_format_return_type("vsi", dtype=float)
-@inspect_arrays("lat", "lon", "date", "vsi", "dsi", sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "date", "vsi", "dsi", sortby="date")
 def forward_discrepancy(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -576,8 +576,8 @@ def forward_discrepancy(
 
 
 @post_format_return_type("vsi", dtype=float)
-@inspect_arrays("lat", "lon", "date", "vsi", "dsi", sortby="date")
 @convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "date", "vsi", "dsi", sortby="date")
 def backward_discrepancy(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -654,8 +654,8 @@ def backward_discrepancy(
 
 
 @post_format_return_type("lat", dtype=float)
-@inspect_arrays("lat", "lon", "timediff")
 @convert_units(lat="degrees", lon="degrees")
+@inspect_arrays("lat", "lon", "timediff")
 def calculate_midpoint(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
