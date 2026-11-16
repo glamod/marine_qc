@@ -67,8 +67,8 @@ Internal changes
 * change decorator ``post_format_return_type``'s default dtype parameter from int to None (:pull:`379`)
 * decorator ``post_format_return_type`` now converts type in sequences if parameter dtype is provided (:pull:`379`)
 * ``Climatology`` method ``get_tindex`` uses new function ``helpers.time_control.get_tindex`` (:pull:`379`)
-* combine ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.external_clim.Climatology.get_y_index`` into new function ``helpers.location_control.get_yindex`` with both parameters "res" and "lon_axis"(:pull:``). Setting "res" uses the former function ``helpers.location_control.mds_lat_to_yindex``, while setting "lon_axis" uses former staticmethod ``helpers.external_clim.Climatology.get_y_index`` (:pull:`379`)
-* combine ``helpers.location_control.mds_lat_to_xindex`` and ``helpers.external_clim.Climatology.get_x_index`` into new function ``helpers.location_control.get_xindex`` with both parameters "res" and "lat_axis"(:pull:``). Setting "res" uses the former function ``helpers.location_control.mds_lat_to_xindex``, while setting "lat_axis" uses former static method ``helpers.external_clim.Climatology.get_x_index`` (:pull:`379`)
+* combine ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.external_clim.Climatology.get_y_index`` into new function ``helpers.location_control.get_yindex`` with both parameters "res" and "lon_axis". Setting "res" uses the former function ``helpers.location_control.mds_lat_to_yindex``, while setting "lon_axis" uses former staticmethod ``helpers.external_clim.Climatology.get_y_index`` (:pull:`379`)
+* combine ``helpers.location_control.mds_lat_to_xindex`` and ``helpers.external_clim.Climatology.get_x_index`` into new function ``helpers.location_control.get_xindex`` with both parameters "res" and "lat_axis". Setting "res" uses the former function ``helpers.location_control.mds_lat_to_xindex``, while setting "lat_axis" uses former static method ``helpers.external_clim.Climatology.get_x_index`` (:pull:`379`)
 
 0.4.2 (2026-09-07)
 ------------------
