@@ -500,7 +500,7 @@ class Climatology:
 
     def get_tindex(self, month: int | np.ndarray, day: int | np.ndarray) -> int | np.ndarray:
         """
-        Convert arrays of months and days to an array of indices for the grid.
+        Convert month(s) and day(s) to grid index(es).
 
         Parameters
         ----------
