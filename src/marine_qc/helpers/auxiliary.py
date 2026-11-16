@@ -180,7 +180,7 @@ def ensure_arrays(**values: Any) -> tuple[npt.NDArray[Any], ...]:
 def format_return_type(
     result_array: np.ndarray | pd.Series | tuple[np.ndarray, ...] | tuple[pd.Series, ...],
     *input_values: Any,
-    dtype: type | None = int,
+    dtype: type | None = None,
     keep_index: bool = False,
 ) -> Any:
     r"""
@@ -195,7 +195,7 @@ def format_return_type(
         The numpy array(s) of results.
     \*input_values : Any
         One or more original input values to infer the desired return type from.
-    dtype : type, optional, default: int
+    dtype : type, optional
         Desired data type of the result.
     keep_index : bool, default: True
         If True keep indexes from `result_array`, otherwise take indexes from `input_values`.
@@ -205,35 +205,48 @@ def format_return_type(
     Same type as input(s)
         The result formatted to match the type of the first valid input value.
     """
+
+    def _convert(value: Any) -> Any:  # numpydoc ignore=GL08
+        if dtype is None:
+            return value
+        if is_scalar_like(value):
+            return dtype(value)
+        if isinstance(value, (np.ndarray, pd.Series)):
+            return value.astype(dtype)
+        if isinstance(value, (list, tuple)):
+            return [dtype(v) for v in value]
+        # return dtype(value)
+        raise ValueError(f"Could not convert {value} to dtype {dtype}.")
+
     input_value = next((val for val in input_values if val is not None), None)
 
+    # Scalar input
     if input_value is None or is_scalar_like(input_value):
         if np.ndim(result_array) > 0:
             result_array = result_array[0]
-        if dtype is not None:
-            return dtype(result_array)
+        return _convert(result_array)
 
+    # Pandas input
     if isinstance(input_value, pd.Series):
         if keep_index is True and isinstance(result_array, pd.Series):
             index = result_array.index
         else:
             index = input_value.index
-        if dtype is None:
-            return pd.Series(result_array, index=index)
-        return pd.Series(result_array, index=index, dtype=dtype)
+        return pd.Series(_convert(result_array), index=index)
 
+    # xarray input
     if isinstance(input_value, (xr.Dataset, xr.DataArray)):
-        return xr.DataArray(result_array, coords=input_value.coords, dims=input_value.dims)
+        return xr.DataArray(_convert(result_array), coords=input_value.coords, dims=input_value.dims)
 
+    # Sequence input
     if isinstance(input_value, (list, tuple)):
-        if isinstance(result_array, np.ndarray):
-            return type(input_value)(result_array.tolist())
-        return type(input_value)(result_array)
+        return type(input_value)(_convert(result_array))
 
+    # NumPy input and Pandas output
     if isinstance(input_value, np.ndarray) and isinstance(result_array, pd.Series):
-        return result_array.to_numpy()
+        return _convert(result_array.to_numpy())
 
-    return result_array  # np.ndarray or fallback
+    return _convert(result_array)
 
 
 def convert_to(value: ValueNumberType, source_units: str, target_units: str) -> SequenceNumberType:
@@ -446,7 +459,7 @@ def generic_decorator(
 
 
 def post_format_return_type(
-    *params: str, dtype: type | list[type] | None = int, multiple: bool = False, keep_index: bool = False
+    *params: str, dtype: type | list[type] | None = None, multiple: bool = False, keep_index: bool = False
 ) -> Callable[..., Any]:
     r"""
     Decorator to format a function's return value to match the type of its original input(s).
@@ -462,7 +475,7 @@ def post_format_return_type(
     \*params : str
         List of parameter names whose original input types should be used to
         format the return value.
-    dtype : type or list of type, optional, default: int
+    dtype : type or list of type, optional
         Desired data type of the result.
         If `multiple` is True `dtype` can be a list of types.
     multiple : bool, optional
