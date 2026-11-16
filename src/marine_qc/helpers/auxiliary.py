@@ -215,7 +215,6 @@ def format_return_type(
             return value.astype(dtype)
         if isinstance(value, (list, tuple)):
             return [dtype(v) for v in value]
-        # return dtype(value)
         raise ValueError(f"Could not convert {value} to dtype {dtype}.")
 
     input_value = next((val for val in input_values if val is not None), None)
