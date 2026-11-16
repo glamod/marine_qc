@@ -1,8 +1,11 @@
 """Some generally helpful location control functions for base QC."""
 
 from __future__ import annotations
+from typing import overload
 
 import numpy as np
+
+from .auxiliary import post_format_return_type
 
 
 __all__ = [
@@ -11,6 +14,15 @@ __all__ = [
 ]
 
 
+@overload
+def _get_coordinate_index(
+    coord: float, axis: np.ndarray | None, res: float | None, lower_bound: float, upper_bound: float, offset: int
+) -> int: ...  # numpydoc ignore=GL08
+@overload
+def _get_coordinate_index(  # numpydoc ignore=GL08
+    coord: np.ndarray, axis: np.ndarray | None, res: float | None, lower_bound: float, upper_bound: float, offset: int
+) -> np.ndarray: ...
+@post_format_return_type("coord", dtype=int)
 def _get_coordinate_index(  # numpydoc ignore=PR01,RT01
     coord: float | np.ndarray,
     axis: np.ndarray | None,
@@ -18,7 +30,7 @@ def _get_coordinate_index(  # numpydoc ignore=PR01,RT01
     lower_bound: float,
     upper_bound: float,
     offset: int,
-) -> np.ndarray:
+) -> int | np.ndarray:
     """Calculate indices for a regular global coordinate grid."""
     if axis is None and res is None:
         raise ValueError("One of axis and res must be provided.")
@@ -51,10 +63,10 @@ def _get_coordinate_index(  # numpydoc ignore=PR01,RT01
         index = (coord_arr - axis_0) / delta
         index[index >= len(axis)] = len(axis) - 1
 
-    return index.astype(int)
+    return index  # .astype(int)
 
 
-def get_xindex(lon: float | np.ndarray, lon_axis: np.ndarray | None = None, res: float | None = None) -> np.ndarray:
+def get_xindex(lon: float | np.ndarray, lon_axis: np.ndarray | None = None, res: float | None = None) -> int | np.ndarray:
     """
     Convert longitude(s) to x-indices of a global longitude grid.
 
@@ -73,7 +85,7 @@ def get_xindex(lon: float | np.ndarray, lon_axis: np.ndarray | None = None, res:
 
     Returns
     -------
-    np.ndarray
+    int or np.ndarray
         Grid index or indices corresponding to the input longitude(s).
 
     Raises
@@ -93,7 +105,7 @@ def get_xindex(lon: float | np.ndarray, lon_axis: np.ndarray | None = None, res:
     )
 
 
-def get_yindex(lat: float | np.ndarray, lat_axis: np.ndarray | None = None, res: float | None = None) -> np.ndarray:
+def get_yindex(lat: float | np.ndarray, lat_axis: np.ndarray | None = None, res: float | None = None) -> int | np.ndarray:
     """
     Convert latitude(s) to y-indices of a global latitude grid.
 
@@ -112,7 +124,7 @@ def get_yindex(lat: float | np.ndarray, lat_axis: np.ndarray | None = None, res:
 
     Returns
     -------
-    np.ndarray
+    int or np.ndarray
         Grid index or indices corresponding to the input latitude(s).
 
     Raises
