@@ -376,10 +376,13 @@ def generic_decorator(
         current_func: Callable[..., Any] = func
         visited: set[int] = set()
 
-        while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
+        while id(current_func) not in visited:
             visited.add(id(current_func))
+            wrapped = getattr(current_func, "__wrapped__", None)
+            if not callable(wrapped):
+                break
             wrapped_chain.append(current_func)
-            current_func = current_func.__wrapped__
+            current_func = wrapped
 
         ordered_handlers = [handler for wrapped in reversed(wrapped_chain) for handler in DECORATOR_HANDLERS.get(wrapped, ())] + list(handlers)
 
@@ -394,7 +397,7 @@ def generic_decorator(
 
         sig = inspect.signature(func)
         func_name = getattr(func, "__name__", repr(func))
-        reserved_keys = frozenset(reserved_keys)  # type: ignore[assignment]
+        reserved_keys_frozen = frozenset(reserved_keys)
 
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -437,7 +440,7 @@ def generic_decorator(
             token = ACTIVE_FUNCTIONS.set(active | {root_id})
 
             try:
-                meta_kwargs = {key: kwargs.pop(key) if key not in sig.parameters else kwargs[key] for key in reserved_keys if key in kwargs}
+                meta_kwargs = {key: kwargs.pop(key) if key not in sig.parameters else kwargs[key] for key in reserved_keys_frozen if key in kwargs}
 
                 bound_args = sig.bind(*args, **kwargs)
                 bound_args.apply_defaults()
