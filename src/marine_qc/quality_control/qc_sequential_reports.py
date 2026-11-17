@@ -51,9 +51,9 @@ __all__ = [
 
 
 @args_from_data("value", "lat", "lon", "date")
-@post_format_return_type("value")
-@convert_units(lat="degrees", lon="degrees")
 @inspect_arrays("value", "lat", "lon", "date", sortby="date")
+@convert_units(lat="degrees", lon="degrees")
+@post_format_return_type("value")
 def do_spike_check(
     value: SequenceNumberType,
     lat: SequenceNumberType,
@@ -173,9 +173,9 @@ def do_spike_check(
 
 
 @args_from_data("vsi", "dsi", "lat", "lon", "date")
-@post_format_return_type("vsi")
-@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
 @inspect_arrays("vsi", "dsi", "lat", "lon", "date", sortby="date")
+@convert_units(vsi="km/h", dsi="degrees", lat="degrees", lon="degrees")
+@post_format_return_type("vsi")
 def do_track_check(
     vsi: SequenceNumberType,
     dsi: SequenceNumberType,
@@ -341,8 +341,8 @@ def do_track_check(
 
 
 @args_from_data("value")
-@post_format_return_type("value")
 @inspect_arrays("value")
+@post_format_return_type("value")
 def do_few_check(
     value: SequenceNumberType,
 ) -> SequenceIntType:
@@ -387,9 +387,9 @@ def do_few_check(
 
 
 @args_from_data("at", "dpt", "lat", "lon", "date")
-@post_format_return_type("at")
-@convert_units(at="K", dpt="K", lat="degrees", lon="degrees")
 @inspect_arrays("at", "dpt", "lat", "lon", "date", sortby="date")
+@convert_units(at="K", dpt="K", lat="degrees", lon="degrees")
+@post_format_return_type("at")
 def find_saturated_runs(
     at: SequenceNumberType,
     dpt: SequenceNumberType,
@@ -480,8 +480,8 @@ def find_saturated_runs(
 
 
 @args_from_data("value")
-@post_format_return_type("value")
 @inspect_arrays("value")
+@post_format_return_type("value")
 def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find instances when more than "threshold" of the observations are whole numbers and set the 'round' flag.
@@ -548,8 +548,8 @@ def find_multiple_rounded_values(value: SequenceNumberType, min_count: int, thre
 
 
 @args_from_data("value")
-@post_format_return_type("value")
 @inspect_arrays("value")
+@post_format_return_type("value")
 def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: float) -> SequenceIntType:
     """
     Find cases where more than a given proportion of SSTs have the same value.
@@ -619,9 +619,9 @@ def find_repeated_values(value: SequenceNumberType, min_count: int, threshold: f
 
 
 @args_from_data("lat", "lon", "date")
-@post_format_return_type("lat")
-@convert_units(lat="degrees", lon="degrees")
 @inspect_arrays("lat", "lon", "date", sortby="date")
+@convert_units(lat="degrees", lon="degrees")
+@post_format_return_type("lat")
 def do_iquam_track_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,

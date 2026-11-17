@@ -384,7 +384,7 @@ def generic_decorator(
             wrapped_chain.append(current_func)
             current_func = wrapped
 
-        ordered_handlers = [handler for wrapped in reversed(wrapped_chain) for handler in DECORATOR_HANDLERS.get(wrapped, ())] + list(handlers)
+        ordered_handlers = list(handlers) + [handler for wrapped in wrapped_chain for handler in DECORATOR_HANDLERS.get(wrapped, ())]
 
         for handler in ordered_handlers:
             reserved_keys.update(DECORATOR_KWARGS.get(handler, ()))

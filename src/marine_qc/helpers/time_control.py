@@ -368,8 +368,8 @@ def get_utc_time(
     return utc_time
 
 
-@post_format_return_type("times1", "times2", dtype=float)
 @inspect_arrays("times1", "times2")
+@post_format_return_type("times1", "times2", dtype=float)
 def time_difference(times1: SequenceDatetimeType, times2: SequenceDatetimeType) -> SequenceFloatType:
     """
     Convert two arrays of datetimes to the difference in hours.
