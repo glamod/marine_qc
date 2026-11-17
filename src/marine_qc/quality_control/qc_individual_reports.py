@@ -441,7 +441,6 @@ def do_time_check(
     TypeError
         If decorator `inspect_arrays` does not return numpy ndarrays.
     """
-    print(hour)
     (hour_arr,) = ensure_arrays(hour=hour)  # pylint: disable=unbalanced-tuple-unpacking
 
     return _do_time_check(hour_arr)
