@@ -52,7 +52,7 @@ ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
 ValueStrType: TypeAlias = ScalarStrType | SequenceStrType
 
 # --- DECORATOR HELPERS ---
-DECORATOR_HANDLERS: dict[Callable[..., Any], list[Callable[..., Any]]] = {}
+DECORATOR_HANDLERS: dict[Callable[..., Any], tuple[Callable[..., Any], ...]] = {}
 DECORATOR_NAMES: dict[Callable[..., Any], str] = {}
 DECORATOR_KWARGS: dict[Callable[..., Any], set[str]] = {}
 IS_POST_HANDLER: dict[Callable[..., Any], bool] = {}
@@ -372,27 +372,19 @@ def generic_decorator(
         all_post_handlers: list[Callable[..., Any]] = []
         reserved_keys: set[str] = set()
 
-        current_func: Any = func
+        wrapped_chain: list[Callable[..., Any]] = []
+        current_func: Callable[..., Any] = func
         visited: set[int] = set()
 
         while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
             visited.add(id(current_func))
-
-            for handler in DECORATOR_HANDLERS.get(current_func, ()):
-                if handler in DECORATOR_KWARGS:
-                    reserved_keys.update(DECORATOR_KWARGS[handler])
-
-                if IS_POST_HANDLER.get(handler, False):
-                    all_post_handlers.append(handler)
-                else:
-                    all_pre_handlers.append(handler)
-
+            wrapped_chain.append(current_func)
             current_func = current_func.__wrapped__
 
-        for handler in handlers:
-            if handler in DECORATOR_KWARGS:
-                reserved_keys.update(DECORATOR_KWARGS[handler])
+        ordered_handlers = [handler for wrapped in reversed(wrapped_chain) for handler in DECORATOR_HANDLERS.get(wrapped, ())] + list(handlers)
 
+        for handler in ordered_handlers:
+            reserved_keys.update(DECORATOR_KWARGS.get(handler, ()))
             if IS_POST_HANDLER.get(handler, False):
                 all_post_handlers.append(handler)
             else:
@@ -402,7 +394,7 @@ def generic_decorator(
 
         sig = inspect.signature(func)
         func_name = getattr(func, "__name__", repr(func))
-        reserved_keys = frozenset(reserved_keys)
+        reserved_keys = frozenset(reserved_keys)  # type: ignore[assignment]
 
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -445,11 +437,10 @@ def generic_decorator(
             token = ACTIVE_FUNCTIONS.set(active | {root_id})
 
             try:
-                meta_kwargs = {k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] for k in reserved_keys if k in kwargs}
+                meta_kwargs = {key: kwargs.pop(key) if key not in sig.parameters else kwargs[key] for key in reserved_keys if key in kwargs}
 
                 bound_args = sig.bind(*args, **kwargs)
                 bound_args.apply_defaults()
-
                 original_args = bound_args.arguments.copy()
 
                 for handler in all_pre_handlers:
@@ -460,11 +451,7 @@ def generic_decorator(
 
                 for handler in all_post_handlers:
                     DECORATOR_NAMES[handler] = func_name
-                    result = handler(
-                        result,
-                        bound_args.arguments,
-                        **original_args,
-                    )
+                    result = handler(result, bound_args.arguments, **original_args)
 
                 return result
 
