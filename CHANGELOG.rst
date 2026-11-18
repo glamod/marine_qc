@@ -15,11 +15,15 @@ New features and enhancements
 * The Makefile now defines typing-relevant checks  based on pylint an ty (``make typing``; dependent on make ``install-typing``) that are enforced in GitHub Workflows. (:pull:`342`).
 * The Makefile now defines doctests validation checks based on "pytest --doctest-modules"(``make test-doctests``; dependent on make ``install-test``) that are enforced in GitHub Workflows. (:pull:`342`).
 * The Makefile now defines Jupyter notebooks validation checks based on "pytest --nbval" (``make test-notebook``; dependent on make ``install-notebooks``) that are enforced in GitHub Workflows. (:pull:`342`).
+* new method ``Climatology.get_xindex`` (:pull:`379`) that converts longitude(s) to grid index(es) (:pull:`379`)
+* new method ``Climatology.get_yindex`` that converts latitude(s) to grid index(es) (:pull:`379`)
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The minimum versions of splink is set to 5.0.0 (:issue:`316`, :pull:`347`)
 * marine_qc now adds astropy to its dependencies (:pull:`357`)
+* Combine ``climatology`` methods ``get_value_fast`` and ``get_value`` into a single ``get_value`` method with a new "regular" parameter. Setting "regular=True" (default) uses the former ``get_value_fast`` method, while "regular=False" uses the former ``get_value`` method (:pull:`379`)
+* remove static methods ``get_t_index``, ``get_x_index`` and ``get_y_index`` from ``Climatology`` (:pull:`379`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -32,7 +36,7 @@ Internal changes
 * internal class ``duplicate_checker.duplicates.DupDetect`` now supports new attribute ``pairs`` (:pull:`342`)
 * new internal function ``time_control.get_utc_time`` to calculate UTC time (:pull:`357`)
 * internal module ``astronimical_geometry`` now uses astropy (:pull:`357`)
-* remove internal functions (:pull:`360`, :pull:`363`, :pull:`369`)
+* remove internal functions (:pull:`360`, :pull:`363`, :pull:`369`, :pull:`379`)
 
   * ``helpers.statistics.winsorised_mean``
   * ``helpers.statistics.missing_mean``
@@ -49,6 +53,8 @@ Internal changes
   * ``helpers.location_control.get_four_surrounding_points``
   * ``helpers.location_control.lat_to_yindex``
   * ``helpers.location_control.lon_to_xindex``
+  * ``helpers.location_control.mds_lat_to_yindex``
+  * ``helpers.location_control.mds_lon_to_yindex``
   * ``helpers.location_control.mds_lat_to_yindex_fast``
   * ``helpers.location_control.mds_lon_to_yindex_fast``
   * ``helpers.location_control.xindex_to_lon``
@@ -58,6 +64,11 @@ Internal changes
 * make internal function ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.location_control.mds_lon_to_yindex`` work with both float and np.ndarray inputs (:pull:`369`)
 * replace ``helpers.location_control.mds_lat_to_yindex_fast`` with ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.location_control.mds_lon_to_yindex_fast`` with ``helpers.location_control.mds_lon_to_yindex`` in all internal functions (:pull:`369`)
 * use pyproj within all function in module ``helpers.spherical_geometry`` (:pull:`370`)
+* change decorator ``post_format_return_type``'s default dtype parameter from int to None (:pull:`379`)
+* decorator ``post_format_return_type`` now converts type in sequences if parameter dtype is provided (:pull:`379`)
+* ``Climatology`` method ``get_tindex`` uses new function ``helpers.time_control.get_tindex`` (:pull:`379`)
+* combine ``helpers.location_control.mds_lat_to_yindex`` and ``helpers.external_clim.Climatology.get_y_index`` into new function ``helpers.location_control.get_yindex`` with both parameters "res" and "lon_axis". Setting "res" uses the former function ``helpers.location_control.mds_lat_to_yindex``, while setting "lon_axis" uses former staticmethod ``helpers.external_clim.Climatology.get_y_index`` (:pull:`379`)
+* combine ``helpers.location_control.mds_lat_to_xindex`` and ``helpers.external_clim.Climatology.get_x_index`` into new function ``helpers.location_control.get_xindex`` with both parameters "res" and "lat_axis". Setting "res" uses the former function ``helpers.location_control.mds_lat_to_xindex``, while setting "lat_axis" uses former static method ``helpers.external_clim.Climatology.get_x_index`` (:pull:`379`)
 
 0.4.2 (2026-09-07)
 ------------------

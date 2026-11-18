@@ -32,12 +32,13 @@ from ..helpers.external_clim import (
     inspect_climatology,
 )
 from ..helpers.location_control import (
-    mds_lat_to_yindex,
-    mds_lon_to_xindex,
+    get_xindex,
+    get_yindex,
 )
 from ..helpers.statistics import p_gross
 from ..helpers.time_control import (
     convert_date,
+    get_tindex,
     pentad_to_month_day,
     which_pentad,
 )
@@ -151,7 +152,7 @@ class SuperObsGrid:
         month_arr = np.where(np.isnan(month_arr), -1, month_arr).astype(int)
         day_arr = np.where(np.isnan(day_arr), -1, day_arr).astype(int)
 
-        valid: np.ndarray = (
+        valid = (
             np.atleast_1d(isvalid(lat_arr))
             & np.atleast_1d(isvalid(lon_arr))
             & np.atleast_1d(isvalid(month_arr))
@@ -163,28 +164,28 @@ class SuperObsGrid:
         if not np.any(valid):
             return
 
-        y_index: np.ndarray = mds_lat_to_yindex(lat_arr[valid], res=1)
-        x_index: np.ndarray = mds_lon_to_xindex(lon_arr[valid], res=1)
-        t_index: np.ndarray = Climatology.get_t_index(month_arr[valid], day_arr[valid], 73)
+        yindex = get_yindex(lat_arr[valid], res=1.0)
+        xindex = get_xindex(lon_arr[valid], res=1.0)
+        tindex = get_tindex(month_arr[valid], day_arr[valid], 73)
 
-        unique_index: np.ndarray = t_index * 1000000 + y_index * 1000 + x_index
+        unique_index = tindex * 1000000 + yindex * 1000 + xindex
 
         df: pd.DataFrame = pd.DataFrame(
             {
                 "uid": unique_index,
                 "value": value_arr[valid],
-                "x": x_index,
-                "y": y_index,
-                "t": t_index,
+                "x": xindex,
+                "y": yindex,
+                "t": tindex,
             }
         )
 
         grouped = df.groupby("uid")
         means = grouped["value"].mean().values
         nobs = grouped["value"].count().values
-        x: np.ndarray = df.groupby("uid")["x"].first().values
-        y: np.ndarray = df.groupby("uid")["y"].first().values
-        t: np.ndarray = df.groupby("uid")["t"].first().values
+        x = df.groupby("uid")["x"].first().values
+        y = df.groupby("uid")["y"].first().values
+        t = df.groupby("uid")["t"].first().values
 
         self.grid[x, y, t] = means
         self.nobs[x, y, t] = nobs
@@ -211,8 +212,8 @@ class SuperObsGrid:
         None
             The function performs its operations in-place and does not return anything.
         """
-        xindex = mds_lon_to_xindex(lon, res=1.0)
-        yindex = mds_lat_to_yindex(lat, res=1.0)
+        xindex = get_xindex(lon, res=1.0)
+        yindex = get_yindex(lat, res=1.0)
         pindex = which_pentad(year=2001, month=month, day=day) - 1
 
         if not (0 <= xindex < 360):
@@ -325,7 +326,7 @@ class SuperObsGrid:
             m, d = pentad_to_month_day(pindex + 1)
 
             # Originally get_value_mds_style - note: might be a mismatch
-            stdev = pentad_stdev.get_value_fast(lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d)
+            stdev = pentad_stdev.get_value(lat=89.5 - yindex, lon=-179.5 + xindex, month=m, day=d)
 
             if stdev is None or stdev < 0.0 or np.isnan(stdev):
                 stdev = 1.0
@@ -401,9 +402,9 @@ class SuperObsGrid:
 
             m, d = pentad_to_month_day(pindex + 1)
 
-            stdev1_ex = stdev1.get_value_fast(89.5 - yindex, -179.5 + xindex, month=m, day=d)
-            stdev2_ex = stdev2.get_value_fast(89.5 - yindex, -179.5 + xindex, month=m, day=d)
-            stdev3_ex = stdev3.get_value_fast(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev1_ex = stdev1.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev2_ex = stdev2.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
+            stdev3_ex = stdev3.get_value(89.5 - yindex, -179.5 + xindex, month=m, day=d)
 
             if stdev1_ex is None or stdev1_ex < 0.0 or np.isnan(stdev1_ex):
                 stdev1_ex = 1.0
@@ -457,8 +458,8 @@ class SuperObsGrid:
         float
             Buddy mean at the specified location.
         """
-        xindex = mds_lon_to_xindex(lon, res=1.0)
-        yindex = mds_lat_to_yindex(lat, res=1.0)
+        xindex = get_xindex(lon, res=1.0)
+        yindex = get_yindex(lat, res=1.0)
         pindex = which_pentad(year=2001, month=month, day=day) - 1
         return float(self.buddy_mean[xindex, yindex, pindex])
 
@@ -482,8 +483,8 @@ class SuperObsGrid:
         float
             Buddy standard deviation at the specified location.
         """
-        xindex = mds_lon_to_xindex(lon, res=1.0)
-        yindex = mds_lat_to_yindex(lat, res=1.0)
+        xindex = get_xindex(lon, res=1.0)
+        yindex = get_yindex(lat, res=1.0)
         pindex = which_pentad(year=2001, month=month, day=day) - 1
         return float(self.buddy_stdev[xindex, yindex, pindex])
 
@@ -598,7 +599,7 @@ def do_mds_buddy_check(
     if ignore_indexes is None:
         ignore_indexes = []
 
-    valid_mask: np.ndarray = np.atleast_1d(isvalid(anoms_arr))
+    valid_mask = np.atleast_1d(isvalid(anoms_arr))
 
     # finally loop over all reports and update buddy QC
     for i in range(numobs):
