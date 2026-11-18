@@ -881,7 +881,7 @@ def args_from_data(*params: str) -> Callable[..., Any]:
 
         if arguments:
             raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
-            
+
         if not isinstance(data, (pd.DataFrame, xr.DataArray, xr.Dataset)):
             raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not {type(data)}.")
 
