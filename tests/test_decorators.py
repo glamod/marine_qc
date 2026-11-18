@@ -187,7 +187,7 @@ def test_args_from_data_typeerror():
         }
     )
 
-    with pytest.raises(TypeError, match="missing 2 required positional arguments"):
+    with pytest.raises(TypeError, match="missing a required argument: 'lat'"):
         _data_function(data=data)
 
     with pytest.raises(TypeError, match="Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset"):
@@ -213,7 +213,6 @@ def test_convert_date_raise():
 def test_combi_decorators():
     data = pd.DataFrame({"date": ["2025-01-01T12:00:00", "2026-01-01T12:00.00", "2027-01-01T12:00:00"]})
     result = _combi_function(data=data)
-    print(result)
     assert result == [2025, 2026, 2027]
 
 
