@@ -99,8 +99,8 @@ def _geod_fwd(
     return lon2, lat2, back_az
 
 
-@post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
 @inspect_arrays("lat1", "lon1", "lat2", "lon2")
+@post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
 def angular_distance(
     lat1: SequenceNumberType,
     lon1: SequenceNumberType,
@@ -145,8 +145,8 @@ def angular_distance(
     return result
 
 
-@post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
 @inspect_arrays("lat1", "lon1", "lat2", "lon2")
+@post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
 def sphere_distance(
     lat1: SequenceNumberType,
     lon1: SequenceNumberType,
@@ -188,8 +188,8 @@ def sphere_distance(
     return result
 
 
-@post_format_return_type("lat1", "lon1", "lat2", "lon2", "f", dtype=float, multiple=True)
 @inspect_arrays("lat1", "lon1", "lat2", "lon2", "f")
+@post_format_return_type("lat1", "lon1", "lat2", "lon2", "f", dtype=float, multiple=True)
 def intermediate_point(
     lat1: SequenceNumberType,
     lon1: SequenceNumberType,
@@ -240,8 +240,8 @@ def intermediate_point(
     return result_lat, result_lon
 
 
-@post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
 @inspect_arrays("lat1", "lon1", "lat2", "lon2")
+@post_format_return_type("lat1", "lon1", "lat2", "lon2", dtype=float)
 def course_between_points(
     lat1: SequenceNumberType,
     lon1: SequenceNumberType,
@@ -279,8 +279,8 @@ def course_between_points(
     return fwd_azimuth
 
 
-@post_format_return_type("lat1", "lon1", dtype=float, multiple=True)
 @inspect_arrays("lat1", "lon1", "tc", "d")
+@post_format_return_type("lat1", "lon1", dtype=float, multiple=True)
 def lat_lon_from_course_and_distance(
     lat1: SequenceNumberType,
     lon1: SequenceNumberType,

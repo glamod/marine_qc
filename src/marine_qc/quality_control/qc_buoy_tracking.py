@@ -1639,8 +1639,8 @@ class SSTBiasedNoisyChecker:  # pylint: disable=too-many-instance-attributes
 
 
 @args_from_data("lat", "lon", "date")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date")
+@post_format_return_type("lat")
 def do_speed_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1697,8 +1697,8 @@ def do_speed_check(
 
 
 @args_from_data("lat", "lon", "date")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date")
+@post_format_return_type("lat")
 def do_new_speed_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1778,8 +1778,8 @@ def do_new_speed_check(
 
 
 @args_from_data("lat", "lon", "date")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date")
+@post_format_return_type("lat")
 def do_aground_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1835,8 +1835,8 @@ def do_aground_check(
 
 
 @args_from_data("lat", "lon", "date")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date")
+@post_format_return_type("lat")
 def do_new_aground_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1886,8 +1886,8 @@ def do_new_aground_check(
 
 
 @args_from_data("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
+@post_format_return_type("lat")
 def do_sst_start_tail_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -1995,8 +1995,8 @@ def do_sst_start_tail_check(
 
 
 @args_from_data("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "sst", "ostia", "ice", "bgvar", "date")
+@post_format_return_type("lat")
 def do_sst_end_tail_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -2104,8 +2104,8 @@ def do_sst_end_tail_check(
 
 
 @args_from_data("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
+@post_format_return_type("lat")
 def do_sst_biased_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -2205,8 +2205,8 @@ def do_sst_biased_check(
 
 
 @args_from_data("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
+@post_format_return_type("lat")
 def do_sst_noisy_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -2306,8 +2306,8 @@ def do_sst_noisy_check(
 
 
 @args_from_data("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
-@post_format_return_type("lat")
 @inspect_arrays("lat", "lon", "date", "sst", "ostia", "bgvar", "ice")
+@post_format_return_type("lat")
 def do_sst_biased_noisy_short_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
