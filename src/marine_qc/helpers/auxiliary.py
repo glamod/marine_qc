@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime
 import inspect
 from collections.abc import Callable, Sequence
+from contextvars import ContextVar
 from functools import wraps
 from typing import Any, TypeAlias
 
@@ -51,10 +52,14 @@ ValueDatetimeType: TypeAlias = ScalarDatetimeType | SequenceDatetimeType
 ValueStrType: TypeAlias = ScalarStrType | SequenceStrType
 
 # --- DECORATOR HELPERS ---
-DECORATOR_HANDLERS: dict[Callable[..., Any], list[Callable[..., Any]]] = {}
+DECORATOR_HANDLERS: dict[Callable[..., Any], tuple[Callable[..., Any], ...]] = {}
 DECORATOR_NAMES: dict[Callable[..., Any], str] = {}
 DECORATOR_KWARGS: dict[Callable[..., Any], set[str]] = {}
-IS_POST_HANDLER: dict[Callable[..., Any], bool] = {}
+HANDLER_TYPE: dict[Callable[..., Any], str] = {}
+ACTIVE_FUNCTIONS: ContextVar[frozenset[int]] = ContextVar(
+    "ACTIVE_FUNCTIONS",
+    default=frozenset(),
+)
 
 
 def is_scalar_like(x: Any) -> bool:
@@ -302,7 +307,8 @@ def convert_to(value: ValueNumberType, source_units: str, target_units: str) -> 
     return _convert_to(value)
 
 
-def generic_decorator(
+def generic_decorator(  # noqa: C901
+    src_handler: Callable[..., Any] | None = None,
     pre_handler: Callable[..., Any] | None = None,
     post_handler: Callable[..., Any] | None = None,
 ) -> Callable[..., Any]:
@@ -315,16 +321,18 @@ def generic_decorator(
 
     Parameters
     ----------
-    pre_handler : Callable[[dict], None]
+    src_handler : Callable, optional
       A function that takes the bound arguments dictionary (`bound_args.arguments`) and
-      optionally additional keyword arguments, to inspect or modify arguments before the
-      decorated function executes. Signature:
-      `handler(arguments: dict, **meta_kwargs) -> None`.
-    post_handler : Callable[[dict], None]
+      optionally additional keyword arguments, to inspect or modify arguments before
+      required-argument validation and before the decorated function executes.
+    pre_handler : Callable, optional
+      A function that takes the bound arguments dictionary (`bound_args.arguments`) and
+      optionally additional keyword arguments, to inspect or modify arguments after source
+      handling and required-argument validation, but before the decorated function executes.
+    post_handler : Callable, optional
       A function that takes the bound arguments dictionary (`bound_args.arguments`) and
       optionally additional keyword arguments, to inspect or modify arguments after the
-      decorated function executes. Signature:
-      `handler(arguments: dict, **meta_kwargs) -> None`.
+      decorated function executes.
 
     Returns
     -------
@@ -339,10 +347,16 @@ def generic_decorator(
       the handler, and removed before calling the original function.
     - The original function is called with the possibly modified bound arguments after handler processing.
     """
-    if pre_handler:
-        IS_POST_HANDLER[pre_handler] = False
-    if post_handler:
-        IS_POST_HANDLER[post_handler] = True
+    if src_handler is not None:
+        HANDLER_TYPE[src_handler] = "src"
+
+    if pre_handler is not None:
+        HANDLER_TYPE[pre_handler] = "pre"
+
+    if post_handler is not None:
+        HANDLER_TYPE[post_handler] = "post"
+
+    handlers = tuple(handler for handler in (src_handler, pre_handler, post_handler) if handler is not None)
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """
@@ -360,11 +374,40 @@ def generic_decorator(
             The `wrapper` function that executes pre-handlers, calls the original function
             and then executes post-handlers.
         """
-        handlers: list[Callable[..., Any]] = []
-        if pre_handler:
-            handlers.append(pre_handler)
-        if post_handler:
-            handlers.append(post_handler)
+        all_src_handlers: list[Callable[..., Any]] = []
+        all_pre_handlers: list[Callable[..., Any]] = []
+        all_post_handlers: list[Callable[..., Any]] = []
+        reserved_keys: set[str] = set()
+
+        wrapped_chain: list[Callable[..., Any]] = []
+        current_func: Callable[..., Any] = func
+        visited: set[int] = set()
+
+        while id(current_func) not in visited:
+            visited.add(id(current_func))
+            wrapped = getattr(current_func, "__wrapped__", None)
+            wrapped_chain.append(current_func)
+            if not callable(wrapped):
+                break
+            current_func = wrapped
+
+        ordered_handlers = list(handlers) + [handler for wrapped in wrapped_chain for handler in DECORATOR_HANDLERS.get(wrapped, ())]
+
+        for handler in ordered_handlers:
+            reserved_keys.update(DECORATOR_KWARGS.get(handler, ()))
+            handler_type = HANDLER_TYPE.get(handler, "")
+            if handler_type == "src":
+                all_src_handlers.append(handler)
+            elif handler_type == "pre":
+                all_pre_handlers.append(handler)
+            elif handler_type == "post":
+                all_post_handlers.append(handler)
+
+        root_id = id(current_func)
+
+        sig = inspect.signature(func)
+        func_name = getattr(func, "__name__", repr(func))
+        reserved_keys_frozen = frozenset(reserved_keys)
 
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -399,44 +442,40 @@ def generic_decorator(
             - Pre-handlers receive the arguments dictionary (`bound_args.arguments`) and reserved kwargs.
             - Post-handlers receive the function result, the current arguments, and the original arguments.
             """
-            reserved_keys: set[str] = set()
-            all_pre_handlers: list[Callable[..., Any]] = []
-            all_post_handlers: list[Callable[..., Any]] = []
+            active = ACTIVE_FUNCTIONS.get()
 
-            current_func: Any = wrapper
-            visited: set[int] = set()
+            if root_id in active:
+                return func(*args, **kwargs)
 
-            while hasattr(current_func, "__wrapped__") and id(current_func) not in visited:
-                visited.add(id(current_func))
-                for handler in DECORATOR_HANDLERS.get(current_func, []):
-                    if handler in DECORATOR_KWARGS:
-                        reserved_keys.update(DECORATOR_KWARGS[handler])
-                    if IS_POST_HANDLER.get(handler, False):
-                        all_post_handlers.append(handler)
-                    else:
-                        all_pre_handlers.append(handler)
+            token = ACTIVE_FUNCTIONS.set(active | {root_id})
 
-                current_func = current_func.__wrapped__
+            try:
+                meta_kwargs = {key: kwargs.pop(key) if key not in sig.parameters else kwargs[key] for key in reserved_keys_frozen if key in kwargs}
 
-            sig = inspect.signature(func)
-            meta_kwargs = {k: kwargs.pop(k) if k not in sig.parameters else kwargs[k] for k in reserved_keys if k in kwargs}
+                bound_args = sig.bind_partial(*args, **kwargs)
 
-            bound_args = sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            original_call = bound_args.arguments.copy()
+                for handler in all_src_handlers:
+                    DECORATOR_NAMES[handler] = func_name
+                    handler(bound_args.arguments, **meta_kwargs)
 
-            func_name = getattr(func, "__name__", repr(func))
-            for handler in reversed(all_pre_handlers):
-                DECORATOR_NAMES[handler] = func_name
-                handler(bound_args.arguments, **meta_kwargs)
+                bound_args = sig.bind(*bound_args.args, **bound_args.kwargs)
+                bound_args.apply_defaults()
+                original_args = bound_args.arguments.copy()
 
-            result = func(*bound_args.args, **bound_args.kwargs)
+                for handler in all_pre_handlers:
+                    DECORATOR_NAMES[handler] = func_name
+                    handler(bound_args.arguments, **meta_kwargs)
 
-            for handler in reversed(all_post_handlers):
-                DECORATOR_NAMES[handler] = func_name
-                result = handler(result, bound_args.arguments, **original_call)
+                result = func(*bound_args.args, **bound_args.kwargs)
 
-            return result
+                for handler in all_post_handlers:
+                    DECORATOR_NAMES[handler] = func_name
+                    result = handler(result, bound_args.arguments, **original_args)
+
+                return result
+
+            finally:
+                ACTIVE_FUNCTIONS.reset(token)
 
         DECORATOR_HANDLERS[wrapper] = handlers
 
@@ -635,7 +674,7 @@ def inspect_arrays(*params: str, sortby: str | None = None) -> Callable[..., Any
         inverse_indices = np.argsort(sort_indices)
         if len(result) == 0:
             return result
-        return result[inverse_indices]
+        return np.asarray(result)[inverse_indices]
 
     return generic_decorator(pre_handler=pre_handler, post_handler=post_handler)
 
@@ -768,99 +807,90 @@ def args_from_data(*params: str) -> Callable[..., Any]:
 
     Raises
     ------
+    TypeError
+        If type of `data` is neither pd.DataFrame, nor xr.DataArray, not xr.Dataset.
     ValueError
         If both positional arguments and `data` are provided.
+
+    Examples
+    --------
+    >>> @args_from_data("a", "b")
+    ... def add_arrays(a, b):
+    ...     return a + b
+
+    >>> data = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    >>> add_arrays(data=data)
+    0    5
+    1    7
+    2    9
+    dtype: int64
+
+    >>> data = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    >>> add_arrays([1, 2, 3], [4, 5, 6], data=data)
+    Traceback (most recent call last):
+        ...
+    ValueError: Use either positional arguments or 'data'. Both is not possible.
+
+    >>> data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    >>> add_arrays(data=data)
+    Traceback (most recent call last):
+        ...
+    TypeError: Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not <class 'dict'>.
+
+    >>> data = pd.DataFrame({"a": [1, 2, 3]})
+    >>> add_arrays(data=data)
+    Traceback (most recent call last):
+        ...
+    TypeError: missing a required argument: 'b'
     """
 
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        """
-        Decorate a function to support extracting positional arguments from a pandas.DataFrame.
+    def src_handler(
+        arguments: dict[str, Any],
+        **meta_kwargs: Any,
+    ) -> None:
+        r"""
+        Source handler that retrieves required arguments from data.
 
         Parameters
         ----------
-        func : Callable[..., Any]
-            The function to be decorated.
+        arguments : dict
+            Bound arguments of the decorated function.
+        \**meta_kwargs : dict
+            Additional reserved keyword arguments passed to the handler.
+            Must include 'units', which maps parameter names to their source units.
 
-        Returns
-        -------
-        Callable[..., Any]
-            A wrapped function that accepts either the original positional
-            arguments or a ``data`` keyword argument containing the required
-            columns.
+        Raises
+        ------
+        TypeError
+            If type of `data` is neither pd.DataFrame, nor xr.DataArray, not xr.Dataset.
+        ValueError
+            If both positional arguments and `data` are provided.
         """
 
-        @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            r"""
-            Call the decorated function.
+        def isin(param: str, data: Any) -> bool:  # numpydoc ignore=GL08
+            if isinstance(data, pd.DataFrame):
+                return param in data.columns
+            if isinstance(data, xr.DataArray):
+                return param in data.coords or param in data.dims
+            return param in data.data_vars or param in data.coords or param in data.dims
 
-            If ``data`` is provided as a keyword argument, the columns
-            specified when applying the decorator are extracted from the
-            pandas.DataFrame and passed to the wrapped function as positional
-            arguments. Otherwise, the original arguments are forwarded
-            unchanged.
+        data = meta_kwargs.get("data")
+        if data is None:
+            return
 
-            Parameters
-            ----------
-            \*args : Any
-                Positional arguments passed to the wrapped function.
-            \**kwargs : Any
-                Keyword arguments passed to the wrapped function. May include
-                a ``data`` keyword containing a pandas.DataFrame.
+        if arguments:
+            raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
 
-            Returns
-            -------
-            Any
-                The return value of the wrapped function.
+        if not isinstance(data, (pd.DataFrame, xr.DataArray, xr.Dataset)):
+            raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not {type(data)}.")
 
-            Raises
-            ------
-            TypeError
-                If ``data`` is none of pandas.DataFrame, xarray.DataArray or xarray.Dataset.
-            ValueError
-                If both positional arguments and the ``data`` keyword
-                argument are provided.
-            """
+        data = data.copy()
+        meta_kwargs.pop("data")
 
-            def isin(param: str, data: Any) -> bool:
-                """
-                Check whether a parameter's name is in a data object.
+        for param in params:
+            if isin(param, data):
+                arguments[param] = data[param]
 
-                Parameters
-                ----------
-                param : str
-                    Name of the parameter to be checked.
+    DECORATOR_KWARGS[src_handler] = {"data"}
 
-                data : Any
-                    Any data object to be checked.
-
-                Returns
-                -------
-                bool
-                    Boolean value whether ``data`` contains ``param``.
-
-                Raises
-                ------
-                TypeError
-                    If ``data`` is none of pandas.DataFrame, xarray.DataArray or xarray.Dataset.
-                """
-                if isinstance(data, pd.DataFrame):
-                    return param in data.columns
-                if isinstance(data, xr.DataArray):
-                    return param in data.coords or param in data.dims
-                if isinstance(data, xr.Dataset):
-                    return param in data.data_vars or param in data.coords or param in data.dims
-                raise TypeError(f"Type of 'data' must be one of pd.DataFrame, xr.DataArray or xr.Dataset, not {type(data)}.")
-
-            if "data" not in kwargs:
-                return func(*args, **kwargs)
-            if len(args) > 0:
-                raise ValueError("Use either positional arguments or 'data'. Both is not possible.")
-            data = kwargs["data"].copy()
-            kwargs.pop("data")
-            nargs = (data[param] for param in params if isin(param, data))
-            return func(*nargs, **kwargs)
-
-        return wrapper
-
-    return decorator
+    return generic_decorator(src_handler=src_handler)

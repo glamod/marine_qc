@@ -489,10 +489,10 @@ class SuperObsGrid:
 
 
 @args_from_data("lat", "lon", "date", "value")
-@post_format_return_type("value")
+@inspect_climatology("climatology")
 @inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
-@inspect_climatology("climatology")
+@post_format_return_type("value")
 def do_mds_buddy_check(
     lat: SequenceNumberType,
     lon: SequenceNumberType,
@@ -627,10 +627,10 @@ def do_mds_buddy_check(
 
 
 @args_from_data("lat", "lon", "date", "value")
-@post_format_return_type("value")
+@inspect_climatology("climatology")
 @inspect_arrays("lat", "lon", "date", "value", "climatology")
 @convert_units(lat="degrees", lon="degrees")
-@inspect_climatology("climatology")
+@post_format_return_type("value")
 def do_bayesian_buddy_check(  # pylint: disable=too-many-positional-arguments
     lat: SequenceNumberType,
     lon: SequenceNumberType,
